@@ -1,0 +1,91 @@
+---
+#-
+#                  _           _ _       _
+#   ___ _ ____   _(_)___  __ _| (_)_ __ | | __
+#  / _ \ '_ \ \ / / / __|/ _` | | | '_ \| |/ /
+# |  __/ | | \ V /| \__ \ (_| | | | | | |   <
+#  \___|_| |_|\_/ |_|___/\__,_|_|_|_| |_|_|\_\
+#
+#
+#- from github.com/tinuva/home-assistant-config
+host: !secret evl_host
+panel_type: DSC
+user_name: !secret evl_user
+password: !secret evl_pass
+code: !secret evl_pin
+port: 4025
+evl_version: 4
+keepalive_interval: 60
+zonedump_interval: 30
+timeout: 10
+panic_type: Police
+partitions:
+  1:
+    name: 'Home Alarm'
+zones:
+  1:
+    name: 'Front Door'
+    type: 'opening'
+  2:
+    name: 'Lounge PIR'
+    type: 'motion'
+  3:
+    name: 'Kitchen PIR'
+    type: 'motion'
+  4:
+    name: 'Study PIR'
+    type: 'motion'
+  5:
+    name: 'Babyroom PIR'
+    type: 'motion'
+  6:
+    name: 'Main Bedroom PIR'
+    type: 'motion'
+  7:
+    name: 'Ensuite PIR'
+    type: 'motion'
+  8:
+    name: 'Front Garage Door/Window'
+    type: 'opening'
+  9:
+    name: 'Lounge Window'
+    type: 'opening'
+  10:
+    name: 'Kitchen Window'
+    type: 'opening'
+  11:
+    name: 'Sculllery Window'
+    type: 'opening'
+  12:
+    name: 'Scullery Door'
+    type: 'opening'
+  13:
+    name: 'Study Window'
+    type: 'opening'
+  14:
+    name: 'Babyroom Window'
+    type: 'opening'
+  15:
+    name: 'Main Bedroom Window'
+    type: 'opening'
+  16:
+    name: 'Panic'
+    type: 'opening'
+  17:
+    name: 'Spare Bedroom PIR'
+    type: 'motion'
+  18:
+    name: 'Braai-room PIR'
+    type: 'motion'
+  19:
+    name: 'Back Garage PIR'
+    type: 'motion'
+  20:
+    name: 'Back Garage Door'
+    type: 'opening'
+  25:
+    name: 'Front Beam'
+    type: 'motion'
+  26:
+    name: 'Back Beam'
+    type: 'motion'

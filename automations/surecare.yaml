@@ -1,0 +1,39 @@
+---
+### Number to Shell scripts
+- alias: run_set_surepet_door_lock
+  trigger:
+    platform: state
+    entity_id: input_select.surepet_door_lock_state_num
+  action:
+    service: shell_command.surepet_cli_set_door_lock
+    data:
+      
+
+# card select then unselect any other
+- alias: Pet Door Mode set bools
+  trigger:
+    platform: state
+    entity_id: input_boolean.petdoor_mode_unlocked,
+               input_boolean.petdoor_mode_locked_in,
+               input_boolean.petdoor_mode_locked_out, 
+               input_boolean.petdoor_mode_locked_all
+    to: 'on'
+  action:
+    - service: input_boolean.turn_off
+      data_template:
+        entity_id: >
+          {% set booleans = [ 'input_boolean.petdoor_mode_unlocked', 'input_boolean.petdoor_mode_locked_in', 'input_boolean.petdoor_mode_locked_out', 'input_boolean.petdoor_mode_locked_all' ] | reject('equalto', trigger.entity_id) %}
+          {{ booleans | list | join(', ') }}
+    - service: input_select.select_option
+      data_template: 
+        entity_id: input_select.surepet_door_lock_state_num
+        option: >
+          {% if trigger.entity_id == 'input_boolean.petdoor_mode_unlocked' %}
+             0
+          {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_in' %}
+             1
+          {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_out' %}
+             2
+          {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_all' %}
+            3
+          {% endif %}

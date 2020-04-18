@@ -1,0 +1,27 @@
+---
+#-
+#                     _   _
+# __      _____  __ _| |_| |__   ___ _ __
+# \ \ /\ / / _ \/ _` | __| '_ \ / _ \ '__|
+#  \ V  V /  __/ (_| | |_| | | |  __/ |
+#   \_/\_/ \___|\__,_|\__|_| |_|\___|_|
+#
+#
+#- from github.com/tinuva/home-assistant-config
+- platform: yr
+  name: Weather
+  forecast: 24
+  monitored_conditions:
+    - temperature
+    - symbol
+    - precipitation
+    - windSpeed
+    - pressure
+    - windDirection
+    - humidity
+    - fog
+    - cloudiness
+    - lowClouds
+    - mediumClouds
+    - highClouds
+    - dewpointTemperature

@@ -1,0 +1,184 @@
+---
+#-
+#
+#  ___  ___ _ __  ___  ___  _ __ ___
+# / __|/ _ \ '_ \/ __|/ _ \| '__/ __|
+# \__ \  __/ | | \__ \ (_) | |  \__ \
+# |___/\___|_| |_|___/\___/|_|  |___/
+#
+#
+#- from github.com/tinuva/home-assistant-config
+
+#  _____                    _       _
+# |_   _|__ _ __ ___  _ __ | | __ _| |_ ___    ___  ___ _ __  ___  ___  _ __ ___
+#   | |/ _ \ '_ ` _ \| '_ \| |/ _` | __/ _ \  / __|/ _ \ '_ \/ __|/ _ \| '__/ __|
+#   | |  __/ | | | | | |_) | | (_| | ||  __/  \__ \  __/ | | \__ \ (_) | |  \__ \
+#   |_|\___|_| |_| |_| .__/|_|\__,_|\__\___|  |___/\___|_| |_|___/\___/|_|  |___/
+#                    |_|
+
+- platform: template
+  sensors: 
+    battery_level_fridge:
+      value_template: "{{ state_attr('sensor.temperature_158d0001f54c03', 'battery_level')|int }}"
+      friendly_name: 'Battery level Fridge' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d0001f54c03', 'battery_level')|int  > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+- platform: template
+  sensors: 
+    battery_level_baby_room:
+      value_template: "{{ state_attr('sensor.temperature_158d0001fa5057', 'battery_level')|int }}"
+      friendly_name: 'Battery level Baby Room' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d0001fa5057', 'battery_level')|int > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+- platform: template
+  sensors: 
+    battery_level_outside:
+      value_template: "{{ state_attr('sensor.temperature_158d0002011a32', 'battery_level')|int }}"
+      friendly_name: 'Battery level Outside' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d0002011a32', 'battery_level')|int > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+- platform: template
+  sensors: 
+    battery_level_master_bed_room:
+      value_template: "{{ state_attr('sensor.temperature_158d00020177c3', 'battery_level')|int }}"
+      friendly_name: 'Battery level Master Bed Room' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d00020177c3', 'battery_level')|int > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+- platform: template
+  sensors: 
+    battery_level_lounge:
+      value_template: "{{ state_attr('sensor.temperature_158d00020ec6bf', 'battery_level')|int }}"
+      friendly_name: 'Battery level Lounge' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d00020ec6bf', 'battery_level')|int > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+- platform: template
+  sensors: 
+    battery_level_master_bath_room:
+      value_template: "{{ state_attr('sensor.temperature_158d00023475b0', 'battery_level') | int }}"
+      friendly_name: 'Battery level Master Bath Room' 
+      unit_of_measurement: '%'
+      icon_template: >-
+        {% if state_attr('sensor.temperature_158d00023475b0', 'battery_level')|int  > 14 %}
+          mdi:battery-20
+        {% else %}
+          mdi:battery-10
+        {% endif %}
+
+### Sureflap Jessie
+- platform: history_stats
+  name: Jessie outside time (today)
+  entity_id: binary_sensor.pet_jessie
+  state: 'off'
+  type: time
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  end: '{{ now() }}'
+- platform: history_stats
+  name: Jessie trips outside (today)
+  entity_id: binary_sensor.pet_jessie
+  state: 'off'
+  type: count
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  end: '{{ now() }}'
+- platform: history_stats
+  name: Jessie outside (yesterday)
+  entity_id: binary_sensor.pet_jessie
+  state: 'off'
+  type: time
+  end : '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Jessie trips outside (yesterday)
+  entity_id: binary_sensor.pet_jessie
+  state: 'off'
+  type: count
+  end : '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  duration:
+    hours: 24
+### Sureflap Ziva
+- platform: history_stats
+  name: Ziva outside time (today)
+  entity_id: binary_sensor.pet_ziva
+  state: 'off'
+  type: time
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  end: '{{ now() }}'
+- platform: history_stats
+  name: Ziva trips outside (today)
+  entity_id: binary_sensor.pet_ziva
+  state: 'off'
+  type: count
+  start: '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  end: '{{ now() }}'
+- platform: history_stats
+  name: Ziva outside (yesterday)
+  entity_id: binary_sensor.pet_ziva
+  state: 'off'
+  type: time
+  end : '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  duration:
+    hours: 24
+- platform: history_stats
+  name: Ziva trips outside (yesterday)
+  entity_id: binary_sensor.pet_ziva
+  state: 'off'
+  type: count
+  end : '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
+  duration:
+    hours: 24
+
+- platform: template
+  sensors:
+    pet_door_mode:
+      friendly_name: 'Pet Door Lock Mode'
+      entity_id: input_boolean.petdoor_mode_unlocked,
+                 input_boolean.petdoor_mode_locked_in,
+                 input_boolean.petdoor_mode_locked_out, 
+                 input_boolean.petdoor_mode_locked_all
+      value_template: >-
+       {% if is_state('input_boolean.petdoor_mode_unlocked', 'on') %}
+          unlocked
+       {% elif is_state('input_boolean.petdoor_mode_locked_in', 'on') %}
+          locked_in
+       {% elif is_state('input_boolean.petdoor_mode_locked_out', 'on') %}
+         locked_out
+       {% elif is_state('input_boolean.petdoor_mode_locked_all', 'on') %}
+         locked_all
+       {% endif %}
+      icon_template: >-
+        {% if is_state('input_boolean.petdoor_mode_unlocked', 'on') %}
+          mdi:door-open
+        {% elif is_state('input_boolean.petdoor_mode_locked_in', 'on') %}
+          mdi:door-closed
+        {% elif is_state('input_boolean.petdoor_mode_locked_out', 'on') %}
+          mdi:door-closed
+        {% elif is_state('input_boolean.petdoor_mode_locked_all', 'on') %}
+          mdi:door-closed-locke
+        {% endif %}
+
+### Sureflap end

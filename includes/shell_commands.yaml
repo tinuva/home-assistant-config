@@ -1,0 +1,14 @@
+---
+#-
+#      _          _ _                                                  _
+#  ___| |__   ___| | |    ___ ___  _ __ ___  _ __ ___   __ _ _ __   __| |___
+# / __| '_ \ / _ \ | |   / __/ _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
+# \__ \ | | |  __/ | |  | (_| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
+# |___/_| |_|\___|_|_|___\___\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
+#                   |_____|
+#
+#- from github.com/tinuva/home-assistant-config
+convert_lovelace: 'python /config/json2yaml.py /config/.storage/lovelace /config/lovelace-ui.yaml'
+surepet_cli_auth: '/config/sure_petcare/sp_cli.py --update -e {{ user }} -p {{ pass }}'
+surepet_cli_list_flaps: '/config/sure_petcare/sp_cli.py ls_flaps'
+surepet_cli_set_door_lock: /config/sure_petcare/sp_cli.py set_flap_lock 204121 {{ states('input_select.surepet_door_lock_state_num')|int }}s

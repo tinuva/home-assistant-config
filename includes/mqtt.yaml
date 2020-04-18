@@ -1,0 +1,13 @@
+---
+#-
+#                  _   _
+#  _ __ ___   __ _| |_| |_
+# | '_ ` _ \ / _` | __| __|
+# | | | | | | (_| | |_| |_
+# |_| |_| |_|\__, |\__|\__|
+#               |_|
+#
+#- from github.com/tinuva/home-assistant-config
+broker: !secret host_mqtt
+discovery: true
+discovery_prefix: homeassistant

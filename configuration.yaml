@@ -1,0 +1,62 @@
+---
+# Core Configuration
+homeassistant:
+  packages: !include_dir_named packages
+  latitude: !secret latitude_home
+  longitude: !secret longitude_home
+  elevation: 0
+  unit_system: metric
+  time_zone: Africa/Johannesburg
+  name: Home
+  whitelist_external_dirs:
+    - /config/
+  customize: !include includes/customize.yaml
+default_config:
+frontend:
+  themes: !include_dir_merge_named themes
+http: !include includes/http.yaml
+
+# Inputs
+input_boolean: !include includes/input_booleans.yaml
+#input_datetime: !include includes/input_datetimes.yaml
+input_select: !include includes/input_selects.yaml
+input_number: !include includes/input_numbers.yaml
+
+# Logging and history
+logger: !include includes/logger.yaml
+recorder: !include includes/recorder.yaml
+#device_tracker: !include includes/device_trackers.yaml
+
+# Managed via UI
+scene: !include scenes.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+
+# Devices
+camera: !include includes/camera.yaml
+ffmpeg:
+  ffmpeg_bin: /usr/bin/ffmpeg
+envisalink: !include includes/envisalink.yaml
+xiaomi_aqara: !include includes/xiaomi_aqara.yaml
+surepetcare: !include includes/surepetcare.yaml
+
+# Sensors
+sensor: !include includes/sensors.yaml
+binary_sensor: !include includes/binary_sensors.yaml
+
+# Others
+alert: !include includes/alerts.yaml
+person: !include includes/persons.yaml
+zone: !include includes/zones.yaml
+group: !include includes/groups.yaml
+automation old: !include_dir_merge_list automations
+#switch: !include includes/switches.yaml
+#weather: !include includes/weather.yaml
+shell_command: !include includes/shell_commands.yaml
+#notify: !include includes/notify.yaml
+light: !include includes/lights.yaml
+proximity: !include includes/proximity.yaml
+speedtestdotnet: !include includes/speedtestdotnet.yaml
+discovery: !include includes/discovery.yaml
+mqtt: !include includes/mqtt.yaml
+influxdb: !include includes/influxdb.yaml

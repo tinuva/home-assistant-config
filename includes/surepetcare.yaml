@@ -1,0 +1,15 @@
+---
+#-
+#                                _
+#  ___ _   _ _ __ ___ _ __   ___| |_ ___ __ _ _ __ ___
+# / __| | | | '__/ _ \ '_ \ / _ \ __/ __/ _` | '__/ _ \
+# \__ \ |_| | | |  __/ |_) |  __/ || (_| (_| | | |  __/
+# |___/\__,_|_|  \___| .__/ \___|\__\___\__,_|_|  \___|
+#                    |_|
+#
+#- from github.com/tinuva/home-assistant-config
+username: !secret surepetcareemail
+password: !secret surepetcarepw
+flaps: [!secret surepetcare_flap_id]
+pets: [!secret surepetcare_jessie_id, !secret surepetcare_ziva_id]
+scan_interval: 00:00:100

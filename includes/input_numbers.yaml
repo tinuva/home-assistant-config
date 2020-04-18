@@ -1,0 +1,23 @@
+---
+#-
+#  _                   _                             _
+# (_)_ __  _ __  _   _| |_     _ __  _   _ _ __ ___ | |__   ___ _ __ ___
+# | | '_ \| '_ \| | | | __|   | '_ \| | | | '_ ` _ \| '_ \ / _ \ '__/ __|
+# | | | | | |_) | |_| | |_    | | | | |_| | | | | | | |_) |  __/ |  \__ \
+# |_|_| |_| .__/ \__,_|\__|___|_| |_|\__,_|_| |_| |_|_.__/ \___|_|  |___/
+#         |_|            |_____|
+#
+#- from github.com/tinuva/home-assistant-config
+temperature_low:
+  name: Temperature low
+  min: 10
+  max: 20
+  initial: 14
+  step: 0.5
+
+temperature_high:
+  name: Temperature high
+  min: 10
+  max: 20
+  initial: 20
+  step: 0.5

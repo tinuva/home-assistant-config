@@ -1,0 +1,15 @@
+---
+#-
+#       _                       _
+# __  _(_) __ _  ___  _ __ ___ (_)    __ _  __ _  __ _ _ __ __ _
+# \ \/ / |/ _` |/ _ \| '_ ` _ \| |   / _` |/ _` |/ _` | '__/ _` |
+#  >  <| | (_| | (_) | | | | | | |  | (_| | (_| | (_| | | | (_| |
+# /_/\_\_|\__,_|\___/|_| |_| |_|_|___\__,_|\__, |\__,_|_|  \__,_|
+#                               |_____|       |_|
+#
+#- from github.com/tinuva/home-assistant-config
+# Docs: https://www.home-assistant.io/integrations/xiaomi_aqara/
+# You can leave MAC empty if you only have one gateway.
+discovery_retry: 5
+gateways:
+  - key: !secret xiaomi_aqara_gw1_key
