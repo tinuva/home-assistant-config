@@ -9,10 +9,3 @@
 #
 #- from github.com/tinuva/home-assistant-config
 convert_lovelace: 'python /config/json2yaml.py /config/.storage/lovelace /config/lovelace-ui.yaml'
-
-# See link on how to pass !secret to shell_command
-# https://community.home-assistant.io/t/using-secrets-yaml-with-shell-commands/4478/11
-surepet_cli_auth: '/config/sure_petcare/sp_cli.py --update -e {{ user }} -p {{ pass }}'
-
-surepet_cli_list_flaps: '/config/sure_petcare/sp_cli.py ls_flaps'
-surepet_cli_set_door_lock: /config/sure_petcare/sp_cli.py set_flap_lock 204121 {{ states('input_select.surepet_door_lock_state_num')|int }}s
