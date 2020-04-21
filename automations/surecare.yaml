@@ -6,8 +6,7 @@
     entity_id: input_select.surepet_door_lock_state_num
   action:
     service: shell_command.surepet_cli_set_door_lock
-    data:
-      
+    #data:
 
 # card select then unselect any other
 - alias: Pet Door Mode set bools

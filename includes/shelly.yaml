@@ -1,0 +1,10 @@
+---
+## See: https://github.com/StyraHem/ShellyForHASS
+discovery: true  #add all devices (default)
+sensors:
+  - all #show all sensors
+devices:  #configure devices
+  - id: "93A63B"
+    entity_id: kitchen
+    light_switch: true  #add this switch as a light
+    name: Kitchen

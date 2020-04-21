@@ -8,35 +8,3 @@
 #  |___/                |_|
 #
 #- from github.com/tinuva/home-assistant-config
-petflap:
-  name: Sure Cat Flap Status
-  entities:
-    - binary_sensor.hub_home_hub
-    - binary_sensor.flap_status
-    - sensor.jessie_status
-    - sensor.ziva_status
-    - sensor.pet_flap_kitchen_pet_door
-    - sensor.pet_flap_kitchen_pet_door_battery_level
-    - sensor.jessie_trips_outside_today
-    - sensor.jessie_trips_outside_yesterday
-    - sensor.jessie_outside_time_today
-    - sensor.jessie_outside_yesterday
-    - sensor.ziva_trips_outside_today
-    - sensor.ziva_trips_outside_yesterday
-    - sensor.ziva_outside_time_today
-    - sensor.ziva_outside_yesterday
-temphumidity:
-  name: Temperature and Humidity
-  entities:
-    - sensor.temperature_158d0001f54c03 # fridge
-    - sensor.temperature_158d0001fa5057 # baby room
-    - sensor.temperature_158d0002011a32 # outside
-    - sensor.temperature_158d00020177c3 # master bed room
-    - sensor.temperature_158d00020ec6bf # lounge
-    - sensor.temperature_158d00023475b0 # master bath room
-    - sensor.humidity_158d0001f54c03
-    - sensor.humidity_158d0001fa5057
-    - sensor.humidity_158d0002011a32
-    - sensor.humidity_158d00020177c3
-    - sensor.humidity_158d00020ec6bf
-    - sensor.humidity_158d00023475b0

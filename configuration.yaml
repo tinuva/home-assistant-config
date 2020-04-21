@@ -39,6 +39,7 @@ ffmpeg:
 envisalink: !include includes/envisalink.yaml
 xiaomi_aqara: !include includes/xiaomi_aqara.yaml
 surepetcare: !include includes/surepetcare.yaml
+shelly: !include includes/shelly.yaml
 
 # Sensors
 sensor: !include includes/sensors.yaml
