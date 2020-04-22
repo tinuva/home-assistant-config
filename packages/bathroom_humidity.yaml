@@ -19,7 +19,7 @@ automation:
         entity_id: sensor.humidity_158d00023475b0, sensor.humidity_158d00020177c3   # 1st bathroom 2nd master bedroom
     condition:
       - condition: template
-        value_template: "{{ (states.sensor.humidity_158d00023475b0.state|float - states.sensor.humidity_158d00020177c3.state|float > 10) or (states.sensor.humidity_158d00023475b0.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
+        value_template: "{{ (states.sensor.humidity_158d00023475b0.state|float - states.sensor.humidity_158d00020177c3.state|float > 15) or (states.sensor.humidity_158d00023475b0.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'
@@ -31,9 +31,12 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.humidity_158d00023475b0, sensor.humidity_158d00020177c3   # 1st bathroom 2nd master bedroom
+      - platform: time_pattern
+        # You can also match on interval. This will match every 5 minutes
+        minutes: "/10"
     condition:
       - condition: template # bathroom vs outside
-        value_template: "{{states.sensor.humidity_158d00023475b0.state|float - states.sensor.humidity_158d00020177c3.state|float < 7 and states.light.sonoff_master_bathroom_1.state == 'on' and states.binary_sensor.master_bathroom_humidity_falling.state == 'off' and states.binary_sensor.master_bathroom_humidity_rising.state == 'off'}}"
+        value_template: "{{states.sensor.humidity_158d00023475b0.state|float - states.sensor.humidity_158d00020177c3.state|float < 13 and states.light.sonoff_master_bathroom_1.state == 'on' and states.binary_sensor.master_bathroom_humidity_falling.state == 'off' and states.binary_sensor.master_bathroom_humidity_rising.state == 'off'}}"
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'
