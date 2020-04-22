@@ -151,34 +151,4 @@
   end : '{{ now().replace(hour=0).replace(minute=0).replace(second=0) }}'
   duration:
     hours: 24
-
-- platform: template
-  sensors:
-    pet_door_mode:
-      friendly_name: 'Pet Door Lock Mode'
-      entity_id: input_boolean.petdoor_mode_unlocked,
-                 input_boolean.petdoor_mode_locked_in,
-                 input_boolean.petdoor_mode_locked_out, 
-                 input_boolean.petdoor_mode_locked_all
-      value_template: >-
-       {% if is_state('input_boolean.petdoor_mode_unlocked', 'on') %}
-          unlocked
-       {% elif is_state('input_boolean.petdoor_mode_locked_in', 'on') %}
-          locked_in
-       {% elif is_state('input_boolean.petdoor_mode_locked_out', 'on') %}
-         locked_out
-       {% elif is_state('input_boolean.petdoor_mode_locked_all', 'on') %}
-         locked_all
-       {% endif %}
-      icon_template: >-
-        {% if is_state('input_boolean.petdoor_mode_unlocked', 'on') %}
-          mdi:door-open
-        {% elif is_state('input_boolean.petdoor_mode_locked_in', 'on') %}
-          mdi:door-closed
-        {% elif is_state('input_boolean.petdoor_mode_locked_out', 'on') %}
-          mdi:door-closed
-        {% elif is_state('input_boolean.petdoor_mode_locked_all', 'on') %}
-          mdi:door-closed-locke
-        {% endif %}
-
 ### Sureflap end
