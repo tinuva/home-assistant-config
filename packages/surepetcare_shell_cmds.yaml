@@ -68,3 +68,25 @@ automation:
             {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_all' %}
               3
             {% endif %}
+
+  ### Lock at 7am
+  - alias: run_set_surepet_door_lock_at_7am
+    trigger:
+      platform: time_pattern
+      hours: "7"
+      minutes: "0"
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.petdoor_mode_locked_out
+
+  ### Unlock at 5:30pm
+  - alias: run_set_surepet_door_lock_at_7am
+    trigger:
+      platform: time_pattern
+      hours: "17"
+      minutes: "30"
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.petdoor_mode_locked_out
