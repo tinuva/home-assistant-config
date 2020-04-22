@@ -81,7 +81,7 @@ automation:
           entity_id: input_boolean.petdoor_mode_locked_out
 
   ### Unlock at 5:30pm
-  - alias: run_set_surepet_door_lock_at_7am
+  - alias: run_set_surepet_door_unlock_at_530pm
     trigger:
       platform: time_pattern
       hours: "17"
@@ -89,4 +89,4 @@ automation:
     action:
       - service: input_boolean.turn_on
         data:
-          entity_id: input_boolean.petdoor_mode_locked_out
+          entity_id: input_boolean.petdoor_mode_unlocked
