@@ -8,3 +8,7 @@ devices:  #configure devices
     entity_id: kitchen
     light_switch: true  #add this switch as a light
     name: Kitchen
+  - id: "E097ED"
+    entity_id: lounge
+    light_switch: true  #add this switch as a light
+    name: Lounge
