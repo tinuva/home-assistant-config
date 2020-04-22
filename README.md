@@ -12,6 +12,7 @@
 
 ### Sensors
 * Xiaomi Aqara Temperature Sensor (6x)
+* Envisalink with DSC PC1864 alarm system for motion + door/window states
 
 ### Vacuum
 * Xiaomi Mi Vacuum
