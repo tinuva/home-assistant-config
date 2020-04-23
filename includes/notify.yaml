@@ -9,7 +9,15 @@
 #
 #- from github.com/tinuva/home-assistant-config
 - platform: group
-  name: all_iphones
+  name: all_phones
   services:
-    - service: mobile_app_basnijholt_iphone
-    - service: mobile_app_marcella_iphone
+    - service: mobile_app_mi_9t
+    - service: mobile_app_nokia_6_1
+
+## use
+# message: test slack
+# target: ["#alerts"]
+- name: slack
+  platform: slack
+  api_key: !secret slack_api_key
+  default_channel: '#general'

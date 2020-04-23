@@ -1,0 +1,55 @@
+automation:
+  ### Notify alarm state change
+  - id: '1586327112617'
+    alias: Notify Alarm Armed Home
+    description: Notify when Alarm panel is armed or disarmed
+    trigger:
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
+    action:
+    - service: all_phones
+      data:
+        message: Home alarm {{ states.alarm_control_panel.home_alarm.state }}
+        title: Home Alarm
+    - service: notify.slack
+      data:
+        target: ["#alerts"]
+        message: Home alarm {{ states.alarm_control_panel.home_alarm.state }}
+
+
+  ### Notify sensor that triggered alarm --- WIP
+  - id: '1586327112618'
+    alias: Notify Alarm Armed Triggered
+    description: Notify when Alarm panel is triggered
+    trigger:
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+      to: 'triggered'
+    condition: []
+    action:
+    - service: notify.all_phones
+      data_template:
+        title: '*ALARM TRIGGERED!*'
+        message: >
+          Alarm was triggered on:
+          {%- set domains = ['binary_sensor'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain] if ((item.attributes.device_class is defined and item.attributes['device_class']|lower == "opening") or (item.attributes.device_class is defined and item.attributes['device_class']|lower == "motion") and item.state|lower == "on") -%}
+            {{ item.attributes.friendly_name }}{%- if not loop.last %}, {% endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
+    - service: notify.slack
+      data_template:
+        title: '*ALARM TRIGGERED!*'
+        target: ["#alerts"]
+message: >
+          *ALARM TRIGGERED!* on:
+          {%- set domains = ['binary_sensor'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain] if ((item.attributes.device_class is defined and item.attributes['device_class']|lower == "opening") or (item.attributes.device_class is defined and item.attributes['device_class']|lower == "motion") and item.state|lower == "on") -%}
+            {{ item.attributes.friendly_name }}{%- if not loop.last %}, {% endif -%}
+          {%- endfor -%}
+          {%- endfor -%}

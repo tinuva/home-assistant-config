@@ -43,7 +43,7 @@ alert: !include includes/alerts.yaml
 person: !include includes/persons.yaml
 zone: !include includes/zones.yaml
 shell_command: !include includes/shell_commands.yaml
-#notify: !include includes/notify.yaml
+notify: !include includes/notify.yaml
 light: !include includes/lights.yaml
 proximity: !include includes/proximity.yaml
 speedtestdotnet: !include includes/speedtestdotnet.yaml
