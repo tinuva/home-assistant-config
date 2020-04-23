@@ -8,10 +8,10 @@ shell_command:
 input_select:
   surepet_door_lock_state_num:
     options:
-      - 0
-      - 1
-      - 2
-      - 3
+      - "0"
+      - "1"
+      - "2"
+      - "3"
 
 input_boolean:
   petdoor_mode_unlocked:
@@ -60,11 +60,11 @@ automation:
           entity_id: input_select.surepet_door_lock_state_num
           option: >
             {% if trigger.entity_id == 'input_boolean.petdoor_mode_unlocked' %}
-               0
+              0
             {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_in' %}
-               1
+              1
             {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_out' %}
-               2
+              2
             {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_all' %}
               3
             {% endif %}
