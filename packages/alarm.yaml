@@ -10,7 +10,7 @@ automation:
       - condition: template
         value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
     action:
-    - service: all_phones
+    - service: notify.all_phones
       data:
         message: Home alarm {{ states.alarm_control_panel.home_alarm.state }}
         title: Home Alarm
@@ -45,7 +45,7 @@ automation:
       data_template:
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
-message: >
+        message: >
           *ALARM TRIGGERED!* on:
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
