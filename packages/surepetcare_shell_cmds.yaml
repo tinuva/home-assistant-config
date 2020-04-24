@@ -1,10 +1,5 @@
-shell_command:
-  # See link on how to pass !secret to shell_command
-  # https://community.home-assistant.io/t/using-secrets-yaml-with-shell-commands/4478/11
-  surepet_cli_auth: '/config/sure_petcare/sp_cli.py --update -e {{ user }} -p {{ pass }}'
-  surepet_cli_list_flaps: '/config/sure_petcare/sp_cli.py ls_flaps'
-  surepet_cli_set_door_lock: /config/sure_petcare/sp_cli.py set_flap_lock 204121 {{ states('input_select.surepet_door_lock_state_num')|int }}
-
+---
+## Inputs
 input_select:
   surepet_door_lock_state_num:
     options:
@@ -30,17 +25,25 @@ input_boolean:
     name: Pet Door Locked All
     icon: mdi:door-closed-locked
 
+## Shell commands
+shell_command:
+  # See link on how to pass !secret to shell_command
+  # https://community.home-assistant.io/t/using-secrets-yaml-with-shell-commands/4478/11
+  surepet_cli_auth: '/config/sure_petcare/sp_cli.py --update -e {{ user }} -p {{ pass }}'
+  surepet_cli_list_flaps: '/config/sure_petcare/sp_cli.py ls_flaps'
+  surepet_cli_set_door_lock: /config/sure_petcare/sp_cli.py set_flap_lock 204121 {{ states('input_select.surepet_door_lock_state_num')|int }}
+
+## Automations
 automation:
-  ### Number to Shell scripts
+  ### Number to shell_script
   - alias: run_set_surepet_door_lock
     trigger:
       platform: state
       entity_id: input_select.surepet_door_lock_state_num
     action:
       service: shell_command.surepet_cli_set_door_lock
-      #data:
   
-  # card select then unselect any other
+  ### card select then unselect any other
   - alias: Pet Door Mode set bools
     trigger:
       platform: state
@@ -68,6 +71,17 @@ automation:
             {% elif trigger.entity_id == 'input_boolean.petdoor_mode_locked_all' %}
               3
             {% endif %}
+
+  ### Authenicate on HA start up (update on supervisor/docker means auth token lost)
+  - alias: run_set_surepet_cli_auth_at_start
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      service: shell_command.surepet_cli_auth
+      data:
+        user: !secret surepetcareemail
+        pass: !secret surepetcarepw
 
   ### Lock at 7am
   - alias: run_set_surepet_door_lock_at_7am
