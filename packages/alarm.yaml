@@ -10,10 +10,6 @@ automation:
       - condition: template
         value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
     action:
-    - service: notify.all_phones
-      data:
-        message: Home alarm {{ states.alarm_control_panel.home_alarm.state }}
-        title: Home Alarm
     - service: notify.slack
       data:
         target: ["#alerts"]
