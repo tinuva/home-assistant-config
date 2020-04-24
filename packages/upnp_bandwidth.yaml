@@ -1,0 +1,12 @@
+---
+upnp:
+  # https://www.home-assistant.io/integrations/upnp/
+  sensors: true
+
+sensor:
+- platform: template
+  sensors:
+    mikrotik_total_bandwidth:
+      friendly_name: "Total Bandwidth"
+      unit_of_measurement: 'GBs'
+      value_template: "{{((states('sensor.mikrotik_router_bytes_received')|float / 1000000000) + (states('sensor.mikrotik_router_bytes_sent')|float / 1000000000))|round(2)}}"

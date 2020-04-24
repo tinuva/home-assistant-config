@@ -50,4 +50,3 @@ speedtestdotnet: !include includes/speedtestdotnet.yaml
 discovery: !include includes/discovery.yaml
 mqtt: !include includes/mqtt.yaml
 influxdb: !include includes/influxdb.yaml
-upnp: !include includes/upnp.yaml
