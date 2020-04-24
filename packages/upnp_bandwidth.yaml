@@ -10,3 +10,30 @@ sensor:
       friendly_name: "Total Bandwidth"
       unit_of_measurement: 'GBs'
       value_template: "{{((states('sensor.mikrotik_router_bytes_received')|float / 1000000000) + (states('sensor.mikrotik_router_bytes_sent')|float / 1000000000))|round(2)}}"
+
+#### Sample lovelace
+#- type: custom:mini-graph-card #Traffic
+#  name: 'DIALY TRAFFIC GB' # Internet traffic
+#  icon: mdi:swap-vertical-bold
+#  align_state: left
+#  hour24: true
+#  hours_to_show: 168
+#  points_per_hour: 0.5
+#  aggregate_func: max
+#  line_width: 3
+#  font_size: 65
+#  font_size_header : 14px
+#  update_interval: 10
+#  decimals: 1
+#  group_by: date
+#  height: 140
+#  show:
+#    icon: true
+#    extrema: true
+#    labels: true
+#    points: true
+#    graph: bar
+#  entities:
+#    - entity: sensor.archer_c50_total_bandwidth
+#      name: Total Down/Up per day
+#      color: var(--primary-color)
