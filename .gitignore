@@ -128,6 +128,8 @@ secrets.yaml
 appdaemon/compiled
 appdaemon/dashboards/
 home-assistant_v2.db
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
 tts/
 webostv.conf
 notebooks/

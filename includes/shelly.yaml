@@ -12,3 +12,7 @@ devices:  #configure devices
     entity_id: lounge
     light_switch: true  #add this switch as a light
     name: Lounge
+  - id: "2472C6"
+    entity_id: kitchen-outside-front
+    light_switch: true  #add this switch as a light
+    name: Kitchen Outside Front

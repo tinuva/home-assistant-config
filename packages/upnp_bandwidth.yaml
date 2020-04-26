@@ -34,6 +34,6 @@ sensor:
 #    points: true
 #    graph: bar
 #  entities:
-#    - entity: sensor.archer_c50_total_bandwidth
+#    - entity: sensor.mikrotik_total_bandwidth
 #      name: Total Down/Up per day
 #      color: var(--primary-color)
