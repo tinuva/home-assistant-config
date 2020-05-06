@@ -30,11 +30,9 @@ from .const import *
 from .configuration_schema import CONFIG_SCHEMA, CONFIG_SCHEMA_ROOT
 #from .frontend import setup_frontend
 
-REQUIREMENTS = ['pyShelly==0.1.25']
-
 _LOGGER = logging.getLogger(__name__)
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
 VERSION = __version__
 
 async def async_setup(hass, config):
@@ -52,7 +50,6 @@ async def async_setup(hass, config):
 
 async def async_setup_entry(hass, config_entry):
     """Setup Shelly component"""
-
     _LOGGER.info("Starting shelly, %s", __version__)
 
     if not DOMAIN in hass.data:
