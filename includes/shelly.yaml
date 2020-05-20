@@ -4,15 +4,27 @@ discovery: true  #add all devices (default)
 sensors:
   - all #show all sensors
 devices:  #configure devices
-  - id: "93A63B"
-    entity_id: kitchen
+  #- id: "93A63B"
+  #  entity_id: kitchen
+  #  light_switch: true  #add this switch as a light
+  #  name: Kitchen
+  #- id: "E097ED"
+  #  entity_id: removed
+  #  light_switch: true  #add this switch as a light
+  #  name: removed
+  - id: "2472C6"
+    entity_id: outside-kitchen-front
     light_switch: true  #add this switch as a light
-    name: Kitchen
-  - id: "E097ED"
+    name: Outside Kitchen Front
+  - id: "D3E771"
     entity_id: lounge
     light_switch: true  #add this switch as a light
     name: Lounge
-  - id: "2472C6"
-    entity_id: kitchen-outside-front
+  - id: "D42C70"
+    entity_id: kitchen
     light_switch: true  #add this switch as a light
-    name: Kitchen Outside Front
+    name: Kitchen
+  - id: "D3EAC3"
+    entity_id: braai-lights
+    light_switch: true  #add this switch as a light
+    name: Braai Room Lights
