@@ -1,7 +1,7 @@
 ---
 upnp:
   # https://www.home-assistant.io/integrations/upnp/
-  sensors: true
+  local_ip: 192.168.241.171
 
 sensor:
 - platform: template
