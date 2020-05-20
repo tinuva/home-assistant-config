@@ -26,6 +26,21 @@ input_boolean:
     name: Pet Door Locked All
     icon: mdi:door-closed
 
+  manage_pet_door:
+    name: Manage Pet Door
+
+input_datetime:
+  surepet_door_lock_time:
+    name: Lock PetDoor
+    has_date: false
+    has_time: true
+
+  surepet_door_unlock_time:
+    name: Unlock PetDoor
+    has_date: false
+    has_time: true
+
+
 ## Shell commands
 shell_command:
   # See link on how to pass !secret to shell_command
@@ -86,23 +101,29 @@ automation:
         user: !secret surepetcareemail
         pass: !secret surepetcarepw
 
-  ### Lock at 7am
-  - alias: run_set_surepet_door_lock_at_7am
+  ### Lock at input time
+  - alias: run_set_surepet_door_lock_at_input_time
     trigger:
-      platform: time_pattern
-      hours: "7"
-      minutes: "0"
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.surepet_door_lock_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      condition: state
+      entity_id: input_boolean.manage_pet_door
+      state: 'on'
     action:
       - service: input_boolean.turn_on
         data:
           entity_id: input_boolean.petdoor_mode_locked_out
 
-  ### Unlock at 5:30pm
-  - alias: run_set_surepet_door_unlock_at_530pm
+  ### Unlock at input time
+  - alias: run_set_surepet_door_unlock_at_input_time
     trigger:
-      platform: time_pattern
-      hours: "17"
-      minutes: "30"
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.surepet_door_unlock_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      condition: state
+      entity_id: input_boolean.manage_pet_door
+      state: 'on'
     action:
       - service: input_boolean.turn_on
         data:
