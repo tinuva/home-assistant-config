@@ -45,7 +45,7 @@ automation:
           *ALARM TRIGGERED!* on:
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
-          {%- for item in states[domain] if ((item.attributes.device_class is defined and item.attributes['device_class']|lower == "opening") or (item.attributes.device_class is defined and item.attributes['device_class']|lower == "motion") and item.state|lower == "on") -%}
+          {%- for item in states[domain] if ((item.attributes.device_class is defined and item.attributes['device_class']|lower == "opening") or (item.attributes.device_class is defined and item.attributes['device_class']|lower == "motion") and item.attributes['last_tripped_time']|int < 60) -%}
             {{ item.attributes.friendly_name }}{%- if not loop.last %}, {% endif -%}
           {%- endfor -%}
           {%- endfor -%}
