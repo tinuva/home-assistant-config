@@ -1,0 +1,27 @@
+automation:
+  - id: '1686327112618'
+    alias: Notify Front Beam Motion
+    description: Notify when Front Beam Motion Sensor is triggered
+    trigger:
+    - entity_id: binary_sensor.front_beam
+      platform: state
+      to: 'on'
+    condition: []
+    action:
+    - service: script.notify_front_camera_alert
+
+script:
+  notify_front_camera_alert:
+    sequence:
+      - service: camera.snapshot
+        data_template:
+          entity_id: camera.front_camera
+          filename: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
+      - delay: 
+          seconds: 5
+      - service: notify.slack
+        data_template:
+          target: ["#alerts"]
+          message: "Motion detected at Front Beam"
+          data:
+            file: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
