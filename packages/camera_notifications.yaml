@@ -1,4 +1,38 @@
+input_boolean:
+  camera_alerts:
+    name: Camera Alerts
+
+timer:
+  camera_alerts_disabled:
+    duration: '00:30:00'
+
 automation:
+  # camera alerts disabled - start timer to re-enable
+  - alias: Start timer when Camera Alerts disabled
+    trigger:
+    - platform: state
+      entity_id: input_boolean.camera_alerts
+      to: 'off'
+    action:
+    - service: timer.start
+      data:
+        entity_id: timer.camera_alerts_disabled
+    - service: notify.slack
+      data_template:
+        target: ["#alerts"]
+        message: "Camera Alerts disabled for 30 minutes"
+  # timer ended, turn camera alerts on
+  - alias: Turn camera alerts back on
+    trigger:
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.camera_alerts_disabled
+    action:
+    - service: input_boolean.turn_on
+      data:
+        entity_id: input_boolean.camera_alerts
+
   - id: '1686327112618'
     alias: Notify Front Beam Motion
     description: Notify when Front Beam Motion Sensor is triggered
@@ -6,7 +40,10 @@ automation:
     - entity_id: binary_sensor.front_beam
       platform: state
       to: 'on'
-    condition: []
+    condition:
+      condition: state
+      entity_id: input_boolean.camera_alerts
+      state: 'on'
     action:
     - service: script.notify_front_camera_alert
 
