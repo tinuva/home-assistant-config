@@ -15,3 +15,4 @@ trusted_proxies:
 cors_allowed_origins:
     - https://google.com
     - https://www.home-assistant.io
+    - https://app.plex.tv
