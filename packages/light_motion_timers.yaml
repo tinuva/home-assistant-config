@@ -1,0 +1,118 @@
+timer:
+  # When calling the start service on a timer that is already running, it resets 
+  # the duration it will need to finish and restart the timer without triggering 
+  # a canceled or finished event. This, for example, makes it easy to create 
+  # timed lights that get triggered by motion. Starting a timer triggers a 
+  # started event unless the timer is paused, in that case, it triggers a 
+  # restarted event.
+  outsidebacklight:
+    duration: '00:10:00'
+  loungelight:
+    duration: '00:10:00'
+  kitchenlight:
+    duration: '00:10:00'
+
+automation:
+
+### Back Lights
+# Motion = Turn on
+- alias: Turn on back lights when there is movement
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.back_beam
+    to: 'on'
+  condition:
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
+  action:
+  - service: light.turn_on
+    data:
+      entity_id:
+        - light.shelly_outside_back_lights
+  - service: timer.start
+    data:
+      entity_id: timer.outsidebacklight
+### Back Lights
+# Timer end = Turn off
+- alias: Turn off back lights 10 minutes after trigger
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.outsidebacklight
+  action:
+    service: light.turn_off
+    data:
+      entity_id:
+        - light.shelly_outside_back_lights
+
+### Lounge Lights
+# Motion = Turn on
+- alias: Turn on lounge lights when there is movement
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.lounge_pir
+    to: 'on'
+  condition:
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: alarm_control_panel.home_alarm
+      state: 'armed_home'
+  action:
+  - service: light.turn_on
+    data:
+      entity_id: light.shelly_lounge
+      brightness: '30'
+  - service: timer.start
+    data:
+      entity_id: timer.loungelight
+### Lounge Lights
+# Timer end = Turn off
+- alias: Turn off lounge lights 10 minutes after trigger
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.loungelight
+  action:
+    service: light.turn_off
+    data:
+      entity_id: light.shelly_lounge
+
+### Kitchen Lights
+# Motion = Turn on
+- alias: Turn on Kitchen lights when there is movement
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kitchen_pir
+    to: 'on'
+  condition:
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: alarm_control_panel.home_alarm
+      state: 'armed_home'
+  action:
+  - service: light.turn_on
+    data:
+      entity_id: light.shelly_kitchen
+      brightness: '30'
+  - service: timer.start
+    data:
+      entity_id: timer.kitchenlight
+### Kitchen Lights
+# Timer end = Turn off
+- alias: Turn off Kitchen lights 10 minutes after trigger
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.kitchenlight
+  action:
+    service: light.turn_off
+    data:
+      entity_id: light.shelly_kitchen
