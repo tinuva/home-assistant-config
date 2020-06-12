@@ -1,0 +1,37 @@
+timer:
+  front_garage_light:
+    duration: '00:10:00'
+
+automation:
+### Back garage only entrance is through the garage door itself
+### Back Garage
+# Open = Turn on
+- alias: Turn on back garage lights when door opened
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.back_garage_door
+    to: 'on'
+  condition:
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
+  action:
+  - service: light.turn_on
+    data:
+      entity_id:
+        - light.shelly_back_garage_light
+
+### Back Garage
+# Close = Turn off
+- alias: Turn on back garage lights when door closed
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.back_garage_door
+    to: 'off'
+  action:
+    service: light.turn_off
+    data:
+      entity_id:
+        - light.shelly_back_garage_light
+
+### Front garage entrance is through the garage door itself or through the house
