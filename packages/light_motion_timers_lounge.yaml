@@ -6,7 +6,7 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a 
   # restarted event.
   loungelight:
-    duration: '00:20:00'
+    duration: '00:15:00'
 
 automation:
 ### Lounge Lights
