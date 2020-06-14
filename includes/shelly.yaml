@@ -36,3 +36,15 @@ devices:  #configure devices
     entity_id: outside-switch-water-sprayers
     light_switch: false  #add this switch as a light
     name: Water Sprayers
+  - id: "8CAAB5055B7E"
+    entity_id: front-garage
+    light_switch: true  #add this switch as a light
+    name: Front Garage
+  - id: "E098068CC938"
+    entity_id: braai
+    light_switch: true  #add this switch as a light
+    name: Braai
+  - id: "8CAAB505C111"
+    entity_id: braai-bathroom
+    light_switch: true  #add this switch as a light
+    name: Braai Bathroom
