@@ -1,0 +1,30 @@
+automation:
+- alias: Set lights when Plex(kodi) is playing
+  trigger:
+    - platform: state
+      entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+  condition:
+    condition: and
+    conditions:
+    - condition: template
+      value_template: "{{ 'playing' in trigger.to_state.state }}"
+    - condition: numeric_state
+      entity_id: sensor.illumination_7811dcb90d53
+      below: 700
+  action:
+  - service: timer.finish
+    data:
+      entity_id:
+        - timer.kitchenlight
+  - service: timer.cancel
+    data:
+      entity_id:
+        - timer.loungelight
+  - service: light.turn_off
+    data:
+      entity_id:
+        - light.shelly_kitchen
+  - service: light.turn_on
+    data:
+      entity_id: light.shelly_lounge
+      brightness: '30'
