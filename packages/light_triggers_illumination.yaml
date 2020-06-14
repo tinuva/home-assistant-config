@@ -3,7 +3,7 @@ automation:
   trigger:
     - platform: numeric_state
       entity_id: sensor.illumination_7811dcb90d53
-      above: '500'
+      above: '750'
   action:
   - service: light.turn_off
     data:

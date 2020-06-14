@@ -62,7 +62,7 @@ automation:
       state: 'disarmed'
     - condition: numeric_state
       entity_id: sensor.illumination_7811dcb90d53
-      below: 400
+      below: 700
   action:
   - service: light.turn_on
     data:
