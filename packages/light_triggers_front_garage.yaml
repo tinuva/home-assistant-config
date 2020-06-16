@@ -19,10 +19,14 @@ automation:
       entity_id: light.shelly_front_garage
 
 # Open/Close = Start timer
-- alias: Turn on front garage lights when door opened
+- alias: Turn on front garage lights when door opened or closed
   trigger:
   - platform: state
     entity_id: binary_sensor.front_garage_door_window
+    to: 'off'
+  - platform: state
+    entity_id: binary_sensor.front_garage_door_window
+    to: 'on'
   condition:
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: sun.sun
