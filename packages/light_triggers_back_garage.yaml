@@ -1,7 +1,3 @@
-timer:
-  front_garage_light:
-    duration: '00:10:00'
-
 automation:
 ### Back garage only entrance is through the garage door itself
 ### Back Garage
