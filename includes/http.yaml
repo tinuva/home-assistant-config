@@ -8,7 +8,6 @@
 #               |_|
 #
 #- from github.com/tinuva/home-assistant-config
-base_url: !secret base_url
 use_x_forwarded_for: true
 trusted_proxies:
   - 172.36.0.6
