@@ -3,11 +3,13 @@
 
 ## Noteworthy (useful) automations
 * [Bahtroom Light/Fan](packages/bathroom_humidity.yaml) that uses the Xiaomi Aqara humidity sensors to automatically turn the fan on/off during day time
+* [Camera Slack Notification](packages/camera_notifications.yaml)
 
 ## My devices
 
 ### Switches
 * Shelly 1
+* Shelly Dimmer
 * Sonoff T2
 
 ### Sensors
@@ -18,7 +20,7 @@
 * Xiaomi Mi Vacuum
 
 ### Hubs
-* Xiaomi Aqara Gateway
+* Xiaomi Aqara Gateway (Future gateway will be a HUSBZB-1)
 
 ### Server
 * Minnowboard Turbot with Intel Atom E3826 dual core CPU
