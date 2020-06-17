@@ -30,7 +30,7 @@
 * Android phones with the new iOS app (2x)
 
 ### Other
-* SureFlap Connect Door
+* SureFlap Connect Door with Hub (required)
 * Amazon Echo v1
 
 ## Automation plans
