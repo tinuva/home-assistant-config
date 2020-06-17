@@ -3,6 +3,7 @@ automation:
   trigger:
     - platform: state
       entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+      to: 'playing'
   condition:
     condition: and
     conditions:
