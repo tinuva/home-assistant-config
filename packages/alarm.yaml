@@ -30,7 +30,7 @@ automation:
       data_template:
         title: '*ALARM TRIGGERED!*'
         message: >
-          Alarm was triggered on:
+          Alarm was triggered on: 
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
           {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
@@ -42,7 +42,7 @@ automation:
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
-          *ALARM TRIGGERED!* on:
+          *ALARM TRIGGERED!* on: 
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
           {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
