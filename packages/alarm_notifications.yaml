@@ -1,0 +1,127 @@
+binary_sensor:
+  - platform: template
+    sensors:
+      alarm_trouble:
+        entity_id: sensor.home_alarm_keypad
+        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'trouble') }}"
+  - platform: template
+    sensors:
+      alarm_battery_trouble:
+        entity_id: sensor.home_alarm_keypad
+        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'bat_trouble') }}"
+  - platform: template
+    sensors:
+      alarm_ac_power:
+        entity_id: sensor.home_alarm_keypad
+        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
+
+alert:
+  front_beam_issue:
+    name: Front Beam stuck on
+    done_message: Front beam recovered
+    entity_id: binary_sensor.front_beam
+    state: 'on'   # Optional, 'on' is the default value
+    repeat:
+      - 15
+      - 30
+      - 60
+    can_acknowledge: true  # Optional, default is true
+    skip_first: true  # Optional, false is the default
+    notifiers:
+      - mobile_app_mi_9t
+
+automation:
+  ### Notify alarm state change
+  - id: '1586327112617'
+    alias: Notify Alarm Armed Home
+    description: Notify when Alarm panel is armed or disarmed
+    trigger:
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+    condition:
+      - condition: template
+        value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
+    action:
+    - service: notify.slack
+      data:
+        target: ["#alerts"]
+        message: Home alarm {{ states.sensor.home_alarm_keypad.state }}
+
+
+  ### Notify sensor that triggered alarm --- WIP
+  - id: '1586327112618'
+    alias: Notify Alarm Armed Triggered
+    description: Notify when Alarm panel is triggered
+    trigger:
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+      to: 'triggered'
+    condition: []
+    action:
+    - service: notify.all_phones
+      data_template:
+        title: '*ALARM TRIGGERED!*'
+        message: >
+          Alarm was triggered on: 
+          {%- set domains = ['binary_sensor'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
+            {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
+    - service: notify.slack
+      data_template:
+        title: '*ALARM TRIGGERED!*'
+        target: ["#alerts"]
+        message: >
+          *ALARM TRIGGERED!* on: 
+          {%- set domains = ['binary_sensor'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
+            {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
+
+  ### Notify keypad error
+  - alias: Notify when Alarm panel keypad has zone/sensor fault
+    description: Notify when Alarm panel keypad has zone/sensor fault
+    trigger:
+    - entity_id: sensor.home_alarm_keypad
+      platform: state
+      to: 'zone/sensor fault'
+    - entity_id: binary_sensor.alarm_trouble
+      platform: state
+      to: 'on'
+    - entity_id: binary_sensor.alarm_trouble
+      platform: state
+      to: 'off'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Zone/Sensor Fault'
+        target: ["#alerts"]
+        message: >
+          *ALARM Fault*
+          {% if(states.binary_sensor.alarm_trouble.state == "off") %}Restored{% endif %}
+          {{ " " }}{{ states.sensor.home_alarm_keypad.state }}
+
+  ### Notify battery error
+  - alias: Notify when Alarm panel keypad has zone/sensor fault
+    description: Notify when Alarm panel keypad has zone/sensor fault
+    trigger:
+    - entity_id: binary_sensor.alarm_battery_trouble
+      platform: state
+      to: 'on'
+    - entity_id: binary_sensor.alarm_battery_trouble
+      platform: state
+      to: 'off'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Zone/Sensor Fault'
+        target: ["#alerts"]
+        message: >
+          *ALARM Battery Fault!*
+          {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Restored{% endif %}

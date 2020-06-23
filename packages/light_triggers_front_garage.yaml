@@ -7,7 +7,7 @@ automation:
 ### front Garage
 
 # Timer end = Turn off
-- alias: Turn off lounge lights 10 minutes after trigger
+- alias: Turn off front garage lights after timer finished
   trigger:
     platform: event
     event_type: timer.finished

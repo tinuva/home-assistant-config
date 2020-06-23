@@ -1,0 +1,21 @@
+automation:
+  ### Notify alarm state change
+  - alias: Turn off lights when Alarm is armed
+    description: Turn off lights when Alarm is armed
+    trigger:
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+      to: 'armed_home'
+    - entity_id: alarm_control_panel.home_alarm
+      platform: state
+      to: 'armed_away'
+    action:
+    - service: light.turn_off
+      data_template:
+        entity_id: >
+          {%- set domains = ['light'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain]  -%}
+            {{ " " }}{{ item.entity_id }}{%- if not loop.last %},{% endif -%}
+          {%- endfor -%}
+          {%- endfor -%}
