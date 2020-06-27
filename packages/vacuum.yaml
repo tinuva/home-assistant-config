@@ -1,2 +1,103 @@
-vacuum:
-  - platform: mqtt
+#vacuum:
+#  - platform: mqtt
+
+# entity: vacuum.rockrobo
+# status: docked / idle / cleaning
+# attributes: errorCode / errorDescription / Name = Charging
+
+sensor:
+  - platform: template
+    sensors: 
+      vacuum_error_code:
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
+        friendly_name: 'Vacuum Error Code' 
+  - platform: template
+    sensors: 
+      vacuum_error_message:
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorMessage|string }}"
+        friendly_name: 'Vacuum Error Message' 
+
+automation:
+  ### Notify state change
+  - alias: Notify when Robot State Change
+    description: otify when Robot State Change
+    trigger:
+    - entity_id: vacuum.rockrobo
+      platform: state
+      to: 'cleaning'
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'cleaning'
+    - entity_id: vacuum.rockrobo
+      platform: state
+      to: 'docked'
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'docked'
+    - entity_id: vacuum.rockrobo
+      platform: state
+      to: 'idle'
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'idle'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Vacuum Robot'
+        target: ["#general"]
+        message: >
+          Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+  ### Notify error
+  - alias: Notify when Robot has error
+    description: Notify when Robot has error
+    trigger:
+    - entity_id: sensor.vacuum_error_code
+      platform: state
+      from: '0'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Vacuum Robot Error'
+        target: ["#general"]
+        message: >
+          Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+  ### Notify last clean results
+  - alias: Notify when Robot State Change
+    description: Notify when Robot State Change
+    trigger:
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'cleaning'
+      to: 'returning'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Vacuum Robot'
+        target: ["#general"]
+        message: >
+          Vacuum Robot last cleaning stats:
+          Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60 }} minutes{{- '\n' -}}
+          Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
+
+#          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
+#          End time: {{ states.vacuum.rockrobo.attributes.last_run_stats.endTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
+
+  ### Notify when failed to docked after returning
+  - alias: Notify when Robot failed to dock
+    description: Notify when Robot failed to dock
+    trigger:
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'returning'
+      to: 'idle'
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Vacuum Robot'
+        target: ["#general"]
+        message: >
+          Vacuum Robot failed to dock!
