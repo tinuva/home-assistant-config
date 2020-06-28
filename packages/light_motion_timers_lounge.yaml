@@ -61,9 +61,12 @@ automation:
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: alarm_control_panel.home_alarm
       state: 'disarmed'
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
     - condition: numeric_state
       entity_id: sensor.illumination_7811dcb90d53
-      below: 650
+      below: 200
   action:
   - service: light.turn_on
     data:
