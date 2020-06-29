@@ -1,9 +1,6 @@
+# If your robot is not auto detected you might need this for manual setup
 #vacuum:
 #  - platform: mqtt
-
-# entity: vacuum.rockrobo
-# status: docked / idle / cleaning
-# attributes: errorCode / errorDescription / Name = Charging
 
 sensor:
   - platform: template
@@ -27,19 +24,13 @@ automation:
       to: 'cleaning'
     - entity_id: vacuum.rockrobo
       platform: state
-      from: 'cleaning'
-    - entity_id: vacuum.rockrobo
-      platform: state
       to: 'docked'
-    - entity_id: vacuum.rockrobo
-      platform: state
-      from: 'docked'
     - entity_id: vacuum.rockrobo
       platform: state
       to: 'idle'
     - entity_id: vacuum.rockrobo
       platform: state
-      from: 'idle'
+      to: 'returning'
     condition: []
     action:
     - service: notify.slack
@@ -48,6 +39,7 @@ automation:
         target: ["#general"]
         message: >
           Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+
   ### Notify error
   - alias: Notify when Robot has error
     description: Notify when Robot has error
@@ -81,7 +73,6 @@ automation:
         message: >
           Vacuum Robot failed to dock!
 
-
   ### Notify last clean results
   - alias: Notify when Robot State Change
     description: Notify when Robot State Change
@@ -107,7 +98,7 @@ script:
         data_template:
           target: ["#general"]
           message: >
-            Vacuum Robot last cleaning stats:
+            Vacuum Robot latest cleaning stats:{{- '\n' -}}
             Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60 }} minutes{{- '\n' -}}
             Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
 #          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
