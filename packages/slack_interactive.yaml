@@ -1,0 +1,117 @@
+# How to get actionable notifications using Slack
+# https://community.home-assistant.io/t/how-to-get-actionable-notifications-using-slack/145035
+
+input_text:
+  slack_app_verification_token:
+    initial: !secret slack_app_verification_token
+    mode: password
+
+rest_command:
+  slack_api:
+    url: https://slack.com/api/{{ api }}
+    content_type: 'application/json; charset=utf-8'
+    verify_ssl: true
+    method: 'post'
+    timeout: 20
+    headers:
+      Authorization: !secret slackbot_token # ←- this is "Bearer [your OAuth token]"
+    payload: '{{ payload }}'
+
+  slack_response:
+    url: '{{ response_url }}'
+    content_type: 'application/json; charset-utf-8'
+    verify_ssl: true
+    method: 'post'
+    timeout: 20
+    payload: >
+      {
+        "replace_original": {{ replace_original if (replace_original is defined) else 'true' }},
+        "text": "{{ message }}",
+        "attachments": {{ attachments if (attachments is defined) else '[]' }}
+      }
+
+automation:
+  - alias: slack_webhook
+    trigger:
+      - platform: webhook
+        webhook_id: slack
+    condition:
+      - condition: template
+        value_template: >
+          {% set payload = trigger.data.payload | from_json %}
+          {{ (payload.token == states('input_text.slack_app_verification_token')) and (payload.type == 'interactive_message') }}
+    action:
+      - service_template: >
+          {%- set payload = trigger.data.payload | from_json -%}
+          script.{{ payload.callback_id }}
+        data_template:
+          payload: '{{ trigger.data.payload }}'
+
+script:
+  notify_slack:
+    sequence:
+      - service: rest_command.slack_api
+        data_template:
+          api: 'chat.postMessage'
+          payload: >
+            {
+              "channel": "{{ channel }}",
+              "text": "{{ message }}",
+              "attachments": {{ attachments if (attachments is defined) else '[]' }}
+            }
+
+  callback_handled:
+    sequence:
+      - service: rest_command.slack_response
+        data_template:
+          response_url: >
+            {%- set pl = payload | from_json -%}
+            {{ pl.response_url }}
+          replace_original: >
+            {{ replace_original if (replace_original is defined) else 'true' }}
+          attachments:
+            - pretext: >
+                {%- set pl = payload | from_json -%}
+                {{ pl.original_message.text }}
+              title: >
+                {%- set pl = payload | from_json -%}
+                Handled with '{{ pl.actions[0].value }}' by <@{{ pl.user.id }}>
+              color: >
+                {%- set color = (payload | from_json).original_message.attachments[0].color -%}
+                {{ "" if color.startswith("#") else "#" }}{{ color }}
+
+  cover_left_open_callback:
+    sequence:
+      - service: script.callback_handled
+        data_template:
+          replace_original: true
+          payload: '{{ payload }}'
+      - condition: template
+        value_template: >
+          {%- set action = (payload | from_json).actions[0] -%}
+          {{ (action.value == "Close it") and not (action.name == "")}}
+      - service: notify.slack
+        data_template:
+          title: 'Vacuum Robot'
+          target: ["#alerts-david"]
+          message: >
+            {%- set entity_id = (payload | from_json).actions[0].name -%}
+            cover.{{ entity_id if (not entity_id.startswith("cover.")) else entity_id[6:] }}
+
+## To test in dev tools, use the following when calling service.notify_slack
+#channel: ""
+#message: "The Garage door is open and it’s late."
+#attachments:
+#  - title: Close the Garage door?
+#    callback_id: cover_left_open_callback
+#    color: '#03a9f4'
+#    attachment_type: default
+#    actions:
+#      - text: Close it
+#        value: Close it
+#        name: 'cover.garagedoor'
+#        type: button
+#      - text: Leave it
+#        value: Leave it
+#        name: 'anything_just_not_blank'
+#        type: button
