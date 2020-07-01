@@ -99,7 +99,7 @@ script:
           target: ["#general"]
           message: >
             Vacuum Robot latest cleaning stats:{{- '\n' -}}
-            Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60 }} minutes{{- '\n' -}}
+            Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60|round(1) }} minutes{{- '\n' -}}
             Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
 #          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
 #          End time: {{ states.vacuum.rockrobo.attributes.last_run_stats.endTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
