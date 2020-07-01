@@ -18,7 +18,7 @@ zone:
   - name: Work
     latitude: !secret latitude_work
     longitude: !secret longitude_work
-    radius: 300
+    radius: 310
     icon: mdi:work
   
   - name: Curro Rosen Castle
