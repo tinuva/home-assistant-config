@@ -45,8 +45,8 @@ automation:
       data_template:
         target: ["#general"]
         message: >
-          {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David {% endif %}
-          {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen {% endif %}
+          {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
+          {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
           arrived at Curro Rosen Castle
 
   - alias: Parent left School
@@ -63,6 +63,8 @@ automation:
       data_template:
         target: ["#general"]
         message: >
-          {% if (trigger.to_state.object_id == 'device_tracker.mi_9t') %}David {% endif %}
-          {% if (trigger.to_state.object_id == 'device_tracker.nokia_6_1' ) %}Karen {% endif %}
+          {% if (trigger.from_state.object_id == 'device_tracker.mi_9t') %}David{% endif %}
+          {% if (trigger.from_state.object_id == 'device_tracker.nokia_6_1' ) %}Karen{% endif %}
+          {{ trigger.to_state.object_id }}
           left Curro Rosen Castle
+          {{ trigger.from_state.object_id }}
