@@ -63,8 +63,6 @@ automation:
       data_template:
         target: ["#general"]
         message: >
-          {% if (trigger.from_state.object_id == 'device_tracker.mi_9t') %}David{% endif %}
-          {% if (trigger.from_state.object_id == 'device_tracker.nokia_6_1' ) %}Karen{% endif %}
-          {{ trigger.to_state.object_id }}
+          {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
+          {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
           left Curro Rosen Castle
-          {{ trigger.from_state.object_id }}
