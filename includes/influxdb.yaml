@@ -15,3 +15,12 @@ username: homeassistant
 password: !secret influx_db_user_pw
 max_retries: 3
 default_measurement: state
+exclude:
+  domains:
+    - automation
+    - updater
+    - weather
+    - sun
+  entities:
+    - sensor.last_boot # Comes from 'systemmonitor' sensor platform
+    - sensor.date
