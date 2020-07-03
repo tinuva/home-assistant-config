@@ -1,3 +1,10 @@
+background: var(--background-image)
+custom_header:
+  background: rgba(155, 155, 155, 0.25)
+  button_text:
+    options: '{{ hours24 }}:{{ minutesLZ }}'
+  compact_mode: true
+  editor_warnings: true
 decluttering_templates:
   automation_template:
     card:
@@ -7,90 +14,144 @@ decluttering_templates:
         type: entities
       filter:
         include:
-          - entity_id: 'automation.[[slug]]*'
+        - entity_id: automation.[[slug]]*
       sort: entity_id
-      type: 'custom:auto-entities'
+      type: custom:auto-entities
 title: Home
 views:
-  - badges:
-      - entity: person.david
-      - entity: person.karen
-      - entity: sensor.home_alarm_keypad
-      - entity: sensor.south_africa_coronavirus_deaths
-      - entity: sensor.south_africa_coronavirus_confirmed
-      - entity: sensor.south_africa_coronavirus_recovered
-      - entity: sun.sun
-    cards:
-      - entity: alarm_control_panel.home_alarm
-        type: alarm-panel
-      - card:
-          show_header_toggle: false
-          title: Open Doors/Windows
-          type: entities
-        filter:
-          exclude:
-            - name: '*Pet*'
-            - state: 'off'
-          include:
-            - name: '*Door*'
-            - name: '*Window*'
-        show_empty: false
-        type: 'custom:auto-entities'
-      - entities:
-          - entity: light.kitchen_led_1
-        title: Lights
-        type: entities
-      - entity: weather.home
-        type: weather-forecast
-      - entities:
-          - entity: binary_sensor.hub_home_hub
-          - entity: binary_sensor.pet_flap_kitchen_pet_door_connectivity
-          - entity: sensor.pet_flap_kitchen_pet_door
-          - entity: binary_sensor.pet_jessie
-          - entity: binary_sensor.pet_ziva
-          - entity: sensor.jessie_trips_outside_today
-          - entity: sensor.ziva_trips_outside_today
-          - entity: sensor.jessie_outside_time_today
-          - entity: sensor.ziva_outside_time_today
-        title: Sure Flap Status
-        type: entities
-      - aspect_ratio: 0%
-        camera_image: camera.front_camera
-        camera_view: live
-        entities:
-          - entity: camera.front_camera
-        title: Front Camera
-        type: picture-glance
-      - aspect_ratio: 0%
-        camera_image: camera.back_camera
-        camera_view: live
-        entities:
-          - entity: camera.back_camera
-        title: Back Camera
-        type: picture-glance
-      - entities:
-          - entity: sensor.temperature_158d0002011a32
-          - entity: sensor.temperature_158d00020ec6bf
-          - entity: sensor.temperature_158d0001f54c03
-          - entity: sensor.temperature_158d0001fa5057
-          - entity: sensor.temperature_158d00020177c3
-          - entity: sensor.temperature_158d00023475b0
-          - entity: sensor.humidity_158d00023475b0
-        title: Temperature and Humidity
-        type: entities
-      - card:
-          show_header_toggle: false
-          title: Battery level <20%
-          type: entities
-        filter:
-          exclude:
-            - name: Mi 9T*
-            - name: '*Nokia*'
-            - name: Humidity*
-          include:
-            - name: '*Battery*'
-              state: < 20
-        show_empty: false
-        type: 'custom:auto-entities'
-    path: default_view
-    title: Home
+- badges:
+  - entity: person.david
+  - entity: person.karen
+  - entity: sensor.home_alarm_keypad
+  - entity: sun.sun
+  cards:
+  - card:
+      show_header_toggle: false
+      title: Timers
+      type: entities
+    filter:
+      exclude:
+      - state: idle
+      include:
+      - entity_id: timer*
+    show_empty: false
+    type: custom:auto-entities
+  - entity: alarm_control_panel.home_alarm
+    type: alarm-panel
+  - card:
+      show_header_toggle: false
+      title: Open Doors/Windows
+      type: entities
+    filter:
+      exclude:
+      - state: 'off'
+      - state: Locked_out
+      - entity_id: input*
+      - name: '*Battery*'
+      - name: '*Mode*'
+      - name: '*Connectivity*'
+      include:
+      - name: '*Door'
+      - name: '*Window'
+      - name: '*Pet Door*'
+    show_empty: false
+    type: custom:auto-entities
+  - card:
+      show_header_toggle: false
+      title: Lights
+      type: entities
+    filter:
+      exclude:
+      - entity_id: '*gateway*'
+      include:
+      - entity_id: light.*
+    type: custom:auto-entities
+  - entities:
+    - entity: input_boolean.petdoor_mode_unlocked
+    - entity: input_boolean.petdoor_mode_locked_out
+    show_header_toggle: false
+    title: Pet Door Set Mode
+    type: entities
+  - entity: weather.home
+    type: weather-forecast
+  - aspect_ratio: 0%
+    camera_image: camera.front_camera
+    camera_view: live
+    entities:
+    - entity: camera.front_camera
+    title: Front Camera
+    type: picture-glance
+  - aspect_ratio: 0%
+    camera_image: camera.back_camera
+    camera_view: live
+    entities:
+    - entity: camera.back_camera
+    title: Back Camera
+    type: picture-glance
+  - entities:
+    - entity: sensor.temperature_158d0002011a32
+    - entity: sensor.temperature_158d00020ec6bf
+    - entity: sensor.temperature_158d0001f54c03
+    - entity: sensor.temperature_158d0001fa5057
+    - entity: sensor.temperature_158d00020177c3
+    - entity: sensor.temperature_158d00023475b0
+    - entity: sensor.humidity_158d00023475b0
+    title: Temperature and Humidity
+    type: entities
+  - card:
+      show_header_toggle: false
+      title: Battery level <10%
+      type: entities
+    filter:
+      exclude:
+      - name: Mi 9T*
+      - name: '*Nokia*'
+      - name: Humidity*
+      include:
+      - name: '*Battery*'
+        state: < 10
+    show_empty: false
+    type: custom:auto-entities
+  - entities:
+    - remote.lounge
+    type: entities
+  - entity: vacuum.rockrobo
+    image: default
+    map: camera.rockrobo_map
+    stats:
+      cleaning:
+      - attribute: currentCleanArea
+        subtitle: Cleaning area
+        unit: m2
+      - attribute: currentCleanTime
+        subtitle: Cleaning time
+        unit: minutes
+      default:
+      - attribute: filter
+        subtitle: Filter
+        unit: hours
+      - attribute: sideBrush
+        subtitle: Side brush
+        unit: hours
+      - attribute: mainBrush
+        subtitle: Main brush
+        unit: hours
+      - attribute: sensor
+        subtitle: Sensors
+        unit: hours
+    type: custom:vacuum-card
+  - card:
+      show_header_toggle: false
+      title: Switches
+      type: entities
+    filter:
+      exclude:
+      - entity_id: '*gateway*'
+      - entity_id: '*firmware_update'
+      include:
+      - entity_id: switch.*
+      - name: Babyroom Heater Day Time
+    type: custom:auto-entities
+  panel: false
+  path: default_view
+  title: Home
