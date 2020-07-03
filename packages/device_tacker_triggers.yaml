@@ -28,25 +28,26 @@ automation:
       data:
         entity_id: alarm_control_panel.home_alarm
 
-  - alias: Parents both left bed when both phones discharges
-    description: Parents both left bed when both phones discharges
-    trigger:
-    - entity_id: sensor.mi_9t_battery_state
-      platform: state
-      to: 'discharging'
-    - entity_id: sensor.nokia_6_1_battery_state
-      platform: state
-      to: 'discharging'
-    condition:
-      condition: and
-      conditions:
-      - condition: state  
-        entity_id: sensor.mi_9t_battery_state
-        state: 'discharging'
-      - condition: state  
-        entity_id: sensor.nokia_6_1_battery_state
-        state: 'discharging'
-    action:
-    - service: alarm_control_panel.alarm_disarm
-      data:
-        entity_id: alarm_control_panel.home_alarm
+#### disablig this...potentially security risk if attack kills power to house...
+#  - alias: Parents both left bed when both phones discharges
+#    description: Parents both left bed when both phones discharges
+#    trigger:
+#    - entity_id: sensor.mi_9t_battery_state
+#      platform: state
+#      to: 'discharging'
+#    - entity_id: sensor.nokia_6_1_battery_state
+#      platform: state
+#      to: 'discharging'
+#    condition:
+#      condition: and
+#      conditions:
+#      - condition: state  
+#        entity_id: sensor.mi_9t_battery_state
+#        state: 'discharging'
+#      - condition: state  
+#        entity_id: sensor.nokia_6_1_battery_state
+#        state: 'discharging'
+#    action:
+#    - service: alarm_control_panel.alarm_disarm
+#      data:
+#        entity_id: alarm_control_panel.home_alarm
