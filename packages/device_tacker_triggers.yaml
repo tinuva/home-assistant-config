@@ -1,0 +1,49 @@
+automation:
+  - alias: Parents both in bed when both phones charge
+    description: Parents both in bed when both phones charge
+    trigger:
+    - entity_id: sensor.mi_9t_battery_state
+      platform: state
+      to: 'charging'
+    - entity_id: sensor.nokia_6_1_battery_state
+      platform: state
+      to: 'charging'
+    condition:
+      condition: and
+      conditions:
+      - condition: state  
+        entity_id: sensor.mi_9t_battery_state
+        state: 'charging'
+      - condition: state  
+        entity_id: sensor.nokia_6_1_battery_state
+        state: 'charging'
+      - condition: state  # 'night' condition: from sunset until sunrise 
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+    - service: alarm_control_panel.alarm_arm_home
+      data:
+        entity_id: alarm_control_panel.home_alarm
+
+  - alias: Parents both left bed when both phones discharges
+    description: Parents both left bed when both phones discharges
+    trigger:
+    - entity_id: sensor.mi_9t_battery_state
+      platform: state
+      to: 'discharging'
+    - entity_id: sensor.nokia_6_1_battery_state
+      platform: state
+      to: 'discharging'
+    condition:
+      condition: and
+      conditions:
+      - condition: state  
+        entity_id: sensor.mi_9t_battery_state
+        state: 'discharging'
+      - condition: state  
+        entity_id: sensor.nokia_6_1_battery_state
+        state: 'discharging'
+    action:
+    - service: alarm_control_panel.alarm_disarm
+      data:
+        entity_id: alarm_control_panel.home_alarm
