@@ -30,6 +30,15 @@ zone:
 # David = device_tracker.mi_9t
 # Karen = device_tracker.nokia_6_1
 
+binary_sensor:
+  platform: template
+  sensors:
+    anyone_home:
+      friendly_name: "Anyone Home"
+      value_template: >-
+        {{ is_state('device_tracker.nokia_6_1', 'home')
+           or is_state('device_tracker.mi_9t', 'home') }}
+
 automation:
   - alias: Parent arrived at School
     description: Parent arrived at School
