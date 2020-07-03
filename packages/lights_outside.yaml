@@ -1,0 +1,92 @@
+automation:
+  ## Whole night
+  - alias: "Turn on outside lights and check every minute - whole night"
+    trigger:
+      - platform: time_pattern
+        # You can also match on interval. This will match every x minutes
+        minutes: "/1"
+    condition:
+      condition: or
+      conditions:
+        - condition: sun
+          after: sunset
+          after_offset: "00:20:00"
+        - condition: sun
+          before: sunrise
+          before_offset: "-00:20:00"
+    action:
+      - service: light.turn_on
+        entity_id: 
+          - light.shelly_outside_kitchen_front
+  ## Whole night
+  - alias: "Turn off outside lights and check every minute - whole night"
+    trigger:
+      - platform: time_pattern
+        # You can also match on interval. This will match every x minutes
+        minutes: "/1"
+    condition:
+      condition: and
+      conditions:
+        - condition: sun
+          after: sunrise
+          after_offset: "-00:20:00"
+        - condition: sun
+          before: sunset
+          before_offset: "00:20:00"
+    action:
+      - service: light.turn_off
+        entity_id: 
+          - light.shelly_outside_kitchen_front
+  
+  ## While awake
+  - alias: "Turn on outside lights and check every minute - whole awake"
+    trigger:
+      - platform: time_pattern
+        # You can also match on interval. This will match every x minutes
+        minutes: "/1"
+    condition:
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: disarmed
+      - condition: or
+        conditions:
+          - condition: sun
+            after: sunset
+            after_offset: "00:20:00"
+          - condition: sun
+            before: sunrise
+            before_offset: "-00:20:00"
+    action:
+      - service: light.turn_on
+        entity_id: 
+          - light.braai_outside
+  ## While not awake
+  - alias: "Turn off outside lights and check every minute - whole not awake"
+    trigger:
+      - platform: time_pattern
+        # You can also match on interval. This will match every x minutes
+        minutes: "/1"
+    condition:
+      - condition: or
+        conditions:
+          - condition: and
+            conditions:
+              - condition: sun
+                after: sunrise
+                after_offset: "-00:20:00"
+              - condition: sun
+                before: sunset
+                before_offset: "00:20:00"
+          - condition: state
+            entity_id: alarm_control_panel.home_alarm
+            state: armed_home
+          - condition: state
+            entity_id: alarm_control_panel.home_alarm
+            state: armed_night
+          - condition: state
+            entity_id: alarm_control_panel.home_alarm
+            state: armed_away
+    action:
+      - service: light.turn_off
+        entity_id: 
+          - light.braai_outside
