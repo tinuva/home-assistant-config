@@ -1,6 +1,24 @@
+### Tis is now redundant and required to set up using the GUI
 xiaomi_aqara:
   # Docs: https://www.home-assistant.io/integrations/xiaomi_aqara/
   # You can leave MAC empty if you only have one gateway.
   discovery_retry: 5
   gateways:
     - key: !secret xiaomi_aqara_gw1_key
+
+automation:
+  - alias: Notify Xiaomi Aqara gateway is unavailable
+    description: Notify Xiaomi Aqara gateway is unavailable
+    trigger:
+      - platform: state
+        entity_id: sensor.illumination_7811dcb90d53
+        to: 'unavailable'
+        for:
+          hours: 0
+          minutes: 15
+          seconds: 0
+    action:
+    - service: notify.slack
+      data:
+        target: ["#alerts"]
+        message: Xiaomi Aqara gateway is unavailable - temp/humidity sensors offline...
