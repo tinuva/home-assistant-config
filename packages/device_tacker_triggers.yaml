@@ -11,9 +11,14 @@ automation:
     condition:
       condition: and
       conditions:
-      - condition: state  
-        entity_id: sensor.mi_9t_battery_state
-        state: 'charging'
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: sensor.mi_9t_battery_state
+            state: 'charging'
+          - condition: state
+            entity_id: sensor.mi_9t_battery_state
+            state: 'not_charging'
       - condition: state  
         entity_id: sensor.nokia_6_1_battery_state
         state: 'charging'
@@ -29,7 +34,7 @@ automation:
         entity_id: alarm_control_panel.home_alarm
 
 #### disablig this...potentially security risk if attack kills power to house...
-#  - alias: Parents both left bed when both phones discharges
+#  - alias: Parents both left bed when both bbn h200202.
 #    description: Parents both left bed when both phones discharges
 #    trigger:
 #    - entity_id: sensor.mi_9t_battery_state
