@@ -1,0 +1,6 @@
+xiaomi_aqara:
+  # Docs: https://www.home-assistant.io/integrations/xiaomi_aqara/
+  # You can leave MAC empty if you only have one gateway.
+  discovery_retry: 5
+  gateways:
+    - key: !secret xiaomi_aqara_gw1_key
