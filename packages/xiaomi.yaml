@@ -22,3 +22,15 @@ automation:
       data:
         target: ["#alerts"]
         message: Xiaomi Aqara gateway is unavailable - temp/humidity sensors offline...
+
+  - alias: Notify Xiaomi Aqara gateway is available
+    description: Notify Xiaomi Aqara gateway is available
+    trigger:
+      - platform: state
+        entity_id: sensor.illumination_7811dcb90d53
+        from: 'unavailable'
+    action:
+    - service: notify.slack
+      data:
+        target: ["#alerts"]
+        message: Xiaomi Aqara gateway is available/restored
