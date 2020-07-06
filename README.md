@@ -7,6 +7,9 @@
 
 ## My devices
 
+### Cameras
+* [EZVIZ C3W / ezGuard 1080p](https://www.amazon.com/gp/product/B079D8CTWJ?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B079D8CTWJ)
+
 ### Switches
 * [Shelly 1](https://www.amazon.com/gp/product/B07G33LNDY?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B07G33LNDY)
 * [Shelly Dimmer](https://www.amazon.com/gp/product/B07XRY1K7V?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B07XRY1K7V)
