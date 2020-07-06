@@ -16,7 +16,7 @@
 * [Sonoff T2](https://www.amazon.com/gp/product/B07CN1GND2?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B07CN1GND2)
 
 ### Sensors
-* Xiaomi Aqara Temperature Sensor (6x)
+* [Xiaomi Aqara Temperature Sensor](https://www.banggood.com/XIAOMI-Portable-Real-time-High-Accuracy-Temperature-Humidity-Intelligent-Sensor-Control-Smart-Detector-Auto-Alarm-Monitoring-Home-Office-Thermometer-Measurer-p-1632931.html?p=DX050122090268201806&custlinkid=1189773) (6x)
 * [Envisalink 4](https://www.amazon.com/gp/product/B016WQTJ4S?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B016WQTJ4S) with [DSC PC1864](https://www.amazon.com/gp/product/B01IWQIRJO?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B01IWQIRJO) alarm system for motion + door/window states
 
 ### Vacuum
@@ -34,7 +34,7 @@
 * [Amazon Echo v1](https://www.amazon.com/gp/product/B00X4WHP5E?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B00X4WHP5E)
 
 ### Hubs
-* Xiaomi Aqara Gateway 
+* [Xiaomi Aqara Gateway](https://www.banggood.com/Original-Xiaomi-Mi-Smart-WiFi-Remote-Control-Multi-functional-Gateway-p-1045072.html?p=DX050122090268201806&custlinkid=1189776)
   * Future gateway will be a [HUSBZB-1](https://www.amazon.com/gp/product/B01GJ826F8?ie=UTF8&tag=linuxgeekza-20&camp=1789&linkCode=xm2&creativeASIN=B01GJ826F8)
 
 ## Automation plans
