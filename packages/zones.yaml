@@ -75,3 +75,31 @@ automation:
           {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
           {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
           left Curro Rosen Castle
+
+  # Start robot vacuum when Dave leave the house in the morning
+  - alias: Dave left the house in the morning - start vacuum
+    description: Dave left the house in the morning - start vacuum
+    trigger:
+    - entity_id: device_tracker.mi_9t
+      platform: state
+      from: 'Home'
+      to: 'Away'
+    condition:
+      - condition: and
+        conditions:
+        - condition: time
+          weekday:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+        - condition: time
+          after: '07:00:00'
+          before: '08:00:00'
+    action:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo
+        command: start
+
