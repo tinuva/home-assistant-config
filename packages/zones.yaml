@@ -24,7 +24,7 @@ zone:
   - name: Curro Rosen Castle
     latitude: !secret latitude_currorosencastle
     longitude: !secret longitude_currorosencastle
-    radius: 150
+    radius: 125
     icon: mdi:map-marker
 
 # David = device_tracker.mi_9t
