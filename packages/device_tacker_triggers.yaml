@@ -5,6 +5,9 @@ automation:
     - entity_id: sensor.mi_9t_battery_state
       platform: state
       to: 'charging'
+    - entity_id: sensor.mi_9t_battery_state
+      platform: state
+      to: 'not_charging' # silly workaround - phone shows not_charging when in fact charging...
     - entity_id: sensor.nokia_6_1_battery_state
       platform: state
       to: 'charging'
