@@ -86,6 +86,7 @@ automation:
     - service: script.notify_robot_cleaning_stats
 
 script:
+  ### Notify last clean results
   notify_robot_cleaning_stats:
     sequence:
       - service: camera.snapshot
