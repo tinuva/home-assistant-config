@@ -82,8 +82,8 @@ automation:
     trigger:
     - entity_id: device_tracker.mi_9t
       platform: state
-      from: 'Home'
-      to: 'Away'
+      from: 'home'
+      to: 'away'
     condition:
       - condition: and
         conditions:
