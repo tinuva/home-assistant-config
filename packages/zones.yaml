@@ -103,3 +103,22 @@ automation:
         entity_id: vacuum.rockrobo
         command: start
 
+  # Start robot vacuum when Dave leave the house in the morning - debug testing
+  - alias: Dave left the house in the morning - start vacuum - debug testing
+    description: Dave left the house in the morning - start vacuum - debug testing
+    trigger:
+    - entity_id: device_tracker.mi_9t
+      platform: state
+      from: 'home'
+      to: 'away'
+    action:
+    - service: vacuum.send_command
+      data:
+        entity_id: vacuum.rockrobo
+        command: start
+    - service: notify.slack
+      data_template:
+        target: ["#alerts-david"]
+        message: >
+          *Testing*
+          {% if (is_state('device_tracker.mi_9t', 'away')) %}device_tracker.mi_9t = away{% endif %}
