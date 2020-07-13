@@ -1,0 +1,5 @@
+input_number:
+  eskom_loadshedding_stage:
+    name: Eskom Loadshedding Stage
+    min: -100
+    max: 8
