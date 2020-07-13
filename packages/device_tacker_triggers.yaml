@@ -1,30 +1,25 @@
+binary_sensor:
+  platform: template
+  sensors:
+    both_parent_phones_charging:
+      friendly_name: "Is both parents phones charging"
+      value_template: >-
+        {{ (is_state('sensor.mi_9t_battery_state', 'charging')
+          or is_state('sensor.mi_9t_battery_state', 'not_charging')) 
+          and is_state('sensor.nokia_6_1_battery_state', 'charging') }}
+      # silly workaround needed - mi9t phone shows not_charging when in fact charging...
+
 automation:
   - alias: Parents both in bed when both phones charge
     description: Parents both in bed when both phones charge
     trigger:
-    - entity_id: sensor.mi_9t_battery_state
+    - entity_id: binary_sensor.both_parent_phones_charging
       platform: state
-      to: 'charging'
-    - entity_id: sensor.mi_9t_battery_state
-      platform: state
-      to: 'not_charging' # silly workaround - phone shows not_charging when in fact charging...
-    - entity_id: sensor.nokia_6_1_battery_state
-      platform: state
-      to: 'charging'
+      to: 'on'
     condition:
-      condition: and
-      conditions:
-      - condition: or
-        conditions:
-          - condition: state
-            entity_id: sensor.mi_9t_battery_state
-            state: 'charging'
-          - condition: state
-            entity_id: sensor.mi_9t_battery_state
-            state: 'not_charging'
-      - condition: state  
-        entity_id: sensor.nokia_6_1_battery_state
-        state: 'charging'
+      - condition: state
+        entity_id: binary_sensor.both_parent_phones_charging
+        state: 'on'
       - condition: state  # 'night' condition: from sunset until sunrise 
         entity_id: sun.sun
         state: 'below_horizon'
@@ -35,27 +30,3 @@ automation:
     - service: alarm_control_panel.alarm_arm_home
       data:
         entity_id: alarm_control_panel.home_alarm
-
-#### disablig this...potentially security risk if attack kills power to house...
-#  - alias: Parents both left bed when both bbn h200202.
-#    description: Parents both left bed when both phones discharges
-#    trigger:
-#    - entity_id: sensor.mi_9t_battery_state
-#      platform: state
-#      to: 'discharging'
-#    - entity_id: sensor.nokia_6_1_battery_state
-#      platform: state
-#      to: 'discharging'
-#    condition:
-#      condition: and
-#      conditions:
-#      - condition: state  
-#        entity_id: sensor.mi_9t_battery_state
-#        state: 'discharging'
-#      - condition: state  
-#        entity_id: sensor.nokia_6_1_battery_state
-#        state: 'discharging'
-#    action:
-#    - service: alarm_control_panel.alarm_disarm
-#      data:
-#        entity_id: alarm_control_panel.home_alarm
