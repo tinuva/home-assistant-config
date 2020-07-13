@@ -24,6 +24,9 @@ automation:
       to: 'cleaning'
     - entity_id: vacuum.rockrobo
       platform: state
+      to: 'paused'
+    - entity_id: vacuum.rockrobo
+      platform: state
       to: 'docked'
     - entity_id: vacuum.rockrobo
       platform: state
