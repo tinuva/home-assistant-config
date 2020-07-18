@@ -9,9 +9,12 @@ automation:
     conditions:
     - condition: template
       value_template: "{{ 'playing' in trigger.to_state.state }}"
+    - condition: state  # 'night' condition: from sunset until sunrise 
+      entity_id: sun.sun
+      state: 'below_horizon'
     - condition: numeric_state
       entity_id: sensor.illumination_7811dcb90d53
-      below: 700
+      below: 200
   action:
   - service: timer.finish
     data:
