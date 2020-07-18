@@ -20,34 +20,34 @@ automation:
   action:
     service: light.turn_off
     data:
-      entity_id: light.shelly_kitchen
+      entity_id: light.shelly_kitch  jmmmmmmmmkjmjmken
 
 ### Kitchen Lights when Alarm armed_home
 # Motion = Turn on
-- alias: Turn on Kitchen lights when there is movement
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.kitchen_pir
-    to: 'on'
-  condition:
-    condition: and
-    conditions:
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: alarm_control_panel.home_alarm
-      state: 'armed_home'
-  action:
-  - service: light.turn_on
-    data:
-      entity_id: light.shelly_kitchen
-      brightness: '30'
-  - service: timer.start
-    data:
-      entity_id: timer.kitchenlight
+#- alias: Turn on Kitchen lights when there is movement
+#  trigger:
+#  - platform: state
+#    entity_id: binary_sensor.kitchen_pir
+#    to: 'on'
+#  condition:
+#    condition: and
+#    conditions:
+#    - condition: state  # 'night' condition: from sunset until sunrise 
+#      entity_id: sun.sun
+#      state: 'below_horizon'
+#    - condition: state  # 'night' condition: from sunset until sunrise 
+#      entity_id: alarm_control_panel.home_alarm
+#      state: 'armed_home'
+#  action:
+#  - service: light.turn_on
+#    data:
+#      entity_id: light.shelly_kitchen
+#      brightness: '30'
+#  - service: timer.start
+#    data:
+#      entity_id: timer.kitchenlight
 
-### Kitchen Lights when Alarm disarmed
+### Turn on Kitchen Lights when movement
 # Motion = Turn on
 - alias: Turn on Kitchen lights when there is movement
   trigger:
@@ -57,9 +57,9 @@ automation:
   condition:
     condition: and
     conditions:
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: alarm_control_panel.home_alarm
-      state: 'disarmed'
+    #- condition: state  # 'night' condition: from sunset until sunrise 
+    #  entity_id: alarm_control_panel.home_alarm
+    #  state: 'disarmed'
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: sun.sun
       state: 'below_horizon'
@@ -68,9 +68,16 @@ automation:
       below: 200
   action:
   - service: light.turn_on
-    data:
+    data_template:
       entity_id: light.shelly_kitchen
-      brightness: '175'
+      brightness: >-
+        {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+          '30'
+        {%- elif(is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost','playing')) -%}
+          '30'
+        {%- else -%}
+          '175'
+        {%- endif -%}
   - service: timer.start
     data:
       entity_id: timer.kitchenlight

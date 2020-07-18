@@ -38,6 +38,8 @@ automation:
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: alarm_control_panel.home_alarm
       state: 'armed_home'
+    - condition: template # if plex is in playing mode, do not start this automation
+      value_template: "{{ not is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost', 'playing') }}"
   action:
   - service: light.turn_on
     data:
