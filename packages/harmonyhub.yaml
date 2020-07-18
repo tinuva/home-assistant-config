@@ -1,5 +1,0 @@
-remote:
-  - platform: harmony
-    name: Lounge
-    host: 192.168.241.150
-    activity: Watch TV
