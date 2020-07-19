@@ -35,45 +35,18 @@ automation:
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: sun.sun
       state: 'below_horizon'
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: alarm_control_panel.home_alarm
-      state: 'armed_home'
     - condition: template # if plex is in playing mode, do not start this automation
       value_template: "{{ not is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost', 'playing') }}"
   action:
   - service: light.turn_on
-    data:
+    data_template:
       entity_id: light.shelly_lounge
-      brightness: '30'
-  - service: timer.start
-    data:
-      entity_id: timer.loungelight
-
-
-### Kitchen Lights when Alarm disarmed
-# Motion = Turn on
-- alias: Turn on lounge lights when there is movement
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.lounge_pir
-    to: 'on'
-  condition:
-    condition: and
-    conditions:
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: alarm_control_panel.home_alarm
-      state: 'disarmed'
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    - condition: numeric_state
-      entity_id: sensor.illumination_7811dcb90d53
-      below: 200
-  action:
-  - service: light.turn_on
-    data:
-      entity_id: light.shelly_lounge
-      brightness: '30'
+      brightness: >-
+        {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+        30
+        {%- else -%}
+        60
+        {%- endif -%}
   - service: timer.start
     data:
       entity_id: timer.loungelight
