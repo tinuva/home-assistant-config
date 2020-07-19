@@ -19,21 +19,21 @@ automation:
   - alias: Notify when Robot State Change
     description: Notify when Robot State Change
     trigger:
-    - entity_id: vacuum.rockrobo
-      platform: state
-      to: 'cleaning'
+    #- entity_id: vacuum.rockrobo
+    #  platform: state
+    #  to: 'cleaning'
     - entity_id: vacuum.rockrobo
       platform: state
       to: 'paused'
-    - entity_id: vacuum.rockrobo
-      platform: state
-      to: 'docked'
-    - entity_id: vacuum.rockrobo
-      platform: state
-      to: 'idle'
-    - entity_id: vacuum.rockrobo
-      platform: state
-      to: 'returning'
+    #- entity_id: vacuum.rockrobo
+    #  platform: state
+    #  to: 'docked'
+    #- entity_id: vacuum.rockrobo
+    #  platform: state
+    #  to: 'idle'
+    #- entity_id: vacuum.rockrobo
+    #  platform: state
+    #  to: 'returning'
     condition: []
     action:
     - service: notify.slack
