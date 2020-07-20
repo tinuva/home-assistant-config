@@ -1,0 +1,130 @@
+cover:
+  ## Front Garage Door
+  - platform: template
+    covers:
+      garage_door_front:
+        device_class: garage
+        friendly_name: "Garage Door Front"
+        value_template: "{{ is_state('binary_sensor.front_garage_door_window', 'on') }}"
+        open_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_front_garagedoor_front
+        close_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_front_garagedoor_front
+        stop_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_front_garagedoor_front
+        icon_template: >-
+          {% if is_state('binary_sensor.front_garage_door_window', 'on') %}
+            mdi:garage-open
+          {% else %}
+            mdi:garage
+          {% endif %}
+
+  # Back Garage Door
+  - platform: template
+    covers:
+      garage_door_back:
+        device_class: garage
+        friendly_name: "Garage Door Back"
+        value_template: "{{ is_state('binary_sensor.back_garage_door', 'on') }}"
+        open_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_back_gragedoor_back
+        close_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_back_gragedoor_back
+        stop_cover:
+          service: switch.turn_on
+          data:
+            entity_id: switch.garagedoor_back_gragedoor_back
+        icon_template: >-
+          {% if is_state('binary_sensor.back_garage_door', 'on') %}
+            mdi:garage-open
+          {% else %}
+            mdi:garage
+          {% endif %}
+
+## Alert
+alert:
+  garage_door_front:
+    name: Front Garage Door is open
+    #done_message: Front Garage is closed
+    entity_id: binary_sensor.front_garage_door_window
+    state: 'on'   # Optional, 'on' is the default value
+    repeat:
+      - 15
+      - 30
+      - 60
+    skip_first: true  # Optional, false is the default
+    notifiers:
+      - notify_garagedoor_front
+  garage_door_back:
+    name: Back Garage Door is open
+    #done_message: Back Garage is closed
+    entity_id: binary_sensor.back_garage_door
+    state: 'on'   # Optional, 'on' is the default value
+    repeat:
+      - 15
+      - 30
+      - 60
+    skip_first: true  # Optional, false is the default
+    notifiers:
+      - notify_garagedoor_back
+
+notify:
+  - name: notify_garagedoor_front
+    platform: command_line
+    command: "/config/ha_to_api_notify_cover.sh script.notify_garagedoor_front"
+  - name: notify_garagedoor_back
+    platform: command_line
+    command: "/config/ha_to_api_notify_cover.sh script.notify_garagedoor_back"
+
+### Scripts
+script:
+  notify_garagedoor_front:
+    sequence:
+      - service: script.notify_slack
+        data_template:
+          channel: "C012KCJ9YJ0"
+          message: "The Front Garage door is open."
+          attachments:
+            - title: Close the Front Garage door?
+              callback_id: cover_left_open_callback
+              color: '#03a9f4'
+              attachment_type: default
+              actions:
+                - text: Close it
+                  value: Close it
+                  name: 'cover.garage_door_front'
+                  type: button
+                - text: Leave it
+                  value: Leave it
+                  name: 'anything_just_not_blank'
+                  type: button
+  notify_garagedoor_back:
+    sequence:
+      - service: script.notify_slack
+        data_template:
+          channel: "C012KCJ9YJ0"
+          message: "The Back Garage door is open and it’s late."
+          attachments:
+            - title: Close the Back Garage door?
+              callback_id: cover_left_open_callback
+              color: '#03a9f4'
+              attachment_type: default
+              actions:
+                - text: Close it
+                  value: Close it
+                  name: 'cover.garage_door_back'
+                  type: button
+                - text: Leave it
+                  value: Leave it
+                  name: 'anything_just_not_blank'
+                  type: button

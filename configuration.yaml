@@ -38,7 +38,6 @@ shelly: !include includes/shelly.yaml
 sensor: !include includes/sensors.yaml
 
 # Others
-alert: !include includes/alerts.yaml
 person: !include includes/persons.yaml
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml

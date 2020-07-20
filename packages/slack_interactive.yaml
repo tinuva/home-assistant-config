@@ -90,28 +90,8 @@ script:
         value_template: >
           {%- set action = (payload | from_json).actions[0] -%}
           {{ (action.value == "Close it") and not (action.name == "")}}
-      - service: notify.slack
+      - service: cover.close_cover
         data_template:
-          title: 'Vacuum Robot'
-          target: ["#alerts-david"]
-          message: >
+          entity_id: >
             {%- set entity_id = (payload | from_json).actions[0].name -%}
             cover.{{ entity_id if (not entity_id.startswith("cover.")) else entity_id[6:] }}
-
-## To test in dev tools, use the following when calling service.notify_slack
-#channel: ""
-#message: "The Garage door is open and it’s late."
-#attachments:
-#  - title: Close the Garage door?
-#    callback_id: cover_left_open_callback
-#    color: '#03a9f4'
-#    attachment_type: default
-#    actions:
-#      - text: Close it
-#        value: Close it
-#        name: 'cover.garagedoor'
-#        type: button
-#      - text: Leave it
-#        value: Leave it
-#        name: 'anything_just_not_blank'
-#        type: button
