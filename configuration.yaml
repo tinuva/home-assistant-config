@@ -8,7 +8,7 @@ homeassistant:
   unit_system: metric
   time_zone: Africa/Johannesburg
   name: Home
-  whitelist_external_dirs:
+  allowlist_external_dirs: # changed from whitelist_external_dirs to allowlist_external_dirs in 0.113.0
     - /config/
   customize: !include includes/customize.yaml
 default_config:
