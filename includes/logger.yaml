@@ -8,8 +8,8 @@
 #          |___/ |___/
 #
 #- from github.com/tinuva/home-assistant-config
-default: critical
-#default: info
+### https://www.home-assistant.io/integrations/logger/
+default: fatal #critical
 logs:
   custom_components.kef_custom: debug
   custom_components.aiokef: debug
@@ -17,3 +17,8 @@ logs:
   homeassistant.component.opentherm_gw: debug
   pyotgw: debug
   homeassistant.components.shell_command: debug
+  homeassistant.loader: error
+  
+  # log level for all python scripts
+  homeassistant.helpers.script: debug
+  homeassistant.components.python_script: warning
