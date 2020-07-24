@@ -61,4 +61,6 @@ script:
           target: ["#alerts"]
           message: "Motion detected at Front Beam"
           data:
-            file: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
+            file: 
+              path: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
+              ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
