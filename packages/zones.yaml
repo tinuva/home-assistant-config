@@ -99,39 +99,6 @@ automation:
           entity_id: vacuum.rockrobo
           state: 'docked'
     action:
-    - service: notify.slack
-      data_template:
-        target: ["#alerts-david"]
-        message: >
-          *Testing* Robot should start!
-          {{ trigger.from_state.object_id }}
     - service: vacuum.start
       data:
         entity_id: vacuum.rockrobo
-
-  # debug testing
-  - alias: Dave left the house
-    description: Dave left the house
-    trigger:
-    - entity_id: device_tracker.mi_9t
-      platform: state
-      from: 'home'
-    action:
-    - service: notify.slack
-      data_template:
-        target: ["#alerts-david"]
-        message: >
-          *David* left the house {{ trigger.from_state.object_id }}
-  # debug testing
-  - alias: Karen left the house
-    description: Karen left the house
-    trigger:
-    - entity_id: device_tracker.nokia_6_1
-      platform: state
-      from: 'home'
-    action:
-    - service: notify.slack
-      data_template:
-        target: ["#alerts-david"]
-        message: >
-          *Karen* left the house {{ trigger.from_state.object_id }}
