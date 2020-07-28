@@ -49,7 +49,7 @@ automation:
     trigger:
     - entity_id: sensor.vacuum_error_code
       platform: state
-      from: 0
+      from: '0'
     condition: []
     action:
     - service: notify.slack
