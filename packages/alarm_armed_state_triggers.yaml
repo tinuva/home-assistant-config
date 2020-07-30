@@ -32,8 +32,8 @@ automation:
       to: 'armed_away'
     condition:
       - condition: state  # only if it is on
-        entity_id: remote.lounge
+        entity_id: remote.harmony_hub
         state: 'on'
     action:
     - service: remote.turn_off
-      entity_id: remote.lounge
+      entity_id: remote.harmony_hub
