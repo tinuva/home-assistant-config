@@ -113,7 +113,7 @@ script:
       - service: script.notify_slack
         data_template:
           channel: "C012KCJ9YJ0"
-          message: "The Back Garage door is open and it’s late."
+          message: "The Back Garage door is open."
           attachments:
             - title: Close the Back Garage door?
               callback_id: cover_left_open_callback
