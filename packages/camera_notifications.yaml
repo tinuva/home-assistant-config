@@ -36,6 +36,7 @@ automation:
   - id: '1686327112618'
     alias: Notify Front Beam Motion
     description: Notify when Front Beam Motion Sensor is triggered
+    mode: single # Which is the default
     trigger:
     - entity_id: binary_sensor.front_beam
       platform: state
@@ -46,6 +47,7 @@ automation:
       state: 'on'
     action:
     - service: script.notify_front_camera_alert
+    - delay: '00:00:10' # seconds
 
 script:
   notify_front_camera_alert:
@@ -55,7 +57,7 @@ script:
           entity_id: camera.front_camera
           filename: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
       - delay: 
-          seconds: 5
+          seconds: 6
       - service: notify.slack
         data_template:
           target: ["#alerts"]
