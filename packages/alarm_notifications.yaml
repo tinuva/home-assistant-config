@@ -113,8 +113,7 @@ automation:
         target: ["#alerts"]
         message: >
           *ALARM Fault*
-          {% if(states.binary_sensor.alarm_trouble.state == "off") %}Restored{% endif %}
-          {{ " " }}{{ states.sensor.home_alarm_keypad.state }}
+          {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}
 
   ### Notify battery error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
@@ -134,4 +133,4 @@ automation:
         target: ["#alerts"]
         message: >
           *ALARM Battery Fault!*
-          {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Restored{% endif %}
+          {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}
