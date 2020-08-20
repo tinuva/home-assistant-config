@@ -10,7 +10,11 @@ import time
 from threading import Timer
 from homeassistant.util import slugify
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.components.binary_sensor import BinarySensorDevice
+try:
+    from homeassistant.components.binary_sensor import BinarySensorEntity
+except:
+    from homeassistant.components.binary_sensor import \
+        BinarySensorDevice as BinarySensorEntity
 from homeassistant.helpers.restore_state import RestoreStateData
 
 from . import (CONF_OBJECT_ID_PREFIX)
@@ -20,6 +24,15 @@ from .block import ShellyBlock
 from .const import *
 
 _LOGGER = logging.getLogger(__name__)
+
+CLICK_EVENTS = {
+    'S' : 'single',
+    'SS' : 'double',
+    'SSS': 'tripple',
+    'L': 'long',
+    'SL': 'short-long',
+    'LS': 'long-short'
+}
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up Shelly sensor dynamically."""
@@ -45,7 +58,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         async_discover_sensor
     )
 
-class ShellySwitch(ShellyDevice, BinarySensorDevice):
+class ShellySwitch(ShellyDevice, BinarySensorEntity):
     """Representation of a Shelly Switch state."""
 
     def __init__(self, dev, instance):
@@ -59,6 +72,8 @@ class ShellySwitch(ShellyDevice, BinarySensorDevice):
         self._click_cnt = 0
         self._click_timer = None
         self._name_ext = "Switch"
+        self._last_event = None
+        self._event_cnt = None
         self.update()
 
     @property
@@ -85,6 +100,11 @@ class ShellySwitch(ShellyDevice, BinarySensorDevice):
                              'click_cnt': self._click_cnt,
                              'state' : self._state})
 
+    def _send_event(self, type):
+        self.hass.bus.fire('shellyforhass.click', \
+                            {'entity_id' : self.entity_id,
+                             'click_type' : type})
+
     def update(self):
         """Fetch new state data for this switch."""
         millis = self._millis()
@@ -102,8 +122,22 @@ class ShellySwitch(ShellyDevice, BinarySensorDevice):
                                         self._click_timeout)
             self._click_timer.start()
         self._state = new_state
+        if self._dev.event_cnt != self._event_cnt:
+            self._event_cnt = self._dev.event_cnt
+            event = CLICK_EVENTS.get(self._dev.last_event, None)
+            self._last_event = event
+            if self._event_cnt:
+                self._send_event(event)
 
-class ShellyBinarySensor(ShellyDevice, BinarySensorDevice):
+    @property
+    def device_state_attributes(self):
+        attrs = super().device_state_attributes
+        if self._last_event:
+            attrs[ATTRIBUTE_CLICK_TYPE] = self._last_event
+            attrs[ATTRIBUTE_CLICK_CNT] = self._event_cnt
+        return attrs
+
+class ShellyBinarySensor(ShellyDevice, BinarySensorEntity):
     """Representation of a Shelly Sensor."""
 
     def __init__(self, dev, instance, sensor_type, sensor_name):
@@ -151,7 +185,7 @@ class ShellyBinarySensor(ShellyDevice, BinarySensorDevice):
         """Fetch new state data for this sensor."""
         self._state = self._dev.state
 
-class ShellyBinaryInfoSensor(ShellyBlock, BinarySensorDevice):
+class ShellyBinaryInfoSensor(ShellyBlock, BinarySensorEntity):
     """Representation of a Shelly Info Sensor."""
 
     def __init__(self, block, instance, sensor_type, sensor_name):
