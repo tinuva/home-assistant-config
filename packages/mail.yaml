@@ -1,0 +1,35 @@
+sensor:
+  - platform: seventeentrack
+    username: !secret seventeentrack_user
+    password: !secret seventeentrack_pass
+  - platform: aftership
+    api_key: !secret aftership_api_key
+
+automation:
+  - alias: "Seventeentrack Update"
+    initial_state: on
+    trigger:
+      platform: event
+      event_type: state_changed
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: "{{ trigger.event.data.entity_id.startswith('sensor.seventeentrack_package_') }}"
+        #- condition: or
+        #  conditions:
+        #  - condition: template
+        #    value_template: "{{ 'out for delivery' in trigger.event.data.new_state.attributes.info_text|lower }}"
+        #  - condition: template
+        #    value_template: "{{ 'delivered' in trigger.event.data.new_state.attributes.info_text|lower }}"
+        #  - condition: template
+        #    value_template: "{{ 'onboard' in trigger.event.data.new_state.attributes.info_text|lower }}"
+    action:
+      - service: notify.slack
+        data_template:
+          target: ["#alerts-david"]
+          message: >
+            {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
+
+
+# TTS https://community.home-assistant.io/t/17track-integration/167602
