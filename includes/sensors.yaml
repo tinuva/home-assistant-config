@@ -163,3 +163,39 @@
     - 'time_date'
     - 'time_utc'
     - 'beat'
+
+
+- platform: command_line
+  name: "Virgin Active - Tygervalley"
+  #command: 'curl -H "Authorization: xxx" -H "Content-Type : application/json" https://selfaccess.virginactive.co.za/Api/occupancy/club/Tygervalley'
+  command: !secret va_url_tygervalley
+  value_template: 'value'
+  json_attributes:
+    - active
+    - maxLimit
+    - occupancy
+  scan_interval: 300
+
+- platform: command_line
+  name: "Virgin Active - Durbanville"
+  #command: 'curl -H "Authorization: xxx" -H "Content-Type : application/json" https://selfaccess.virginactive.co.za/Api/occupancy/club/Durbanville'
+  command: !secret va_url_durbanville
+  value_template: 'value'
+  json_attributes:
+    - active
+    - maxLimit
+    - occupancy
+  scan_interval: 300
+
+- platform: template
+  sensors: 
+    virgin_active_tygervalley_occupancy:
+      value_template: "{{ state_attr('sensor.virgin_active_tygervalley', 'active')|int / state_attr('sensor.virgin_active_tygervalley', 'maxLimit')|int * 100}}"
+      friendly_name: "Virgin Active - Tygervalley Occupancy"
+      unit_of_measurement: '%'
+- platform: template
+  sensors: 
+    virgin_active_durbanville_occupancy:
+      value_template: "{{ state_attr('sensor.virgin_active_durbanville', 'active')|int / state_attr('sensor.virgin_active_durbanville', 'maxLimit')|int * 100}}"
+      friendly_name: "Virgin Active - Durbanville Occupancy"
+      unit_of_measurement: '%'
