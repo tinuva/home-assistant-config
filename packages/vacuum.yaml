@@ -2,6 +2,16 @@
 #vacuum:
 #  - platform: mqtt
 
+timer:
+  # When calling the start service on a timer that is already running, it resets 
+  # the duration it will need to finish and restart the timer without triggering 
+  # a canceled or finished event. This, for example, makes it easy to create 
+  # timed lights that get triggered by motion. Starting a timer triggers a 
+  # started event unless the timer is paused, in that case, it triggers a 
+  # restarted event.
+  vacuumautoresume:
+    duration: '00:15:00'
+
 sensor:
   - platform: template
     sensors: 
@@ -42,6 +52,30 @@ automation:
         target: ["#general"]
         message: >
           Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+          
+  ### Auto-resume after pause
+  - alias: Vacuum Auto-resume after pause timer
+    description: Vacuum Auto-resume after pause timer
+    trigger:
+    - entity_id: vacuum.rockrobo
+      platform: state
+      from: 'cleaning'
+      to: 'paused'
+    condition: []
+    action:
+    - service: timer.start
+      data:
+        entity_id: timer.vacuumautoresume
+  - alias: Vacuum Auto-resume after pause timer end
+    trigger:
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.vacuumautoresume
+    action:
+      - service: vacuum.start
+        data:
+          entity_id: vacuum.rockrobo
 
   ### Notify error
   - alias: Notify when Robot has error
@@ -111,3 +145,4 @@ script:
             file: 
               path: "/config/www/cam_captures/rockrobo_map_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
+
