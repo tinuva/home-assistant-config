@@ -1,12 +1,12 @@
-automation:
-- alias: Turn off lights when illumination over 500
-  trigger:
-    - platform: numeric_state
-      entity_id: sensor.illumination_7811dcb90d53
-      above: '300'
-  action:
-  - service: light.turn_off
-    data:
-      entity_id:
-        - light.shelly_lounge
-        - light.shelly_kitchen
+#automation:
+#- alias: Turn off lights when illumination over 500
+#  trigger:
+#    - platform: numeric_state
+#      entity_id: sensor.illumination_7811dcb90d53
+#      above: '300'
+#  action:
+#  - service: light.turn_off
+#    data:
+#      entity_id:
+#        - light.shelly_lounge
+#        - light.shelly_kitchen
