@@ -15,31 +15,6 @@ binary_sensor:
         entity_id: sensor.home_alarm_keypad
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
 
-alert:
-  front_beam_issue:
-    name: Front Beam stuck on
-    done_message: Front beam recovered
-    entity_id: binary_sensor.front_beam
-    state: 'on'   # Optional, 'on' is the default value
-    repeat:
-      - 15
-      - 30
-      - 60
-    can_acknowledge: true  # Optional, default is true
-    skip_first: true  # Optional, false is the default
-    notifiers:
-      - mobile_app_mi_9t
-# alternative automation here
-#  trigger:
-#    - platform: state
-#      entity_id: sensor.sensor_name
-#      to: 'unavailable'
-#      for:
-#        hours: 0
-#        minutes: 15
-#        seconds: 0
-
-
 automation:
   ### Notify alarm state change
   - id: '1586327112617'
@@ -134,3 +109,43 @@ automation:
         message: >
           *ALARM Battery Fault!*
           {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}
+
+  ### Notify front beam stuck error
+  - alias: Notify when front beam stuck on
+    description: Notify when front beam stuck on
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.front_beam
+      to: 'on' #'unavailable'
+      for:
+        hours: 0
+        minutes: 15
+        seconds: 0
+    condition: []
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Zone/Sensor Fault'
+        target: ["#alerts"]
+        message: >
+          *ALARM Fault on Front Beam!*
+          {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+  - alias: Notify Repeat when front beam stuck on 
+    description: Notify Repeat when front beam stuck on
+    trigger:
+    - platform: time_pattern
+      hours: '1'
+    condition:
+    - condition: state
+      entity_id: binary_sensor.front_beam
+      state: 'on'
+      for:
+        minutes: 30
+    action:
+    - service: notify.slack
+      data_template:
+        title: 'Zone/Sensor Fault'
+        target: ["#alerts"]
+        message: >
+          *ALARM Fault on Front Beam!*
+          {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
