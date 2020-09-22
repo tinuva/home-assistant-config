@@ -9,7 +9,7 @@
 #
 #- from github.com/tinuva/home-assistant-config
 ### https://www.home-assistant.io/integrations/logger/
-default: fatal #critical
+default: info #fatal #critical
 logs:
   custom_components.kef_custom: debug
   custom_components.aiokef: debug
