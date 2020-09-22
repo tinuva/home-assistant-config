@@ -26,7 +26,40 @@ automation:
       - condition: state
         entity_id: alarm_control_panel.home_alarm
         state: disarmed
+      - condition: state
+        entity_id: binary_sensor.front_beam
+        state: 'off'
     action:
+    - service: alarm_control_panel.alarm_arm_home
+      data:
+        entity_id: alarm_control_panel.home_alarm
+
+  - alias: Parents both in bed when both phones charge need bypass
+    description: Parents both in bed when both phones charge
+    trigger:
+    - entity_id: binary_sensor.both_parent_phones_charging
+      platform: state
+      to: 'on'
+    condition:
+      - condition: state
+        entity_id: binary_sensor.both_parent_phones_charging
+        state: 'on'
+      - condition: state  # 'night' condition: from sunset until sunrise 
+        entity_id: sun.sun
+        state: 'below_horizon'
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: disarmed
+      - condition: state
+        entity_id: binary_sensor.front_beam
+        state: 'on'
+        for:
+          minutes: 1
+    action:
+    - service: alarm_control_panel.alarm_keypress
+      data_template:
+        entity_id: alarm_control_panel.home_alarm
+        keypress: '*125#'
     - service: alarm_control_panel.alarm_arm_home
       data:
         entity_id: alarm_control_panel.home_alarm

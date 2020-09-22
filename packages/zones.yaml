@@ -70,6 +70,8 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        icon: ":car:"
+        username: "Tracking"
         target: ["#general"]
         message: >
           {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}

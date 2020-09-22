@@ -29,6 +29,8 @@ automation:
     action:
     - service: notify.slack
       data:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         target: ["#alerts"]
         message: Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
@@ -43,19 +45,10 @@ automation:
       to: 'triggered'
     condition: []
     action:
-    - service: notify.all_phones
-      data_template:
-        title: '*ALARM TRIGGERED!*'
-        message: >
-          Alarm was triggered on: 
-          {%- set domains = ['binary_sensor'] -%}
-          {%- for domain in domains -%}
-          {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
-            {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
-          {%- endfor -%}
-          {%- endfor -%}
     - service: notify.slack
       data_template:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
@@ -84,10 +77,13 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
           *ALARM Fault*
+          {{ states.sensor.home_alarm_keypad.state }}
           {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}
 
   ### Notify battery error
@@ -104,6 +100,8 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -125,6 +123,8 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -144,6 +144,8 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        icon: ":rotating_light:"
+        username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
