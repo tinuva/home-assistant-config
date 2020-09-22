@@ -52,6 +52,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
+        data:
+          icon: ":car:"
+          username: "Tracking"
         target: ["#general"]
         message: >
           {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
@@ -70,8 +73,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":car:"
-        username: "Tracking"
+        data:
+          icon: ":car:"
+          username: "Tracking"
         target: ["#general"]
         message: >
           {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}

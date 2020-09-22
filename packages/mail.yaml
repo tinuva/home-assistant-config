@@ -27,8 +27,9 @@ automation:
     action:
       - service: notify.slack
         data_template:
-          icon: ":envelope:"
-          username: "17track mail"
+          data:
+            icon: ":envelope:"
+            username: "17track mail"
           target: ["#alerts-david"]
           message: >
             {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}

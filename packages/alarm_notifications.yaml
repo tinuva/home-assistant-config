@@ -29,8 +29,9 @@ automation:
     action:
     - service: notify.slack
       data:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         target: ["#alerts"]
         message: Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
@@ -47,8 +48,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
@@ -77,8 +79,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -100,8 +103,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -123,8 +127,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -144,8 +149,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":rotating_light:"
-        username: "Home Alarm"
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >

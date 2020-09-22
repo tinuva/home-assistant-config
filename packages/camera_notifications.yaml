@@ -19,8 +19,9 @@ automation:
         entity_id: timer.camera_alerts_disabled
     - service: notify.slack
       data_template:
-        icon: ":movie_camera:"
-        username: "Camera Alert"
+        data:
+          icon: ":movie_camera:"
+          username: "Camera Alert"
         target: ["#alerts"]
         message: "Camera Alerts disabled for 30 minutes"
   # timer ended, turn camera alerts on
@@ -62,8 +63,9 @@ script:
           seconds: 6
       - service: notify.slack
         data_template:
-          icon: ":movie_camera:"
-          username: "Camera Alert"
+          data:
+            icon: ":movie_camera:"
+            username: "Camera Alert"
           target: ["#alerts"]
           message: "Motion detected at Front Beam"
           data:

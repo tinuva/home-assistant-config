@@ -48,8 +48,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":robot_face:"
-        username: "Vacuum Robot"
+        data:
+          icon: ":robot_face:"
+          username: "Vacuum Robot"
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
@@ -90,8 +91,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":robot_face:"
-        username: "Vacuum Robot"
+        data:
+          icon: ":robot_face:"
+          username: "Vacuum Robot"
         title: 'Vacuum Robot Error'
         target: ["#general"]
         message: >
@@ -109,8 +111,9 @@ automation:
     action:
     - service: notify.slack
       data_template:
-        icon: ":robot_face:"
-        username: "Vacuum Robot"
+        data:
+          icon: ":robot_face:"
+          username: "Vacuum Robot"
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
@@ -140,8 +143,9 @@ script:
           seconds: 5
       - service: notify.slack
         data_template:
-          icon: ":robot_face:"
-          username: "Vacuum Robot"
+          data:
+            icon: ":robot_face:"
+            username: "Vacuum Robot"
           target: ["#general"]
           message: >
             Vacuum Robot latest cleaning stats:{{- '\n' -}}
