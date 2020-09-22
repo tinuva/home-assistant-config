@@ -23,7 +23,7 @@ automation:
           icon: ":movie_camera:"
           username: "Camera Alert"
         target: ["#alerts"]
-        message: "Camera Alerts disabled for 30 minutes"
+        message: ":movie_camera: Camera Alerts disabled for 30 minutes"
   # timer ended, turn camera alerts on
   - alias: Turn camera alerts back on
     trigger:
@@ -63,12 +63,11 @@ script:
           seconds: 6
       - service: notify.slack
         data_template:
+          target: ["#alerts"]
+          message: ":movie_camera: Motion detected at Front Beam"
           data:
             icon: ":movie_camera:"
             username: "Camera Alert"
-          target: ["#alerts"]
-          message: "Motion detected at Front Beam"
-          data:
             file: 
               path: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files

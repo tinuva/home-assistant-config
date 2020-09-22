@@ -32,7 +32,7 @@ automation:
             username: "17track mail"
           target: ["#alerts-david"]
           message: >
-            {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
+            :envelope: {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
 
 
 # TTS https://community.home-assistant.io/t/17track-integration/167602

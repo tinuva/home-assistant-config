@@ -33,7 +33,8 @@ automation:
           icon: ":rotating_light:"
           username: "Home Alarm"
         target: ["#alerts"]
-        message: Home alarm {{ states.sensor.home_alarm_keypad.state }}
+        message: >
+          :rotating_light: Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
 
   ### Notify sensor that triggered alarm --- WIP
@@ -54,7 +55,7 @@ automation:
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
-          *ALARM TRIGGERED!* on: 
+          :rotating_light: *ALARM TRIGGERED!* on: 
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
           {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
@@ -85,7 +86,7 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          *ALARM Fault*
+          :rotating_light: *ALARM Fault*
           {{ states.sensor.home_alarm_keypad.state }}
           {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}
 
@@ -109,7 +110,7 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          *ALARM Battery Fault!*
+          :rotating_light: *ALARM Battery Fault!*
           {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}
 
   ### Notify front beam stuck error
@@ -133,7 +134,7 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          *ALARM Fault on Front Beam!*
+          :rotating_light: *ALARM Fault on Front Beam!*
           {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
   - alias: Notify Repeat when front beam stuck on 
     description: Notify Repeat when front beam stuck on
@@ -155,5 +156,5 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          *ALARM Fault on Front Beam!*
+          :rotating_light: *ALARM Fault on Front Beam!*
           {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}

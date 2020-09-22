@@ -57,6 +57,7 @@ automation:
           username: "Tracking"
         target: ["#general"]
         message: >
+          :car:
           {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
           {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
           arrived at Curro Rosen Castle
@@ -78,6 +79,7 @@ automation:
           username: "Tracking"
         target: ["#general"]
         message: >
+          :car:
           {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
           {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
           left Curro Rosen Castle

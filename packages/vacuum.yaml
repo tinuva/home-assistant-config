@@ -54,7 +54,7 @@ automation:
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
-          Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+          :robot_face: Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
           
   ### Auto-resume after pause
   - alias: Vacuum Auto-resume after pause timer
@@ -97,7 +97,7 @@ automation:
         title: 'Vacuum Robot Error'
         target: ["#general"]
         message: >
-          Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+          :robot_face: Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
 
   ### Notify when failed to docked after returning
   - alias: Notify when Robot failed to dock
@@ -117,7 +117,7 @@ automation:
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
-          Vacuum Robot failed to dock!
+          :robot_face: Vacuum Robot failed to dock!
 
   ### Notify last clean results
   - alias: Notify when Robot State Change
@@ -143,17 +143,16 @@ script:
           seconds: 5
       - service: notify.slack
         data_template:
-          data:
-            icon: ":robot_face:"
-            username: "Vacuum Robot"
           target: ["#general"]
           message: >
-            Vacuum Robot latest cleaning stats:{{- '\n' -}}
+            :robot_face: Vacuum Robot latest cleaning stats:{{- '\n' -}}
             Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60|round(1) }} minutes{{- '\n' -}}
             Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
 #          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
 #          End time: {{ states.vacuum.rockrobo.attributes.last_run_stats.endTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
           data:
+            icon: ":robot_face:"
+            username: "Vacuum Robot"
             file: 
               path: "/config/www/cam_captures/rockrobo_map_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
