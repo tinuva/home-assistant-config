@@ -15,8 +15,8 @@ elevation: 0
 unit_system: metric
 time_zone: Africa/Johannesburg
 name: Home
-whitelist_external_dirs:
-  - /config/
+allowlist_external_dirs:
+  - /config
 
 customize:
   # Add an entry for each entity that you want to overwrite.
