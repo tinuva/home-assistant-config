@@ -59,12 +59,16 @@ script:
         data_template:
           entity_id: camera.front_camera
           filename: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
+      - service: system_log.write
+        data_template:
+          message: "Front Camera Capture @ /config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
+          level: debug
       - delay: 
-          seconds: 5
+          seconds: 4
       - service: notify.slack
         data_template:
           target: ["#alerts"]
-          message: ":movie_camera: Motion detected at Front Beam"
+          message: "Motion detected at Front Beam"
           data:
             file: 
               path: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
