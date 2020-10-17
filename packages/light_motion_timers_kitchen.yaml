@@ -64,3 +64,26 @@ automation:
   - service: timer.start
     data:
       entity_id: timer.kitchenlight
+
+### We have a button which modify how the kitchen dimming is effected when plex is playing
+# Turned on = Start timer
+- alias: Start kitchenwork timer
+  trigger:
+  - platform: state
+    entity_id: input_boolean.kitchenwork
+    to: 'on'
+  action:
+  - service: timer.start
+    data:
+      entity_id: timer.kitchenwork
+# Timer end = Turn off
+- alias: Turn off Kitchenwork timer
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.kitchenwork
+  action:
+    service: input_boolean.turn_off
+    data:
+      entity_id: input_boolean.kitchenwork
