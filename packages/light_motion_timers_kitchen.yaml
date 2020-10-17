@@ -26,7 +26,7 @@ automation:
   action:
     service: light.turn_off
     data:
-      entity_id: light.shelly_kitch  jmmmmmmmmkjmjmken
+      entity_id: light.shelly_kitch
 
 ### Turn on Kitchen Lights when movement
 # Motion = Turn on
