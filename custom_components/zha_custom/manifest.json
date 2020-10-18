@@ -1,8 +1,0 @@
-{
-    "domain": "zha_custom",
-    "name": "ZHA Custom Service",
-    "documentation": "https://www.home-assistant.io/components/zha_custom",
-    "requirements": [],
-    "dependencies": ["zha"],
-    "codeowners": ["@dmulcahey", "@adminiuga"]
-}
