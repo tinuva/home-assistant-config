@@ -87,3 +87,15 @@ automation:
     service: input_boolean.turn_off
     data:
       entity_id: input_boolean.kitchenwork
+- alias: Kitchenwork turned off
+  trigger:
+  - platform: state
+    entity_id: input_boolean.kitchenwork
+    to: 'off'
+  action:
+    - service: light.turn_off
+      data:
+        entity_id: light.shelly_kitchen
+    - service: timer.cancel
+      data:
+        entity_id: timer.kitchenwork
