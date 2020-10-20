@@ -65,5 +65,3 @@ telegram_bot:
     api_key: !secret telegram_bot_key
     allowed_chat_ids:
       - "-461988039" # CoCT Area 6 loadshedding notifications
-
-zha_custom:
