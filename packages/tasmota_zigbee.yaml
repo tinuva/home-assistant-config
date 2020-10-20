@@ -55,7 +55,7 @@ sensor:
   unit_of_measurement: "°C" 
   expire_after: 7200
 - platform: mqtt
-  name: "Braai room Humidity"
+  name: "Scullery Humidity"
   state_topic: "tele/zigbee/0x785A/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
