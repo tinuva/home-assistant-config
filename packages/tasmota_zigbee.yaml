@@ -5,7 +5,7 @@ binary_sensor:
   name: "Baby room Door"
   state_topic: "tele/zigbee/0xA3EF/Occupancy"  
   json_attributes_topic: "tele/zigbee/0xA3EF/Attr"
-  expire_after: 7200   #v0.100 and above
+  #expire_after: 7200   #v0.100 and above
   device_class: opening
   payload_off: '0'
   payload_on: '1'
@@ -15,7 +15,7 @@ binary_sensor:
   name: "Garage inside Door"
   state_topic: "tele/zigbee/0x2040/Occupancy"  
   json_attributes_topic: "tele/zigbee/0x2040/Attr"
-  expire_after: 7200   #v0.100 and above
+  #expire_after: 7200   #v0.100 and above
   device_class: opening
   payload_off: '0'
   payload_on: '1'
@@ -44,6 +44,19 @@ sensor:
 - platform: mqtt
   name: "Braai room Humidity"
   state_topic: "tele/zigbee/0x7064/Humidity"
+  unit_of_measurement: "RH%" 
+  expire_after: 7200
+
+#TH Scullery
+- platform: mqtt
+  name: "Scullery Temperature"
+  state_topic: "tele/zigbee/0x785A/Temperature"
+  json_attributes_topic: "tele/zigbee/0x785A/Attr"
+  unit_of_measurement: "°C" 
+  expire_after: 7200
+- platform: mqtt
+  name: "Braai room Humidity"
+  state_topic: "tele/zigbee/0x785A/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
 
