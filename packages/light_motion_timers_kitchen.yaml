@@ -76,6 +76,10 @@ automation:
   - service: timer.start
     data:
       entity_id: timer.kitchenwork
+  - service: light.turn_on
+    data:
+      entity_id: light.shelly_kitchen
+      brightness: 175
 # Timer end = Turn off
 - alias: Turn off Kitchenwork timer
   trigger:
@@ -84,9 +88,9 @@ automation:
     event_data:
       entity_id: timer.kitchenwork
   action:
-    service: input_boolean.turn_off
-    data:
-      entity_id: input_boolean.kitchenwork
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.kitchenwork
 - alias: Kitchenwork turned off
   trigger:
   - platform: state
