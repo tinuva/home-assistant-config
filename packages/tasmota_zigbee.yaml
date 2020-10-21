@@ -9,10 +9,6 @@ binary_sensor:
   device_class: opening
   payload_off: '0'
   payload_on: '1'
-- platform: mqtt
-  name: "Baby Room Door Battery"
-  state_topic: "tele/zigbee/0xA3EF/Battery"  
-  expire_after: 7200   #v0.100 and above
 
 #DS Garage inside soor
 - platform: mqtt
@@ -23,12 +19,19 @@ binary_sensor:
   device_class: opening
   payload_off: '0'
   payload_on: '1'
+
+sensor:
+#DS Baby room
+- platform: mqtt
+  name: "Baby Room Door Battery"
+  state_topic: "tele/zigbee/0xA3EF/Battery"  
+  expire_after: 7200   #v0.100 and above
+#DS Garage inside soor
 - platform: mqtt
   name: "Garage Inside Door Battery"
   state_topic: "tele/zigbee/0x2040/Battery"  
   expire_after: 7200   #v0.100 and above
 
-sensor:  
 #TH Outside
 - platform: mqtt
   name: "Outside Temperature"
