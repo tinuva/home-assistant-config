@@ -86,9 +86,9 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault*
-          {{ states.sensor.home_alarm_keypad.state }}
-          {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}
+          :rotating_light: *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
+          Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
+          
 
   ### Notify battery error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
@@ -110,8 +110,7 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Battery Fault!*
-          {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}
+          :rotating_light: *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}          
 
   ### Notify front beam stuck error
   - alias: Notify when front beam stuck on
@@ -134,8 +133,7 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault on Front Beam!*
-          {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
   - alias: Notify Repeat when front beam stuck on 
     description: Notify Repeat when front beam stuck on
     trigger:
@@ -156,5 +154,4 @@ automation:
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault on Front Beam!*
-          {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
