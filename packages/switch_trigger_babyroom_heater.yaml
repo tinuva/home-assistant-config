@@ -17,19 +17,19 @@ automation:
   - alias: "Turn on Babyroom Heater"
     trigger:
       - platform: state
-        entity_id: sensor.temperature_158d0001fa5057, sensor.temperature_158d0002011a32   # baby room, outside
+        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
     condition:
       condition: and
       conditions:
       - condition: template # temp below 20.4
-        value_template: "{{ (states.sensor.temperature_158d0001fa5057.state|float < 20.4) and (states.sensor.temperature_158d0002011a32.state|float < states.sensor.temperature_158d0001fa5057.state|float)}}"
+        value_template: "{{ (states.sensor.baby_room_temperature.state|float < 20.4) and (states.sensor.outside_temperature.state|float < states.sensor.baby_room_temperature.state|float)}}"
       - condition: template # day time mostly off except when outside colder than 14.1
         value_template: >
           {% set d = now().strftime("%Y-%m-%d ") %}
           {% set t = now().timestamp() %}
           {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
           {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {%- if((end <= t <= start) and (states.sensor.temperature_158d0002011a32.state|float < 14.1) and states.input_boolean.babyroom_heater_daytime.state) -%}
+          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float < 14.1) and states.input_boolean.babyroom_heater_daytime.state) -%}
           True
           {%- elif not(end <= t <= start) -%}
           True
@@ -43,7 +43,7 @@ automation:
   - alias: "Turn off Babyroom Heater"
     trigger:
       - platform: state
-        entity_id: sensor.temperature_158d0001fa5057, sensor.temperature_158d0002011a32   # baby room, outside
+        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
       - platform: time_pattern
         # You can also match on interval. This will match every 5 minutes
         minutes: "/5"
@@ -51,14 +51,14 @@ automation:
       condition: or
       conditions:
       - condition: template # temp below 20.4
-        value_template: "{{ ((states.sensor.temperature_158d0001fa5057.state|float > 20.5) or (states.sensor.temperature_158d0002011a32.state|float > states.sensor.temperature_158d0001fa5057.state|float)) }}"
+        value_template: "{{ ((states.sensor.baby_room_temperature.state|float > 20.5) or (states.sensor.outside_temperature.state|float > states.sensor.baby_room_temperature.state|float)) }}"
       - condition: template # day time mostly off except when outside colder than 14.1
         value_template: >
           {% set d = now().strftime("%Y-%m-%d ") %}
           {% set t = now().timestamp() %}
           {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
           {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {%- if((end <= t <= start) and (states.sensor.temperature_158d0002011a32.state|float > 14.1)) -%}
+          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float > 14.1)) -%}
           True
           {%- elif not(end <= t <= start) -%}
           False
