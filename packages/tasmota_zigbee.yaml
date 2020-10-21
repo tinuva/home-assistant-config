@@ -3,7 +3,7 @@ binary_sensor:
 #DS Baby room
 - platform: mqtt
   name: "Baby Room Door"
-  state_topic: "tele/zigbee/0xA3EF/Occupancy"  
+  state_topic: "tele/zigbee/0xA3EF/ZoneStatusChange"  
   json_attributes_topic: "tele/zigbee/0xA3EF/Attr"
   #expire_after: 7200   #v0.100 and above
   device_class: opening
@@ -13,7 +13,7 @@ binary_sensor:
 #DS Garage inside soor
 - platform: mqtt
   name: "Garage Inside Door"
-  state_topic: "tele/zigbee/0x2040/Occupancy"  
+  state_topic: "tele/zigbee/0x2040/ZoneStatusChange"  
   json_attributes_topic: "tele/zigbee/0x2040/Attr"
   #expire_after: 7200   #v0.100 and above
   device_class: opening
@@ -187,6 +187,25 @@ automation:
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Occupancy }}
+          retain: true
+
+  - alias: 'MQTT Zigbee Zone Status'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/tasmota_zbbridge/SENSOR'
+    condition:
+      - condition: template
+        value_template: >
+          {{ 'ZoneStatusChange' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {{ trigger.payload_json.ZbReceived[code].ZoneStatusChange }}
           retain: true
 
   - alias: 'MQTT Zigbee Humidity'
