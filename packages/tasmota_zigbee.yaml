@@ -26,11 +26,16 @@ sensor:
   name: "Baby Room Door Battery"
   state_topic: "tele/zigbee/0xA3EF/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
+  unit_of_measurement: '%'
+  
 #DS Garage inside soor
 - platform: mqtt
   name: "Garage Inside Door Battery"
   state_topic: "tele/zigbee/0x2040/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
+  unit_of_measurement: '%'
 
 #TH Outside
 - platform: mqtt
@@ -39,15 +44,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x9870/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Outside Humidity"
   state_topic: "tele/zigbee/0x9870/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Outside TH Battery"
   state_topic: "tele/zigbee/0x9870/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 #TH Braai
 - platform: mqtt
@@ -56,15 +64,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x7064/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Braai Room Humidity"
   state_topic: "tele/zigbee/0x7064/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Braai Room TH Battery"
   state_topic: "tele/zigbee/0x7064/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 #TH Scullery
 - platform: mqtt
@@ -73,15 +84,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x785A/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Scullery Humidity"
   state_topic: "tele/zigbee/0x785A/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Scullery TH Battery"
   state_topic: "tele/zigbee/0x785A/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
   
 #TH Main bed
 - platform: mqtt
@@ -90,15 +104,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x632C/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Main Bed Room Humidity"
   state_topic: "tele/zigbee/0x632C/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Main Bed Room TH Battery"
   state_topic: "tele/zigbee/0x632C/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
   
 #TH Main bath
 - platform: mqtt
@@ -107,15 +124,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x75D2/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Main Bath Room Humidity"
   state_topic: "tele/zigbee/0x75D2/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Main Bath Room TH Battery"
   state_topic: "tele/zigbee/0x75D2/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 #TH Lounge
 - platform: mqtt
@@ -124,15 +144,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x4D67/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Lounge Humidity"
   state_topic: "tele/zigbee/0x4D67/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Lounge TH Battery"
   state_topic: "tele/zigbee/0x4D67/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 #TH Fridge
 - platform: mqtt
@@ -141,15 +164,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0x2C10/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Fridge Humidity"
   state_topic: "tele/zigbee/0x2C10/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Fridge TH Battery"
   state_topic: "tele/zigbee/0x2C10/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 #TH Baby room
 - platform: mqtt
@@ -158,15 +184,18 @@ sensor:
   json_attributes_topic: "tele/zigbee/0xC46A/Attr"
   unit_of_measurement: "°C" 
   expire_after: 7200
+  device_class: temperature
 - platform: mqtt
   name: "Baby Room Humidity"
   state_topic: "tele/zigbee/0xC46A/Humidity"
   unit_of_measurement: "RH%" 
   expire_after: 7200
+  device_class: humidity
 - platform: mqtt
   name: "Baby Room TH Battery"
   state_topic: "tele/zigbee/0xC46A/Battery"  
   expire_after: 7200   #v0.100 and above
+  device_class: battery
 
 automation:
   ## Zigbee2tasmota MQTT demultiplexer automations
