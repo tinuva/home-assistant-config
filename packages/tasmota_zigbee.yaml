@@ -1,3 +1,11 @@
+###### Sending commands example at https://github.com/arendst/Tasmota/issues/8226
+# You should put cmnd in front, like this: cmnd/zigbeeGateway/ZbSend (ZigbeeSend instead of ZbSend for older versions of Tasmota)
+# 
+# In MQTT-settings in your Tasmota webinterface you define"Topic = %topic%" as in my example: zigbeeGateway
+# And "Full Topic (%prefix%/%topic%/)" should be: %prefix%/%topic%/
+# 
+# And then you just send { "device":"0x4773", "send":{"Power":"On"} } as payload via MQTT, and then the light should turn on e.g.
+
 #Replace 0xA3EF with your device short id
 binary_sensor:
 #DS Baby room
