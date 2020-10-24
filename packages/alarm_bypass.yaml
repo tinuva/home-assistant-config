@@ -7,15 +7,34 @@ automation:
     - entity_id: alarm_control_panel.home_alarm
       platform: state
       to: 'disarmed'
+    - entity_id: sensor.home_alarm_keypad
+      platform: state
+      to: 'Not Ready'
     condition:
       - condition: state
         entity_id: binary_sensor.main_bedroom_window
         state: 'on'
       - condition: state
         entity_id: alarm_control_panel.home_alarm
-        state: disarmed
+        state: 'disarmed'
+      - condition: or
+        conditions:
+            - condition: state
+              entity_id: sensor.home_alarm_keypad
+              state: 'Not Ready'
+            - condition: state
+              entity_id: sensor.home_alarm_keypad
+              state: 'Disarmed'
     action:
-    - service: alarm_control_panel.alarm_keypress
+    - service: notify.slack
+      data:
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
+        target: ["#alerts"]
+        message: >
+          :rotating_light: Setting alarm bypass on main bed room window
+    - service: envisalink.alarm_keypress
       data_template:
         entity_id: alarm_control_panel.home_alarm
         keypress: '*115#'
