@@ -25,6 +25,29 @@ automation:
             - condition: state
               entity_id: sensor.home_alarm_keypad
               state: 'Disarmed'
+      - condition: state
+        state: 'off'
+        entity_id:
+          - binary_sensor.babyroom_pir
+          - binary_sensor.babyroom_window
+          - binary_sensor.back_beam
+          - binary_sensor.back_garage_door
+          - binary_sensor.back_garage_pir
+          - binary_sensor.braai_room_pir
+          - binary_sensor.ensuite_pir
+          - binary_sensor.front_beam
+          - binary_sensor.front_door
+          - binary_sensor.front_garage_door_window
+          - binary_sensor.kitchen_pir
+          - binary_sensor.kitchen_window
+          - binary_sensor.lounge_pir
+          - binary_sensor.lounge_window
+          - binary_sensor.main_bedroom_pir
+          - binary_sensor.scullery_door
+          - binary_sensor.sculllery_window
+          - binary_sensor.spare_bedroom_pir
+          - binary_sensor.study_pir
+          - binary_sensor.study_window
     action:
     - service: notify.slack
       data:
