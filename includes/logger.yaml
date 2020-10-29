@@ -22,3 +22,6 @@ logs:
   # log level for all python scripts
   homeassistant.helpers.script: debug
   homeassistant.components.python_script: warning
+
+  # debug zeroconf
+  homeassistant.components.zeroconf: debug
