@@ -30,7 +30,7 @@ automation:
         entity_id: light.sonoff_master_bathroom_1
         state: 'on'
         for:
-          minutes: 30
+          minutes: 20
     action:
     - service: light.turn_off
       data_template:
