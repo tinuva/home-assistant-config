@@ -6,216 +6,13 @@
 # 
 # And then you just send { "device":"0x4773", "send":{"Power":"On"} } as payload via MQTT, and then the light should turn on e.g.
 
-#Replace 0xA3EF with your device short id
-binary_sensor:
-#DS Baby room
-- platform: mqtt
-  name: "Baby Room Door"
-  state_topic: "tele/zigbee/0xA3EF/ZoneStatusChange"  
-  json_attributes_topic: "tele/zigbee/0xA3EF/Attr"
-  #expire_after: 7200   #v0.100 and above
-  device_class: opening
-  payload_off: '0'
-  payload_on: '1'
 
-#DS Garage inside soor
-- platform: mqtt
-  name: "Garage Inside Door"
-  state_topic: "tele/zigbee/0x2040/ZoneStatusChange"  
-  json_attributes_topic: "tele/zigbee/0x2040/Attr"
-  #expire_after: 7200   #v0.100 and above
-  device_class: opening
-  payload_off: '0'
-  payload_on: '1'
-
-sensor:
-#DS Baby room
-- platform: mqtt
-  name: "Baby Room Door Battery"
-  state_topic: "tele/zigbee/0xA3EF/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-  
-#DS Garage inside soor
-- platform: mqtt
-  name: "Garage Inside Door Battery"
-  state_topic: "tele/zigbee/0x2040/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Outside
-- platform: mqtt
-  name: "Outside Temperature"
-  state_topic: "tele/zigbee/0x9870/Temperature"
-  json_attributes_topic: "tele/zigbee/0x9870/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Outside Humidity"
-  state_topic: "tele/zigbee/0x9870/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Outside TH Battery"
-  state_topic: "tele/zigbee/0x9870/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Braai
-- platform: mqtt
-  name: "Braai Room Temperature"
-  state_topic: "tele/zigbee/0x7064/Temperature"
-  json_attributes_topic: "tele/zigbee/0x7064/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Braai Room Humidity"
-  state_topic: "tele/zigbee/0x7064/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Braai Room TH Battery"
-  state_topic: "tele/zigbee/0x7064/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Scullery
-- platform: mqtt
-  name: "Scullery Temperature"
-  state_topic: "tele/zigbee/0x785A/Temperature"
-  json_attributes_topic: "tele/zigbee/0x785A/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Scullery Humidity"
-  state_topic: "tele/zigbee/0x785A/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Scullery TH Battery"
-  state_topic: "tele/zigbee/0x785A/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-  
-#TH Main bed
-- platform: mqtt
-  name: "Main Bed Room Temperature"
-  state_topic: "tele/zigbee/0x632C/Temperature"
-  json_attributes_topic: "tele/zigbee/0x632C/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Main Bed Room Humidity"
-  state_topic: "tele/zigbee/0x632C/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Main Bed Room TH Battery"
-  state_topic: "tele/zigbee/0x632C/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-  
-#TH Main bath
-- platform: mqtt
-  name: "Main Bath Room Temperature"
-  state_topic: "tele/zigbee/0x75D2/Temperature"
-  json_attributes_topic: "tele/zigbee/0x75D2/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Main Bath Room Humidity"
-  state_topic: "tele/zigbee/0x75D2/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Main Bath Room TH Battery"
-  state_topic: "tele/zigbee/0x75D2/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Lounge
-- platform: mqtt
-  name: "Lounge Temperature"
-  state_topic: "tele/zigbee/0x4D67/Temperature"
-  json_attributes_topic: "tele/zigbee/0x4D67/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Lounge Humidity"
-  state_topic: "tele/zigbee/0x4D67/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Lounge TH Battery"
-  state_topic: "tele/zigbee/0x4D67/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Fridge
-- platform: mqtt
-  name: "Fridge Temperature"
-  state_topic: "tele/zigbee/0x2C10/Temperature"
-  json_attributes_topic: "tele/zigbee/0x2C10/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Fridge Humidity"
-  state_topic: "tele/zigbee/0x2C10/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Fridge TH Battery"
-  state_topic: "tele/zigbee/0x2C10/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
-
-#TH Baby room
-- platform: mqtt
-  name: "Baby Room Temperature"
-  state_topic: "tele/zigbee/0xC46A/Temperature"
-  json_attributes_topic: "tele/zigbee/0xC46A/Attr"
-  unit_of_measurement: "°C" 
-  expire_after: 7200
-  device_class: temperature
-- platform: mqtt
-  name: "Baby Room Humidity"
-  state_topic: "tele/zigbee/0xC46A/Humidity"
-  unit_of_measurement: "RH%" 
-  expire_after: 7200
-  device_class: humidity
-- platform: mqtt
-  name: "Baby Room TH Battery"
-  state_topic: "tele/zigbee/0xC46A/Battery"  
-  expire_after: 7200   #v0.100 and above
-  device_class: battery
-  unit_of_measurement: '%'
 
 automation:
   ## Zigbee2tasmota MQTT demultiplexer automations
+  # Motion sensors
   - alias: 'MQTT Zigbee Occupancy'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -227,6 +24,19 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Occupancy/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Motion",
+              "device_class": "motion",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy",
+              "payload_off": "0",
+              "payload_on": "1"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy
           payload: >
@@ -234,7 +44,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].Occupancy }}
           retain: true
 
+  # Opening (Door) sensors
   - alias: 'MQTT Zigbee Zone Status'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -246,6 +58,19 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}ZoneStatusChange/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
+              "device_class": "opening",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange",
+              "payload_off": "0",
+              "payload_on": "1"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange
           payload: >
@@ -253,7 +78,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].ZoneStatusChange }}
           retain: true
 
+  # Humidity
   - alias: 'MQTT Zigbee Humidity'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -265,6 +92,19 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Humidity/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Humidity",
+              "device_class": "humidity",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Humidity",
+              "expire_after": "7200",
+              "unit_of_measurement": "%"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Humidity
           payload: >
@@ -272,7 +112,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].Humidity }}
           retain: true
 
+  # Temperature
   - alias: 'MQTT Zigbee Temperature'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -284,6 +126,19 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Temperature/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Temperature",
+              "device_class": "temperature",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Temperature",
+              "expire_after": "7200",
+              "unit_of_measurement": "°C"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Temperature
           payload: >
@@ -291,7 +146,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].Temperature }}
           retain: true
 
+  # Pressure
   - alias: 'MQTT Zigbee Pressure'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -303,6 +160,18 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Pressure/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Pressure",
+              "device_class": "pressure",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Pressure",
+              "expire_after": "7200"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Pressure
           payload: >
@@ -310,7 +179,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].Pressure }}
           retain: true
 
+  # Illuminance
   - alias: 'MQTT Zigbee Illuminance'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -322,6 +193,18 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Illuminance/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Illuminance",
+              "device_class": "illuminance",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Illuminance",
+              "expire_after": "7200"
+            }
+      - service: mqtt.publish
+        data_template:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Illuminance
           payload: >
@@ -329,7 +212,9 @@ automation:
             {{ trigger.payload_json.ZbReceived[code].Illuminance }}
           retain: true
 
-  - alias: 'MQTT Zigbee Attribute'
+  # Battery
+  - alias: 'MQTT Zigbee Battery'
+    mode: parallel
     initial_state: true
     trigger:
       - platform: mqtt
@@ -337,25 +222,20 @@ automation:
     condition:
       - condition: template
         value_template: "{{ 'BatteryPercentage' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
-      - condition: template
-        value_template: "{{ 'BatteryVoltage' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
     action:
       - service: mqtt.publish
         data_template:
-          topic: tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Attr
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Battery/config
+          retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
-            {"voltage":{{ trigger.payload_json.ZbReceived[code].BatteryVoltage }},"battery level":{{ trigger.payload_json.ZbReceived[code].BatteryPercentage }}}
-
-  - alias: 'MQTT Zigbee Battery'
-    initial_state: true
-    trigger:
-      - platform: mqtt
-        topic: 'tele/tasmota_zbbridge/SENSOR'
-    condition:
-      - condition: template
-        value_template: "{{ 'BatteryPercentage' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
-    action:
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Battery",
+              "device_class": "battery",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Battery",
+              "expire_after": "7200",
+              "unit_of_measurement": "%"
+            }
       - service: mqtt.publish
         data_template:
           topic: > 
