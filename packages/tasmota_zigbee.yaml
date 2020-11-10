@@ -244,3 +244,85 @@ automation:
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].BatteryPercentage }}
           retain: true
+
+  # Button click
+  - alias: 'MQTT Zigbee Button Click'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/tasmota_zbbridge/SENSOR'
+    condition:
+      - condition: template
+        value_template: "{{ 'click' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Click/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Battery",
+              "device_class": "battery",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Click",
+              "payload_off": "0",
+              "payload_on": "1"
+            }
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Click
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {{ trigger.payload_json.ZbReceived[code].click }}
+          #retain: true
+      - delay:
+           seconds: 2
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Click
+          payload: ""
+          #retain: true
+
+  # Button action
+  - alias: 'MQTT Zigbee Button Hold'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/tasmota_zbbridge/SENSOR'
+    condition:
+      - condition: template
+        value_template: "{{ 'action' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Click/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Battery",
+              "device_class": "battery",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action",
+              "payload_off": "0",
+              "payload_on": "1"
+            }
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {{ trigger.payload_json.ZbReceived[code].action }}
+          #retain: true
+      - delay:
+           seconds: 2
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action
+          payload: ""
+          #retain: true          
