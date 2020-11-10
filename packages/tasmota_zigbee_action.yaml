@@ -1,0 +1,12 @@
+automation:
+  # Kitchen button
+  - alias: 'MQTT Zigbee Button Kitchen single click'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/0xF4D6/Click'
+        payload: 'single'
+    action:
+      - service: input_boolean.toggle
+        data:
+          entity_id: input_boolean.kitchenwork
