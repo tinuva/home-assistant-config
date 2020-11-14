@@ -1,4 +1,0 @@
-synology_dsm:
-  - host: !secret synology_dsm_host
-    username: !secret synology_dsm_username
-    password: !secret synology_dsm_password
