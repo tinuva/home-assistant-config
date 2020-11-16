@@ -21,7 +21,7 @@ sensor:
   - platform: template
     sensors: 
       vacuum_error_message:
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorMessage|string }}"
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
         friendly_name: 'Vacuum Error Message' 
 
 automation:
