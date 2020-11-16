@@ -4,7 +4,7 @@ input_boolean:
 
 timer:
   camera_alerts_disabled:
-    duration: '00:30:00'
+    duration: '00:60:00'
 
 automation:
   # camera alerts disabled - start timer to re-enable
@@ -23,7 +23,7 @@ automation:
           icon: ":movie_camera:"
           username: "Camera Alert"
         target: ["#alerts"]
-        message: ":movie_camera: Camera Alerts disabled for 30 minutes"
+        message: ":movie_camera: Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
   # timer ended, turn camera alerts on
   - alias: Turn camera alerts back on
     trigger:
