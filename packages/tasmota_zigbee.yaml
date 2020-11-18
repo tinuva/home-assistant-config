@@ -1,12 +1,7 @@
-###### Sending commands example at https://github.com/arendst/Tasmota/issues/8226
-# You should put cmnd in front, like this: cmnd/zigbeeGateway/ZbSend (ZigbeeSend instead of ZbSend for older versions of Tasmota)
-# 
-# In MQTT-settings in your Tasmota webinterface you define"Topic = %topic%" as in my example: zigbeeGateway
-# And "Full Topic (%prefix%/%topic%/)" should be: %prefix%/%topic%/
-# 
-# And then you just send { "device":"0x4773", "send":{"Power":"On"} } as payload via MQTT, and then the light should turn on e.g.
-
-
+## Zigbee2tasmota MQTT demultiplexer automations
+# 1. Based on the original work from https://github.com/tyjtyj/tasmota-zigbee-homeassistant
+# 2. Added auto discovery based on help from https://community.home-assistant.io/t/mqtt-demultiplexer-automatic-sensor-discovery-for-tasmota2zigbee/237900/4
+# 3. Added switch based on info from https://github.com/arendst/Tasmota/issues/8226 and now https://tasmota.github.io/docs/Zigbee/#examples
 
 automation:
   ## Zigbee2tasmota MQTT demultiplexer automations
@@ -325,4 +320,54 @@ automation:
           topic: > 
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action
           payload: ""
-          #retain: true          
+          #retain: true
+
+  # Switch (WIP)
+  - alias: 'MQTT Zigbee Switch State'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/tasmota_zbbridge/SENSOR'
+    condition:
+      - condition: template
+        value_template: "{{ 'Power' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: homeassistant/switch/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Power",
+              "command_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/SetPower",
+              "state_off": "0",
+              "state_on": "1",
+              "payload_off": "Off",
+              "payload_on": "On"
+            }
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Power
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {{ trigger.payload_json.ZbReceived[code].Power }}
+          retain: true
+
+  # Switch (WIP)
+  - alias: 'MQTT Zigbee Switch Set Power'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/+/SetPower'
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: cmnd/tasmota_zbbridge/ZbSend
+          payload: >
+            {"Device":"{{ (trigger.topic.split('/') )[2] }}","Send":{"Power":"{{ trigger.payload }}"}}
+          retain: false
