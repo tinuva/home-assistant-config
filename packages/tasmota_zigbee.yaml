@@ -1,8 +1,42 @@
-## Zigbee2tasmota MQTT demultiplexer automations
+### Zigbee2tasmota MQTT demultiplexer automations
 # 1. Based on the original work from https://github.com/tyjtyj/tasmota-zigbee-homeassistant
 # 2. Added auto discovery based on help from https://community.home-assistant.io/t/mqtt-demultiplexer-automatic-sensor-discovery-for-tasmota2zigbee/237900/4
 # 3. Added switch based on info from https://github.com/arendst/Tasmota/issues/8226 and now https://tasmota.github.io/docs/Zigbee/#examples
 
+### Requirements
+# 1. Code requires topic set to "tasmota_zbbridge" in Configuration -> Configure MQTT on the gateway. If different, find/replace in this file with yours
+# 2. Pair device to gateway. On the console type: ZbPermitjoin 1
+# 3. Assign a name to the device using short addrress. Once the name is assigned, home assistant auto discovery will pick it up.
+#    On the console type: ZbName 0x1CD1,Front Bathroom
+
+### Devices tested and confirmed working
+
+# Sonoff Basic ZBR3 (router/repeater) 
+# https://www.banggood.com/SONOFF-BASICZBR3-Zig-Bee-DIY-Smart-Switch-Controlled-Via-SmartThing-APP-Works-With-SmartThings-Hub-Alexa-p-1593931.html?p=DX050122090268201806&custlinkid=1222451
+
+# Sonoff Zigbee Door/Window sensor
+# https://www.banggood.com/Original-Aqara-ZigBee-Version-Window-Door-Sensor-Smart-Home-Kit-Remote-Alarm-Xiaomi-Eco-System-p-1149705.html?p=DX050122090268201806&custlinkid=1222463
+
+# Xiaomi Aqara Temperature/Humidity sensor 
+# https://www.banggood.com/XIAOMI-Portable-Real-time-High-Accuracy-Temperature-Humidity-Intelligent-Sensor-Control-Smart-Detector-Auto-Alarm-Monitoring-Home-Office-Thermometer-Measurer-p-1632931.html?p=DX050122090268201806&custlinkid=1189773
+
+# Xiaomi Aqara button (press button trigger stuff) 
+# https://www.banggood.com/Original-Aqara-ZigBee-Wireless-Smart-Switch-Upgrade-Version-Smart-Home-Remote-Controller-Button-From-Xiaomi-Mijia-Eco-System-p-1478531.html?p=DX050122090268201806&custlinkid=1222446
+# Sample config - Available actions: Click and Hold 
+# automation:
+#   # Kitchen button
+#   - alias: 'MQTT Zigbee Button Kitchen single click'
+#     initial_state: true
+#     trigger:
+#       - platform: mqtt
+#         topic: 'tele/zigbee/0xF4D6/Click'
+#         payload: 'single'
+#     action:
+#       - service: input_boolean.toggle
+#         data:
+#           entity_id: input_boolean.kitchenwork
+
+# Start of package. package/tasmota_zigbee.yaml
 automation:
   ## Zigbee2tasmota MQTT demultiplexer automations
   # Motion sensors
@@ -16,6 +50,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'Occupancy' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -50,6 +87,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'ZoneStatusChange' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -84,6 +124,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'Humidity' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -118,6 +161,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'Temperature' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -152,6 +198,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'Pressure' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -185,6 +234,9 @@ automation:
       - condition: template
         value_template: >
           {{ 'Illuminance' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -217,6 +269,9 @@ automation:
     condition:
       - condition: template
         value_template: "{{ 'BatteryPercentage' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -250,6 +305,9 @@ automation:
     condition:
       - condition: template
         value_template: "{{ 'click' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -291,6 +349,9 @@ automation:
     condition:
       - condition: template
         value_template: "{{ 'action' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
@@ -332,6 +393,9 @@ automation:
     condition:
       - condition: template
         value_template: "{{ 'Power' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
     action:
       - service: mqtt.publish
         data_template:
