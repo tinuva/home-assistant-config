@@ -1,0 +1,21 @@
+telegram_bot:
+  - platform: broadcast
+    api_key: !secret telegram_bot_key
+    allowed_chat_ids:
+      - "-461988039" # CoCT Area 6 loadshedding notifications
+      - "-1001454331987" # ebucks discount notifications
+
+automation:
+  - alias: 'MQTT to Telegram - eBucks Deals'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'telegram/ebucks/discount/+'
+    action:
+      - service: telegram_bot.send_message
+        data_template:
+          message: >
+            {{ trigger.payload }}
+          target: '-1001454331987'
+          parse_mode: markdown
