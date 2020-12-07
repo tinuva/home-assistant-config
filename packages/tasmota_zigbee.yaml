@@ -1,4 +1,4 @@
-### Zigbee2tasmota MQTT demultiplexer automations
+### Zigbee2tasmota Home Assistant MQTT demultiplexer automations
 # 1. Based on the original work from https://github.com/tyjtyj/tasmota-zigbee-homeassistant
 # 2. Added auto discovery based on help from https://community.home-assistant.io/t/mqtt-demultiplexer-automatic-sensor-discovery-for-tasmota2zigbee/237900/4
 # 3. Added switch based on info from https://github.com/arendst/Tasmota/issues/8226 and now https://tasmota.github.io/docs/Zigbee/#examples
@@ -164,6 +164,10 @@ automation:
       - condition: template
         value_template: >
           {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+          {{ trigger.payload_json.ZbReceived[code].Temperature|float > -75 }}
     action:
       - service: mqtt.publish
         data_template:
