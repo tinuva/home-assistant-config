@@ -2,17 +2,17 @@ binary_sensor:
   - platform: template
     sensors:
       alarm_trouble:
-        entity_id: sensor.home_alarm_keypad
+        #entity_id: sensor.home_alarm_keypad
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'trouble') }}"
   - platform: template
     sensors:
       alarm_battery_trouble:
-        entity_id: sensor.home_alarm_keypad
+        #entity_id: sensor.home_alarm_keypad
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'bat_trouble') }}"
   - platform: template
     sensors:
       alarm_ac_power:
-        entity_id: sensor.home_alarm_keypad
+        #entity_id: sensor.home_alarm_keypad
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
 
 automation:
@@ -32,10 +32,15 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: Home alarm {{ states.sensor.home_alarm_keypad.state }}
         target: ["#alerts"]
         message: >
           :rotating_light: Home alarm {{ states.sensor.home_alarm_keypad.state }}
-
 
   ### Notify sensor that triggered alarm --- WIP
   - id: '1586327112618'
@@ -52,6 +57,18 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: *ALARM TRIGGERED!* on: 
+                  {%- set domains = ['binary_sensor'] -%}
+                  {%- for domain in domains -%}
+                  {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
+                    {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
+                  {%- endfor -%}
+                  {%- endfor -%}
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
@@ -83,6 +100,13 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
+                  Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -107,6 +131,12 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}    
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -130,6 +160,12 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
@@ -151,6 +187,12 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
