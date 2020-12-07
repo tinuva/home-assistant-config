@@ -2,7 +2,6 @@ binary_sensor:
   - platform: template
     sensors:
       surepet_battery_no_activity:
-        entity_id: sensor.time
         value_template: >
           {{ (now().timestamp() - as_timestamp(states.sensor.pet_flap_kitchen_pet_door_battery_level.last_updated)) | int //60 > 1260 }}
 
