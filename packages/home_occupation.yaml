@@ -46,6 +46,7 @@ timer:
 
 automation:
   - alias: 'timer start in case of no house activity'
+    mode: restart
     trigger:
       - platform: state
         entity_id: binary_sensor.babyroom_pir
