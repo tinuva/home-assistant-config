@@ -80,6 +80,15 @@ automation:
           {%- endfor -%}
           {%- endfor -%}
 
+#alternative method
+#   inside_alarm_in_alarm_sensors:
+#      friendly_name: "Inside Alarm - In Alarm Sensors"
+#      value_template: "{%- for entity_id in states.group.inside_alarm_sensors_alarm.attributes.entity_id if states(entity_id) == 'on' -%}
+#                      {% set parts = entity_id.split('.') -%}
+#                      {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
+#                      {%- if loop.first %}{% elif loop.last %} and the {% else %}, the {% endif -%}{% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
+#                      {%- endfor %}"
+
   ### Notify keypad error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
     description: Notify when Alarm panel keypad has zone/sensor fault
