@@ -10,3 +10,15 @@ automation:
       - service: input_boolean.toggle
         data:
           entity_id: input_boolean.kitchenwork
+
+  # Main Bathroom button
+  - alias: 'MQTT Zigbee Button Main Bathroom single click'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/0x2839/Click'
+        payload: 'single'
+    action:
+      - service: light.toggle
+        data:
+          entity_id: light.sonoff_master_bathroom_1
