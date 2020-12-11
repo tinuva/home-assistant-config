@@ -27,12 +27,18 @@ automation:
     action:
       - service: notify.slack
         data_template:
-          data:
-            icon: ":envelope:"
-            username: "17track mail"
           target: ["#alerts-david"]
           message: >
             :envelope: {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
+          data:
+            icon: ":envelope:"
+            username: "17track mail"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    :envelope: {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
 
 
 # TTS https://community.home-assistant.io/t/17track-integration/167602
