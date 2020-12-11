@@ -45,7 +45,10 @@ automation:
   - id: '1686327112618'
     alias: Notify Front Beam Motion
     description: Notify when Front Beam Motion Sensor is triggered
-    mode: single # Which is the default
+    mode: single # Which is the default but also adds warning to log
+    #mode: queued
+    #max: 1
+    max_exceeded: debug # see if we can remove warning
     trigger:
     - entity_id: binary_sensor.front_beam
       platform: state
