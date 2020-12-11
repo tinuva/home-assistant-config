@@ -59,10 +59,10 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: Setting alarm bypass on main bed room window
+                  Setting alarm bypass on main bed room window
         target: ["#alerts"]
         message: >
-          :rotating_light: Setting alarm bypass on main bed room window
+          Setting alarm bypass on main bed room window
     - service: envisalink.alarm_keypress
       data_template:
         entity_id: alarm_control_panel.home_alarm

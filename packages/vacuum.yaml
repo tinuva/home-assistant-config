@@ -56,11 +56,11 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :robot_face: Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+                  Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
-          :robot_face: Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
+          Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
           
   ### Auto-resume after pause
   - alias: Vacuum Auto-resume after pause timer
@@ -105,11 +105,11 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :robot_face: Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+                  Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
         title: 'Vacuum Robot Error'
         target: ["#general"]
         message: >
-          :robot_face: Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+          Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
 
   ### Notify when failed to docked after returning
   - alias: Notify when Robot failed to dock
@@ -131,11 +131,11 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :robot_face: Vacuum Robot failed to dock!
+                  Vacuum Robot failed to dock!
         title: 'Vacuum Robot'
         target: ["#general"]
         message: >
-          :robot_face: Vacuum Robot failed to dock!
+          Vacuum Robot failed to dock!
 
   ### Notify last clean results
   - alias: Notify when Robot State Change

@@ -37,10 +37,10 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: Home alarm {{ states.sensor.home_alarm_keypad.state }}
+                  Home alarm {{ states.sensor.home_alarm_keypad.state }}
         target: ["#alerts"]
         message: >
-          :rotating_light: Home alarm {{ states.sensor.home_alarm_keypad.state }}
+          Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
   ### Notify sensor that triggered alarm --- WIP
   - id: '1586327112618'
@@ -62,7 +62,7 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: *ALARM TRIGGERED!* on: 
+                  *ALARM TRIGGERED!* on: 
                   {%- set domains = ['binary_sensor'] -%}
                   {%- for domain in domains -%}
                   {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
@@ -72,7 +72,7 @@ automation:
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM TRIGGERED!* on: 
+          *ALARM TRIGGERED!* on: 
           {%- set domains = ['binary_sensor'] -%}
           {%- for domain in domains -%}
           {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
@@ -114,15 +114,14 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
+                  *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
                   Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
+          *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
           Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
           
-
   ### Notify battery error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
     description: Notify when Alarm panel keypad has zone/sensor fault
@@ -145,11 +144,11 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}    
+                  *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}    
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}          
+          *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}          
 
   ### Notify front beam stuck error
   - alias: Notify when front beam stuck on
@@ -174,11 +173,11 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+                  *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
   - alias: Notify Repeat when front beam stuck on 
     description: Notify Repeat when front beam stuck on
     trigger:
@@ -201,8 +200,8 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+                  *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
         target: ["#alerts"]
         message: >
-          :rotating_light: *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}

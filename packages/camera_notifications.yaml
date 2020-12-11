@@ -19,6 +19,7 @@ automation:
         entity_id: timer.camera_alerts_disabled
     - service: notify.slack
       data_template:
+        target: ["#alerts"]
         data:
           icon: ":movie_camera:"
           username: "Camera Alert"
@@ -27,9 +28,8 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  :movie_camera: Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}
-        target: ["#alerts"]
-        message: ":movie_camera: Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
+                  Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}
+        message: "Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
   # timer ended, turn camera alerts on
   - alias: Turn camera alerts back on
     trigger:
