@@ -19,3 +19,12 @@ automation:
       target: ["#alerts"]
       message: >
         Surepet Flap Battery Sensor has not been updated for 1260 Minutes!
+      data:
+        icon: ":dog2:"
+        username: "Pet Alerts"
+        blocks_template:
+          - type: section
+            text:
+              type: mrkdwn
+              text: >
+                Surepet Flap Battery Sensor has not been updated for 1260 Minutes!

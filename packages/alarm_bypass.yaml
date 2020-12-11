@@ -54,6 +54,12 @@ automation:
         data:
           icon: ":rotating_light:"
           username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :rotating_light: Setting alarm bypass on main bed room window
         target: ["#alerts"]
         message: >
           :rotating_light: Setting alarm bypass on main bed room window
