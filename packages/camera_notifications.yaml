@@ -22,6 +22,12 @@ automation:
         data:
           icon: ":movie_camera:"
           username: "Camera Alert"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  :movie_camera: Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}
         target: ["#alerts"]
         message: ":movie_camera: Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
   # timer ended, turn camera alerts on
