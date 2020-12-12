@@ -15,98 +15,96 @@ timer:
     duration: '01:00:00'
 
 automation:
-### Kitchen Lights
-# Timer end = Turn off
-- alias: Turn off Kitchen lights 10 minutes after trigger
-  trigger:
-    platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.kitchenlight
-  condition:
+  ### Kitchen Lights
+  # Timer end = Turn off
+  - alias: Turn off Kitchen lights 10 minutes after trigger
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.kitchenlight
+    condition:
       - condition: state
-      entity_id: input_boolean.kitchenwork
-      state: off
-  action:
-    service: light.turn_off
-    data:
-      entity_id: light.shelly_kitchen
-
-### Turn on Kitchen Lights when movement
-# Motion = Turn on
-- alias: Turn on Kitchen lights when there is movement
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.kitchen_pir
-    to: 'on'
-  condition:
-    condition: and
-    conditions:
-    #- condition: state  # 'night' condition: from sunset until sunrise 
-    #  entity_id: alarm_control_panel.home_alarm
-    #  state: 'disarmed'
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    #- condition: numeric_state
-    #  entity_id: sensor.illumination_7811dcb90d53
-    #  below: 200
-    - condition: state
-      entity_id: input_boolean.kitchenwork
-      state: off
-  action:
-  - service: light.turn_on
-    data_template:
-      entity_id: light.shelly_kitchen
-      brightness: >-
-        {%- if(is_state('input_boolean.kitchenwork','on')) -%}
-        185
-        {%- elif(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-        30
-        {%- elif(is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost','playing')) -%}
-        30
-        {%- else -%}
-        175
-        {%- endif -%}
-  - service: timer.start
-    data:
-      entity_id: timer.kitchenlight
-
-### We have a button which modify how the kitchen dimming is effected when plex is playing
-# Turned on = Start timer
-- alias: Start kitchenwork timer
-  trigger:
-  - platform: state
-    entity_id: input_boolean.kitchenwork
-    to: 'on'
-  action:
-  - service: timer.start
-    data:
-      entity_id: timer.kitchenwork
-  - service: light.turn_on
-    data:
-      entity_id: light.shelly_kitchen
-      brightness: 175
-# Timer end = Turn off
-- alias: Turn off Kitchenwork timer
-  trigger:
-    platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.kitchenwork
-  action:
-    - service: input_boolean.turn_off
-      data:
         entity_id: input_boolean.kitchenwork
-- alias: Kitchenwork turned off
-  trigger:
-  - platform: state
-    entity_id: input_boolean.kitchenwork
-    to: 'off'
-  action:
-    - service: light.turn_off
-      data:
-        entity_id: light.shelly_kitchen
-    - service: timer.cancel
-      data:
-        entity_id: timer.kitchenwork
+        state: 'off'
+    action:
+      - service: light.turn_off
+        data:
+          entity_id: light.shelly_kitchen
+
+  ### Turn on Kitchen Lights when movement
+  # Motion = Turn on
+  - alias: Turn on Kitchen lights when there is movement
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.kitchen_pir
+        to: 'on'
+    condition:
+      - condition: and
+        conditions:
+          - condition: state  # 'night' condition: from sunset until sunrise 
+            entity_id: sun.sun
+            state: 'below_horizon'
+          - condition: state
+            entity_id: input_boolean.kitchenwork
+            state: 'off'
+          #- condition: numeric_state
+          #  entity_id: sensor.illumination_7811dcb90d53
+          #  below: 200
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.shelly_kitchen
+          brightness: >-
+            {%- if(is_state('input_boolean.kitchenwork','on')) -%}
+            185
+            {%- elif(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+            30
+            {%- elif(is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost','playing')) -%}
+            30
+            {%- else -%}
+            175
+            {%- endif -%}
+      - service: timer.start
+        data:
+          entity_id: timer.kitchenlight
+
+  ### We have a button which modify how the kitchen dimming is effected when plex is playing
+  # Turned on = Start timer
+  - alias: Start kitchenwork timer
+    trigger:
+      - platform: state
+        entity_id: input_boolean.kitchenwork
+        to: 'on'
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.kitchenwork
+      - service: light.turn_on
+        data:
+          entity_id: light.shelly_kitchen
+          brightness: 175
+  # Timer end = Turn off
+  - alias: Turn off Kitchenwork timer
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.kitchenwork
+    action:
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.kitchenwork
+
+  - alias: Kitchenwork turned off
+    trigger:
+      - platform: state
+        entity_id: input_boolean.kitchenwork
+        to: 'off'
+    action:
+      - service: light.turn_off
+        data:
+          entity_id: light.shelly_kitchen
+      - service: timer.cancel
+        data:
+          entity_id: timer.kitchenwork
