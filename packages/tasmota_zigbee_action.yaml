@@ -22,3 +22,16 @@ automation:
       - service: light.toggle
         data:
           entity_id: light.sonoff_master_bathroom_1
+
+  # Lounge button
+  - alias: 'MQTT Zigbee Button Main Bathroom single click'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/0x4C00/Click'
+        payload: 'single'
+    action:
+      - service: automation.trigger
+        data:
+          entity_id:
+            - automation.set_lights_when_plex_kodi_is_playing
