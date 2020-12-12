@@ -23,6 +23,10 @@ automation:
     event_type: timer.finished
     event_data:
       entity_id: timer.kitchenlight
+  condition:
+      - condition: state
+      entity_id: input_boolean.kitchenwork
+      state: off
   action:
     service: light.turn_off
     data:
@@ -47,6 +51,9 @@ automation:
     #- condition: numeric_state
     #  entity_id: sensor.illumination_7811dcb90d53
     #  below: 200
+    - condition: state
+      entity_id: input_boolean.kitchenwork
+      state: off
   action:
   - service: light.turn_on
     data_template:
