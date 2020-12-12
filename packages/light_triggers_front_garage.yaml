@@ -27,6 +27,9 @@ automation:
   - platform: state
     entity_id: binary_sensor.front_garage_door_window
     to: 'on'
+  - platform: state
+    entity_id: binary_sensor.garage_inside_door
+    to: 'on'
   condition:
     - condition: state  # 'night' condition: from sunset until sunrise 
       entity_id: sun.sun
