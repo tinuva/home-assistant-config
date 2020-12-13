@@ -62,32 +62,13 @@ automation:
               text:
                 type: mrkdwn
                 text: >
-                  *ALARM TRIGGERED!* on: 
-                  {%- set domains = ['binary_sensor'] -%}
-                  {%- for domain in domains -%}
-                  {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
-                    {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
-                  {%- endfor -%}
-                  {%- endfor -%}
+                  *ALARM TRIGGERED!* on: {{- '\n' -}}
+                  {{ states.sensor.armed_away.state }}
         title: '*ALARM TRIGGERED!*'
         target: ["#alerts"]
         message: >
-          *ALARM TRIGGERED!* on: 
-          {%- set domains = ['binary_sensor'] -%}
-          {%- for domain in domains -%}
-          {%- for item in states[domain]  if ((item.attributes.device_class is defined and item.state|string|lower == "on") and ((item.attributes['device_class']|lower) == "opening" or item.attributes['device_class']|lower == "motion")) -%}
-            {{ " " }}{{ item.attributes.friendly_name }}{%- if not loop.last %},{% endif -%}
-          {%- endfor -%}
-          {%- endfor -%}
-
-#alternative method
-#   inside_alarm_in_alarm_sensors:
-#      friendly_name: "Inside Alarm - In Alarm Sensors"
-#      value_template: "{%- for entity_id in states.group.inside_alarm_sensors_alarm.attributes.entity_id if states(entity_id) == 'on' -%}
-#                      {% set parts = entity_id.split('.') -%}
-#                      {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
-#                      {%- if loop.first %}{% elif loop.last %} and the {% else %}, the {% endif -%}{% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
-#                      {%- endfor %}"
+          *ALARM TRIGGERED!* on: {{- '\n' -}}
+          {{ states.sensor.armed_away.state }}
 
   ### Notify keypad error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
