@@ -1,5 +1,5 @@
 ---
-envisalink: !include includes/envisalink.yaml
+envisalink:
   #-
   #                  _           _ _       _
   #   ___ _ ____   _(_)___  __ _| (_)_ __ | | __
@@ -150,3 +150,23 @@ group:
       - binary_sensor.sculllery_window
       - binary_sensor.spare_bedroom_pir
       - binary_sensor.study_window
+
+sensor:
+  - platform: template
+    sensors: 
+      armed_home:
+        friendly_name: Armed Home
+        value_template: "{%- for entity_id in states.group.armed_home.attributes.entity_id if states(entity_id) == 'on' -%}
+                        {% set parts = entity_id.split('.') -%}
+                        {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
+                        {%- if loop.first %}{% elif loop.last %} and the {% else %}, the {% endif -%}{% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
+                        {%- endfor %}"
+  - platform: template
+    sensors: 
+      armed_home:
+        friendly_name: Armed Away
+        value_template: "{%- for entity_id in states.group.armed_away.attributes.entity_id if states(entity_id) == 'on' -%}
+                        {% set parts = entity_id.split('.') -%}
+                        {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
+                        {%- if loop.first %}{% elif loop.last %} and the {% else %}, the {% endif -%}{% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
+                        {%- endfor %}"
