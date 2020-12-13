@@ -16,13 +16,23 @@ sensor:
   - platform: template
     sensors: 
       vacuum_error_code:
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
         friendly_name: 'Vacuum Error Code' 
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"        
   - platform: template
     sensors: 
       vacuum_error_message:
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
         friendly_name: 'Vacuum Error Message' 
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"        
+  - platform: template
+    sensors: 
+      vacuum_last_clean_stats:
+        friendly_name: Vacuum last cleaning stats
+        value_template: >
+          Vacuum Robot latest cleaning stats:{{- '\n' -}}
+          Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
+          Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
+          Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
+          End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
 
 automation:
   ### Notify state change
@@ -163,22 +173,14 @@ script:
         data_template:
           target: ["#general"]
           message: >
-            Vacuum Robot latest cleaning stats:{{- '\n' -}}
-            Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60|round(1) }} minutes{{- '\n' -}}
-            Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
-#          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
-#          End time: {{ states.vacuum.rockrobo.attributes.last_run_stats.endTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
+            {{ states.sensor.vacuum_last_clean_stats.state }}
           data:
             blocks_template:
               - type: section
                 text:
                   type: mrkdwn
                   text: >
-                    Vacuum Robot latest cleaning stats:{{- '\n' -}}
-                    Duration: {{ (states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60|round(1) }} minutes{{- '\n' -}}
-                    Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
-        #          Start time: {{ states.vacuum.rockrobo.attributes.last_run_stats.startTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
-        #          End time: {{ states.vacuum.rockrobo.attributes.last_run_stats.endTime|int|timestamp_custom("%d.%m.%Y %H:%M") }}{{- '\n' -}}
+                    {{ states.sensor.vacuum_last_clean_stats.state }}
             file: 
               path: "/config/www/cam_captures/rockrobo_map_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
