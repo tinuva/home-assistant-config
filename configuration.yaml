@@ -31,7 +31,7 @@ script: !include scripts.yaml
 camera: !include includes/camera.yaml
 ffmpeg:
   ffmpeg_bin: /usr/bin/ffmpeg
-envisalink: !include includes/envisalink.yaml
+
 surepetcare: !include includes/surepetcare.yaml
 shelly: !include includes/shelly.yaml
 
