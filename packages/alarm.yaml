@@ -163,7 +163,7 @@ sensor:
                         {%- endfor %}"
   - platform: template
     sensors: 
-      armed_home:
+      armed_away:
         friendly_name: Armed Away
         value_template: "{%- for entity_id in states.group.armed_away.attributes.entity_id if states(entity_id) == 'on' -%}
                         {% set parts = entity_id.split('.') -%}
