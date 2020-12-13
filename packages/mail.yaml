@@ -29,7 +29,9 @@ automation:
         data_template:
           target: ["#alerts-david"]
           message: >
-            :envelope: {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
+            Name: {{ trigger.event.data.new_state.attributes.tracking_number}} {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}{{- '\n' -}}
+            Location: {{ trigger.event.data.new_state.attributes.location }}{{- '\n' -}}
+            Event: {{ trigger.event.data.new_state.attributes.info_text }}{{- '\n' -}}
           data:
             icon: ":envelope:"
             username: "17track mail"
@@ -38,7 +40,9 @@ automation:
                 text:
                   type: mrkdwn
                   text: >
-                    :envelope: {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}: {{ trigger.event.data.new_state.attributes.info_text }}
+                    Name: {{ trigger.event.data.new_state.attributes.tracking_number}} {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}{{- '\n' -}}
+                    Location: {{ trigger.event.data.new_state.attributes.location }}{{- '\n' -}}
+                    Event: {{ trigger.event.data.new_state.attributes.info_text }}{{- '\n' -}}
 
 
 # TTS https://community.home-assistant.io/t/17track-integration/167602
