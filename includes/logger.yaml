@@ -28,3 +28,5 @@ logs:
 
   # https://github.com/home-assistant/core/issues/42555#issuecomment-719922665
   homeassistant.components.synology_dsm: debug
+
+  custom_components.localtuya: debug
