@@ -61,8 +61,8 @@ automation:
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
-              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Motion",
-              "device_class": "motion",
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
+              "device_class": "occupancy",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy",
               "payload_off": "0",
               "payload_on": "1"
