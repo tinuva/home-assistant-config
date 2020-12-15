@@ -48,6 +48,7 @@ speedtestdotnet: !include includes/speedtestdotnet.yaml
 discovery: !include includes/discovery.yaml
 mqtt: !include includes/mqtt.yaml
 influxdb: !include includes/influxdb.yaml
+python_script:
 
 alexa:
   smart_home:
@@ -59,5 +60,4 @@ alexa:
       include_domains:
         - switch
         - light
-
 
