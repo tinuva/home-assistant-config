@@ -1,0 +1,42 @@
+input_datetime:
+  main_geyser_on_time:
+    name: Main Geyser on time
+    has_date: false
+    has_time: true
+
+timer:
+  main_geyser:
+    name: Main Geyser Timer
+    duration: '01:20:00'
+
+automation:
+  # Main geyser on based on input time
+  - alias: Turn on main geyser
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.main_bathroom_geyser
+  # start timer when turned on
+  - alias: Turn off main geyser
+    trigger:
+      - platform: state
+        entity_id: switch.main_bathroom_geyser
+        to: 'on'
+    action:
+    - service: timer.start
+      data:
+        entity_id: timer.main_geyser
+  # Main geyser off when timer finish
+  - alias: Turn off main geyser
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.main_geyser
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser

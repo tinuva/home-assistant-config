@@ -1,0 +1,32 @@
+localtuya:
+  - host: 192.168.241.150
+    device_id: !secret geyser_mainbathroom_device_id
+    local_key: !secret geyser_mainbathroom_local_key
+    friendly_name: Main Bathroom Geyser
+    protocol_version: "3.3"
+    entities:
+      - platform: switch
+        friendly_name: Main Bathroom Geyser
+        id: 1
+        current: 21
+        voltage: 22
+        current_consumption: 23
+
+sensor:
+  - platform: template
+    sensors:
+      main_bathroom_geyser_voltage:
+        friendly_name: Voltage(V)
+        value_template: >-
+          {{ states.switch.main_bathroom_geyser.attributes.voltage }}
+        unit_of_measurement: 'V'
+      main_bathroom_geyser_current:
+        friendly_name: Current(A)
+        value_template: >-
+          {{ states.switch.main_bathroom_geyser.attributes.current|int / 1000 }}
+        unit_of_measurement: 'A'
+      main_bathroom_geyser_current_consumption:
+        friendly_name: Power(W)
+        value_template: >-
+          {{ states.switch.main_bathroom_geyser.attributes.current_consumption }}
+        unit_of_measurement: 'W'
