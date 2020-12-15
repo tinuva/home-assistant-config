@@ -2,8 +2,8 @@ sensor:
   - platform: seventeentrack
     username: !secret seventeentrack_user
     password: !secret seventeentrack_pass
-  - platform: aftership
-    api_key: !secret aftership_api_key
+  #- platform: aftership
+  #  api_key: !secret aftership_api_key
 
 automation:
   - alias: "Seventeentrack Update"
