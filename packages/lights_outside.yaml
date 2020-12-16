@@ -17,7 +17,7 @@ automation:
     action:
       - service: light.turn_on
         entity_id: 
-          - light.shelly_outside_kitchen_front
+          - light.outside_kitchen_front
   ## Whole night
   - alias: "Turn off outside lights and check every minute - whole night"
     trigger:
@@ -36,7 +36,7 @@ automation:
     action:
       - service: light.turn_off
         entity_id: 
-          - light.shelly_outside_kitchen_front
+          - light.outside_kitchen_front
   
   ## While awake
   - alias: "Turn on outside lights and check every minute - whole awake"

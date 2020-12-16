@@ -15,7 +15,7 @@ automation:
   - service: light.turn_on
     data:
       entity_id:
-        - light.shelly_back_garage_light
+        - light.back_garage
 
 ### Back Garage
 # Close = Turn off
@@ -28,6 +28,6 @@ automation:
     service: light.turn_off
     data:
       entity_id:
-        - light.shelly_back_garage_light
+        - light.back_garage
 
 ### Front garage entrance is through the garage door itself or through the house

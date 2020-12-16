@@ -33,7 +33,6 @@ ffmpeg:
   ffmpeg_bin: /usr/bin/ffmpeg
 
 surepetcare: !include includes/surepetcare.yaml
-shelly: !include includes/shelly.yaml
 
 # Sensors
 sensor: !include includes/sensors.yaml

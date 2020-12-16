@@ -1,0 +1,66 @@
+# From: https://github.com/bieniu/ha-shellies-discovery
+automation:
+  - id: shellies_announce
+    alias: 'Shellies Announce'
+    trigger:
+      - platform: homeassistant
+        event: start
+      - platform: time_pattern
+        hours: "/1"
+    action:
+      service: mqtt.publish
+      data:
+        topic: shellies/command
+        payload: announce
+  
+  - id: 'shellies_discovery'
+    alias: 'Shellies Discovery'
+    mode: queued
+    max: 999
+    trigger:
+      platform: mqtt
+      topic: shellies/announce
+    action:
+      service: python_script.shellies_discovery
+      data_template:
+        id: '{{ trigger.payload_json.id }}'
+        mac: '{{ trigger.payload_json.mac }}'
+        fw_ver: '{{ trigger.payload_json.fw_ver }}'
+        model: '{{ trigger.payload_json.model }}'
+        discovery_prefix: 'homeassistant'
+        qos: 2
+        # Dimmers
+        shellydimmer-D3E771:
+          light-0-name: "Lounge"
+        shellydimmer-D42C70:
+          light-0-name: "Kitchen"
+        shellydimmer-D3EAC3:
+          light-0-name: "Braai Room Lights"
+        # Shelly1s as switch
+        shelly1-98F4ABF32146:
+          relay-0-name: "Water Sprayers"
+        # Shelly1s as light
+        shelly1-E097ED:
+          relay-0: "light"
+          relay-0-name: "Back Garage"
+        shelly1-2472C6:
+          relay-0: "light"
+          relay-0-name: "Outside Kitchen Front"
+        shelly1-E098068CCA22:
+          relay-0: "light"
+          relay-0-name: "Outside Back Light"
+        shelly1-8CAAB5055B7E:
+          relay-0: "light"
+          relay-0-name: Front Garage
+        shelly1-E098068CC938:
+          relay-0: "light"
+          relay-0-name: Braai
+        shelly1-8CAAB505C111:
+          relay-0: "light"
+          relay-0-name: Braai Bathroom
+        shelly1-93A63B:
+          relay-0: "light"
+          relay-0-name: Pool light
+        # Shelly1s as switch
+        shelly1pm-8CAAB505FD7D:
+          relay-0-name: Pool pump

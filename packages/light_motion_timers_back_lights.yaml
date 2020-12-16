@@ -25,7 +25,7 @@ automation:
   - service: light.turn_on
     data:
       entity_id:
-        - light.shelly_outside_back_lights
+        - light.outside_back_light
   - service: timer.start
     data:
       entity_id: timer.outsidebacklight
@@ -41,4 +41,4 @@ automation:
     service: light.turn_off
     data:
       entity_id:
-        - light.shelly_outside_back_lights
+        - light.outside_back_light

@@ -20,7 +20,7 @@ automation:
   action:
     service: light.turn_off
     data:
-      entity_id: light.shelly_lounge
+      entity_id: light.lounge
 
 ### Lounge Lights
 # Motion = Turn on
@@ -40,7 +40,7 @@ automation:
   action:
   - service: light.turn_on
     data_template:
-      entity_id: light.shelly_lounge
+      entity_id: light.lounge
       brightness: >-
         {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
         30

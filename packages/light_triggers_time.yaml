@@ -8,7 +8,7 @@ automation:
       condition: and
       conditions:
         - condition: state
-          entity_id: light.shelly_kitchen
+          entity_id: light.kitchen
           state: 'on'
           for:
             minutes: 30
@@ -18,7 +18,7 @@ automation:
     action:
     - service: light.turn_off
       data_template:
-        entity_id: light.shelly_kitchen
+        entity_id: light.kitchen
 
   - alias: "cron - Check /10 - Turn off sonoff_master_bathroom_1 light thats on for longer than 30min"
     trigger:

@@ -26,7 +26,7 @@ automation:
         - timer.loungelight
   - service: light.turn_on
     data:
-      entity_id: light.shelly_lounge
+      entity_id: light.lounge
       brightness: '30'
   - service: automation.trigger
     data:
@@ -54,4 +54,4 @@ automation:
   - service: light.turn_off
     data:
       entity_id:
-        - light.shelly_kitchen
+        - light.kitchen
