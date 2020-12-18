@@ -1,0 +1,47 @@
+input_datetime:
+  pool_pump_on_time:
+    name: Pool pump on time
+    has_date: false
+    has_time: true
+
+timer:
+  pool_pump:
+    name: Pool pump
+    duration: '03:00:00'
+
+automation:
+  # Pool pump on based on input time
+  - alias: Turn on pool pump
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.pool_pump
+  # start timer when turned on
+  - alias: Start timer after Turn on pool pump
+    trigger:
+      - platform: state
+        entity_id: switch.pool_pump
+        to: 'on'
+    action:
+    - service: timer.start
+      data_template:
+        entity_id: timer.pool_pump
+        duration: >
+          {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+          {% set today_name = day_names[now().weekday()] %}
+          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+          {% else %}{{ 300 | int * 60 }}{% endif -%}
+  # pool pump off when timer finish
+  - alias: Turn off pool pump
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.pool_pump
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.pool_pump
