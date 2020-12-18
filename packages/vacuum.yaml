@@ -195,14 +195,17 @@ automation:
   - alias: Notify when Robot State Change
     description: Notify when Robot State Change
     trigger:
-    - entity_id: vacuum.rockrobo
-      platform: state
-      from: 'cleaning'
-      to: 'returning'
+    #- entity_id: vacuum.rockrobo
+    #  platform: state
+    #  from: 'cleaning'
+    #  to: 'returning'
     - entity_id: binary_sensor.vacuum_finished_cleaning
       platform: state
       to: 'on'
     condition: []
+    #- condition: state
+    #      entity_id: binary_sensor.vacuum_finished_cleaning
+    #      state: 'on'
     action:
     - service: script.notify_robot_cleaning_stats
 
@@ -222,12 +225,17 @@ script:
           message: >
             {{ states.sensor.vacuum_last_clean_stats.state }}
           data:
+            icon: ":robot_face:"
             blocks_template:
               - type: section
                 text:
                   type: mrkdwn
                   text: >
                     {{ states.sensor.vacuum_last_clean_stats.state }}
+      - service: notify.slack
+        data_template:
+          target: ["#general"]
+          data:
             file: 
               path: "/config/www/cam_captures/rockrobo_map_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
