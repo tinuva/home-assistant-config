@@ -11,10 +11,10 @@ input_datetime:
 timer:
   main_geyser:
     name: Main Geyser Timer
-    duration: '01:20:00'
+    duration: '02:00:00'
   front_geyser:
     name: Front Geyser Timer
-    duration: '01:20:00'
+    duration: '02:00:00'
 
 automation:
   ### Main Geyser ###
@@ -35,8 +35,13 @@ automation:
         to: 'on'
     action:
     - service: timer.start
-      data:
+      data_template:
         entity_id: timer.main_geyser
+        duration: >
+          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+          {% set today_name = sensor_names[now().weekday()] %}
+          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+          {% else %}{{ 60 | int * 60 }}{% endif -%}
   # Main geyser off when timer finish
   - alias: Turn off main geyser
     trigger:
@@ -66,8 +71,13 @@ automation:
         to: 'on'
     action:
     - service: timer.start
-      data:
+      data_template:
         entity_id: timer.front_geyser
+        duration: >
+          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+          {% set today_name = sensor_names[now().weekday()] %}
+          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+          {% else %}{{ 60 | int * 60 }}{% endif -%}
   # front geyser off when timer finish
   - alias: Turn off front geyser
     trigger:
