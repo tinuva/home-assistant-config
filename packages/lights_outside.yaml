@@ -1,3 +1,14 @@
+light:
+  - platform: group
+    name: Lights whole night
+    entities:
+      - light.outside_kitchen_front
+  - platform: group
+    name: Lights while awake
+    entities:
+      - light.braai_outside
+      - light.pool_light
+
 automation:
   ## Whole night
   - alias: "Turn on outside lights and check every minute - whole night"
@@ -17,7 +28,7 @@ automation:
     action:
       - service: light.turn_on
         entity_id: 
-          - light.outside_kitchen_front
+          - light.lights_whole_night
   ## Whole night
   - alias: "Turn off outside lights and check every minute - whole night"
     trigger:
@@ -36,7 +47,7 @@ automation:
     action:
       - service: light.turn_off
         entity_id: 
-          - light.outside_kitchen_front
+          - light.lights_whole_night
   
   ## While awake
   - alias: "Turn on outside lights and check every minute - whole awake"
@@ -59,7 +70,7 @@ automation:
     action:
       - service: light.turn_on
         entity_id: 
-          - light.braai_outside
+          - light.lights_while_awake
   ## While not awake
   - alias: "Turn off outside lights and check every minute - whole not awake"
     trigger:
@@ -89,4 +100,4 @@ automation:
     action:
       - service: light.turn_off
         entity_id: 
-          - light.braai_outside
+          - light.lights_while_awake
