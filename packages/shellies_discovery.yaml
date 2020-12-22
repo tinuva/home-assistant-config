@@ -61,6 +61,7 @@ automation:
         shelly1-93A63B:
           relay-0: "light"
           relay-0-name: Pool light
-        # Shelly1s as switch
+        # Shelly1pms as switch
         shelly1pm-8CAAB505FD7D:
           relay-0-name: Pool pump
+          expire_after: 7200
