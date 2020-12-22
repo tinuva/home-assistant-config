@@ -16,8 +16,12 @@ automation:
       conditions:
         - condition: template
           value_template: "{{ trigger.event.data.entity_id.startswith('sensor.seventeentrack_package_') }}"
-        #- condition: or
-        #  conditions:
+        - condition: or
+          conditions:
+          - condition: template
+            value_template: "{{ trigger.event.data.new_state.attributes.location != '' }}"
+          - condition: template
+            value_template: "{{ trigger.event.data.new_state.attributes.info_text != '' }}"
         #  - condition: template
         #    value_template: "{{ 'out for delivery' in trigger.event.data.new_state.attributes.info_text|lower }}"
         #  - condition: template
@@ -30,8 +34,8 @@ automation:
           target: ["#alerts-david"]
           message: >
             Name: {{ trigger.event.data.new_state.attributes.tracking_number}} {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}{{- '\n' -}}
-            Location: {{ trigger.event.data.new_state.attributes.location }}{{- '\n' -}}
-            Event: {{ trigger.event.data.new_state.attributes.info_text }}{{- '\n' -}}
+            {% if trigger.event.data.new_state.attributes.location != '' %}Location: {{ trigger.event.data.new_state.attributes.location }}{{- '\n' -}}{% endif %}
+            {% if trigger.event.data.new_state.attributes.info_text != '' %}Event: {{ trigger.event.data.new_state.attributes.info_text }}{{- '\n' -}}{% endif %}
           data:
             icon: ":envelope:"
             username: "17track mail"
