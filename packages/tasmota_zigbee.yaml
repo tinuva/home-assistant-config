@@ -127,6 +127,10 @@ automation:
       - condition: template
         value_template: >
           {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+      - condition: template
+        value_template: >
+          {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+          {{ trigger.payload_json.ZbReceived[code].Humidity|float < 101 }}
     action:
       - service: mqtt.publish
         data_template:
