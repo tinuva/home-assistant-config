@@ -36,6 +36,8 @@ automation:
           light-0-name: "Kitchen"
         shellydimmer-D3EAC3:
           light-0-name: "Braai Room Lights"
+        shellydimmer2-40F52000229E:
+          light-0-name: "Main Bedroom Lights"
         # Shelly1s as switch
         shelly1-98F4ABF32146:
           relay-0-name: "Water Sprayers"
@@ -65,3 +67,9 @@ automation:
         shelly1pm-8CAAB505FD7D:
           relay-0-name: Pool pump
           expire_after: 7200
+        # Shelly25
+        shellyswitch25-40F520009D50:
+          relay-0: "light"
+          relay-0-name: "Outside North Light"
+          relay-1: "light"
+          relay-1-name: "Outside main bedroom lights"
