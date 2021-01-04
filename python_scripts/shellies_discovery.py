@@ -333,6 +333,7 @@ TOPIC_RELAY = "relay"
 TOPIC_STATUS = "status"
 
 TPL_BATTERY = "{{value|float|round}}"
+TPL_BATTERY_FROM_JSON = "{{value_json.bat}}"
 TPL_CONCENTRATION = "{%if 0<=value|int<=65535%}{{value}}{%endif%}"
 TPL_CURRENT = "{{value|float|round(2)}}"
 TPL_DOUBLE_SHORTPUSH = "{%if value_json.event==^SS^%}ON{%else%}OFF{%endif%}"
@@ -415,7 +416,11 @@ ROLLER_DEVICE_CLASSES = [
 
 def parse_version(version):
     """Parse version string and return version date integer."""
-    return int(version.split("-", 1)[0])
+    try:
+        if "-" in version:
+            return int(version.split("-", 1)[0])
+    except TypeError:
+        return version
 
 
 def get_device_config(dev_id):
@@ -921,22 +926,16 @@ if model_id == MODEL_SHELLYHT_ID or dev_id_prefix == MODEL_SHELLYHT_PREFIX:
 
 if model_id == MODEL_SHELLYMOTION_ID or dev_id_prefix == MODEL_SHELLYMOTION_PREFIX:
     model = MODEL_SHELLYMOTION
-    sensors = [SENSOR_TEMPERATURE, SENSOR_HUMIDITY, SENSOR_BATTERY, SENSOR_LUX]
-    sensors_classes = [
-        DEVICE_CLASS_TEMPERATURE,
-        DEVICE_CLASS_HUMIDITY,
-        DEVICE_CLASS_BATTERY,
-        DEVICE_CLASS_ILLUMINANCE,
-    ]
-    sensors_units = [UNIT_CELSIUS, UNIT_PERCENT, UNIT_PERCENT, UNIT_LUX]
-    sensors_tpls = [TPL_TEMPERATURE, TPL_HUMIDITY, TPL_BATTERY, TPL_ILLUMINATION]
-    sensors_topics = [None, None, None, TOPIC_STATUS]
+    sensors = [SENSOR_LUX, SENSOR_BATTERY]
+    sensors_classes = [DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_BATTERY]
+    sensors_units = [UNIT_LUX, UNIT_PERCENT]
+    sensors_tpls = [TPL_ILLUMINATION, TPL_BATTERY_FROM_JSON]
+    sensors_topics = [TOPIC_STATUS, TOPIC_STATUS]
     bin_sensors = [SENSOR_FIRMWARE_UPDATE, SENSOR_MOTION, SENSOR_VIBRATION]
     bin_sensors_classes = [None, DEVICE_CLASS_MOTION, DEVICE_CLASS_VIBRATION]
     bin_sensors_pl = [None, PL_TRUE_FALSE, PL_TRUE_FALSE]
     bin_sensors_tpls = [TPL_NEW_FIRMWARE_FROM_ANNOUNCE, TPL_MOTION, TPL_VIBRATION]
     bin_sensors_topics = [TOPIC_ANNOUNCE, TOPIC_STATUS, TOPIC_STATUS]
-    battery_powered = True
 
 if model_id == MODEL_SHELLYGAS_ID or dev_id_prefix == MODEL_SHELLYGAS_PREFIX:
     model = MODEL_SHELLYGAS
@@ -2120,7 +2119,10 @@ for bin_sensor_id in range(len(bin_sensors)):
     else:
         payload[KEY_PAYLOAD_ON] = bin_sensors_pl[bin_sensor_id][VALUE_ON]
         payload[KEY_PAYLOAD_OFF] = bin_sensors_pl[bin_sensor_id][VALUE_OFF]
-    if battery_powered and bin_sensors[bin_sensor_id] != SENSOR_FIRMWARE_UPDATE:
+    if battery_powered and bin_sensors[bin_sensor_id] not in [
+        SENSOR_FIRMWARE_UPDATE,
+        SENSOR_OPENING,
+    ]:
         payload[KEY_EXPIRE_AFTER] = expire_after
     if not battery_powered:
         payload[KEY_AVAILABILITY_TOPIC] = availability_topic
