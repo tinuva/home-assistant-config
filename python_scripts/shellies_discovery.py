@@ -184,6 +184,7 @@ MODEL_SHELLYBULBRGBW_ID = "SHCB-1"  # Shelly Bulb RGBW
 MODEL_SHELLYBULBRGBW_PREFIX = "shellycolorbulb"
 
 MODEL_SHELLYBUTTON1_ID = "SHBTN-1"  # Shelly Button1
+MODEL_SHELLYBUTTON1V2_ID = "SHBTN-2"  # Shelly Button1 v2
 MODEL_SHELLYBUTTON1_PREFIX = "shellybutton1"
 
 MODEL_SHELLYDIMMER_ID = "SHDM-1"  # Shelly Dimmer
@@ -335,6 +336,7 @@ TOPIC_STATUS = "status"
 TPL_BATTERY = "{{value|float|round}}"
 TPL_BATTERY_FROM_JSON = "{{value_json.bat}}"
 TPL_CONCENTRATION = "{%if 0<=value|int<=65535%}{{value}}{%endif%}"
+TPL_CHARGER = "{%if value_json.charger==true%}ON{%else%}OFF{%endif%}"
 TPL_CURRENT = "{{value|float|round(2)}}"
 TPL_DOUBLE_SHORTPUSH = "{%if value_json.event==^SS^%}ON{%else%}OFF{%endif%}"
 TPL_ENERGY_WH = "{{(value|float/1000)|round(2)}}"
@@ -806,6 +808,11 @@ if model_id == MODEL_SHELLYUNI_ID or dev_id_prefix == MODEL_SHELLYUNI_PREFIX:
     sensors_units = [UNIT_VOLT, UNIT_DB, None, None, None]
     sensors_tpls = [TPL_VOLTAGE, TPL_RSSI, TPL_SSID, TPL_UPTIME, TPL_IP]
     sensors_topics = [TOPIC_ADC, None, None, None, None]
+    bin_sensors = [SENSOR_FIRMWARE_UPDATE]
+    bin_sensors_classes = [None]
+    bin_sensors_tpls = [TPL_NEW_FIRMWARE_FROM_INFO]
+    bin_sensors_pl = [None]
+    bin_sensors_topics = [TOPIC_INFO]
 
 if (
     model_id in [MODEL_SHELLYPLUG_ID, MODEL_SHELLYPLUG_E_ID]
@@ -897,15 +904,8 @@ if model_id == MODEL_SHELLY4PRO_ID or dev_id_prefix == MODEL_SHELLY4PRO_PREFIX:
     relays_bin_sensors_classes = [DEVICE_CLASS_PROBLEM]
     bin_sensors = [SENSOR_FIRMWARE_UPDATE]
     bin_sensors_classes = [None]
-    bin_sensors_tpls = [
-        TPL_NEW_FIRMWARE_FROM_ANNOUNCE
-    ]  # TPL_NEW_FIRMWARE_FROM_INFO after released firmware 1.8.0
-    bin_sensors_topics = [TOPIC_ANNOUNCE]  # TOPIC_INFO after released firmware 1.8.0
-    # sensors = [SENSOR_RSSI, SENSOR_SSID, SENSOR_UPTIME, SENSOR_IP]  # firmware 1.8.0 required
-    # sensors_units = [UNIT_DB, None, None, None]  # firmware 1.8.0 required
-    # sensors_classes = [DEVICE_CLASS_SIGNAL_STRENGTH, None, DEVICE_CLASS_TIMESTAMP, None]  # firmware 1.8.0 required
-    # sensors_tpls = [TPL_RSSI, TPL_SSID, TPL_UPTIME, TPL_IP]  # firmware 1.8.0 required
-    # sensors_topics = [None, None, None, None]  # firmware 1.8.0 required
+    bin_sensors_tpls = [TPL_NEW_FIRMWARE_FROM_ANNOUNCE]
+    bin_sensors_topics = [TOPIC_ANNOUNCE]
 
 if model_id == MODEL_SHELLYHT_ID or dev_id_prefix == MODEL_SHELLYHT_PREFIX:
     model = MODEL_SHELLYHT
@@ -926,16 +926,35 @@ if model_id == MODEL_SHELLYHT_ID or dev_id_prefix == MODEL_SHELLYHT_PREFIX:
 
 if model_id == MODEL_SHELLYMOTION_ID or dev_id_prefix == MODEL_SHELLYMOTION_PREFIX:
     model = MODEL_SHELLYMOTION
-    sensors = [SENSOR_LUX, SENSOR_BATTERY]
-    sensors_classes = [DEVICE_CLASS_ILLUMINANCE, DEVICE_CLASS_BATTERY]
-    sensors_units = [UNIT_LUX, UNIT_PERCENT]
-    sensors_tpls = [TPL_ILLUMINATION, TPL_BATTERY_FROM_JSON]
-    sensors_topics = [TOPIC_STATUS, TOPIC_STATUS]
-    bin_sensors = [SENSOR_FIRMWARE_UPDATE, SENSOR_MOTION, SENSOR_VIBRATION]
-    bin_sensors_classes = [None, DEVICE_CLASS_MOTION, DEVICE_CLASS_VIBRATION]
-    bin_sensors_pl = [None, PL_TRUE_FALSE, PL_TRUE_FALSE]
-    bin_sensors_tpls = [TPL_NEW_FIRMWARE_FROM_ANNOUNCE, TPL_MOTION, TPL_VIBRATION]
-    bin_sensors_topics = [TOPIC_ANNOUNCE, TOPIC_STATUS, TOPIC_STATUS]
+    sensors = [SENSOR_LUX, SENSOR_BATTERY, SENSOR_RSSI]
+    sensors_classes = [
+        DEVICE_CLASS_ILLUMINANCE,
+        DEVICE_CLASS_BATTERY,
+        DEVICE_CLASS_SIGNAL_STRENGTH,
+    ]
+    sensors_units = [UNIT_LUX, UNIT_PERCENT, UNIT_DB]
+    sensors_tpls = [TPL_ILLUMINATION, TPL_BATTERY_FROM_JSON, TPL_RSSI]
+    sensors_topics = [TOPIC_STATUS, TOPIC_STATUS, None]
+    bin_sensors = [
+        SENSOR_FIRMWARE_UPDATE,
+        SENSOR_MOTION,
+        SENSOR_VIBRATION,
+        SENSOR_CHARGER,
+    ]
+    bin_sensors_classes = [
+        None,
+        DEVICE_CLASS_MOTION,
+        DEVICE_CLASS_VIBRATION,
+        DEVICE_CLASS_BATTERY_CHARGING,
+    ]
+    bin_sensors_pl = [None, None, None, None]
+    bin_sensors_tpls = [
+        TPL_NEW_FIRMWARE_FROM_INFO,
+        TPL_MOTION,
+        TPL_VIBRATION,
+        TPL_CHARGER,
+    ]
+    bin_sensors_topics = [TOPIC_INFO, TOPIC_STATUS, TOPIC_STATUS, TOPIC_STATUS]
 
 if model_id == MODEL_SHELLYGAS_ID or dev_id_prefix == MODEL_SHELLYGAS_PREFIX:
     model = MODEL_SHELLYGAS
@@ -966,15 +985,6 @@ if model_id == MODEL_SHELLYGAS_ID or dev_id_prefix == MODEL_SHELLYGAS_PREFIX:
         TPL_UPTIME,
         TPL_IP,
     ]
-    sensors_tpls = [
-        None,
-        None,
-        TPL_CONCENTRATION,
-        TPL_RSSI,
-        TPL_SSID,
-        TPL_UPTIME,
-        TPL_IP,
-    ]
     sensors_topics = [None, None, None, None, None, None, None]
     sensors_units = [None, None, UNIT_PPM, UNIT_DB, None, None, None]
     bin_sensors = [SENSOR_FIRMWARE_UPDATE, SENSOR_GAS]
@@ -982,13 +992,22 @@ if model_id == MODEL_SHELLYGAS_ID or dev_id_prefix == MODEL_SHELLYGAS_PREFIX:
     bin_sensors_tpls = [TPL_NEW_FIRMWARE_FROM_INFO, TPL_GAS]
     bin_sensors_topics = [TOPIC_INFO, None]
 
-if model_id == MODEL_SHELLYBUTTON1_ID or dev_id_prefix == MODEL_SHELLYBUTTON1_PREFIX:
+if (
+    model_id in [MODEL_SHELLYBUTTON1_ID, MODEL_SHELLYBUTTON1V2_ID]
+    or dev_id_prefix == MODEL_SHELLYBUTTON1_PREFIX
+):
     model = MODEL_SHELLYBUTTON1
-    sensors = [SENSOR_BATTERY]
-    sensors_classes = [DEVICE_CLASS_BATTERY]
-    sensors_units = [UNIT_PERCENT]
-    sensors_tpls = [TPL_BATTERY]
-    sensors_topics = [None]
+    sensors = [SENSOR_BATTERY, SENSOR_RSSI, SENSOR_SSID, SENSOR_UPTIME, SENSOR_IP]
+    sensors_classes = [
+        DEVICE_CLASS_BATTERY,
+        DEVICE_CLASS_SIGNAL_STRENGTH,
+        None,
+        DEVICE_CLASS_TIMESTAMP,
+        None,
+    ]
+    sensors_units = [UNIT_PERCENT, UNIT_DB, None, None, None]
+    sensors_tpls = [TPL_BATTERY, TPL_RSSI, TPL_SSID, TPL_UPTIME, TPL_IP]
+    sensors_topics = [None, None, None, None, None]
     bin_sensors = [
         SENSOR_INPUT_0,
         SENSOR_SHORTPUSH,
@@ -996,24 +1015,35 @@ if model_id == MODEL_SHELLYBUTTON1_ID or dev_id_prefix == MODEL_SHELLYBUTTON1_PR
         SENSOR_TRIPLE_SHORTPUSH,
         SENSOR_LONGPUSH,
         SENSOR_FIRMWARE_UPDATE,
+        SENSOR_CHARGER,
     ]
-    bin_sensors_classes = [None, None, None, None, None, None]
+    bin_sensors_classes = [
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        DEVICE_CLASS_BATTERY_CHARGING,
+    ]
     bin_sensors_tpls = [
         None,
         TPL_SHORTPUSH,
         TPL_DOUBLE_SHORTPUSH,
         TPL_TRIPLE_SHORTPUSH,
         TPL_LONGPUSH,
-        TPL_NEW_FIRMWARE_FROM_ANNOUNCE,
+        TPL_NEW_FIRMWARE_FROM_INFO,
+        None,
     ]
-    bin_sensors_pl = [PL_1_0, None, None, None, None, None]
+    bin_sensors_pl = [PL_1_0, None, None, None, None, None, PL_TRUE_FALSE]
     bin_sensors_topics = [
         None,
         TOPIC_INPUT_EVENT_0,
         TOPIC_INPUT_EVENT_0,
         TOPIC_INPUT_EVENT_0,
         TOPIC_INPUT_EVENT_0,
-        TOPIC_ANNOUNCE,
+        TOPIC_INFO,
+        None,
     ]
     battery_powered = True
 
@@ -1926,6 +1956,12 @@ for sensor_id in range(len(sensors)):
         state_topic = f"~sensor/{sensors[sensor_id]}"
 
     config_component = COMP_SWITCH
+    if (
+        model in [MODEL_SHELLYBUTTON1, MODEL_SHELLYMOTION, MODEL_SHELLYSENSE]
+        and device_config.get(CONF_POWERED) == ATTR_POWER_AC
+    ):
+        battery_powered = False
+        no_battery_sensor = True
     if battery_powered:
         expire_after = device_config.get(
             CONF_EXPIRE_AFTER, EXPIRE_AFTER_FOR_BATTERY_POWERED
@@ -2067,6 +2103,11 @@ for bin_sensor_id in range(len(bin_sensors)):
     push_off_delay = True
     if isinstance(device_config.get(CONF_PUSH_OFF_DELAY), bool):
         push_off_delay = device_config.get(CONF_PUSH_OFF_DELAY)
+    if (
+        model in [MODEL_SHELLYBUTTON1, MODEL_SHELLYMOTION, MODEL_SHELLYSENSE]
+        and device_config.get(CONF_POWERED) == ATTR_POWER_AC
+    ):
+        battery_powered = False
     if battery_powered:
         expire_after = device_config.get(
             CONF_EXPIRE_AFTER, EXPIRE_AFTER_FOR_BATTERY_POWERED
