@@ -25,6 +25,10 @@ automation:
       - platform: state
         entity_id: switch.pool_pump
         to: 'on'
+    condition:
+      - condition: state
+        entity_id: input_boolean.homeassistant_recently_started
+        state: 'off'
     action:
     - service: timer.start
       data_template:

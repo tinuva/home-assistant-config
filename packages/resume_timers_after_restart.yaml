@@ -1,11 +1,30 @@
 # From https://community.home-assistant.io/t/how-to-make-active-timers-survive-a-restart/146248
 # How to make active timers survive a restart
 
+input_boolean:
+  homeassistant_recently_started:
+    name: Home Assistant has recently started up
+    initial: off
+
 input_text:
   active_timers:
     name: Active Timers
 
 automation:
+  - alias: 'Hass Startup Notification'
+    initial_state: on
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.homeassistant_recently_started
+      - delay: '00:00:30'
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.homeassistant_recently_started
+
   - alias: 'Active Timers Resume'
     trigger:
       platform: homeassistant
