@@ -12,6 +12,6 @@ use_x_forwarded_for: true
 trusted_proxies:
   - 172.36.0.0/24
 cors_allowed_origins:
-    - https://google.com
-    - https://www.home-assistant.io
-    - https://app.plex.tv
+  - https://google.com
+  - https://www.home-assistant.io
+  - https://app.plex.tv
