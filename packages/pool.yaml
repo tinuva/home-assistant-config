@@ -44,7 +44,7 @@ automation:
           entity_id: switch.pool_pump
 
 
-  # Loadshedding work-arounds
+  #### Loadshedding work-arounds
   # When in loadshedding, start timer and pause
   - alias: Turn on pool pump timer in loadshedding
     trigger:
