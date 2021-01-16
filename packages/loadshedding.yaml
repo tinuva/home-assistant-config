@@ -1,5 +1,41 @@
 input_number:
-  eskom_loadshedding_stage:
+  loadshedding_stage_eskom:
     name: Eskom Loadshedding Stage
     min: -100
     max: 8
+  loadshedding_stage_coct:
+    name: CoCT Loadshedding Stage
+    min: -100
+    max: 8
+
+input_boolean:
+  loadshedding_slot_active:
+    name: Loadshedding slot active
+
+timer:
+  # When calling the start service on a timer that is already running, it resets 
+  # the duration it will need to finish and restart the timer without triggering 
+  # a canceled or finished event. This, for example, makes it easy to create 
+  # timed lights that get triggered by motion. Starting a timer triggers a 
+  # started event unless the timer is paused, in that case, it triggers a 
+  # restarted event.
+  loadshedding_slot:
+    duration: '02:35:00'
+
+automation:
+  - alias: start_loadshedding_slot_timer
+    trigger:
+      platform: state
+      entity_id: input_boolean.loadshedding_slot_active
+      to: 'on'
+    condition:
+      - condition: state
+        entity_id: timer.loadshedding_slot
+        state: 'idle'
+      - condition: numeric_state
+        entity_id: input_number.loadshedding_stage_coct
+        above: 0
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.loadshedding_slot
