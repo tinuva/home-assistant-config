@@ -15,21 +15,14 @@ automation:
     trigger:
       platform: template
       value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      - condition: state
+        entity_id: timer.loadshedding_slot
+        state: 'idle'
     action:
     - service: switch.turn_on
       data:
         entity_id: switch.pool_pump
-  # start timer when turned on
-  - alias: Start timer after Turn on pool pump
-    trigger:
-      - platform: state
-        entity_id: switch.pool_pump
-        to: 'on'
-    condition:
-      - condition: state
-        entity_id: input_boolean.homeassistant_recently_started
-        state: 'off'
-    action:
     - service: timer.start
       data_template:
         entity_id: timer.pool_pump
@@ -46,6 +39,73 @@ automation:
         event_data:
           entity_id: timer.pool_pump
     action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.pool_pump
+
+
+  # Loadshedding work-arounds
+  # When in loadshedding, start timer and pause
+  - alias: Turn on pool pump timer in loadshedding
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      - condition: state
+        entity_id: timer.loadshedding_slot
+        state: 'active'
+    action:
+    - service: timer.start
+      data_template:
+        entity_id: timer.pool_pump
+        duration: >
+          {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+          {% set today_name = day_names[now().weekday()] %}
+          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+          {% else %}{{ 300 | int * 60 }}{% endif -%}
+    # Waits 1 seconds
+    - delay: '00:00:01'
+    - service: timer.pause
+      data_template:
+        entity_id: timer.pool_pump
+
+  # Resume pool pump after loadshedding finished
+  - alias: Turn on pool pump after loadshedding slot ended
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.loadshedding_slot
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'paused'
+    action:
+      # Starts or restarts a timer with the provided duration. 
+      # If no duration is given, it will either restart with its initial 
+      # value, or continue a paused timer with the remaining duration.
+      - service: timer.start  
+        data:
+          entity_id: timer.pool_pump
+      - service: switch.turn_on
+        data:
+          entity_id: switch.pool_pump
+
+  # Pause pool pump if loadshedding slot started
+  - alias: Pause pool pump if loadshedding slot started
+    trigger:
+      - platform: event
+        event_type: timer.started
+        event_data:
+          entity_id: timer.loadshedding_slot
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'active'
+    action:
+      - service: timer.pause
+        data:
+          entity_id: timer.pool_pump
       - service: switch.turn_off
         data:
           entity_id: switch.pool_pump
