@@ -31,6 +31,26 @@ automation:
           {% set today_name = day_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
           {% else %}{{ 300 | int * 60 }}{% endif -%}
+  # start timer when turned on (2 min)
+  - alias: Start timer after Turn on pool pump
+    trigger:
+      - platform: state
+        entity_id: switch.pool_pump
+        from: 'off'
+        to: 'on'
+    condition:
+      - condition: state
+        entity_id: input_boolean.homeassistant_recently_started
+        state: 'off'
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'idle'
+    action:
+    - service: timer.start
+      data_template:
+        entity_id: timer.pool_pump
+        duration: >
+          {{ 2 | int * 60 }} 
   # pool pump off when timer finish
   - alias: Turn off pool pump
     trigger:
