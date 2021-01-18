@@ -1,3 +1,7 @@
+
+# sensor.eskom_loadshedding_stage provided by https://github.com/swartjean/ha-eskom-loadshedding
+
+# Inputs managed by node-red
 input_number:
   loadshedding_stage_eskom:
     name: Eskom Loadshedding Stage
@@ -23,7 +27,7 @@ automation:
         entity_id: input_boolean.loadshedding_slot_active
         to: 'on'
       - platform: numeric_state
-        entity_id: input_number.loadshedding_stage_coct
+        entity_id: sensor.eskom_loadshedding_stage
         above: 0
     condition:
       # make sure timer not already active
@@ -35,7 +39,7 @@ automation:
         entity_id: input_boolean.loadshedding_slot_active
         state: 'on'
       - condition: numeric_state
-        entity_id: input_number.loadshedding_stage_coct
+        entity_id: sensor.eskom_loadshedding_stage
         above: 0
     action:
       - service: timer.start
