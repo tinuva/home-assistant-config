@@ -1,3 +1,6 @@
+# AC Power Lost
+# AC Power Restored
+
 binary_sensor:
   - platform: template
     sensors:
