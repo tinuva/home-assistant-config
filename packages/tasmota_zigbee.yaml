@@ -65,7 +65,9 @@ automation:
               "device_class": "occupancy",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy",
               "payload_off": "0",
-              "payload_on": "1"
+              "payload_on": "1",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_occupancy",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -102,7 +104,9 @@ automation:
               "device_class": "opening",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange",
               "payload_off": "0",
-              "payload_on": "1"
+              "payload_on": "1",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_zone",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -143,7 +147,9 @@ automation:
               "device_class": "humidity",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Humidity",
               "expire_after": "7200",
-              "unit_of_measurement": "%"
+              "unit_of_measurement": "%",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_humidity",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -184,7 +190,9 @@ automation:
               "device_class": "temperature",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Temperature",
               "expire_after": "7200",
-              "unit_of_measurement": "°C"
+              "unit_of_measurement": "°C",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_temperature",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -220,7 +228,9 @@ automation:
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Pressure",
               "device_class": "pressure",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Pressure",
-              "expire_after": "7200"
+              "expire_after": "7200",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_pressure",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -256,7 +266,9 @@ automation:
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Illuminance",
               "device_class": "illuminance",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Illuminance",
-              "expire_after": "7200"
+              "expire_after": "7200",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_illuminance",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -292,7 +304,9 @@ automation:
               "device_class": "battery",
               "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Battery",
               "expire_after": "7200",
-              "unit_of_measurement": "%"
+              "unit_of_measurement": "%",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_battery",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
@@ -301,6 +315,44 @@ automation:
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].BatteryPercentage }}
+          retain: true
+
+  # LinkQuality
+  - alias: 'MQTT Zigbee LinkQuality'
+    mode: parallel
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/tasmota_zbbridge/SENSOR'
+    condition:
+      - condition: template
+        value_template: "{{ 'LinkQuality' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}"
+      - condition: template
+        value_template: >
+          {{ 'Name' in ((trigger.payload_json.ZbReceived.values() | list)[0].keys() | list) }}
+    action:
+      - service: mqtt.publish
+        data_template:
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}LinkQuality/config
+          retain: true
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {
+              "name": "{{ trigger.payload_json.ZbReceived[code].Name }} LinkQuality",
+              "icon": "mdi:wifi",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/LinkQuality",
+              "expire_after": "7200",
+              "unit_of_measurement": "LQI",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_linkquality",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
+            }
+      - service: mqtt.publish
+        data_template:
+          topic: > 
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/LinkQuality
+          payload: >
+            {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
+            {{ trigger.payload_json.ZbReceived[code].LinkQuality }}
           retain: true
 
   # Button click
@@ -392,7 +444,9 @@ automation:
               "state_off": "0",
               "state_on": "1",
               "payload_off": "Off",
-              "payload_on": "On"
+              "payload_on": "On",
+              "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_switch",
+              "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
             }
       - service: mqtt.publish
         data_template:
