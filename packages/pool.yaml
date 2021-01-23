@@ -172,6 +172,8 @@ automation:
       - service: timer.start
         data:
           entity_id: timer.pool_pump_grid_pause
+          duration: >
+          {{ 5 | int * 60 }} 
   # then start if delay completed
   - alias: resume pool pump after grid start delay
     trigger:
