@@ -8,6 +8,9 @@ timer:
   pool_pump:
     name: Pool pump
     duration: '03:00:00'
+  pool_pump_grid_pause:
+    name: Pool pump - grid pause
+    duration: '00:05:00'
 
 automation:
   # Pool pump on based on input time
@@ -19,6 +22,9 @@ automation:
       - condition: state
         entity_id: timer.loadshedding_slot
         state: 'idle'
+      - condition: numeric_state
+        entity_id: sensor.goodwe_vgrid
+        above: 200
     action:
     - service: switch.turn_on
       data:
@@ -129,3 +135,55 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.pool_pump
+
+
+  # Pause pool pump if power loss and but not loadshedding slot
+  - alias: Pause pool pump if power loss and but not loadshedding slot
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.goodwe_vgrid
+        below: 200
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'active'
+      - condition: state
+        entity_id: timer.loadshedding_slot
+        state: 'idle'          
+    action:
+      - service: timer.pause
+        data:
+          entity_id: timer.pool_pump
+      - service: switch.turn_off
+        data:
+          entity_id: switch.pool_pump
+
+  # start delay if grid return and times in pause state 
+  - alias: start delay if grid return and times in pause state
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.goodwe_vgrid
+        above: 200
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'paused'
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.pool_pump_grid_pause
+  # then start if delay completed
+  - alias: resume pool pump after grid start delay
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.pool_pump_grid_pause
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'paused'
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.pool_pump
