@@ -1,0 +1,8 @@
+sensor:
+  - platform: goodwe
+    ip_address: 192.168.241.143
+    #port: 8899
+    #network_timeout: 2
+    #network_retries: 3
+    #scan_interval: 30
+    #sensor_name_prefix: GoodWe
