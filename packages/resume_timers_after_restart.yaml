@@ -9,6 +9,8 @@ input_boolean:
 input_text:
   active_timers:
     name: Active Timers
+  paused_timers:
+    name: Paused Timers
 
 automation:
   - alias: 'Hass Startup Notification'
@@ -40,10 +42,13 @@ automation:
       - timer.front_garage_light
       - timer.kitchenlight
       - timer.kitchenwork
+      - timer.loadshedding_slot
       - timer.loungelight
       - timer.main_geyser
       - timer.no_motion
       - timer.outsidebacklight
+      - timer.pool_pump
+      - timer.pool_pump_grid_pause
       - timer.vacuumautoresume
       - timer.watersystem
     action:
@@ -53,6 +58,24 @@ automation:
         value: >
           {% set ns = namespace(timers = '') %}
           {% for t in states.timer | selectattr('state', 'eq', 'active') | list  %}
+            {% set d = t.attributes.duration.split(':') %}
+            {% if 'day' in d[0] %}
+              {% set z = d[0].split(', ') %}
+              {% set h = ((z[0].split()[0] | int) * 24 + (z[1].split(':')[0] | int)) * 3600 %}
+            {% else %}
+              {% set h = d[0] | int * 3600 %}
+            {% endif %}
+            {% set s = h + (d[1]|int*60) + (d[2]|int) %}
+            {% set c = ',' if not loop.first else '' %}
+            {% set ns.timers = ns.timers ~ '{}{} {}'.format(c, t.object_id, t.last_changed.timestamp()|int + s) %}
+          {% endfor %}
+          {{ ns.timers }}
+    - service: input_text.set_value
+      data_template:
+        entity_id: input_text.paused_timers
+        value: >
+          {% set ns = namespace(timers = '') %}
+          {% for t in states.timer | selectattr('state', 'eq', 'paused') | list  %}
             {% set d = t.attributes.duration.split(':') %}
             {% if 'day' in d[0] %}
               {% set z = d[0].split(', ') %}
