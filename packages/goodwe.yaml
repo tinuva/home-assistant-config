@@ -6,3 +6,123 @@ sensor:
     #network_retries: 3
     #scan_interval: 30
     #sensor_name_prefix: GoodWe
+
+  - platform: template
+    sensors:
+      # Template sensor for values of energy bought (active_power < 0)
+      energy_buy:
+        friendly_name: "GoodWe Grid Power"
+        unit_of_measurement: 'W'
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.goodwe_pgrid')|float < 0 %}
+            {{ (states('sensor.goodwe_pgrid')|float * -1)|round(0) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+      # Template sensor for values of energy sold (active_power > 0)
+      energy_sell:
+        friendly_name: "Energy Sell"
+        unit_of_measurement: 'W'
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.goodwe_pgrid')|float > 0 %}
+            {{ states('sensor.goodwe_pgrid')|float }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+      # Template sensor for values of non-essential energy usage
+      energy_non_essentials:
+        friendly_name: "non-essentials Power"
+        unit_of_measurement: 'W'
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if (states('sensor.goodwe_house_consumption')|float - states('sensor.goodwe_pback_up')|float) > 0 %}
+            {{ (states('sensor.goodwe_house_consumption')|float - states('sensor.goodwe_pback_up')|float)|round(0) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+
+  # Sensor for Riemann sum of energy bought (W -> Wh)
+  - platform: integration
+    source: sensor.energy_buy
+    name: energy_buy_sum
+    unit_prefix: k
+    round: 1
+    method: left
+  # Sensor for Riemann sum of energy sold (W -> Wh)
+  - platform: integration
+    source: sensor.energy_sell
+    name: energy_sell_sum
+    unit_prefix: k
+    round: 1
+    method: left
+
+utility_meter:
+  energy_buy_daily:
+    source: sensor.energy_buy_sum
+    cycle: daily
+  energy_buy_monthly:
+    source: sensor.energy_buy_sum
+    cycle: monthly
+  energy_sell_daily:
+    source: sensor.energy_sell_sum
+    cycle: daily
+  energy_sell_monthly:
+    source: sensor.energy_sell_sum
+    cycle: monthly
+  house_consumption_daily:
+    source: sensor.goodwe_house_consumption
+    cycle: daily
+  house_consumption_monthly:
+    source: sensor.goodwe_house_consumption
+    cycle: monthly
+
+
+automation:
+  # Notification - grid power lost
+  - alias: notification - grid power lost
+    trigger:
+      - platform: state
+        entity_id: sensor.goodwe_grid_mode
+        from: '1'
+        to: '0'
+    action:
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":zap:"
+            username: "GoodWe"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Eskom/Grid power lost
+          title: 'Power'
+          target: ["#general"]
+          message: >
+            Eskom/Grid power lost
+  # Notification - grid power returned
+  - alias: notification - grid power returned
+    trigger:
+      - platform: state
+        entity_id: sensor.goodwe_grid_mode
+        from: '0'
+        to: '1'
+    action:
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":zap:"
+            username: "GoodWe Robot"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Eskom/Grid power returned
+          title: 'Power'
+          target: ["#general"]
+          message: >
+            Eskom/Grid power returned
