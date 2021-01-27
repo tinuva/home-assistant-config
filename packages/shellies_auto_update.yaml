@@ -1,0 +1,59 @@
+# from: https://community.home-assistant.io/t/shelly-firmware-updates/123123/11
+
+rest_command:
+  update_shelly:
+    url: 'http://{{ shelly_ip }}/ota?update=true'
+
+automation:
+  - alias: "Shelly New Firmware Update"
+    id: 'snfn'
+    trigger:
+      platform: mqtt
+      topic: shellies/announce
+    condition:
+      condition: template
+      value_template: "{{ trigger.payload_json['new_fw'] == true }}"
+    action:
+      - service: persistent_notification.create
+        data_template:
+          title: "New Shelly Firmware Update Released. Update will be attempted."
+          message: >
+            Update will be attempted
+            {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/
+            {{- '\n' -}}Update link: http://{{ trigger.payload_json['ip'] }}/ota?update=true
+          notification_id: "{{ trigger.payload_json['id'] }}"
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":electric_plug:"
+            username: "Shelly"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Update will be attempted
+                    {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/
+                    {{- '\n' -}}Update link: http://{{ trigger.payload_json['ip'] }}/ota?update=true
+          title: 'Shelly'
+          target: ["#alerts-david"]
+          message: >
+            Update will be attempted
+            {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/
+            {{- '\n' -}}Update link: http://{{ trigger.payload_json['ip'] }}/ota?update=true
+      - service: rest_command.update_shelly
+        data:
+          shelly_ip: "{{ trigger.payload_json['ip'] }}"
+
+  - alias: "Shelly New Firmware Notification Removal"
+    id: 'snfnr'
+    trigger:
+      platform: mqtt
+      topic: shellies/announce
+    condition:
+      condition: template
+      value_template: "{{ trigger.payload_json['new_fw'] == false }}"
+    action:
+      service: persistent_notification.dismiss
+      data_template:
+        notification_id: "{{ trigger.payload_json['id'] }}"
