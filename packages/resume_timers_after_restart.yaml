@@ -57,25 +57,7 @@ automation:
         entity_id: input_text.active_timers
         value: >
           {% set ns = namespace(timers = '') %}
-          {% for t in states.timer | selectattr('state', 'eq', 'active') | list  %}
-            {% set d = t.attributes.duration.split(':') %}
-            {% if 'day' in d[0] %}
-              {% set z = d[0].split(', ') %}
-              {% set h = ((z[0].split()[0] | int) * 24 + (z[1].split(':')[0] | int)) * 3600 %}
-            {% else %}
-              {% set h = d[0] | int * 3600 %}
-            {% endif %}
-            {% set s = h + (d[1]|int*60) + (d[2]|int) %}
-            {% set c = ',' if not loop.first else '' %}
-            {% set ns.timers = ns.timers ~ '{}{} {}'.format(c, t.object_id, t.last_changed.timestamp()|int + s) %}
-          {% endfor %}
-          {{ ns.timers }}
-    - service: input_text.set_value
-      data_template:
-        entity_id: input_text.paused_timers
-        value: >
-          {% set ns = namespace(timers = '') %}
-          {% for t in states.timer | selectattr('state', 'eq', 'paused') | list  %}
+          {% for t in states.timer | selectattr('state', 'in', ['active','paused']) | list  %}
             {% set d = t.attributes.duration.split(':') %}
             {% if 'day' in d[0] %}
               {% set z = d[0].split(', ') %}
