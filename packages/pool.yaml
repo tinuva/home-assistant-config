@@ -189,3 +189,6 @@ automation:
       - service: timer.start
         data:
           entity_id: timer.pool_pump
+      - service: switch.turn_on
+        data:
+          entity_id: switch.pool_pump
