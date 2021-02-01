@@ -58,6 +58,28 @@ sensor:
     round: 1
     method: left
 
+  - platform: template
+    sensors:
+      # Template sensor for money used
+      energy_buy_daily_cost:
+        friendly_name: "energy_buy_daily_cost"
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.energy_buy_monthly')|float > 600 %}
+            {{ (states('sensor.energy_buy_daily')|float * 291.90 / 100)|round(2) }}
+          {% else %}
+            {{ (states('sensor.energy_buy_daily')|float * 211.52 / 100)|round(2) }}
+          {% endif %}
+      energy_buy_monthly_cost:
+        friendly_name: "energy_buy_monthly_cost"
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.energy_buy_monthly')|float > 600 %}
+            {{ (((states('sensor.energy_buy_monthly')|float - 600) * 291.90 / 100)|round(2) + (600 * 211.52 / 100))|round(2) }}
+          {% else %}
+            {{ (states('sensor.energy_buy_monthly')|float * 211.52 / 100)|round(2) }}
+          {% endif %}
+
 utility_meter:
   energy_buy_daily:
     source: sensor.energy_buy_sum
@@ -100,7 +122,7 @@ automation:
                   text: >
                     Eskom/Grid power lost
           title: 'Power'
-          target: ["#general"]
+          target: ["#alerts"]
           message: >
             Eskom/Grid power lost
   # Notification - grid power returned
@@ -123,6 +145,30 @@ automation:
                   text: >
                     Eskom/Grid power returned
           title: 'Power'
-          target: ["#general"]
+          target: ["#alerts"]
           message: >
             Eskom/Grid power returned
+
+  # notification daily kWh usage
+  - alias: notification daily kWh usage
+    trigger:
+      - platform: template
+        value_template: "{{ states('sensor.time') == ( '86399' | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":zap:"
+            username: "GoodWe Robot"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+          title: 'Power'
+          target: ["#general"]
+          message: >
+            Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+            {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
