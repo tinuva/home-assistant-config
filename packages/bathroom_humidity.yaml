@@ -23,6 +23,11 @@ automation:
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'
+      - condition: not
+        conditions:
+          - condition: state 
+            entity_id: sensor.front_bathroom_temperature
+            state: 'unavailable'
     action:
       - service: light.turn_on
         entity_id: light.sonoff_master_bathroom_1
