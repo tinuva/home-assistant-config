@@ -18,10 +18,18 @@ automation:
           value_template: "{{ trigger.event.data.entity_id.startswith('sensor.seventeentrack_package_') }}"
         - condition: or
           conditions:
-          - condition: template
-            value_template: "{{ trigger.event.data.new_state.attributes.location != '' }}"
-          - condition: template
-            value_template: "{{ trigger.event.data.new_state.attributes.info_text != '' }}"
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.new_state.attributes.location != None }}"
+              - condition: template
+                value_template: "{{ trigger.event.data.new_state.attributes.location != '' }}"
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.event.data.new_state.attributes.info_text != None }}"
+              - condition: template
+                value_template: "{{ trigger.event.data.new_state.attributes.info_text != '' }}"
         #  - condition: template
         #    value_template: "{{ 'out for delivery' in trigger.event.data.new_state.attributes.info_text|lower }}"
         #  - condition: template
