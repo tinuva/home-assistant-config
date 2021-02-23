@@ -16,5 +16,5 @@ sensor:
           {% else %}
             {% set value = ((-42.379 + (2.04901523*(outside_f|float)) + (10.14333127*(states.sensor.outside_humidity.state|float)) - (0.22475541*(outside_f|float)*(states.sensor.outside_humidity.state|float)) - (0.00683783*(outside_f|float)*(outside_f|float)) - (0.05481717*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) + (0.00122874*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)) + (0.00085282*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) - (0.00000199*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)))| round(3)) %}
           {% endif %}
-          {{ ((value - 32)/1.8000|float) | round(3) }}
+          {{ ((value - 32)/1.8000|float) | round(2) }}
         unit_of_measurement: '°C'
