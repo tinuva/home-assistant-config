@@ -44,45 +44,45 @@ timer:
     name: 'House Idle Timer'
     icon: mdi:timer
 
-automation:
-  - alias: 'timer start in case of no house activity'
-    mode: restart
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.babyroom_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.back_beam
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.back_garage_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.braai_room_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.ensuite_pir
-        to: 'off'
-      #- platform: state
-      #  entity_id: binary_sensor.front_beam
-      #  to: 'off'
-      - platform: state
-        entity_id: binary_sensor.kitchen_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.lounge_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.main_bedroom_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.spare_bedroom_pir
-        to: 'off'
-      - platform: state
-        entity_id: binary_sensor.study_pir
-        to: 'off'
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.no_motion
-          duration: 01:00:00
+#automation:
+#  - alias: 'timer start in case of no house activity'
+#    mode: restart
+#    trigger:
+#      - platform: state
+#        entity_id: binary_sensor.babyroom_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.back_beam
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.back_garage_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.braai_room_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.ensuite_pir
+#        to: 'off'
+#      #- platform: state
+#      #  entity_id: binary_sensor.front_beam
+#      #  to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.kitchen_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.lounge_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.main_bedroom_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.spare_bedroom_pir
+#        to: 'off'
+#      - platform: state
+#        entity_id: binary_sensor.study_pir
+#        to: 'off'
+#    action:
+#      - service: timer.start
+#        data:
+#          entity_id: timer.no_motion
+#          duration: 01:00:00
