@@ -6,7 +6,7 @@ light:
   - platform: group
     name: Lights while awake
     entities:
-      - light.braai_outside
+      - light.outside_braai
       - light.pool_light
 
 automation:
