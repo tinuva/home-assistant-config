@@ -38,6 +38,8 @@ automation:
           light-0-name: "Braai Room"
         shellydimmer2-40F52000229E:
           light-0-name: "Main Bedroom"
+        shellydimmer2-40F520016DF0:
+          light-0-name: "Small Bedroom"
         # Shelly1s as switch
         shelly1-98F4ABF32146:
           relay-0-name: "Water Sprayers"
@@ -62,7 +64,10 @@ automation:
           relay-0-name: Braai Bathroom
         shelly1-93A63B:
           relay-0: "light"
-          relay-0-name: Pool light
+          relay-0-name: Pool
+        shelly1-8CAAB505CAFC:
+          relay-0: "light"
+          relay-0-name: Small Bathroom
         # Shelly1pms as switch
         shelly1pm-8CAAB505FD7D:
           relay-0-name: Pool pump
