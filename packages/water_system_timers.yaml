@@ -13,7 +13,7 @@ automation:
 - alias: Turn on back lights when there is movement
   trigger:
   - platform: state
-    entity_id: switch.shelly_outside_switch_water_sprayers
+    entity_id: switch.water_sprayers
     to: 'on'
   action:
   - service: timer.start
@@ -31,4 +31,4 @@ automation:
     service: switch.turn_off
     data:
       entity_id:
-        - switch.shelly_outside_switch_water_sprayers
+        - switch.water_sprayers
