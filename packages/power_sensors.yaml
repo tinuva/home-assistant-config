@@ -1,0 +1,42 @@
+sensor:
+  # Sensor for Riemann sum of energy bought (W -> Wh)
+  - platform: integration
+    source: sensor.front_bathroom_geyser_current_consumption
+    name: front_bathroom_geyser_usage
+    unit_prefix: k
+    round: 1
+    method: left
+  # Sensor for Riemann sum of energy bought (W -> Wh)
+  - platform: integration
+    source: sensor.main_bathroom_geyser_current_consumption
+    name: main_bathroom_geyser_usage
+    unit_prefix: k
+    round: 1
+    method: left
+  # Sensor for Riemann sum of energy bought (W -> Wh)
+  - platform: integration
+    source: sensor.pool_pump_power
+    name: pool_pump_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+utility_meter:
+  front_bathroom_geyser_daily:
+    source: sensor.front_bathroom_geyser_usage
+    cycle: daily
+  front_bathroom_geyser_monthly:
+    source: sensor.front_bathroom_geyser_usage
+    cycle: monthly
+  main_bathroom_geyser_daily:
+    source: sensor.main_bathroom_geyser_usage
+    cycle: daily
+  main_bathroom_geyser_monthly:
+    source: sensor.main_bathroom_geyser_usage
+    cycle: monthly
+  pool_pump_daily:
+    source: sensor.pool_pump_usage
+    cycle: daily
+  pool_pump_monthly:
+    source: sensor.pool_pump_usage
+    cycle: monthly
