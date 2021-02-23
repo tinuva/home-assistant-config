@@ -35,9 +35,9 @@ automation:
         shellydimmer-D42C70:
           light-0-name: "Kitchen"
         shellydimmer-D3EAC3:
-          light-0-name: "Braai Room Lights"
+          light-0-name: "Braai Room"
         shellydimmer2-40F52000229E:
-          light-0-name: "Main Bedroom Lights"
+          light-0-name: "Main Bedroom"
         # Shelly1s as switch
         shelly1-98F4ABF32146:
           relay-0-name: "Water Sprayers"
@@ -47,10 +47,10 @@ automation:
           relay-0-name: "Back Garage"
         shelly1-2472C6:
           relay-0: "light"
-          relay-0-name: "Outside Kitchen Front"
+          relay-0-name: "Outside Kitchen"
         shelly1-E098068CCA22:
           relay-0: "light"
-          relay-0-name: "Outside Back Light"
+          relay-0-name: "Outside Back"
         shelly1-8CAAB5055B7E:
           relay-0: "light"
           relay-0-name: Front Garage
@@ -70,6 +70,26 @@ automation:
         # Shelly25
         shellyswitch25-40F520009D50:
           relay-0: "light"
-          relay-0-name: "Outside North Light"
+          relay-0-name: "Outside North"
           relay-1: "light"
-          relay-1-name: "Outside main bedroom lights"
+          relay-1-name: "Outside Main Bedroom"
+        shellyswitch25-40F520008DBD:
+          relay-0: "light"
+          relay-0-name: "Outside Scullery"
+          relay-1: "light"
+          relay-1-name: "Scullery"
+        shellyswitch25-40F520014D36:
+          relay-0: "light"
+          relay-0-name: "Front Door"
+          relay-1: "light"
+          relay-1-name: "Outside Porch"
+        shellyswitch25-40F520007EC0:
+          relay-0: "light"
+          relay-0-name: "Outside Lounge"
+          relay-1: "light"
+          relay-1-name: "Dining"
+        shellyswitch25-40F52000F5B7:
+          relay-0: "light"
+          relay-0-name: "Bar"
+          relay-1: "light"
+          relay-1-name: "Outside Braai"
