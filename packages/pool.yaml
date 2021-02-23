@@ -1,3 +1,7 @@
+input_boolean:
+  pool_cover_on:
+    name: Pool Cover On
+
 input_datetime:
   pool_pump_on_time:
     name: Pool pump on time
@@ -7,7 +11,7 @@ input_datetime:
 timer:
   pool_pump:
     name: Pool pump
-    duration: '03:00:00'
+    duration: '04:00:00'
   pool_pump_grid_pause:
     name: Pool pump - grid pause
     duration: '00:05:00'
@@ -22,9 +26,9 @@ automation:
       - condition: state
         entity_id: timer.loadshedding_slot
         state: 'idle'
-      - condition: numeric_state
-        entity_id: sensor.goodwe_vgrid
-        above: 200
+      - condition: state
+        entity_id: sensor.goodwe_grid_mode
+        state: '1'
     action:
     - service: switch.turn_on
       data:
@@ -35,8 +39,9 @@ automation:
         duration: >
           {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = day_names[now().weekday()] %}
-          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 300 | int * 60 }}{% endif -%}
+          {% if is_state('input_boolean.pool_cover_on','on') %}{{ 1 * 60 | int * 60 }}
+          {% elif today_name == 'sunday' %}{{ 4 * 60 | int * 60 }}
+          {% else %}{{ 4 * 60 | int * 60 }}{% endif -%}
   # start timer when turned on (2 min)
   - alias: Start timer after Turn on pool pump
     trigger:
@@ -140,9 +145,9 @@ automation:
   # Pause pool pump if power loss and but not loadshedding slot
   - alias: Pause pool pump if power loss and but not loadshedding slot
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.goodwe_vgrid
-        below: 200
+      - platform: state
+        entity_id: sensor.goodwe_grid_mode
+        to: '0'
     condition:
       - condition: state
         entity_id: timer.pool_pump
@@ -161,9 +166,9 @@ automation:
   # start delay if grid return and times in pause state 
   - alias: start delay if grid return and times in pause state
     trigger:
-      - platform: numeric_state
-        entity_id: sensor.goodwe_vgrid
-        above: 200
+      - platform: state
+        entity_id: sensor.goodwe_grid_mode
+        to: '1'
     condition:
       - condition: state
         entity_id: timer.pool_pump
