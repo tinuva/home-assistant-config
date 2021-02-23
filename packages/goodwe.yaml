@@ -107,7 +107,6 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.goodwe_grid_mode
-        from: '1'
         to: '0'
     action:
       - service: notify.slack
@@ -130,7 +129,6 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.goodwe_grid_mode
-        from: '0'
         to: '1'
     action:
       - service: notify.slack
@@ -166,9 +164,9 @@ automation:
                   type: mrkdwn
                   text: >
                     Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
           title: 'Power'
           target: ["#general"]
           message: >
-            Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+            Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
             {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
