@@ -1,0 +1,91 @@
+timer:
+  88e9fe88abfe:
+    duration: '00:05:00'
+
+input_datetime:
+  88e9fe88abfe_off_time_1:
+    name: 88e9fe88abfe off time 1
+    has_date: false
+    has_time: true
+  88e9fe88abfe_off_time_2:
+    name: 88e9fe88abfe off time 2
+    has_date: false
+    has_time: true
+  88e9fe88abfe_off_time_3:
+    name: 88e9fe88abfe off time 3
+    has_date: false
+    has_time: true
+
+automation:
+  # off based on input time
+  - alias: Turn off 88e9fe88abfe 1
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+    - service: switch.turn_off
+      data:
+        entity_id: switch.88e9fe88abfe
+    - service: timer.start
+      data_template:
+        entity_id: timer.88e9fe88abfe
+        duration: >
+          {{ 15 | int * 60 }} 
+
+  - alias: Turn off 88e9fe88abfe 2
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_2', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+    - service: switch.turn_off
+      data:
+        entity_id: switch.88e9fe88abfe
+    - service: timer.start
+      data_template:
+        entity_id: timer.88e9fe88abfe
+        duration: >
+          {{ 2 | int * 60 }} 
+
+  - alias: Turn off 88e9fe88abfe 3
+    trigger:
+      platform: template
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_3', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    action:
+    - service: switch.turn_off
+      data:
+        entity_id: switch.88e9fe88abfe
+    - service: timer.start
+      data_template:
+        entity_id: timer.88e9fe88abfe
+        duration: >
+          {{ 2 | int * 60 }} 
+
+  # start timer when turned off
+  - alias: Start timer after Turn on pool pump
+    trigger:
+      - platform: state
+        entity_id: switch.88e9fe88abfe
+        from: 'on'
+        to: 'off'
+    condition:
+      - condition: state
+        entity_id: input_boolean.homeassistant_recently_started
+        state: 'off'
+    action:
+    - service: timer.start
+      data_template:
+        entity_id: timer.88e9fe88abfe
+        duration: >
+          {{ 4 | int * 60 }} 
+
+  # 88e9fe88abfe onwhen timer finish
+  - alias: Turn on 88e9fe88abfe
+    trigger:
+      - platform: event
+        event_type: timer.finished
+        event_data:
+          entity_id: timer.88e9fe88abfe
+    action:
+      - service: switch.turn_on
+        data:
+          entity_id: switch.88e9fe88abfe
