@@ -12,4 +12,4 @@ username: !secret surepetcareemail
 password: !secret surepetcarepw
 flaps: [!secret surepetcare_flap_id]
 pets: [!secret surepetcare_jessie_id, !secret surepetcare_ziva_id]
-scan_interval: 00:00:100
+scan_interval: 00:01:00

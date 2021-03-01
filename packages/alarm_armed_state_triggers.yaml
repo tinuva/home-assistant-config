@@ -20,20 +20,33 @@ automation:
           {%- endfor -%}
           {%- endfor -%}
 
-  ### Turn of Lounge TV Systems when Alarm is armed
-  - alias: Turn of Lounge TV Systems when Alarm is armed
-    description: Turn of Lounge TV Systems when Alarm is armed
+  ### Lock Pet door if alarm armed away
+  - alias: Lock Pet door if alarm armed away
+    description: Lock Pet door if alarm armed away
     trigger:
     - entity_id: alarm_control_panel.home_alarm
       platform: state
-      to: 'armed_home'
-    - entity_id: alarm_control_panel.home_alarm
-      platform: state
       to: 'armed_away'
-    condition:
-      - condition: state  # only if it is on
-        entity_id: remote.harmony_hub
-        state: 'on'
     action:
-    - service: remote.turn_off
-      entity_id: remote.harmony_hub
+    - service: surepetcare.set_lock_state
+      data_template:
+        flap_id: 204121
+        lock_state: unlocked
+
+  ### Turn of Lounge TV Systems when Alarm is armed
+  #- alias: Turn of Lounge TV Systems when Alarm is armed
+  #  description: Turn of Lounge TV Systems when Alarm is armed
+  #  trigger:
+  #  - entity_id: alarm_control_panel.home_alarm
+  #    platform: state
+  #    to: 'armed_home'
+  #  - entity_id: alarm_control_panel.home_alarm
+  #    platform: state
+  #    to: 'armed_away'
+  #  condition:
+  #    - condition: state  # only if it is on
+  #      entity_id: remote.harmony_hub
+  #      state: 'on'
+  #  action:
+  #  - service: remote.turn_off
+  #    entity_id: remote.harmony_hub
