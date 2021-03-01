@@ -16,6 +16,26 @@ input_datetime:
     has_date: false
     has_time: true
 
+input_number:
+  88e9fe88abfe_off_time_1:
+    name: 88e9fe88abfe off time slot 1
+    initial: 4
+    min: 1
+    max: 60
+    step: 1
+  88e9fe88abfe_off_time_2:
+    name: 88e9fe88abfe off time slot 2
+    initial: 4
+    min: 1
+    max: 60
+    step: 1
+  88e9fe88abfe_off_time_3:
+    name: 88e9fe88abfe off time slot 3
+    initial: 4
+    min: 1
+    max: 60
+    step: 1
+
 automation:
   # off based on input time
   - alias: Turn off 88e9fe88abfe 1
@@ -30,7 +50,7 @@ automation:
       data_template:
         entity_id: timer.88e9fe88abfe
         duration: >
-          {{ 15 | int * 60 }} 
+          {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
 
   - alias: Turn off 88e9fe88abfe 2
     trigger:
@@ -44,7 +64,7 @@ automation:
       data_template:
         entity_id: timer.88e9fe88abfe
         duration: >
-          {{ 2 | int * 60 }} 
+          {{ states('input_number.88e9fe88abfe_off_time_2') | int * 60 }} 
 
   - alias: Turn off 88e9fe88abfe 3
     trigger:
@@ -58,10 +78,10 @@ automation:
       data_template:
         entity_id: timer.88e9fe88abfe
         duration: >
-          {{ 2 | int * 60 }} 
+          {{ states('input_number.88e9fe88abfe_off_time_3') | int * 60 }} 
 
   # start timer when turned off
-  - alias: Start timer after Turn on pool pump
+  - alias: Start timer after Turn off network access
     trigger:
       - platform: state
         entity_id: switch.88e9fe88abfe
@@ -71,14 +91,17 @@ automation:
       - condition: state
         entity_id: input_boolean.homeassistant_recently_started
         state: 'off'
+      - condition: state
+        entity_id: timer.88e9fe88abfe
+        state: 'idle'
     action:
     - service: timer.start
       data_template:
         entity_id: timer.88e9fe88abfe
         duration: >
-          {{ 4 | int * 60 }} 
+          {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
 
-  # 88e9fe88abfe onwhen timer finish
+  # 88e9fe88abfe on when timer finish
   - alias: Turn on 88e9fe88abfe
     trigger:
       - platform: event
