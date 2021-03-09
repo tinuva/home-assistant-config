@@ -5,7 +5,7 @@ cover:
       garage_door_front:
         device_class: garage
         friendly_name: "Garage Door Front"
-        value_template: "{{ is_state('binary_sensor.front_garage_door_window', 'on') }}"
+        position_template: "{{ is_state('binary_sensor.front_garage_door_window', 'on') }}"
         open_cover:
           service: switch.turn_on
           data:
@@ -31,7 +31,7 @@ cover:
       garage_door_back:
         device_class: garage
         friendly_name: "Garage Door Back"
-        value_template: "{{ is_state('binary_sensor.back_garage_door', 'on') }}"
+        position_template: "{{ is_state('binary_sensor.back_garage_door', 'on') }}"
         open_cover:
           service: switch.turn_on
           data:

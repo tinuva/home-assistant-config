@@ -75,9 +75,9 @@ automation:
         # Shelly25
         shellyswitch25-40F520009D50:
           relay-0: "light"
-          relay-0-name: "Outside North"
+          relay-0-name: "Outside Main Bathroom"
           relay-1: "light"
-          relay-1-name: "Outside Main Bedroom"
+          relay-1-name: "Courtyard Main Bedroom"
         shellyswitch25-40F520008DBD:
           relay-0: "light"
           relay-0-name: "Outside Scullery"
@@ -90,11 +90,26 @@ automation:
           relay-1-name: "Outside Porch"
         shellyswitch25-40F520007EC0:
           relay-0: "light"
-          relay-0-name: "Outside Lounge"
+          relay-0-name: "Courtyard Lounge"
           relay-1: "light"
           relay-1-name: "Dining"
         shellyswitch25-40F52000F5B7:
           relay-0: "light"
           relay-0-name: "Bar"
           relay-1: "light"
-          relay-1-name: "Outside Braai"
+          relay-1-name: "Courtyard Braai"
+        shellyswitch25-40F52000E5A4:
+          relay-0: "light"
+          relay-0-name: "Main Ensuite"
+          relay-1: "light"
+          relay-1-name: "Main Bathroom"
+        shellyswitch25-40F520011E45:
+          relay-0: "light"
+          relay-0-name: "Hallway entry"
+          relay-1: "light"
+          relay-1-name: "Hallway"
+        shellyswitch25-40F5200090ED:
+          relay-0: "light"
+          relay-0-name: "Front Hallway"
+          relay-1: "light"
+          relay-1-name: "Front Bathroom"

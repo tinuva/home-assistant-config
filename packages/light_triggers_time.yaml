@@ -27,11 +27,11 @@ automation:
         minutes: "/10"
     condition:
       - condition: state
-        entity_id: light.sonoff_master_bathroom_1
+        entity_id: light.main_bathroom
         state: 'on'
         for:
           minutes: 20
     action:
     - service: light.turn_off
       data_template:
-        entity_id: light.sonoff_master_bathroom_1
+        entity_id: light.main_bathroom

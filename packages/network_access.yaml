@@ -19,19 +19,19 @@ input_datetime:
 input_number:
   88e9fe88abfe_off_time_1:
     name: 88e9fe88abfe off time slot 1
-    initial: 4
+    #initial: 4
     min: 1
     max: 60
     step: 1
   88e9fe88abfe_off_time_2:
     name: 88e9fe88abfe off time slot 2
-    initial: 4
+    #initial: 4
     min: 1
     max: 60
     step: 1
   88e9fe88abfe_off_time_3:
     name: 88e9fe88abfe off time slot 3
-    initial: 4
+    #initial: 4
     min: 1
     max: 60
     step: 1
