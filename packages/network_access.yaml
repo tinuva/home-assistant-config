@@ -1,40 +1,44 @@
-timer:
-  88e9fe88abfe:
-    duration: '00:05:00'
+#timer:
+#  88e9fe88abfe:
+#    duration: '00:05:00'
 
 input_datetime:
   88e9fe88abfe_off_time_1:
     name: 88e9fe88abfe off time 1
     has_date: false
     has_time: true
-  88e9fe88abfe_off_time_2:
-    name: 88e9fe88abfe off time 2
+  88e9fe88abfe_on_time_1:
+    name: 88e9fe88abfe off time 1
     has_date: false
     has_time: true
-  88e9fe88abfe_off_time_3:
-    name: 88e9fe88abfe off time 3
-    has_date: false
-    has_time: true
+#  88e9fe88abfe_off_time_2:
+#    name: 88e9fe88abfe off time 2
+#    has_date: false
+#    has_time: true
+#  88e9fe88abfe_off_time_3:
+#    name: 88e9fe88abfe off time 3
+#    has_date: false
+#    has_time: true
 
-input_number:
-  88e9fe88abfe_off_time_1:
-    name: 88e9fe88abfe off time slot 1
-    #initial: 4
-    min: 1
-    max: 60
-    step: 1
-  88e9fe88abfe_off_time_2:
-    name: 88e9fe88abfe off time slot 2
-    #initial: 4
-    min: 1
-    max: 60
-    step: 1
-  88e9fe88abfe_off_time_3:
-    name: 88e9fe88abfe off time slot 3
-    #initial: 4
-    min: 1
-    max: 60
-    step: 1
+#input_number:
+#  88e9fe88abfe_off_time_1:
+#    name: 88e9fe88abfe off time slot 1
+#    #initial: 4
+#    min: 1
+#    max: 60
+#    step: 1
+#  88e9fe88abfe_off_time_2:
+#    name: 88e9fe88abfe off time slot 2
+#    #initial: 4
+#    min: 1
+#    max: 60
+#    step: 1
+#  88e9fe88abfe_off_time_3:
+#    name: 88e9fe88abfe off time slot 3
+#    #initial: 4
+#    min: 1
+#    max: 60
+#    step: 1
 
 automation:
   # off based on input time
@@ -46,69 +50,79 @@ automation:
     - service: switch.turn_off
       data:
         entity_id: switch.88e9fe88abfe
-    - service: timer.start
-      data_template:
-        entity_id: timer.88e9fe88abfe
-        duration: >
-          {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
+    #- service: timer.start
+    #  data_template:
+    #    entity_id: timer.88e9fe88abfe
+    #    duration: >
+    #      {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
 
-  - alias: Turn off 88e9fe88abfe 2
+  # on based on input time
+  - alias: Turn on 88e9fe88abfe 1
     trigger:
       platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_2', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_on_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
     action:
-    - service: switch.turn_off
+    - service: switch.turn_on
       data:
         entity_id: switch.88e9fe88abfe
-    - service: timer.start
-      data_template:
-        entity_id: timer.88e9fe88abfe
-        duration: >
-          {{ states('input_number.88e9fe88abfe_off_time_2') | int * 60 }} 
 
-  - alias: Turn off 88e9fe88abfe 3
-    trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_3', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    action:
-    - service: switch.turn_off
-      data:
-        entity_id: switch.88e9fe88abfe
-    - service: timer.start
-      data_template:
-        entity_id: timer.88e9fe88abfe
-        duration: >
-          {{ states('input_number.88e9fe88abfe_off_time_3') | int * 60 }} 
+#  - alias: Turn off 88e9fe88abfe 2
+#    trigger:
+#      platform: template
+#      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_2', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+#    action:
+#    - service: switch.turn_off
+#      data:
+#        entity_id: switch.88e9fe88abfe
+#    - service: timer.start
+#      data_template:
+#        entity_id: timer.88e9fe88abfe
+#        duration: >
+#          {{ states('input_number.88e9fe88abfe_off_time_2') | int * 60 }} 
+
+#  - alias: Turn off 88e9fe88abfe 3
+#    trigger:
+#      platform: template
+#      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_3', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+#    action:
+#    - service: switch.turn_off
+#      data:
+#        entity_id: switch.88e9fe88abfe
+#    - service: timer.start
+#      data_template:
+#        entity_id: timer.88e9fe88abfe
+#        duration: >
+#          {{ states('input_number.88e9fe88abfe_off_time_3') | int * 60 }} 
 
   # start timer when turned off
-  - alias: Start timer after Turn off network access
-    trigger:
-      - platform: state
-        entity_id: switch.88e9fe88abfe
-        from: 'on'
-        to: 'off'
-    condition:
-      - condition: state
-        entity_id: input_boolean.homeassistant_recently_started
-        state: 'off'
-      - condition: state
-        entity_id: timer.88e9fe88abfe
-        state: 'idle'
-    action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.88e9fe88abfe
-        duration: >
-          {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
+#  - alias: Start timer after Turn off network access
+#    trigger:
+#      - platform: state
+#        entity_id: switch.88e9fe88abfe
+#        from: 'on'
+#        to: 'off'
+#    condition:
+#      - condition: state
+#        entity_id: input_boolean.homeassistant_recently_started
+#        state: 'off'
+#      - condition: state
+#        entity_id: timer.88e9fe88abfe
+#        state: 'idle'
+#    action:
+#    - service: timer.start
+#      data_template:
+#        entity_id: timer.88e9fe88abfe
+#        duration: >
+#          {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
 
   # 88e9fe88abfe on when timer finish
-  - alias: Turn on 88e9fe88abfe
-    trigger:
-      - platform: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.88e9fe88abfe
-    action:
-      - service: switch.turn_on
-        data:
-          entity_id: switch.88e9fe88abfe
+#  - alias: Turn on 88e9fe88abfe
+#    trigger:
+#      - platform: event
+#        event_type: timer.finished
+#        event_data:
+#          entity_id: timer.88e9fe88abfe
+#    action:
+#      - service: switch.turn_on
+#        data:
+#          entity_id: switch.88e9fe88abfe
