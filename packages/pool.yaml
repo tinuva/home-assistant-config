@@ -30,9 +30,6 @@ automation:
         entity_id: sensor.goodwe_grid_mode
         state: '1'
     action:
-    - service: switch.turn_on
-      data:
-        entity_id: switch.pool_pump
     - service: timer.start
       data_template:
         entity_id: timer.pool_pump
@@ -42,6 +39,10 @@ automation:
           {% if is_state('input_boolean.pool_cover_on','on') %}{{ 1 * 60 | int * 60 }}
           {% elif today_name == 'sunday' %}{{ 4 * 60 | int * 60 }}
           {% else %}{{ 4 * 60 | int * 60 }}{% endif -%}
+    - service: switch.turn_on
+      data:
+        entity_id: switch.pool_pump
+
   # start timer when turned on (2 min)
   - alias: Start timer after Turn on pool pump
     trigger:
