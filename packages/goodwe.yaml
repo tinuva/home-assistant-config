@@ -80,6 +80,13 @@ sensor:
             {{ (states('sensor.energy_buy_monthly')|float * 211.52 / 100)|round(2) }}
           {% endif %}
 
+      grid_mode:
+        friendly_name_template: "Grid Mode"
+        value_template: >
+          {% set value = states('sensor.goodwe_grid_mode') %}
+          {{ value|int }}
+        #{{ value|int if value is not none else states('sensor.grid_mode') }}
+
 utility_meter:
   energy_buy_daily:
     source: sensor.energy_buy_sum
@@ -106,8 +113,12 @@ automation:
   - alias: notification - grid power lost
     trigger:
       - platform: state
-        entity_id: sensor.goodwe_grid_mode
+        entity_id: sensor.grid_mode
         to: '0'
+    condition:
+      >
+        {{ trigger.from_state is not none and
+          trigger.from_state.state not in ['unknown','unavailable'] }}
     action:
       - service: notify.slack
         data_template:
@@ -128,8 +139,12 @@ automation:
   - alias: notification - grid power returned
     trigger:
       - platform: state
-        entity_id: sensor.goodwe_grid_mode
+        entity_id: sensor.grid_mode
         to: '1'
+    condition:
+      >
+        {{ trigger.from_state is not none and
+          trigger.from_state.state not in ['unknown','unavailable'] }}
     action:
       - service: notify.slack
         data_template:
