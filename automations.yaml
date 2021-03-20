@@ -1,0 +1,9 @@
+- id: '1615473668172'
+  alias: Wake-up light alarm with sunrise effect
+  description: ''
+  use_blueprint:
+    path: sbyx/wake-up-light-alarm-with-sunrise-effect.yaml
+    input:
+      manual_time: 05:30:00
+      light_entity: light.main_bedroom_lights
+      start_brightness: 5
