@@ -36,8 +36,8 @@ automation:
         duration: >
           {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = day_names[now().weekday()] %}
-          {% if is_state('input_boolean.pool_cover_on','on') %}{{ 1 * 60 | int * 60 }}
-          {% elif today_name == 'sunday' %}{{ 4 * 60 | int * 60 }}
+          {% if today_name == 'monday' %}{{ 5 * 60 | int * 60 }}
+          {% elif is_state('input_boolean.pool_cover_on','on') %}{{ 1 * 60 | int * 60 }}
           {% else %}{{ 4 * 60 | int * 60 }}{% endif -%}
     - service: switch.turn_on
       data:
