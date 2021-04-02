@@ -7,7 +7,7 @@ light:
     name: Lights while awake
     entities:
       - light.outside_braai
-      - light.pool_light
+      #- light.pool_light
 
 automation:
   ## Whole night
@@ -29,7 +29,7 @@ automation:
       - service: light.turn_on
         entity_id: 
           - light.lights_whole_night
-  ## Whole night
+  ## Whole day
   - alias: "Turn off outside lights and check every minute - whole night"
     trigger:
       - platform: time_pattern
@@ -69,8 +69,10 @@ automation:
             before_offset: "-00:20:00"
     action:
       - service: light.turn_on
-        entity_id: 
-          - light.lights_while_awake
+        data_template:
+          entity_id: >
+            light.lights_while_awake
+            {% if is_state('input_boolean.pool_cover_on','off') %},{{ " " }}light.pool_light{% endif -%}
   ## While not awake
   - alias: "Turn off outside lights and check every minute - whole not awake"
     trigger:
@@ -101,3 +103,4 @@ automation:
       - service: light.turn_off
         entity_id: 
           - light.lights_while_awake
+          - light.pool_light
