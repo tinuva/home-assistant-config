@@ -94,6 +94,7 @@ automation:
           relay-0-name: "Courtyard Lounge"
           relay-1: "light"
           relay-1-name: "Dining"
+          expire_after: 7200
         shellyswitch25-40F52000F5B7:
           relay-0: "light"
           relay-0-name: "Bar"
