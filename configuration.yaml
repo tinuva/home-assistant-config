@@ -32,7 +32,7 @@ camera: !include includes/camera.yaml
 ffmpeg:
   ffmpeg_bin: /usr/bin/ffmpeg
 
-surepetcare: !include includes/surepetcare.yaml
+#surepetcare: !include includes/surepetcare.yaml
 
 # Sensors
 sensor: !include includes/sensors.yaml
@@ -41,7 +41,6 @@ sensor: !include includes/sensors.yaml
 person: !include includes/persons.yaml
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
-light: !include includes/lights.yaml
 proximity: !include includes/proximity.yaml
 speedtestdotnet: !include includes/speedtestdotnet.yaml
 discovery: !include includes/discovery.yaml
