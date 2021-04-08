@@ -41,11 +41,14 @@ automation:
         entity_id: light.dining, light.scullery_light, light.braai_room_lights
         to: 'on'
     condition:
-      - condition: and
+      - condition: or
         conditions:
-          - condition: state  # 'night' condition: from sunset until sunrise 
-            entity_id: sun.sun
-            state: 'above_horizon'
+          - condition: sun
+            after: sunset
+            after_offset: "00:59:00"
+          - condition: sun
+            before: sunrise
+            before_offset: "-00:59:00"
     action:
       - service: timer.start
         data_template:
