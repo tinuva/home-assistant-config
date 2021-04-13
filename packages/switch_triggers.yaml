@@ -1,0 +1,33 @@
+group:
+  feeds_off_while_sleeping:
+    name: Feeds off while sleeping
+    entities:
+      - switch.office_feed_1
+
+automation:
+  ### Turn off feeds when Alarm is armed
+  - alias: Turn off feeds when Alarm is armed
+    description: Turn off feeds when Alarm is armed
+    trigger:
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'armed_home'
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'armed_away'
+    action:
+      - service: switch.turn_off
+        entity_id: 
+          - group.feeds_off_while_sleeping
+
+  ### Turn on feeds when Alarm is disarmed
+  - alias: Turn on feeds when Alarm is armed
+    description: Turn on feeds when Alarm is disarmed
+    trigger:
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'disarmed'
+    action:
+      - service: switch.turn_on
+        entity_id: 
+          - group.feeds_off_while_sleeping
