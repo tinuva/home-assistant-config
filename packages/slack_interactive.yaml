@@ -26,7 +26,7 @@ rest_command:
     payload: >
       {
         "replace_original": {{ replace_original if (replace_original is defined) else 'true' }},
-        "text": "{{ message }}",
+        "text": "{{ message | default('') }}",
         "attachments": {{ attachments if (attachments is defined) else '[]' }}
       }
 
@@ -56,7 +56,7 @@ script:
           payload: >
             {
               "channel": "{{ channel }}",
-              "text": "{{ message }}",
+              "text": "{{ message | default('') }}",
               "attachments": {{ attachments if (attachments is defined) else '[]' }}
             }
 
