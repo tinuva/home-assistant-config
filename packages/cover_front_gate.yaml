@@ -1,0 +1,59 @@
+cover:
+  # Front property gate
+  - platform: mqtt
+    device_class: gate
+    state_topic: "stat/front-gate/POWER2"              #SwitchTopic Enabled
+    command_topic: "cmnd/front-gate/POWER1"
+    availability_topic: "tele/front-gate/LWT"  
+    name: "Front Gate"
+    qos: 0
+    retain: false
+    payload_open: "ON"
+    payload_close: "ON"
+    payload_stop: "ON"
+    state_open: "ON"
+    state_closed: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"  
+
+## Alert
+alert:
+  front_gate:
+    name: Front Gate is open
+    #done_message: Front Garage is closed
+    entity_id: cover.front_gate
+    state: 'on'   # Optional, 'on' is the default value
+    repeat:
+      - 10
+      - 20
+      - 30
+    skip_first: true  # Optional, false is the default
+    notifiers:
+      - notify_front_gate
+
+notify:
+  - name: notify_front_gate
+    platform: command_line
+    command: "/config/ha_to_api_notify_cover.sh script.notify_front_gate"
+
+script:
+  notify_front_gate:
+    sequence:
+      - service: script.notify_slack
+        data_template:
+          channel: "C012KCJ9YJ0"
+          message: "The Front Gate is open."
+          attachments:
+            - title: Close the Front Gate?
+              callback_id: cover_left_open_callback
+              color: '#03a9f4'
+              attachment_type: default
+              actions:
+                - text: Close it
+                  value: Close it
+                  name: 'cover.front_gate'
+                  type: button
+                - text: Leave it
+                  value: Leave it
+                  name: 'anything_just_not_blank'
+                  type: button
