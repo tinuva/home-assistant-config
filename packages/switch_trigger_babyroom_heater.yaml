@@ -1,87 +1,87 @@
-input_boolean:
-  babyroom_heater_daytime:
-    name: Babyroom Heater Day Time
-
-input_datetime:
-  babyroom_heater_on_time:
-    name: Babyroom Heater off Time
-    has_date: false
-    has_time: true
-
-  babyroom_heater_off_time:
-    name: Babyroom Heater on Time
-    has_date: false
-    has_time: true
-
-automation:
-  - alias: "Turn on Babyroom Heater"
-    max_exceeded: debug # see if we can remove warning
-    trigger:
-      - platform: state
-        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
-    condition:
-      condition: and
-      conditions:
-      - condition: template # temp below 20.4
-        value_template: "{{ (states.sensor.baby_room_temperature.state|float < 20.4) and (states.sensor.outside_temperature.state|float < states.sensor.baby_room_temperature.state|float)}}"
-      - condition: template # day time mostly off except when outside colder than 14.1
-        value_template: >
-          {% set d = now().strftime("%Y-%m-%d ") %}
-          {% set t = now().timestamp() %}
-          {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float < 14.1) and states.input_boolean.babyroom_heater_daytime.state) -%}
-          True
-          {%- elif not(end <= t <= start) -%}
-          True
-          {%- else -%}
-          False
-          {%- endif -%}          
-    action:
-      - service: switch.turn_on
-        entity_id: switch.heater_baby_room
-
-  - alias: "Turn off Babyroom Heater"
-    max_exceeded: debug # see if we can remove warning
-    trigger:
-      - platform: state
-        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
-      - platform: time_pattern
-        # You can also match on interval. This will match every 5 minutes
-        minutes: "/5"
-    condition:
-      condition: or
-      conditions:
-      - condition: template # temp below 20.4
-        value_template: "{{ ((states.sensor.baby_room_temperature.state|float > 20.5) or (states.sensor.outside_temperature.state|float > states.sensor.baby_room_temperature.state|float)) }}"
-      - condition: template # day time mostly off except when outside colder than 14.1
-        value_template: >
-          {% set d = now().strftime("%Y-%m-%d ") %}
-          {% set t = now().timestamp() %}
-          {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
-          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float > 14.1)) -%}
-          True
-          {%- elif not(end <= t <= start) -%}
-          False
-          {%- else -%}
-          True
-          {%- endif -%}   
-    action:
-      - service: switch.turn_off
-        entity_id: switch.heater_baby_room
-
-  - alias: "Turn off Babyroom Heater at end time"
-    trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.babyroom_heater_off_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    action:
-      - service: script.turn_off_babyheater_switch_delayed
-
-script:
-  turn_off_babyheater_switch_delayed:
-    sequence:
-      - delay: 
-          seconds: 5
-      - service: switch.turn_off
-        entity_id: switch.heater_baby_room
+#input_boolean:
+#  babyroom_heater_daytime:
+#    name: Babyroom Heater Day Time
+#
+#input_datetime:
+#  babyroom_heater_on_time:
+#    name: Babyroom Heater off Time
+#    has_date: false
+#    has_time: true
+#
+#  babyroom_heater_off_time:
+#    name: Babyroom Heater on Time
+#    has_date: false
+#    has_time: true
+#
+#automation:
+#  - alias: "Turn on Babyroom Heater"
+#    max_exceeded: debug # see if we can remove warning
+#    trigger:
+#      - platform: state
+#        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
+#    condition:
+#      condition: and
+#      conditions:
+#      - condition: template # temp below 20.4
+#        value_template: "{{ (states.sensor.baby_room_temperature.state|float < 20.4) and (states.sensor.outside_temperature.state|float < states.sensor.baby_room_temperature.state|float)}}"
+#      - condition: template # day time mostly off except when outside colder than 14.1
+#        value_template: >
+#          {% set d = now().strftime("%Y-%m-%d ") %}
+#          {% set t = now().timestamp() %}
+#          {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
+#          {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
+#          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float < 14.1) and states.input_boolean.babyroom_heater_daytime.state) -%}
+#          True
+#          {%- elif not(end <= t <= start) -%}
+#          True
+#          {%- else -%}
+#          False
+#          {%- endif -%}          
+#    action:
+#      - service: switch.turn_on
+#        entity_id: switch.heater_baby_room
+#
+#  - alias: "Turn off Babyroom Heater"
+#    max_exceeded: debug # see if we can remove warning
+#    trigger:
+#      - platform: state
+#        entity_id: sensor.baby_room_temperature, sensor.outside_temperature   # baby room, outside
+#      - platform: time_pattern
+#        # You can also match on interval. This will match every 5 minutes
+#        minutes: "/5"
+#    condition:
+#      condition: or
+#      conditions:
+#      - condition: template # temp below 20.4
+#        value_template: "{{ ((states.sensor.baby_room_temperature.state|float > 20.5) or (states.sensor.outside_temperature.state|float > states.sensor.baby_room_temperature.state|float)) }}"
+#      - condition: template # day time mostly off except when outside colder than 14.1
+#        value_template: >
+#          {% set d = now().strftime("%Y-%m-%d ") %}
+#          {% set t = now().timestamp() %}
+#          {% set start = strptime(d + states('input_datetime.babyroom_heater_on_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
+#          {% set end = strptime(d + states('input_datetime.babyroom_heater_off_time'), '%Y-%m-%d %H:%M:00').timestamp() %}
+#          {%- if((end <= t <= start) and (states.sensor.outside_temperature.state|float > 14.1)) -%}
+#          True
+#          {%- elif not(end <= t <= start) -%}
+#          False
+#          {%- else -%}
+#          True
+#          {%- endif -%}   
+#    action:
+#      - service: switch.turn_off
+#        entity_id: switch.heater_baby_room
+#
+#  - alias: "Turn off Babyroom Heater at end time"
+#    trigger:
+#      platform: template
+#      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.babyroom_heater_off_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+#    action:
+#      - service: script.turn_off_babyheater_switch_delayed
+#
+#script:
+#  turn_off_babyheater_switch_delayed:
+#    sequence:
+#      - delay: 
+#          seconds: 5
+#      - service: switch.turn_off
+#        entity_id: switch.heater_baby_room
