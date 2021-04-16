@@ -67,8 +67,7 @@ script:
           response_url: >
             {%- set pl = payload | from_json -%}
             {{ pl.response_url }}
-          replace_original: >
-            {{ replace_original if (replace_original is defined) else 'true' }}
+          replace_original: 'true'
           attachments:
             - pretext: >
                 {%- set pl = payload | from_json -%}
