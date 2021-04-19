@@ -6,7 +6,7 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a 
   # restarted event.
   watersystem:
-    duration: '00:15:00'
+    duration: '00:35:00'
 
 automation:
 # Start timer after switch turn on
