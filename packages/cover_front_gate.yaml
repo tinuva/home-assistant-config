@@ -22,7 +22,7 @@ alert:
     name: Front Gate is open
     #done_message: Front Garage is closed
     entity_id: cover.front_gate
-    state: 'closed'   # Optional, 'on' is the default value
+    state: 'open'   # Optional, 'on' is the default value
     repeat:
       - 10
       - 20
