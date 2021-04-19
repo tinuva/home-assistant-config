@@ -83,9 +83,11 @@ sensor:
       grid_mode:
         friendly_name_template: "Grid Mode"
         value_template: >
-          {% set value = states('sensor.goodwe_grid_mode') %}
-          {{ value|int }}
-        #{{ value|int if value is not none else states('sensor.grid_mode') }}
+          {% if states('sensor.goodwe_grid_mode') in ['unavailable','unknown','none'] -%}
+            {{ sensor.goodwe_grid_mode | int }}
+          {% else %}
+            {{ sensor.grid_mode }}
+          {% endif %}        
 
 utility_meter:
   energy_buy_daily:
