@@ -1,4 +1,31 @@
 sensor:
+  - platform: template
+    sensors:
+      lights_power:
+        friendly_name: "Lights Power"
+        unit_of_measurement: "W"
+        icon_template: "mdi:flash"
+        value_template: >
+          {{ ((states.sensor.shelly_dimmer_d42c70_power_0.state | float) + 
+          (states.sensor.shelly_dimmer_d3eac3_power_0.state | float) + 
+          (states.sensor.shelly_dimmer_d3e771_power_0.state | float) + 
+          (states.sensor.shelly_dimmer_2_40f520016df0_power_0.state | float) + 
+          (states.sensor.shelly_dimmer_2_40f52000229e_power_0.state | float) + 
+          (states.sensor.scullery_power.state | float) + 
+          (states.sensor.outside_main_bathroom_power.state | float) + 
+          (states.sensor.main_ensuite_power.state | float) + 
+          (states.sensor.main_bathroom_power.state | float) + 
+          (states.sensor.hallway_power.state | float) + 
+          (states.sensor.hallway_entry_power.state | float) + 
+          (states.sensor.front_hallway_power.state | float) + 
+          (states.sensor.front_door_power.state | float) + 
+          (states.sensor.front_bathroom_power.state | float) + 
+          (states.sensor.dining_power.state | float) + 
+          (states.sensor.courtyard_lounge_power.state | float) + 
+          (states.sensor.courtyard_braai_power.state | float) + 
+          (states.sensor.courtyard_main_bedroom_power.state | float) + 
+          (states.sensor.bar_power.state | float)) | round(1) }}
+
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
     source: sensor.front_bathroom_geyser_current_consumption
@@ -17,6 +44,41 @@ sensor:
   - platform: integration
     source: sensor.pool_pump_power
     name: pool_pump_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+  - platform: integration
+    source: sensor.lights_power
+    name: lights_power_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+  - platform: integration
+    source: sensor.bar_fridge_energy_power
+    name: bar_fridge_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+  - platform: integration
+    source: sensor.fridge_energy_power
+    name: fridge_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+  - platform: integration
+    source: sensor.office_feed_1_energy_power
+    name: office_feed_1_usage
+    unit_prefix: k
+    round: 1
+    method: left
+
+  - platform: integration
+    source: sensor.aircon_main_bedroom_energy_power
+    name: aircon_main_bedroom_usage
     unit_prefix: k
     round: 1
     method: left
@@ -40,3 +102,20 @@ utility_meter:
   pool_pump_monthly:
     source: sensor.pool_pump_usage
     cycle: monthly
+
+  lights_daily:
+    source: sensor.lights_power_usage
+    cycle: daily
+
+  bar_fridge_daily:
+    source: sensor.bar_fridge_usage
+    cycle: daily
+  fridge_daily:
+    source: sensor.fridge_usage
+    cycle: daily
+  office_feed_1_daily:
+    source: sensor.office_feed_1_usage
+    cycle: daily
+  aircon_main_bedroom_daily:
+    source: sensor.aircon_main_bedroom_usage
+    cycle: daily
