@@ -54,9 +54,30 @@ automation:
       platform: state
       to: 'on'
     condition:
-      condition: state
-      entity_id: input_boolean.camera_alerts
-      state: 'on'
+      - condition: state
+        entity_id: input_boolean.camera_alerts
+        state: 'on'
+      # only if front door + front gate + garage doors, closed for at least 30 seconds
+      - condition: state
+        entity_id: cover.garage_door_front
+        state: 'closed'
+        for:
+          seconds: 30
+      - condition: state
+        entity_id: cover.garage_door_back
+        state: 'closed'
+        for:
+          seconds: 30
+      - condition: state
+        entity_id: cover.front_gate
+        state: 'closed'
+        for:
+          seconds: 30
+      - condition: state
+        entity_id: binary_sensor.front_door
+        state: 'off'
+        for:
+          seconds: 30
     action:
     - service: script.notify_front_camera_alert
     - delay: '00:00:10' # seconds
