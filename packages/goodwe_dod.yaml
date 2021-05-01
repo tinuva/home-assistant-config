@@ -1,0 +1,111 @@
+solcast:
+  api_key: !secret solcast_api
+  resource_id: !secret solcast_resource
+  api_limit: 20
+  disable_ssl_check: False
+  disable_automatic_forecast_fetching: True
+  disable_automatic_history_fetching: True
+
+automation:
+  - id: '1606211453192'
+    alias: Solcast Update
+    description: Update the Solcast prediction for the day
+    trigger:
+      - platform: time_pattern
+        hours: /01
+    condition:
+      - condition: sun
+        before: sunset
+        before_offset: -00:30:00
+        after: sunrise
+        after_offset: 00:30:00
+    action:
+      - service: solcast.update_forecast
+        data: {}
+    mode: single
+
+  ## 9% at 6am
+  - id: '1605879219607'
+    alias: Goodwe DoD Day
+    description: Set max DoD to 9% during the day - leave battery for evening use
+    trigger:
+      - platform: time
+        at: 06:00:00
+    condition: []
+    action:
+      - service: goodwe.set_ongrid_battery_dod
+        data:
+          entity_id: sensor.goodwe_inverter
+          ongrid_battery_dod: 9
+    mode: single
+
+
+  # At 8pm set 60% or 70%
+  # 60%
+  - id: '1605879149401'
+    alias: Goodwe DoD Night 60
+    description: Conditions for 60% DoD and SoC above 90%
+    trigger:
+      - platform: time
+        at: '20:00:00'
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast
+        attribute: tomorrow
+        above: '10.00'
+        below: '15.00'
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soc
+        above: '90'
+      - condition: numeric_state
+        entity_id: sensor.eskom_loadshedding_stage
+        below: 1
+    action:
+      - service: goodwe.set_ongrid_battery_dod
+        data:
+          entity_id: sensor.goodwe_inverter
+          ongrid_battery_dod: 60
+    mode: single
+  # 70%
+  - id: '1606212123693'
+    alias: Goodwe DoD Night 70
+    description: Conditions for 70% DoD and SoC above 90%
+    trigger:
+    - platform: time
+      at: '20:00:00'
+    condition:
+    - condition: numeric_state
+      entity_id: sensor.solcast_forecast
+      attribute: tomorrow
+      above: '14.9999'
+    - condition: numeric_state
+      entity_id: sensor.goodwe_battery_soc
+      above: '90'
+    - condition: numeric_state
+      entity_id: sensor.eskom_loadshedding_stage
+      below: 1
+    action:
+    - service: goodwe.set_ongrid_battery_dod
+      data:
+        entity_id: sensor.goodwe_inverter
+        ongrid_battery_dod: 70
+    mode: single
+
+  ## When Eskom turns on LoadShedding set 9%
+  - alias: Goodwe 9% when LoadShedding start
+    trigger:
+      - platform: state
+        entity_id: input_boolean.loadshedding_slot_active
+        from: 'off'
+        to: 'on'
+    condition:
+      # check conditions for both tiggers
+      - condition: numeric_state
+        entity_id: sensor.eskom_loadshedding_stage
+        above: 0
+    action:
+      - service: goodwe.set_ongrid_battery_dod
+        data:
+          entity_id: sensor.goodwe_inverter
+          ongrid_battery_dod: 9
+    mode: single

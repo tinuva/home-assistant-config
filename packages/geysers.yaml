@@ -88,10 +88,7 @@ automation:
       data_template:
         entity_id: timer.front_geyser
         duration: >
-          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = sensor_names[now().weekday()] %}
-          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 60 | int * 60 }}{% endif -%}
+          {{ 60 | int * 60 }}
     # Waits 1 seconds
     - delay: '00:00:01'
     - service: switch.turn_on
@@ -118,7 +115,7 @@ automation:
         duration: >
           {{ 60 | int * 60 }}
 
-  # front geyser off when timer finish
+  # front geyser off when timer finish (and main then on to chain)
   - alias: Turn off front geyser
     trigger:
       - platform: event
@@ -129,7 +126,36 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.front_bathroom_geyser
-
+      # Since we have solar, check forecast then continue
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast
+        above: '5'
+      # Waits 1 seconds
+      - delay: '00:00:01'
+      - service: switch.turn_on
+        data:
+          entity_id: switch.main_bathroom_geyser
+      # Waits 1 seconds
+      - delay: '00:00:01'
+      - service: timer.cancel
+        data_template:
+          entity_id: timer.main_geyser
+      # if sunday, we want to run front for another 4 hours
+      - condition: and
+        conditions:
+          - condition: time
+            # At least one of the following is required.
+            after: "13:00:00"
+            weekday:
+              - sun
+      - service: switch.turn_on
+        data:
+          entity_id: switch.front_bathroom_geyser
+      # Waits 1 seconds
+      - delay: '00:00:01'
+      - service: timer.cancel
+        data_template:
+          entity_id: timer.front_bathroom_geyser     
 
   #### Loadshedding work-arounds
   # When in loadshedding, start timer and pause
@@ -262,3 +288,28 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.front_bathroom_geyser
+
+
+  #sensor.solcast_forecast
+  ## Turn off geysers when solcast below 2kWh
+  - alias: Turn off geysers when solcast below 2kWh
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.solcast_forecast
+        below: '2'
+    condition:
+      - condition: state  # 'day' condition: from sunrise until sunset
+        entity_id: sun.sun
+        state: 'above_horizon'
+      - condition: time
+        after: '8:00:00'
+        before: '23:59:59'
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
+      - service: switch.turn_off
+        data:
+          entity_id: switch.front_bathroom_geyser
+    mode: single
+

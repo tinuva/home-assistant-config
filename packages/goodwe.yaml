@@ -58,6 +58,15 @@ sensor:
     round: 1
     method: left
 
+  # Sensor for Riemann sum of solar energy generate (W -> Wh)
+  - platform: integration
+    source: sensor.goodwe_ppv
+    name: energy_solar_generate
+    unit_prefix: k
+    round: 1
+    method: left
+
+
   - platform: template
     sensors:
       # Template sensor for money used
@@ -108,7 +117,12 @@ utility_meter:
   house_consumption_monthly:
     source: sensor.goodwe_house_consumption
     cycle: monthly
-
+  solar_generate_daily:
+    source: sensor.energy_solar_generate
+    cycle: daily
+  solar_generate_monthly:
+    source: sensor.energy_solar_generate
+    cycle: monthly
 
 automation:
   # Notification - grid power lost

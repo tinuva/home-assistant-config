@@ -29,6 +29,9 @@ automation:
       - condition: state
         entity_id: sensor.goodwe_grid_mode
         state: '1'
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast
+        above: '10'
     action:
     - service: timer.start
       data_template:
