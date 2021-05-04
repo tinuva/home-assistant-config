@@ -39,21 +39,14 @@ automation:
           ongrid_battery_dod: 9
     mode: single
 
-
   # At 8pm set 60% or 70%
-  # 60%
   - id: '1605879149401'
-    alias: Goodwe DoD Night 60
-    description: Conditions for 60% DoD and SoC above 90%
+    alias: Goodwe DoD Night 
+    description: Set DoD based on conditions
     trigger:
       - platform: time
         at: '20:00:00'
     condition:
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast
-        attribute: tomorrow
-        above: '10.00'
-        below: '15.00'
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
         above: '90'
@@ -62,33 +55,17 @@ automation:
         below: 1
     action:
       - service: goodwe.set_ongrid_battery_dod
-        data:
+        data_template:
           entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: 60
-    mode: single
-  # 70%
-  - id: '1606212123693'
-    alias: Goodwe DoD Night 70
-    description: Conditions for 70% DoD and SoC above 90%
-    trigger:
-    - platform: time
-      at: '20:00:00'
-    condition:
-    - condition: numeric_state
-      entity_id: sensor.solcast_forecast
-      attribute: tomorrow
-      above: '14.9999'
-    - condition: numeric_state
-      entity_id: sensor.goodwe_battery_soc
-      above: '90'
-    - condition: numeric_state
-      entity_id: sensor.eskom_loadshedding_stage
-      below: 1
-    action:
-    - service: goodwe.set_ongrid_battery_dod
-      data:
-        entity_id: sensor.goodwe_inverter
-        ongrid_battery_dod: 70
+          ongrid_battery_dod: >
+            {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
+            {% if soc_tomorrow >= 12 %}70
+            {% elif soc_tomorrow >= 10 and soc_tomorrow < 12 %}65
+            {% elif soc_tomorrow >= 8 and soc_tomorrow < 10 %}60
+            {% elif soc_tomorrow >= 6 and soc_tomorrow < 8 %}50
+            {% elif soc_tomorrow >= 4 and soc_tomorrow < 6 %}40
+            {% elif soc_tomorrow >= 2 and soc_tomorrow < 4 %}30
+            {% else %}9{% endif -%}
     mode: single
 
   ## When Eskom turns on LoadShedding set 9%
