@@ -1,88 +1,89 @@
-### From: https://community.home-assistant.io/t/home-away-switch/52301/9
-
-binary_sensor:
-  - platform: bayesian
-    name: 'house_not_occupied'
-    prior: 0.4  # 40% chance that house is not occupied (12h out of 24h a day) + office days
-    probability_threshold: 0.88
-    observations:
-     # We are not in the house -> very likely there's no motion recorded by motion and door/window sensors
-      - entity_id: 'sensor.no_house_activity'
-        prob_given_true: 0.8 # 80% chance that if we're out of the house there's no motion recorded in the house
-        prob_given_false: 0.1 # 20% chance that if we're NOT out of the house there is no motion recorded in the house
-        platform: 'state'
-        to_state: 'True'
-      - entity_id: 'group.family_devices'
-        prob_given_true: 0.95  # 95% chance that if we're out of the house there's no family device connected
-        prob_given_false: 0.2 # 20% chance that if we're NOT out of the house the devices are not connected
-        platform: 'state'
-        to_state: 'off'
-     # We are not in the house -> very likely the NB is not connected to LAN
-     # - entity_id: 'device_tracker.lenovonblan'
-     #   prob_given_true: 1.0 # 100% chance that if we're out of the house the NB is not connected to LAN
-     #   prob_given_false: 0.6 # 60% chance that if we're NOT out of the house the NB is not connected to LAN
-     #   platform: 'state'
-     #   to_state: 'not_home'
-     # We are not in the house -> very likely the Philips TV is not running
-     # - entity_id: 'device_tracker.philpstv'
-     #   prob_given_true: 1.0 # 100% chance that if we're out of the house the TV is not running
-     #   prob_given_false: 0.85 # 60% chance that if we're NOT out of the house the TV is not running
-     #   platform: 'state'
-     #   to_state: 'not_home'
-
-
-sensor:
-##### Helpers for bayesian sensor
-  - platform: template
-    sensors:
-      no_house_activity:
-        friendly_name: No activity in house for 1h+
-        value_template: "{{ is_state('timer.no_motion', 'idle') }}"
-
-timer:
-  no_motion:
-    name: 'House Idle Timer'
-    icon: mdi:timer
-
-#automation:
-#  - alias: 'timer start in case of no house activity'
-#    mode: restart
-#    trigger:
-#      - platform: state
-#        entity_id: binary_sensor.babyroom_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.back_beam
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.back_garage_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.braai_room_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.ensuite_pir
-#        to: 'off'
-#      #- platform: state
-#      #  entity_id: binary_sensor.front_beam
-#      #  to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.kitchen_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.lounge_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.main_bedroom_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.spare_bedroom_pir
-#        to: 'off'
-#      - platform: state
-#        entity_id: binary_sensor.study_pir
-#        to: 'off'
-#    action:
-#      - service: timer.start
-#        data:
-#          entity_id: timer.no_motion
-#          duration: 01:00:00
+#### From: https://community.home-assistant.io/t/home-away-switch/52301/9
+#
+#binary_sensor:
+#  - platform: bayesian
+#    name: 'house_not_occupied'
+#    prior: 0.4  # 40% chance that house is not occupied (12h out of 24h a day) + office days
+#    probability_threshold: 0.88
+#    observations:
+#     # We are not in the house -> very likely there's no motion recorded by motion and door/window sensors
+#      - entity_id: 'sensor.no_house_activity'
+#        prob_given_true: 0.8 # 80% chance that if we're out of the house there's no motion recorded in the house
+#        prob_given_false: 0.1 # 20% chance that if we're NOT out of the house there is no motion recorded in the house
+#        platform: 'state'
+#        to_state: 'True'
+#      - entity_id: 'group.family_devices'
+#        prob_given_true: 0.95  # 95% chance that if we're out of the house there's no family device connected
+#        prob_given_false: 0.2 # 20% chance that if we're NOT out of the house the devices are not connected
+#        platform: 'state'
+#        to_state: 'off'
+#     # We are not in the house -> very likely the NB is not connected to LAN
+#     # - entity_id: 'device_tracker.lenovonblan'
+#     #   prob_given_true: 1.0 # 100% chance that if we're out of the house the NB is not connected to LAN
+#     #   prob_given_false: 0.6 # 60% chance that if we're NOT out of the house the NB is not connected to LAN
+#     #   platform: 'state'
+#     #   to_state: 'not_home'
+#     # We are not in the house -> very likely the Philips TV is not running
+#     # - entity_id: 'device_tracker.philpstv'
+#     #   prob_given_true: 1.0 # 100% chance that if we're out of the house the TV is not running
+#     #   prob_given_false: 0.85 # 60% chance that if we're NOT out of the house the TV is not running
+#     #   platform: 'state'
+#     #   to_state: 'not_home'
+#
+#
+#sensor:
+###### Helpers for bayesian sensor
+#  - platform: template
+#    sensors:
+#      no_house_activity:
+#        friendly_name: No activity in house for 1h+
+#        value_template: "{{ is_state('timer.no_motion', 'idle') }}"
+#
+#timer:
+#  no_motion:
+#    name: 'House Idle Timer'
+#    icon: mdi:timer
+#
+##automation:
+##  - alias: 'timer start in case of no house activity'
+##    mode: restart
+##    trigger:
+##      - platform: state
+##        entity_id: binary_sensor.babyroom_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.back_beam
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.back_garage_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.braai_room_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.ensuite_pir
+##        to: 'off'
+##      #- platform: state
+##      #  entity_id: binary_sensor.front_beam
+##      #  to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.kitchen_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.lounge_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.main_bedroom_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.spare_bedroom_pir
+##        to: 'off'
+##      - platform: state
+##        entity_id: binary_sensor.study_pir
+##        to: 'off'
+##    action:
+##      - service: timer.start
+##        data:
+##          entity_id: timer.no_motion
+##          duration: 01:00:00
+#

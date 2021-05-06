@@ -11,10 +11,10 @@ homeassistant:
   name: Home
   allowlist_external_dirs: # changed from whitelist_external_dirs to allowlist_external_dirs in 0.113.0 
     - /config/
-  customize: !include includes/customize.yaml
+  #customize: !include includes/customize.yaml
 default_config:
-frontend:
-  themes: !include_dir_merge_named themes
+#frontend:
+#  themes: !include_dir_merge_named themes
 http: !include includes/http.yaml
 
 # Logging and history

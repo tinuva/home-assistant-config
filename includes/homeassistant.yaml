@@ -18,39 +18,39 @@ name: Home
 allowlist_external_dirs:
   - /config
 
-customize:
-  # Add an entry for each entity that you want to overwrite.
-  ## Xiaomi sensors
-  sensor.temperature_158d0002011a32:
-    friendly_name: Temperature Outside
-  sensor.temperature_158d0001fa5057:
-    friendly_name: Temperature Baby Room
-  sensor.temperature_158d00020177c3:
-    friendly_name: Temperature Master Bed Room
-  sensor.temperature_158d00023475b0:
-    friendly_name: Temperature Master Bath Room
-  sensor.temperature_158d00020ec6bf:
-    friendly_name: Temperature Lounge
-  sensor.temperature_158d0001f54c03:
-    friendly_name: Temperature Fridge
-  sensor.humidity_158d0002011a32:
-    friendly_name: Humidity Outside
-  sensor.humidity_158d0001fa5057:
-    friendly_name: Humidity Baby Room
-  sensor.humidity_158d00020177c3:
-    friendly_name: Humidity Master Bed Room
-  sensor.humidity_158d00023475b0:
-    friendly_name: Humidity Master Bath Room
-  sensor.humidity_158d00020ec6bf:
-    friendly_name: Humidity Lounge
-  sensor.humidity_158d0001f54c03:
-    friendly_name: Humidity Fridge
-  # Sureflap sensors
-  binary_sensor.hub_home_hub:
-    friendly_name: Hub Status
-  binary_sensor.pet_flap_kitchen_pet_door_connectivity:
-    friendly_name: Pet Door Connectivity
-  sensor.pet_flap_kitchen_pet_door_battery_level:
-    friendly_name: Pet Door Battery Level
-  sensor.pet_flap_kitchen_pet_door:
-    friendly_name: Pet Door Status
+#customize:
+#  # Add an entry for each entity that you want to overwrite.
+#  ## Xiaomi sensors
+#  sensor.temperature_158d0002011a32:
+#    friendly_name: Temperature Outside
+#  sensor.temperature_158d0001fa5057:
+#    friendly_name: Temperature Baby Room
+#  sensor.temperature_158d00020177c3:
+#    friendly_name: Temperature Master Bed Room
+#  sensor.temperature_158d00023475b0:
+#    friendly_name: Temperature Master Bath Room
+#  sensor.temperature_158d00020ec6bf:
+#    friendly_name: Temperature Lounge
+#  sensor.temperature_158d0001f54c03:
+#    friendly_name: Temperature Fridge
+#  sensor.humidity_158d0002011a32:
+#    friendly_name: Humidity Outside
+#  sensor.humidity_158d0001fa5057:
+#    friendly_name: Humidity Baby Room
+#  sensor.humidity_158d00020177c3:
+#    friendly_name: Humidity Master Bed Room
+#  sensor.humidity_158d00023475b0:
+#    friendly_name: Humidity Master Bath Room
+#  sensor.humidity_158d00020ec6bf:
+#    friendly_name: Humidity Lounge
+#  sensor.humidity_158d0001f54c03:
+#    friendly_name: Humidity Fridge
+#  # Sureflap sensors
+#  binary_sensor.hub_home_hub:
+#    friendly_name: Hub Status
+#  binary_sensor.pet_flap_kitchen_pet_door_connectivity:
+#    friendly_name: Pet Door Connectivity
+#  sensor.pet_flap_kitchen_pet_door_battery_level:
+#    friendly_name: Pet Door Battery Level
+#  sensor.pet_flap_kitchen_pet_door:
+#    friendly_name: Pet Door Status

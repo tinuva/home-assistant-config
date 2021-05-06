@@ -1,20 +1,20 @@
-automation:
-  - alias: Update notification
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.updater
-        to: 'on'
-    action:
-      - service: notify.slack
-        data_template:
-          target: ["#alerts-david"]
-          message: "New Home Assistant  {{ state_attr('binary_sensor.updater', 'newest_version') }}  is now available."
-          data:
-            icon:
-            username: Home Assistant
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    New Home Assistant  {{ state_attr('binary_sensor.updater', 'newest_version') }}  is now available.
+#automation:
+#  - alias: Update notification
+#    trigger:
+#      - platform: state
+#        entity_id: binary_sensor.updater
+#        to: 'on'
+#    action:
+#      - service: notify.slack
+#        data_template:
+#          target: ["#alerts-david"]
+#          message: "New Home Assistant  {{ state_attr('binary_sensor.updater', 'newest_version') }}  is now available."
+#          data:
+#            icon:
+#            username: Home Assistant
+#            blocks_template:
+#              - type: section
+#                text:
+#                  type: mrkdwn
+#                  text: >
+#                    New Home Assistant  {{ state_attr('binary_sensor.updater', 'newest_version') }}  is now available.
