@@ -39,20 +39,25 @@ automation:
           ongrid_battery_dod: 9
     mode: single
 
-  # At 8pm set 60% or 70%
-  - id: '1605879149401'
-    alias: Goodwe DoD Night 
+  # At 8pm set SoC based on forecast
+  - alias: Goodwe DoD Night 
     description: Set DoD based on conditions
     trigger:
       - platform: time
         at: '20:00:00'
     condition:
+      # if current SoC above 90%
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
         above: '90'
+      # if loadshedding is below stage 1
       - condition: numeric_state
         entity_id: sensor.eskom_loadshedding_stage
         below: 1
+      # if battery SoH is above 50 for some safete
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soh
+        above: '50'
     action:
       - service: goodwe.set_ongrid_battery_dod
         data_template:
@@ -64,7 +69,7 @@ automation:
             {% elif soc_tomorrow >= 8 and soc_tomorrow < 10 %}60
             {% elif soc_tomorrow >= 6 and soc_tomorrow < 8 %}50
             {% elif soc_tomorrow >= 4 and soc_tomorrow < 6 %}40
-            {% elif soc_tomorrow >= 2 and soc_tomorrow < 4 %}30
+            {% elif soc_tomorrow >= 2 and soc_tomorrow < 4 %}25
             {% else %}9{% endif -%}
     mode: single
 
