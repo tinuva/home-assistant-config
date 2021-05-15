@@ -1,0 +1,44 @@
+automation:
+  - alias: "Turn off mainbedroom lights if on for x min"
+    trigger:
+      - platform: state
+        entity_id: light.main_bedroom_lights
+        to: 'on'
+        for:
+          minutes: 10
+    action:
+    - service: light.turn_off
+      data_template:
+        entity_id: light.main_bedroom_lights
+  
+  # Motion = Turn on
+  - alias: Turn on mainbedroom lights when there is movement
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.main_bedroom_pir
+        to: 'on'
+    condition:
+      - condition: and
+        conditions:
+        - condition: state  # 'night' condition: from sunset until sunrise 
+          entity_id: sun.sun
+          state: 'below_horizon'
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.main_bedroom_lights
+          brightness: >-
+            {% set hours = [[0,1],[500,25],[600,65],[630,75],[700,125],[730,190],
+                          [800,210],[900,255],[1630,255],[1700,240],[1730,235],
+                          [1800,225],[1830,200],[1900,175],[1930,125],[2000,115],
+                          [2030,110],[2100,100],[2200,85],[2230,25],[2300,1]] %}
+            {% set t = states('sensor.time').replace(':','')|int %}
+            {% set ns = namespace(level = 0) %}
+            {% for h in hours if t >= h[0] %}
+              {% set ns.level = h[1] %}
+            {% endfor %}
+            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+            30
+            {%- else -%}
+            {{ ns.level }}
+            {%- endif -%}

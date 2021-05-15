@@ -6,47 +6,50 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a 
   # restarted event.
   loungelight:
-    duration: '00:15:00'
+    duration: '00:10:00'
 
 automation:
-### Lounge Lights
-# Timer end = Turn off
-- alias: Turn off lounge lights 10 minutes after trigger
-  trigger:
-    platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.loungelight
-  action:
-    service: light.turn_off
-    data:
-      entity_id: light.lounge
-
-### Lounge Lights
-# Motion = Turn on
-- alias: Turn on lounge lights when there is movement
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.lounge_pir
-    to: 'on'
-  condition:
-    condition: and
-    conditions:
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    - condition: template # if plex is in playing mode, do not start this automation
-      value_template: "{{ not is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost', 'playing') }}"
-  action:
-  - service: light.turn_on
-    data_template:
-      entity_id: light.lounge
-      brightness: >-
-        {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-        30
-        {%- else -%}
-        60
-        {%- endif -%}
-  - service: timer.start
-    data:
-      entity_id: timer.loungelight
+  ### Lounge Lights
+  # Timer end = Turn off
+  - alias: Turn off lounge lights after timer finish
+    trigger:
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.loungelight
+    action:
+      service: light.turn_off
+      data:
+        entity_id: light.lounge
+  
+  ### Lounge Lights
+  # Motion = Turn on
+  - alias: Turn on lounge lights when there is movement
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.lounge_pir
+        to: 'on'
+    condition:
+      - condition: and
+        conditions:
+        - condition: state  # 'night' condition: from sunset until sunrise 
+          entity_id: sun.sun
+          state: 'below_horizon'
+        - condition: template # if plex is in playing mode, do not start this automation
+          value_template: "{{ not is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost', 'playing') }}"
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.lounge
+          brightness: >-
+            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+            30
+            {%- else -%}
+            60
+            {%- endif -%}
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: 'armed_home'
+      - service: timer.start
+        data:
+          entity_id: timer.loungelight

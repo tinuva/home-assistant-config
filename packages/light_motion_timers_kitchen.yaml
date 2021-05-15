@@ -10,7 +10,7 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a 
   # restarted event.
   kitchenlight:
-    duration: '00:15:00'
+    duration: '00:10:00'
   kitchenwork:
     duration: '01:00:00'
 
@@ -65,6 +65,9 @@ automation:
             {%- else -%}
             175
             {%- endif -%}
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: 'armed_home'
       - service: timer.start
         data:
           entity_id: timer.kitchenlight
