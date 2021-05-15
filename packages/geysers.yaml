@@ -36,8 +36,7 @@ automation:
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
           {% else %}{{ 60 | int * 60 }}{% endif -%}
-    # Waits 1 seconds
-    - delay: '00:00:01'
+    - delay: '00:00:01' # Waits 1 seconds
     - service: switch.turn_on
       data:
         entity_id: switch.main_bathroom_geyser
@@ -78,30 +77,24 @@ automation:
   # Front geyser on based on input time (changed to fix 7pm if never on for the day)
   - alias: Turn on front geyser
     trigger:
-      #- platform: template
-      #  value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom#('%H:%M', False)) }}"
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
         at: '19:00:00'
     condition:
       - condition: state
         entity_id: timer.loadshedding_slot
         state: 'idle'
-      - condition: state
-        entity_id: switch.front_bathroom_geyser
-        state: 'off'
-        for:
-          hours: 8
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.front_geyser
-        duration: >
-          {{ 60 | int * 60 }}
-    # Waits 1 seconds
-    - delay: '00:00:01'
-    - service: switch.turn_on
-      data:
-        entity_id: switch.front_bathroom_geyser
+      - service: timer.start
+        data_template:
+          entity_id: timer.front_geyser
+          duration: >
+            {{ 60 | int * 60 }}
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: switch.turn_on
+        data:
+          entity_id: switch.front_bathroom_geyser
 
   # start timer when turned on 
   - alias: Start timer after Turn on front geyser
@@ -154,8 +147,7 @@ automation:
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
           {% else %}{{ 60 | int * 60 }}{% endif -%}
-    # Waits 1 seconds
-    - delay: '00:00:01'
+    - delay: '00:00:01' # Waits 1 seconds
     - service: timer.pause
       data_template:
         entity_id: timer.main_geyser
@@ -220,8 +212,7 @@ automation:
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
           {% else %}{{ 60 | int * 60 }}{% endif -%}
-    # Waits 1 seconds
-    - delay: '00:00:01'
+    - delay: '00:00:01' # Waits 1 seconds
     - service: timer.pause
       data_template:
         entity_id: timer.front_geyser
@@ -267,13 +258,13 @@ automation:
         data:
           entity_id: switch.front_bathroom_geyser
 
-  #sensor.solcast_forecast
   ## Turn off geysers when solcast below 2kWh
   - alias: Turn off geysers when solcast below 2kWh
+    mode: single
     trigger:
       - platform: numeric_state
         entity_id: sensor.solcast_forecast
-        below: '2'
+        below: '1'
     condition:
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
@@ -288,7 +279,6 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.front_bathroom_geyser
-    mode: single
 
   # Front geyser on based on battery
   - alias: Turn on front geyser based on battery
@@ -306,7 +296,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '3'
+        above: '1.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -319,14 +309,16 @@ automation:
         entity_id: switch.front_bathroom_geyser
         state: 'off'
     action:
+      - service: timer.start
+        data_template:
+          entity_id: timer.front_geyser
       - service: switch.turn_on
         data:
           entity_id: switch.front_bathroom_geyser
-      # Waits 1 seconds
-      - delay: '00:00:01'
+      - delay: '00:00:05' # Waits 1 seconds
       - service: timer.cancel
         data_template:
-          entity_id: timer.front_bathroom_geyser
+          entity_id: timer.front_geyser
 
   # Main geyser on based on battery
   - alias: Turn on Main geyser based on battery
@@ -346,7 +338,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '2'
+        above: '1.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -354,55 +346,63 @@ automation:
         after_offset: 00:30:00
       - condition: state
         entity_id: switch.main_bathroom_geyser
-        state: 'on'
+        state: 'off'
       - condition: state
         entity_id: switch.front_bathroom_geyser
-        state: 'off'
+        state: 'on'
     action:
+      - service: timer.start
+        data_template:
+          entity_id: timer.main_geyser
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
-      # Waits 1 seconds
-      - delay: '00:00:01'
+      - delay: '00:00:05' # Waits 1 seconds
       - service: timer.cancel
         data_template:
-          entity_id: timer.main_bathroom_geyser
+          entity_id: timer.main_geyser
 
-  # Front geyser off on based on battery
-  - alias: Turn off front geyser based on battery
-    trigger:
-      - platform: state
-        entity_id: sensor.goodwe_battery_mode_label
-        to: 'Standby'
-    condition:
-      - condition: state
-        entity_id: switch.front_bathroom_geyser
-        state: 'on'
-        for:
-          minutes: 1
-      - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
-        below: '95'
-    action:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.front_bathroom_geyser
-  # Main geyser off on based on battery
-  - alias: Turn off Main geyser based on battery
-    trigger:
-      - platform: state
-        entity_id: sensor.goodwe_battery_mode_label
-        to: 'Standby'
-    condition:
-      - condition: state
-        entity_id: switch.main_bathroom_geyser
-        state: 'on'
-        for:
-          minutes: 1
-      - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
-        below: '95'
-    action:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.main_bathroom_geyser
+  ## Front geyser off on based on battery
+  #- alias: Turn off front geyser based on battery
+  #  trigger:
+  #    - platform: state
+  #      entity_id: sensor.goodwe_battery_mode_label
+  #      to: 'Standby'
+  #  condition:
+  #    - condition: state
+  #      entity_id: switch.front_bathroom_geyser
+  #      state: 'on'
+  #      for:
+  #        minutes: 1
+  #    - condition: numeric_state
+  #      entity_id: sensor.goodwe_battery_soc
+  #      below: '95'
+  #    - condition: state
+  #      entity_id: timer.front_geyser
+  #      state: 'idle'
+  #  action:
+  #    - service: switch.turn_off
+  #      data:
+  #        entity_id: switch.front_bathroom_geyser
+  ## Main geyser off on based on battery
+  #- alias: Turn off Main geyser based on battery
+  #  trigger:
+  #    - platform: state
+  #      entity_id: sensor.goodwe_battery_mode_label
+  #      to: 'Standby'
+  #  condition:
+  #    - condition: state
+  #      entity_id: switch.main_bathroom_geyser
+  #      state: 'on'
+  #      for:
+  #        minutes: 1
+  #    - condition: numeric_state
+  #      entity_id: sensor.goodwe_battery_soc
+  #      below: '95'
+  #    - condition: state
+  #      entity_id: timer.main_geyser
+  #      state: 'idle'
+  #  action:
+  #    - service: switch.turn_off
+  #      data:
+  #        entity_id: switch.main_bathroom_geyser
