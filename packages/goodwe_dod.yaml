@@ -59,7 +59,7 @@ automation:
       # if current SoC above 90%
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
-        above: '90'
+        above: '85'
       # if loadshedding is below stage 1
       #- condition: numeric_state
       #  entity_id: sensor.eskom_loadshedding_stage
