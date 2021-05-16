@@ -6,6 +6,15 @@ solcast:
   disable_automatic_forecast_fetching: True
   disable_automatic_history_fetching: True
 
+input_number:
+  set_goodwe_dod:
+    name: Set Goodwe DoD
+    min: 0
+    max: 70
+    mode: box
+    unit_of_measurement: '%'
+    #step: 1
+
 automation:
   - id: '1606211453192'
     alias: Solcast Update
@@ -33,10 +42,11 @@ automation:
         at: 06:00:00
     condition: []
     action:
-      - service: goodwe.set_ongrid_battery_dod
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
         data:
-          entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: 9
+          value: 9
     mode: single
 
   # At 8pm set SoC based on forecast
@@ -59,10 +69,11 @@ automation:
         entity_id: sensor.goodwe_battery_soh
         above: '50'
     action:
-      - service: goodwe.set_ongrid_battery_dod
-        data_template:
-          entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: >
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: >
             {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
             {% if soc_tomorrow >= 12 %}70
             {% elif soc_tomorrow >= 10 and soc_tomorrow < 12 %}65
@@ -86,8 +97,22 @@ automation:
         entity_id: sensor.eskom_loadshedding_stage
         above: 0
     action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: 9
+    mode: single
+
+  - id: '1620734902145'
+    alias: 'Set DoD on Goodwe based on input'
+    trigger:
+      - entity_id: input_number.set_goodwe_dod
+        platform: state
+    condition: []
+    action:
       - service: goodwe.set_ongrid_battery_dod
         data:
           entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: 9
+          ongrid_battery_dod: '{{ states.sensor.set_goodwe_dod.state|int }}'
     mode: single
