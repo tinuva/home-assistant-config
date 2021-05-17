@@ -1,14 +1,24 @@
+timer:
+  # When calling the start service on a timer that is already running, it resets 
+  # the duration it will need to finish and restart the timer without triggering 
+  # a canceled or finished event. This, for example, makes it easy to create 
+  # timed lights that get triggered by motion. Starting a timer triggers a 
+  # started event unless the timer is paused, in that case, it triggers a 
+  # restarted event.
+  mainbedroomlight:
+    duration: '00:10:00'
+
 automation:
-  - alias: "Turn off mainbedroom lights if on for x min"
+   # Timer end = Turn off
+  - alias: Turn off smallbedroom lights after timer finish
     trigger:
-      - platform: state
-        entity_id: light.main_bedroom_lights
-        to: 'on'
-        for:
-          minutes: 10
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.mainbedroomlight
     action:
-    - service: light.turn_off
-      data_template:
+      service: light.turn_off
+      data:
         entity_id: light.main_bedroom_lights
   
   # Motion = Turn on
@@ -27,18 +37,32 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.main_bedroom_lights
-          brightness: >-
-            {% set hours = [[0,1],[500,25],[600,65],[630,75],[700,125],[730,190],
-                          [800,210],[900,255],[1630,255],[1700,240],[1730,235],
-                          [1800,225],[1830,200],[1900,175],[1930,125],[2000,115],
-                          [2030,110],[2100,100],[2200,85],[2230,25],[2300,1]] %}
+          brightness_pct: >-
+            {% set hours = [[0,18],[500,19],[600,20],[630,25],[700,30],[730,35],
+                          [800,45],[900,55],[1630,55],[1700,55],[1730,55],
+                          [1800,55],[1830,55],[1900,45],[1930,40],[2000,35],
+                          [2030,30],[2100,21],[2200,21],[2230,20],[2300,19]] %}
             {% set t = states('sensor.time').replace(':','')|int %}
             {% set ns = namespace(level = 0) %}
             {% for h in hours if t >= h[0] %}
               {% set ns.level = h[1] %}
             {% endfor %}
             {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            30
+            14
             {%- else -%}
             {{ ns.level }}
+            {%- endif -%}
+      - service: timer.start
+        data:
+          entity_id: timer.mainbedroomlight
+          duration: >
+            {% set time = states('sensor.time') %}
+            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+              15
+            {% elif '20:00' <= time  <= '23:59' %}
+              {{4*60|int}}
+            {% elif '00:00' <= time <= '05:29' %}
+              {{1*60|int}}
+            {% else %}
+              {{2*60|int}}
             {%- endif -%}

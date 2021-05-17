@@ -7,9 +7,12 @@ automation:
         topic: 'tele/zigbee/0xF4D6/Click'
         payload: 'single'
     action:
-      - service: input_boolean.toggle
+      - service: light.toggle
         data:
-          entity_id: input_boolean.kitchenwork
+          entity_id: light.kitchen
+    #  - service: input_boolean.toggle
+    #    data:
+    #      entity_id: input_boolean.kitchenwork
 
   # Main Bathroom button
   - alias: 'MQTT Zigbee Button Main Bathroom single click'

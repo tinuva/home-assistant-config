@@ -56,10 +56,13 @@ automation:
         data_template:
           entity_id: light.kitchen
           brightness: >-
+            {% set time = states('sensor.time') %}
             {%- if(is_state('input_boolean.kitchenwork','on')) -%}
             185
             {%- elif(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
             30
+            {% elif '18:00' <= time <= '20:25' %}
+            175
             {%- elif(is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost','playing')) -%}
             30
             {%- else -%}

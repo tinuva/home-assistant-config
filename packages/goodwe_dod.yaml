@@ -61,14 +61,17 @@ automation:
         entity_id: sensor.goodwe_battery_soc
         above: '85'
       # if loadshedding is below stage 1
-      #- condition: numeric_state
-      #  entity_id: sensor.eskom_loadshedding_stage
-      #  below: 1
+      - condition: numeric_state
+        entity_id: sensor.eskom_loadshedding_stage
+        below: 1
       # if battery SoH is above 50 for some safety
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soh
         above: '50'
     action:
+      - service: solcast.update_forecast
+        data: {}
+      - delay: '00:00:10' # Waits x seconds
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
@@ -114,5 +117,5 @@ automation:
       - service: goodwe.set_ongrid_battery_dod
         data:
           entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: '{{ states.sensor.set_goodwe_dod.state|int }}'
+          ongrid_battery_dod: '{{ states.input_number.set_goodwe_dod.state|int }}'
     mode: single

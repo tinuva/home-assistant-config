@@ -28,6 +28,8 @@ automation:
     data:
       entity_id: light.lounge
       brightness: '30'
+  - condition: time
+    after: "20:25:00"
   - service: automation.trigger
     data:
       entity_id:
