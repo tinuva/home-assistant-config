@@ -9,6 +9,9 @@ automation:
     - entity_id: alarm_control_panel.home_alarm
       platform: state
       to: 'armed_away'
+    - platform: sun
+      event: sunrise
+      offset: "+00:20:00"
     action:
     - service: light.turn_off
       data_template:

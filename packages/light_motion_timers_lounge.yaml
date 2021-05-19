@@ -53,3 +53,14 @@ automation:
       - service: timer.start
         data:
           entity_id: timer.loungelight
+          duration: >
+            {% set time = states('sensor.time') %}
+            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+              120
+            {% elif '20:00' <= time  <= '23:59' %}
+              {{60*60|int}}
+            {% elif '00:00' <= time <= '05:29' %}
+              {{2*60|int}}
+            {% else %}
+              {{5*60|int}}
+            {%- endif -%}
