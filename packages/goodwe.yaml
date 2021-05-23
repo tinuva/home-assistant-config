@@ -88,6 +88,20 @@ sensor:
           {% else %}
             {{ (states('sensor.energy_buy_monthly')|float * 211.52 / 100)|round(2) }}
           {% endif %}
+      energy_generate_daily_saving:
+        friendly_name: "energy_generate_daily_saving"
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.energy_buy_monthly')|float > 600 %}
+            {{ (states('sensor.solar_generate_daily')|float * 291.90 / 100)|round(2) }}
+          {% else %}
+            {{ (states('sensor.solar_generate_daily')|float * 211.52 / 100)|round(2) }}
+          {% endif %}
+      energy_generate_monthly_saving:
+        friendly_name: "energy_generate_monthly_saving"
+        icon_template: "mdi:flash"
+        value_template: >-
+          {{ (states('sensor.solar_generate_monthly')|float * 211.52 / 100)|round(2) }}
 
       grid_mode:
         friendly_name_template: "Grid Mode"
@@ -190,17 +204,53 @@ automation:
             icon: ":zap:"
             username: "GoodWe Robot"
             blocks_template:
+              - type: header
+                text:
+                  type: plain_text
+                  text: >
+                    Power Usage Daily
               - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >
+                      *Eskom:*
+                      {{- '\n' -}}*Solar:*
+                      {{- '\n' -}}*Total:*
+                  - type: mrkdwn
+                    text: >
+                      {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+                      {{- '\n' -}}{{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
+                      {{- '\n' -}}{{ states('sensor.energy_buy_daily')|float + states('sensor.solar_generate_daily')|float }} kWh / R{{ states('sensor.energy_buy_daily_cost')|float + states('sensor.energy_generate_daily_saving')|float }}
+              - type: header
+                text:
+                  type: plain_text
+                  text: >
+                    Power Usage Monthly
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >
+                      *Eskom:*
+                      {{- '\n' -}}*Solar:*
+                      {{- '\n' -}}*Total:*
+                  - type: mrkdwn
+                    text: >
+                      {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                      {{- '\n' -}}{{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
+                      {{- '\n' -}}{{ states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float | int }} kWh / R{{ states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float }}
+              - type: header
                 text:
                   type: mrkdwn
                   text: >
-                    Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                    <https://grafana.heaven.za.net/d/aVNSpZGGz/power-usage-goodwe?orgId=1&refresh=30s|View graphs>
           title: 'Power'
           target: ["#general"]
           message: >
             Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-            {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                    {{- '\n' -}}Today's solar generation: {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
+                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                    {{- '\n' -}}This month's solar generation: {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
+                    {{- '\n' -}}Total monthly usage: {{ states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float | int }} kWh / R{{ states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float }}
 
   ## notification if SoH drop below 50%
   - alias: Notify SoH below 50
