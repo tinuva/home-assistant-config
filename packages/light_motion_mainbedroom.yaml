@@ -63,6 +63,8 @@ automation:
               {{4*60|int}}
             {% elif '00:00' <= time <= '05:29' %}
               {{1*60|int}}
+            {% elif '05:30' <= time <= '07:29' %}
+              {{5*60|int}}
             {% else %}
               {{2*60|int}}
             {%- endif -%}
