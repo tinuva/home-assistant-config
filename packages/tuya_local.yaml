@@ -1,4 +1,5 @@
 localtuya:
+  ## CBI Astute Smart Switch
   - host: 192.168.241.150
     device_id: !secret geyser_mainbathroom_device_id
     local_key: !secret geyser_mainbathroom_local_key
@@ -6,11 +7,26 @@ localtuya:
     protocol_version: "3.3"
     entities:
       - platform: switch
-        friendly_name: Main Bathroom Geyser
+        friendly_name: Front Bathroom Geyser
         id: 1
-        current: 21
-        voltage: 22
-        current_consumption: 23
+      - platform: sensor
+        friendly_name: Front Bathroom Geyser Current
+        id: 21
+        device_class: current
+        unit_of_measurement: "A"
+      - platform: sensor
+        friendly_name: Front Bathroom Geyser Power
+        id: 23
+        scaling: 0.1
+        device_class: power
+        unit_of_measurement: "W"
+      - platform: sensor
+        id: 22
+        scaling: 0.1
+        friendly_name: Front Bathroom Geyser Voltage
+        device_class: voltage
+        unit_of_measurement: "V"
+  ## CBI Astute Smart Switch
   - host: 192.168.241.152
     device_id: !secret geyser_frontbathroom_device_id
     local_key: !secret geyser_frontbathroom_local_key
@@ -20,44 +36,51 @@ localtuya:
       - platform: switch
         friendly_name: Front Bathroom Geyser
         id: 1
-        current: 21
-        voltage: 22
-        current_consumption: 23
+      - platform: sensor
+        friendly_name: Front Bathroom Geyser Current
+        id: 21
+        device_class: current
+        unit_of_measurement: "A"
+      - platform: sensor
+        friendly_name: Front Bathroom Geyser Power
+        id: 23
+        scaling: 0.1
+        device_class: power
+        unit_of_measurement: "W"
+      - platform: sensor
+        id: 22
+        scaling: 0.1
+        friendly_name: Front Bathroom Geyser Voltage
+        device_class: voltage
+        unit_of_measurement: "V"
 
-sensor:
-  # Main Bathroom
-  - platform: template
-    sensors:
-      main_bathroom_geyser_voltage:
-        friendly_name: Voltage(V)
-        value_template: >-
-          {{ states.switch.main_bathroom_geyser.attributes.voltage }}
-        unit_of_measurement: 'V'
-      main_bathroom_geyser_current:
-        friendly_name: Current(A)
-        value_template: >-
-          {{ states.switch.main_bathroom_geyser.attributes.current|int / 1000 }}
-        unit_of_measurement: 'A'
-      main_bathroom_geyser_current_consumption:
-        friendly_name: Power(W)
-        value_template: >-
-          {{ states.switch.main_bathroom_geyser.attributes.current_consumption }}
-        unit_of_measurement: 'W'
-  # Front Bathroom
-  - platform: template
-    sensors:
-      front_bathroom_geyser_voltage:
-        friendly_name: Voltage(V)
-        value_template: >-
-          {{ states.switch.front_bathroom_geyser.attributes.voltage }}
-        unit_of_measurement: 'V'
-      front_bathroom_geyser_current:
-        friendly_name: Current(A)
-        value_template: >-
-          {{ states.switch.front_bathroom_geyser.attributes.current|int / 1000 }}
-        unit_of_measurement: 'A'
-      front_bathroom_geyser_current_consumption:
-        friendly_name: Power(W)
-        value_template: >-
-          {{ states.switch.front_bathroom_geyser.attributes.current_consumption }}
-        unit_of_measurement: 'W'
+  ## Qualitel Smart Energy Monitoring plug
+  - host: 192.168.241.210
+    device_id: !secret server_feed_device_id
+    local_key: !secret server_feed_local_key
+    friendly_name: Server Feed
+    protocol_version: "3.3"
+    entities:
+      - platform: switch
+        friendly_name: Server Feed
+        id: 1
+        current: 18
+        voltage: 20
+        current_consumption: 19
+      - platform: sensor
+        friendly_name: Server Feed Current
+        id: 18
+        device_class: current
+        unit_of_measurement: "mA"
+      - platform: sensor
+        friendly_name: Server Feed Power
+        id: 19
+        scaling: 0.1
+        device_class: power
+        unit_of_measurement: "W"
+      - platform: sensor
+        friendly_name: Server Feed Voltage
+        id: 20
+        scaling: 0.1
+        device_class: voltage
+        unit_of_measurement: "V"
