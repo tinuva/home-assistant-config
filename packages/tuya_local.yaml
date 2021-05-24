@@ -13,7 +13,7 @@ localtuya:
         friendly_name: Front Bathroom Geyser Current
         id: 21
         device_class: current
-        unit_of_measurement: "A"
+        unit_of_measurement: "mA"
       - platform: sensor
         friendly_name: Front Bathroom Geyser Power
         id: 23
@@ -40,7 +40,7 @@ localtuya:
         friendly_name: Front Bathroom Geyser Current
         id: 21
         device_class: current
-        unit_of_measurement: "A"
+        unit_of_measurement: "mA"
       - platform: sensor
         friendly_name: Front Bathroom Geyser Power
         id: 23
