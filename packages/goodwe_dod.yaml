@@ -39,14 +39,14 @@ automation:
     description: Set max DoD to 9% during the day - leave battery for evening use
     trigger:
       - platform: time
-        at: 06:00:00
+        at: 05:30:00
     condition: []
     action:
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
         data:
-          value: 9
+          value: 1
     mode: single
 
   # At 8pm set SoC based on forecast
@@ -56,7 +56,7 @@ automation:
       - platform: time
         at: '20:00:00'
     condition:
-      # if current SoC above 90%
+      # if current SoC above 85%
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
         above: '85'
@@ -78,16 +78,17 @@ automation:
         data:
           value: >
             {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
-            {% if soc_tomorrow >= 12 %}70
-            {% elif soc_tomorrow >= 10 and soc_tomorrow < 12 %}65
-            {% elif soc_tomorrow >= 8 and soc_tomorrow < 10 %}60
-            {% elif soc_tomorrow >= 6 and soc_tomorrow < 8 %}50
-            {% elif soc_tomorrow >= 4 and soc_tomorrow < 6 %}40
-            {% elif soc_tomorrow >= 2 and soc_tomorrow < 4 %}25
+            {% if soc_tomorrow >= 11 %}70
+            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}65
+            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}60
+            {% elif soc_tomorrow >= 8 and soc_tomorrow < 9 %}55
+            {% elif soc_tomorrow >= 7 and soc_tomorrow < 8 %}50
+            {% elif soc_tomorrow >= 6 and soc_tomorrow < 7 %}45
+            {% elif soc_tomorrow >= 5 and soc_tomorrow < 6 %}40
             {% else %}9{% endif -%}
     mode: single
 
-  ## When Eskom turns on LoadShedding set 9%
+  ## When Eskom turns on LoadShedding set 1%
   - alias: Goodwe 9% when LoadShedding start
     trigger:
       - platform: state
@@ -104,9 +105,11 @@ automation:
         target:
           entity_id: input_number.set_goodwe_dod
         data:
-          value: 9
+          value: 1
     mode: single
 
+  # Input that sets DoD on GoodWe Inverter
+  # Everything else will set this input. This allows for graphing+tracking.
   - id: '1620734902145'
     alias: 'Set DoD on Goodwe based on input'
     trigger:
