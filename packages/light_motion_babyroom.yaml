@@ -34,6 +34,20 @@ automation:
           entity_id: sun.sun
           state: 'below_horizon'
     action:
+      - service: timer.start
+        data:
+          entity_id: timer.smallbedroomlight
+          duration: >
+            {% set time = states('sensor.time') %}
+            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+              {{2*60|int}}
+            {% elif '20:00' <= time  <= '23:59' %}
+              {{2*60|int}}
+            {% elif '00:00' <= time <= '05:29' %}
+              {{2*60|int}}
+            {% else %}
+              {{10*60|int}}
+            {%- endif -%}
       - service: light.turn_on
         data_template:
           entity_id: light.small_bedroom
@@ -48,21 +62,39 @@ automation:
               {% set ns.level = h[1] %}
             {% endfor %}
             {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            18
+            15
             {%- else -%}
             {{ ns.level }}
             {%- endif -%}
-      - service: timer.start
-        data:
+
+  # Light turn on and no timer then set brights
+  - alias: Set brightness on smallbedroom light turn on
+    trigger:
+      - platform: state
+        entity_id: light.small_bedroom
+        to: 'on'
+    condition:
+      - condition: and
+        conditions:
+        - condition: state
           entity_id: timer.smallbedroomlight
-          duration: >
-            {% set time = states('sensor.time') %}
-            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
-              {{2*60|int}}
-            {% elif '20:00' <= time  <= '23:59' %}
-              {{2*60|int}}
-            {% elif '00:00' <= time <= '05:29' %}
-              {{2*60|int}}
-            {% else %}
-              {{10*60|int}}
+          state: 'idle'
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.small_bedroom
+          brightness_pct: >-
+            {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
+                          [800,70],[900,75],[1630,75],[1700,70],[1730,65],
+                          [1800,55],[1830,45],[1900,45],[1930,45],[2000,28],
+                          [2010,24],[2020,22],[2030,20],[2100,18],[2300,1]] %}
+            {% set t = states('sensor.time').replace(':','')|int %}
+            {% set ns = namespace(level = 0) %}
+            {% for h in hours if t >= h[0] %}
+              {% set ns.level = h[1] %}
+            {% endfor %}
+            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+            15
+            {%- else -%}
+            {{ ns.level }}
             {%- endif -%}
