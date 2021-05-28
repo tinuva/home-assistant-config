@@ -213,14 +213,9 @@ automation:
                 fields:
                   - type: mrkdwn
                     text: >
-                      *Eskom:*
-                      {{- '\n' -}}*Solar:*
-                      {{- '\n' -}}*Total:*
-                  - type: mrkdwn
-                    text: >
-                      {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-                      {{- '\n' -}}{{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
-                      {{- '\n' -}}{{ states('sensor.energy_buy_daily')|float + states('sensor.solar_generate_daily')|float }} kWh / R{{ states('sensor.energy_buy_daily_cost')|float + states('sensor.energy_generate_daily_saving')|float }}
+                      *Eskom:* {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+                      {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
+                      {{- '\n' -}}*Total:* {{ states('sensor.energy_buy_daily')|float + states('sensor.solar_generate_daily')|float }} kWh / R{{ states('sensor.energy_buy_daily_cost')|float + states('sensor.energy_generate_daily_saving')|float }}
               - type: header
                 text:
                   type: plain_text
@@ -230,15 +225,10 @@ automation:
                 fields:
                   - type: mrkdwn
                     text: >
-                      *Eskom:*
-                      {{- '\n' -}}*Solar:*
-                      {{- '\n' -}}*Total:*
-                  - type: mrkdwn
-                    text: >
-                      {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
-                      {{- '\n' -}}{{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
-                      {{- '\n' -}}{{ states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float | int }} kWh / R{{ states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float }}
-              - type: header
+                      *Eskom:* {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                      {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
+                      {{- '\n' -}}*Total:* {{ states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float | int }} kWh / R{{ states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float }}
+              - type: section
                 text:
                   type: mrkdwn
                   text: >

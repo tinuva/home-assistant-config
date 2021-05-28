@@ -28,14 +28,14 @@ sensor:
 
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
-    source: sensor.front_bathroom_geyser_current_consumption
+    source: sensor.front_bathroom_geyser_power
     name: front_bathroom_geyser_usage
     unit_prefix: k
     round: 1
     method: left
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
-    source: sensor.main_bathroom_geyser_current_consumption
+    source: sensor.main_bathroom_geyser_power
     name: main_bathroom_geyser_usage
     unit_prefix: k
     round: 1
