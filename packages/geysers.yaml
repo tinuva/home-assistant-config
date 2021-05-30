@@ -258,8 +258,8 @@ automation:
         data:
           entity_id: switch.front_bathroom_geyser
 
-  ## Turn off geysers when solcast below 2kWh
-  - alias: Turn off geysers when solcast below 2kWh
+  ## Turn off geysers when solcast below 1kWh
+  - alias: Turn off geysers when solcast below 1kWh
     mode: single
     trigger:
       - platform: numeric_state
@@ -296,7 +296,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '1.5'
+        above: '1.35'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -338,7 +338,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '1.5'
+        above: '1.35'
       - condition: sun
         before: sunset
         before_offset: -00:30:00

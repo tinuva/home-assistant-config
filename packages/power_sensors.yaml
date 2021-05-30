@@ -31,56 +31,56 @@ sensor:
     source: sensor.front_bathroom_geyser_power
     name: front_bathroom_geyser_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
     source: sensor.main_bathroom_geyser_power
     name: main_bathroom_geyser_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
     source: sensor.pool_pump_power
     name: pool_pump_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
   - platform: integration
     source: sensor.lights_power
     name: lights_power_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
   - platform: integration
     source: sensor.bar_fridge_energy_power
     name: bar_fridge_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
   - platform: integration
     source: sensor.fridge_energy_power
     name: fridge_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
   - platform: integration
     source: sensor.office_feed_1_energy_power
     name: office_feed_1_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
   - platform: integration
     source: sensor.aircon_main_bedroom_energy_power
     name: aircon_main_bedroom_usage
     unit_prefix: k
-    round: 1
+    round: 2
     method: left
 
 utility_meter:
