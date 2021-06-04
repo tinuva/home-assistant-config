@@ -1,16 +1,4 @@
-binary_sensor: 
-  - platform: trend
-    sensors:
-      master_bathroom_humidity_rising:
-        entity_id: sensor.main_bathroom_humidity
-        friendly_name: Master Bathroom Humidity Rising
-        sample_duration: 7200
-        min_gradient: 0.02
-      master_bathroom_humidity_falling:
-        entity_id: sensor.main_bathroom_humidity
-        friendly_name: Master Bathroom Humidity Falling
-        sample_duration: 7200
-        min_gradient: -0.01
+
 
 automation:
   - alias: "Turn on Master Bathroom Fan"

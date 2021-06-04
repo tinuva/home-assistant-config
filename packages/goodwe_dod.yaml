@@ -60,10 +60,10 @@ automation:
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
         above: '85'
-      # if loadshedding is below stage 2
+      # if loadshedding is below stage 3
       - condition: numeric_state
         entity_id: sensor.eskom_loadshedding_stage
-        below: 2
+        below: 3
       # if battery SoH is above 50 for some safety
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soh
@@ -78,34 +78,41 @@ automation:
         data:
           value: >
             {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
-            {% if soc_tomorrow >= 11 %}70
-            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}65
-            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}60
-            {% elif soc_tomorrow >= 8 and soc_tomorrow < 9 %}55
-            {% elif soc_tomorrow >= 7 and soc_tomorrow < 8 %}50
-            {% elif soc_tomorrow >= 6 and soc_tomorrow < 7 %}45
-            {% elif soc_tomorrow >= 5 and soc_tomorrow < 6 %}40
+            {% if soc_tomorrow >= 18 %}70
+            {% elif soc_tomorrow >= 14 and soc_tomorrow < 18 %}65
+            {% elif soc_tomorrow >= 12 and soc_tomorrow < 14 %}60
+            {% elif soc_tomorrow >= 11 and soc_tomorrow < 12 %}55
+            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}50
+            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}45
+            {% elif soc_tomorrow >= 8 and soc_tomorrow < 9 %}40
+            {% elif soc_tomorrow >= 7 and soc_tomorrow < 8 %}35
+            {% elif soc_tomorrow >= 6 and soc_tomorrow < 7 %}30
+            {% elif soc_tomorrow >= 5 and soc_tomorrow < 6 %}25
             {% else %}9{% endif -%}
     mode: single
 
-  ## When Eskom turns on LoadShedding set 1%
-  - alias: Goodwe 9% when LoadShedding start
+  ## When Eskom turns on LoadShedding set 9%
+  - alias: Goodwe 9% when LoadShedding start above stage 4
     trigger:
-      - platform: state
-        entity_id: input_boolean.loadshedding_slot_active
-        from: 'off'
-        to: 'on'
+      #- platform: state
+      #  entity_id: input_boolean.loadshedding_slot_active
+      #  from: 'off'
+      #  to: 'on'
+      - platform: numeric_state
+        entity_id: sensor.eskom_loadshedding_stage
+        above: 2
+        for:
+          minutes: 1
     condition:
-      # check conditions for both tiggers
       - condition: numeric_state
         entity_id: sensor.eskom_loadshedding_stage
-        above: 0
+        above: 4
     action:
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
         data:
-          value: 1
+          value: 9
     mode: single
 
   # Input that sets DoD on GoodWe Inverter

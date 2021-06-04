@@ -10,7 +10,7 @@ timer:
 
 automation:
    # Timer end = Turn off
-  - alias: Turn off smallbedroom lights after timer finish
+  - alias: Turn off mainbedroom lights after timer finish
     trigger:
       platform: event
       event_type: timer.finished
@@ -60,11 +60,11 @@ automation:
             {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
               15
             {% elif '20:00' <= time  <= '23:59' %}
-              {{4*60|int}}
+              {{5*60|int}}
             {% elif '00:00' <= time <= '05:29' %}
               {{1*60|int}}
             {% elif '05:30' <= time <= '07:29' %}
-              {{5*60|int}}
+              {{10*60|int}}
             {% else %}
               {{2*60|int}}
             {%- endif -%}

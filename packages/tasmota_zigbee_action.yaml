@@ -21,8 +21,31 @@ automation:
       - platform: mqtt
         topic: 'tele/zigbee/0x2839/Click'
         payload: 'single'
+    condition:
+      - condition: state 
+        entity_id: timer.main_bathroom
+        state: 'idle'
     action:
-      - service: light.toggle
+      - service: automation.trigger
+        data:
+          skip_condition: true
+          entity_id: automation.turn_on_main_bathroom_lights_fan
+
+  - alias: 'MQTT Zigbee Button Main Bathroom single click'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/0x2839/Click'
+        payload: 'single'
+    condition:
+      - condition: state 
+        entity_id: timer.main_bathroom
+        state: 'active'
+    action:
+      - service: timer.cancel
+        data:
+          entity_id: timer.main_bathroom
+      - service: light.turn_off
         data:
           entity_id: light.main_bathroom
 
