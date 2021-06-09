@@ -35,7 +35,7 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-          {% else %}{{ 60 | int * 60 }}{% endif -%}
+          {% else %}{{ 90 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: switch.turn_on
       data:
@@ -90,7 +90,7 @@ automation:
         data_template:
           entity_id: timer.front_geyser
           duration: >
-            {{ 60 | int * 60 }}
+            {{ 90 | int * 60 }}
       - delay: '00:00:01' # Waits 1 seconds
       - service: switch.turn_on
         data:

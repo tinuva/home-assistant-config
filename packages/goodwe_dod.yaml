@@ -46,7 +46,7 @@ automation:
         target:
           entity_id: input_number.set_goodwe_dod
         data:
-          value: 1
+          value: 9
     mode: single
 
   # At 8pm set SoC based on forecast
@@ -72,6 +72,21 @@ automation:
       - service: solcast.update_forecast
         data: {}
       - delay: '00:00:10' # Waits x seconds
+      # cancel timers
+      - service: timer.cancel
+        data_template:
+          entity_id: timer.main_geyser
+      - service: timer.cancel
+        data_template:
+          entity_id: timer.front_geyser
+      # turn off geysers
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
+      - service: switch.turn_off
+        data:
+          entity_id: switch.front_bathroom_geyser
+      # set DoD
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
@@ -113,6 +128,20 @@ automation:
           entity_id: input_number.set_goodwe_dod
         data:
           value: 9
+    mode: single
+
+  ## When less than 1 kWh left on solcat set 1%
+  - alias: Goodwe When less than 1 kWh left on solcat set 1%
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.solcast_forecast
+        below: '1'
+    action:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: 1
     mode: single
 
   # Input that sets DoD on GoodWe Inverter

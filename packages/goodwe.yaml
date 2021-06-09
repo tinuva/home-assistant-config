@@ -42,6 +42,24 @@ sensor:
           {% else %}
             {{ 0 }}
           {% endif %}
+      battery_available:
+        friendly_name: "Battery Available"
+        unit_of_measurement: 'kWh'
+        icon_template: "mdi:battery-high"
+        value_template: >-
+          {% set battery_capacity = 14 %}
+          {% set battery_current = (battery_capacity * (states('sensor.goodwe_battery_soc')|int/100))|round(2) %}
+          {{ battery_current }}
+        #To charge: {{ battery_to_charge }}
+      battery_tocharge:
+        friendly_name: "Battery Need Charge"
+        unit_of_measurement: 'kWh'
+        icon_template: "mdi:battery-high"
+        value_template: >-
+          {% set battery_capacity = 14 %}
+          {% set battery_current = (battery_capacity * (states('sensor.goodwe_battery_soc')|int/100))|round(2) %}
+          {% set battery_to_charge = (battery_capacity - battery_current)|round(2) %}
+          {{ battery_to_charge }}
 
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
