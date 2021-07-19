@@ -24,17 +24,17 @@ automation:
           {%- endfor -%}
 
   ### Lock Pet door if alarm armed away
-  - alias: Lock Pet door if alarm armed away
-    description: Lock Pet door if alarm armed away
-    trigger:
-    - entity_id: alarm_control_panel.home_alarm
-      platform: state
-      to: 'armed_away'
-    action:
-    - service: surepetcare.set_lock_state
-      data_template:
-        flap_id: 204121
-        lock_state: unlocked
+  #- alias: Lock Pet door if alarm armed away
+  #  description: Lock Pet door if alarm armed away
+  #  trigger:
+  #  - entity_id: alarm_control_panel.home_alarm
+  #    platform: state
+  #    to: 'armed_away'
+  #  action:
+  #  - service: surepetcare.set_lock_state
+  #    data_template:
+  #      flap_id: 204121
+  #      lock_state: unlocked
 
   ### Turn of Lounge TV Systems when Alarm is armed
   #- alias: Turn of Lounge TV Systems when Alarm is armed

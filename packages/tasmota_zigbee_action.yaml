@@ -19,7 +19,7 @@ automation:
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x2839/Click'
+        topic: 'tele/zigbee/0x3E63/Click'
         payload: 'single'
     condition:
       - condition: state 
@@ -35,7 +35,7 @@ automation:
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x2839/Click'
+        topic: 'tele/zigbee/0x3E63/Click'
         payload: 'single'
     condition:
       - condition: state 

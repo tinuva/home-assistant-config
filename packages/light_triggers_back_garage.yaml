@@ -29,5 +29,3 @@ automation:
     data:
       entity_id:
         - light.back_garage
-
-### Front garage entrance is through the garage door itself or through the house

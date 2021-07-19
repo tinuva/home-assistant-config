@@ -1,8 +1,11 @@
 automation:
 - alias: Set lights when Plex(kodi) is playing
   trigger:
+    #- platform: state
+    #  entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+    #  to: 'playing' 
     - platform: state
-      entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+      entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
       to: 'playing'
   condition:
     condition: and
@@ -29,7 +32,7 @@ automation:
       entity_id: light.lounge
       brightness: '30'
   - condition: time
-    after: "20:25:00"
+    after: "20:15:00"
   - service: automation.trigger
     data:
       entity_id:

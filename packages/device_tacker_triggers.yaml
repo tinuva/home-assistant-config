@@ -5,9 +5,18 @@ binary_sensor:
       friendly_name: "Is both parents phones charging"
       value_template: >-
         {{ (is_state('sensor.mi_9t_battery_state', 'charging')
-          or is_state('sensor.mi_9t_battery_state', 'not_charging')) 
-          and is_state('sensor.nokia_6_1_battery_state', 'charging') }}
+          or is_state('sensor.mi_9t_battery_state', 'full')) 
+          and (is_state('sensor.nokia_6_1_battery_state', 'charging')
+          or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
       # silly workaround needed - mi9t phone shows not_charging when in fact charging...
+
+    either_parent_phones_charging:
+      friendly_name: "Is either parents phones charging"
+      value_template: >-
+        {{ (is_state('sensor.mi_9t_battery_state', 'charging')
+          or is_state('sensor.mi_9t_battery_state', 'full')) 
+          or (is_state('sensor.nokia_6_1_battery_state', 'charging')
+          or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
 
 automation:
   - alias: Parents both in bed when both phones charge
@@ -30,9 +39,9 @@ automation:
         entity_id: binary_sensor.front_beam
         state: 'off'
     action:
-    - service: alarm_control_panel.alarm_arm_home
-      data:
-        entity_id: alarm_control_panel.home_alarm
+      - service: alarm_control_panel.alarm_arm_home
+        data:
+          entity_id: alarm_control_panel.home_alarm
 
   - alias: Parents both in bed when both phones charge need bypass
     description: Parents both in bed when both phones charge

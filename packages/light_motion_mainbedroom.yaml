@@ -33,6 +33,16 @@ automation:
         - condition: state  # 'night' condition: from sunset until sunrise 
           entity_id: sun.sun
           state: 'below_horizon'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: light.main_bedroom_lights
+          state: 'off'
+          for:
+            seconds: 15
+        - condition: state
+          entity_id: light.main_bedroom_lights
+          state: 'on'
     action:
       - service: light.turn_on
         data_template:
@@ -47,7 +57,7 @@ automation:
             {% for h in hours if t >= h[0] %}
               {% set ns.level = h[1] %}
             {% endfor %}
-            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+            {%- if(is_state('alarm_control_panel.home_alarm','armed_home') or is_state('binary_sensor.either_parent_phones_charging','on')) -%}
             14
             {%- else -%}
             {{ ns.level }}
@@ -60,11 +70,11 @@ automation:
             {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
               15
             {% elif '20:00' <= time  <= '23:59' %}
-              {{5*60|int}}
+              {{10*60|int}}
             {% elif '00:00' <= time <= '05:29' %}
               {{1*60|int}}
             {% elif '05:30' <= time <= '07:29' %}
-              {{10*60|int}}
+              {{15*60|int}}
             {% else %}
               {{2*60|int}}
             {%- endif -%}

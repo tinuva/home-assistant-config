@@ -80,7 +80,7 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '19:00:00'
+        at: "19:00:00"
     condition:
       - condition: state
         entity_id: timer.loadshedding_slot
@@ -90,7 +90,7 @@ automation:
         data_template:
           entity_id: timer.front_geyser
           duration: >
-            {{ 90 | int * 60 }}
+            {{ 60 | int * 60 }}
       - delay: '00:00:01' # Waits 1 seconds
       - service: switch.turn_on
         data:
@@ -146,7 +146,7 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 60 | int * 60 }}{% endif -%}
+          {% else %}{{ 90 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: timer.pause
       data_template:
@@ -264,7 +264,10 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.solcast_forecast
-        below: '1'
+        below: '2'
+      - platform: numeric_state
+        entity_id: ssensor.goodwe_ppv
+        below: '1200'
     condition:
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
@@ -296,7 +299,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '1.5'
+        above: '2.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -328,6 +331,9 @@ automation:
         to: 'Standby'
         for:
           minutes: 1
+      - platform: numeric_state
+        entity_id: sensor.front_bathroom_geyser_power
+        below: '50'
     condition:
       - condition: state
         entity_id: sensor.goodwe_battery_mode_label
@@ -337,8 +343,11 @@ automation:
         above: '99'
       # Since we have solar, check forecast then continue
       - condition: numeric_state
+        entity_id: sensor.front_bathroom_geyser_power
+        below: '50'
+      - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '2'
+        above: '4'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -350,6 +359,10 @@ automation:
       - condition: state
         entity_id: switch.front_bathroom_geyser
         state: 'on'
+      - condition: numeric_state
+        entity_id: input_number.set_goodwe_dod
+        above: '0'
+        below: '97'
     action:
       - service: timer.start
         data_template:

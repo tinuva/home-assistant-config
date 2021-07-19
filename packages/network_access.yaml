@@ -1,3 +1,11 @@
+binary_sensor:
+  - platform: workday
+    country: ZA
+    workdays: [mon, tue, wed, thu, fri]
+    excludes: [sat, sun, holiday]
+    add_holidays:
+      - '2021-12-25'
+
 #timer:
 #  88e9fe88abfe:
 #    duration: '00:05:00'
@@ -40,31 +48,44 @@ input_datetime:
 #    max: 60
 #    step: 1
 
-automation:
-  # off based on input time
-  - alias: Turn off 88e9fe88abfe 1
-    trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    action:
-    - service: switch.turn_off
-      data:
-        entity_id: switch.88e9fe88abfe
-    #- service: timer.start
-    #  data_template:
-    #    entity_id: timer.88e9fe88abfe
-    #    duration: >
-    #      {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
+#automation:
+#  # off based on input time
+#  - alias: Turn off 88e9fe88abfe 1
+#    trigger:
+#      - platform: template
+#        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+#    condition:
+#      - condition: state
+#        entity_id: binary_sensor.workday_sensor
+#        state: "on"
+#    action:
+#      - service: switch.turn_off
+#        data:
+#          entity_id: switch.88e9fe88abfe
+#      - service: switch.turn_off
+#        data:
+#          entity_id: switch.office_feed_2
+#
+#    #- service: timer.start
+#    #  data_template:
+#    #    entity_id: timer.88e9fe88abfe
+#    #    duration: >
+#    #      {{ states('input_number.88e9fe88abfe_off_time_1') | int * 60 }} 
+#
+#  # on based on input time
+#  - alias: Turn on 88e9fe88abfe 1
+#    trigger:
+#      platform: template
+#      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_on_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+#    action:
+#    - service: switch.turn_on
+#      data:
+#        entity_id: switch.88e9fe88abfe
+#    - service: switch.turn_on
+#      data:
+#        entity_id: switch.office_feed_2
 
-  # on based on input time
-  - alias: Turn on 88e9fe88abfe 1
-    trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_on_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    action:
-    - service: switch.turn_on
-      data:
-        entity_id: switch.88e9fe88abfe
+##################
 
 #  - alias: Turn off 88e9fe88abfe 2
 #    trigger:

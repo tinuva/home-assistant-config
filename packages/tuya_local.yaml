@@ -7,15 +7,15 @@ localtuya:
     protocol_version: "3.3"
     entities:
       - platform: switch
-        friendly_name: Front Bathroom Geyser
+        friendly_name: Main Bathroom Geyser
         id: 1
       - platform: sensor
-        friendly_name: Front Bathroom Geyser Current
+        friendly_name: Main Bathroom Geyser Current
         id: 21
         device_class: current
         unit_of_measurement: "mA"
       - platform: sensor
-        friendly_name: Front Bathroom Geyser Power
+        friendly_name: Main Bathroom Geyser Power
         id: 23
         scaling: 0.1
         device_class: power
@@ -23,7 +23,7 @@ localtuya:
       - platform: sensor
         id: 22
         scaling: 0.1
-        friendly_name: Front Bathroom Geyser Voltage
+        friendly_name: Main Bathroom Geyser Voltage
         device_class: voltage
         unit_of_measurement: "V"
   ## CBI Astute Smart Switch

@@ -21,10 +21,10 @@ automation:
       conditions:
         - condition: sun
           after: sunset
-          after_offset: "00:20:00"
+          #after_offset: "00:20:00"
         - condition: sun
           before: sunrise
-          before_offset: "-00:20:00"
+          #before_offset: "-00:20:00"
     action:
       - service: light.turn_on
         entity_id: 
@@ -40,10 +40,10 @@ automation:
       conditions:
         - condition: sun
           after: sunrise
-          after_offset: "-00:20:00"
+          #after_offset: "-00:20:00"
         - condition: sun
           before: sunset
-          before_offset: "00:20:00"
+          #before_offset: "00:20:00"
     action:
       - service: light.turn_off
         entity_id: 
@@ -63,10 +63,10 @@ automation:
         conditions:
           - condition: sun
             after: sunset
-            after_offset: "00:20:00"
+            #after_offset: "00:20:00"
           - condition: sun
             before: sunrise
-            before_offset: "-00:20:00"
+            #before_offset: "-00:20:00"
     action:
       - service: light.turn_on
         data_template:
@@ -86,10 +86,10 @@ automation:
             conditions:
               - condition: sun
                 after: sunrise
-                after_offset: "-00:20:00"
+                #after_offset: "-00:20:00"
               - condition: sun
                 before: sunset
-                before_offset: "00:20:00"
+                #before_offset: "00:20:00"
           - condition: state
             entity_id: alarm_control_panel.home_alarm
             state: armed_home

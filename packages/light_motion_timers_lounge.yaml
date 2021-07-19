@@ -36,7 +36,7 @@ automation:
           entity_id: sun.sun
           state: 'below_horizon'
         - condition: template # if plex is in playing mode, do not start this automation
-          value_template: "{{ not is_state('media_player.plex_plex_for_kodi_kodi_add_on_localhost', 'playing') }}"
+          value_template: "{{ not is_state('media_player.plex_plex_for_android_tv_bravia_vu1', 'playing') }}"
     action:
       - service: light.turn_on
         data_template:
