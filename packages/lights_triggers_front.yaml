@@ -1,0 +1,28 @@
+automation:
+  - alias: Turn on porch lights when front door opened
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.front_door
+        to: 'on'
+    condition:
+      - condition: state  # 'night' condition: from sunset until sunrise 
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+      - service: light.turn_on
+        data:
+          entity_id:
+            - light.outside_porch
+  
+  - alias: Turn off porch lights when front door closed for 10min
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.front_door
+        to: 'off'
+        for:
+          minutes: 10
+    action:
+      - service: light.turn_off
+        data:
+          entity_id:
+            - light.outside_porch

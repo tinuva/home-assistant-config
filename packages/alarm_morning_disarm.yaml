@@ -1,0 +1,78 @@
+timer:
+  disarm_window:
+    name: Alarm Disarm Window
+    duration: '00:00:15'
+
+automation:
+  # Motion = Turn on
+  - alias: Start disarm window when mainbedroom movement
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.main_bedroom_pir
+        to: 'on'
+    condition:
+      - condition: and
+        conditions:
+        - condition: state  # Alarm armed home only
+          entity_id: alarm_control_panel.home_alarm
+          state: 'armed_home'
+      - condition: or
+        conditions:
+        - condition: time # between times
+          after: "05:00:00"
+          before: "05:45:00"
+          weekday:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+        - condition: time # between times
+          after: "06:00:00"
+          before: "08:45:00"
+          weekday:
+            - sat
+            - sun
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.disarm_window
+
+  - alias: Process disarm window when study movement
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.study_pir
+        to: 'on'
+    condition:
+      - condition: state  # Alarm armed home only
+        entity_id: timer.disarm_window
+        state: 'active'
+      - condition: and
+        conditions:
+        - condition: state  # Alarm armed home only
+          entity_id: alarm_control_panel.home_alarm
+          state: 'armed_home'
+      - condition: or
+        conditions:
+        - condition: time # between times
+          after: "05:00:00"
+          before: "05:45:00"
+          weekday:
+            - mon
+            - tue
+            - wed
+            - thu
+            - fri
+        - condition: time # between times
+          after: "06:00:00"
+          before: "08:45:00"
+          weekday:
+            - sat
+            - sun
+    action:
+      - service: timer.cancel
+        data:
+          entity_id: timer.disarm_window
+      - service: alarm_control_panel.alarm_disarm
+        data:
+          entity_id: alarm_control_panel.home_alarm
