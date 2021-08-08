@@ -42,7 +42,6 @@ person: !include includes/persons.yaml
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
 proximity: !include includes/proximity.yaml
-speedtestdotnet: !include includes/speedtestdotnet.yaml
 discovery: !include includes/discovery.yaml
 mqtt: !include includes/mqtt.yaml
 influxdb: !include includes/influxdb.yaml
