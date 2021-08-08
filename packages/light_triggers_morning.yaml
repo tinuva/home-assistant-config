@@ -1,0 +1,20 @@
+automation:
+  ### Turn off all lights in the morning
+  - alias: Turn off all lights in the morning
+    description: Turn off all lights in the morning
+    trigger:
+    - platform: sun
+      event: sunrise
+      offset: "+00:20:00"
+    action:
+    - service: light.turn_off
+      data_template:
+        entity_id: >
+          {%- set domains = ['light'] -%}
+          {%- for domain in domains -%}
+          {%- for item in states[domain]  -%}
+          {%- if item.entity_id not in ['light.main_bathroom'] %}
+            {{- " " }}{{ item.entity_id }}{%- if not loop.last %},{% endif -%}
+          {%- endif -%}
+          {%- endfor -%}
+          {%- endfor -%}

@@ -1,0 +1,40 @@
+binary_sensor:
+  - platform: template
+    sensors:
+      baby_room_door_closed_long:
+        friendly_name: "Baby room door closed long"
+        value_template: >-
+          {% if states.binary_sensor.baby_room_door.state == 'off' %}
+          {% if (as_timestamp(now()) - as_timestamp(states.binary_sensor.baby_room_door.last_changed))/60 > 30 %}
+          off
+          {% else %}
+          on
+          {% endif %}
+          {% else %}
+          on
+          {% endif %}
+
+automation:
+  ### Notify baby room door opened after closed for long
+  - id: '1486327112612'
+    alias: Notify baby room door opened after closed for long
+    description: Notify baby room door opened after closed for long
+    trigger:
+    - entity_id: binary_sensor.baby_room_door_closed_long
+      platform: state
+      to: 'on'
+    action:
+    - service: notify.slack
+      data:
+        data:
+          icon: ":rotating_light:"
+          username: "Home Alarm"
+          blocks_template:
+            - type: section
+              text:
+                type: mrkdwn
+                text: >
+                  Baby room door opened!
+        target: ["#alerts"]
+        message: >
+          Baby room door opened!

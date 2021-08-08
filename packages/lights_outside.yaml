@@ -7,6 +7,8 @@ light:
     name: Lights while awake
     entities:
       - light.outside_braai
+      - light.outside_lounge
+      - light.outside_main_bedroom_lights
       #- light.pool_light
 
 automation:

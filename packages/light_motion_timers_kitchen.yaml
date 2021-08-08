@@ -63,6 +63,8 @@ automation:
             30
             {% elif '18:00' <= time <= '20:25' %}
             175
+            {% elif '05:30' <= time <= '07:30' %}
+            175
             {%- elif(is_state('media_player.plex_plex_for_android_tv_bravia_vu1','playing')) -%}
             30
             {%- else -%}

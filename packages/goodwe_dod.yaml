@@ -15,13 +15,93 @@ input_number:
     unit_of_measurement: '%'
     #step: 1
 
+sensor:
+  - platform: rest
+    name: solcast_forecast_data
+    json_attributes:
+      - forecasts
+    # resource: https://api.solcast.com.au/rooftop_sites/SOLCAST_RESOURCE_ID/forecasts?format=json&api_key=SOLCAST_API_KEY
+    resource: !secret solcast_forecast_resource
+    method: GET
+    value_template: "OK"
+    scan_interval: 01:00
+    force_update: true
+  - platform: template
+    sensors:
+        solcast_forecast_average_30min:
+            value_template: "{{ state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default('variable is not defined')|round(2) }}"
+            unit_of_measurement: 'kW'
+        solcast_forecast_average_60min:
+            value_template: >-
+              {{ ((state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default('variable is not defined') + state_attr('sensor.solcast_forecast_data', 'forecasts')[1].pv_estimate|default('variable is not defined'))/2)|round(2) }}
+            unit_of_measurement: 'kW'
+        solcast_forecast_today:
+            value_template: >-
+              {% set ns = namespace (fc_today = 0) %}
+              {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
+                {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
+                {% if daydiff.days == 0 %}
+                  {% set ns.fc_today = ns.fc_today + (forecast.pv_estimate/2)|float %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.fc_today|round(2) }}
+            unit_of_measurement: 'kWh'
+        solcast_forecast_today_max:
+            value_template: >-
+              {% set ns = namespace (fc_today_max = 0) %}
+              {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
+                {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
+                {% if daydiff.days == 0 %}
+                  {% if ns.fc_today_max < forecast.pv_estimate|float %}
+                    {% set ns.fc_today_max = forecast.pv_estimate|float %}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.fc_today_max|round(2) }}
+            unit_of_measurement: 'kW'
+        solcast_forecast_today_max_time:
+            value_template: >-
+              {% set ns = namespace (fc_today_max = 0, fc_today_max_time = 0) %}
+              {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
+                {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
+                {% if daydiff.days == 0 %}
+                  {% if ns.fc_today_max < forecast.pv_estimate|float %}
+                    {% set ns.fc_today_max = forecast.pv_estimate|float %}
+                    {% set ns.fc_today_max_time = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).time() %}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.fc_today_max_time }}
+        solcast_forecast_tommorrow:
+            value_template: >-
+              {% set ns = namespace (fc_tommorrow = 0) %}
+              {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
+                {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
+                {% if daydiff.days == 1 %}
+                  {% set ns.fc_tommorrow = ns.fc_tommorrow + (forecast.pv_estimate/2)|float %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.fc_tommorrow|round(2) }}
+            unit_of_measurement: 'kWh'
+        solcast_forecast_day_after_tommorrow:
+            value_template: >-
+              {% set ns = namespace (fc_dayAftTom = 0) %}
+              {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
+                {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
+                {% if daydiff.days == 2 %}
+                  {% set ns.fc_dayAftTom = ns.fc_dayAftTom + (forecast.pv_estimate/2)|float %}
+                {%- endif %}
+              {%- endfor %}
+              {{ ns.fc_dayAftTom|round(2) }}
+            unit_of_measurement: 'kWh'
+
 automation:
   - id: '1606211453192'
     alias: Solcast Update
     description: Update the Solcast prediction for the day
     trigger:
       - platform: time_pattern
-        minutes: /45
+        hours: /01
     condition:
       - condition: sun
         before: sunset
@@ -33,13 +113,42 @@ automation:
         data: {}
     mode: single
 
-  ## 9% at 6am
+  ## 9% at 6amc
+  - id: '1605879219606'
+    alias: Goodwe DoD Morning
+    description: Set max DoD in morning when day forecast more accurate
+    trigger:
+      - platform: time
+        at: 05:30:00
+    condition: []
+    action:
+      - service: solcast.update_forecast
+        data: {}
+      - delay: '00:00:10' # Waits x seconds
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: >
+            {% set soc_today = states('sensor.solcast_forecast')|int %}
+            {% if soc_today >= 18 %}70
+            {% elif soc_today >= 14 and soc_today < 18 %}60
+            {% elif soc_today >= 12 and soc_today < 14 %}55
+            {% elif soc_today >= 11 and soc_today < 12 %}50
+            {% elif soc_today >= 10 and soc_today < 11 %}45
+            {% elif soc_today >= 9 and soc_today < 10 %}40
+            {% elif soc_today >= 8 and soc_today < 9 %}35
+            {% elif soc_today >= 7 and soc_today < 8 %}12
+            {% else %}1{% endif -%}
+    mode: single
+
+  ## 9% at 10:30am
   - id: '1605879219607'
     alias: Goodwe DoD Day
     description: Set max DoD to 11% during the day - leave battery for evening use
     trigger:
       - platform: time
-        at: 05:30:00
+        at: '10:30:00'
     condition: []
     action:
       - service: solcast.update_forecast
@@ -106,8 +215,7 @@ automation:
             {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}45
             {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}40
             {% elif soc_tomorrow >= 8 and soc_tomorrow < 9 %}35
-            {% elif soc_tomorrow >= 7 and soc_tomorrow < 8 %}30
-            {% else %}1{% endif -%}
+            {% else %}11{% endif -%}
     mode: single
 
   ## When Eskom turns on LoadShedding set 11%

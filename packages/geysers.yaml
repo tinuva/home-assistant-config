@@ -259,22 +259,22 @@ automation:
           entity_id: switch.front_bathroom_geyser
 
   ## Turn off geysers when solcast below 1kWh
-  - alias: Turn off geysers when solcast below 1kWh
+  - alias: Turn off geysers when solcast below 1.5kWh
     mode: single
     trigger:
       - platform: numeric_state
         entity_id: sensor.solcast_forecast
-        below: '2'
-      - platform: numeric_state
-        entity_id: ssensor.goodwe_ppv
-        below: '1200'
+        below: '1.5'
+      #- platform: numeric_state
+      #  entity_id: sensor.goodwe_ppv
+      #  below: '1200'
     condition:
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'
       - condition: time
         after: '8:00:00'
-        before: '23:59:59'
+        before: '19:59:59'
     action:
       - service: switch.turn_off
         data:
@@ -299,7 +299,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '2.5'
+        above: '1.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -347,7 +347,7 @@ automation:
         below: '50'
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '4'
+        above: '1.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
