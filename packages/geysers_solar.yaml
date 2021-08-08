@@ -116,7 +116,44 @@ automation:
         data_template:
           entity_id: timer.main_geyser
 
+  ## Turn off main geyser when both geysers on and above 5kW non-essential
+  - alias: Turn off main geyser when high kW
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.energy_non_essentials
+        above: '5000'
+    condition:
+      - condition: state
+        entity_id: switch.main_bathroom_geyser
+        state: 'on'
+      - condition: state
+        entity_id: switch.front_bathroom_geyser
+        state: 'on'
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
 
+  ## Turn off front geyser when only front geyser on and above 4kW non-essential
+  - alias: Turn off front geyser when high kW
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.energy_non_essentials
+        above: '4000'
+    condition:
+      - condition: state
+        entity_id: switch.main_bathroom_geyser
+        state: 'off'
+      - condition: state
+        entity_id: switch.front_bathroom_geyser
+        state: 'on'
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.front_bathroom_geyser
+  
   ## Front geyser off on based on battery
   #- alias: Turn off front geyser based on battery
   #  trigger:
