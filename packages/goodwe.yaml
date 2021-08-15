@@ -42,6 +42,18 @@ sensor:
           {% else %}
             {{ 0 }}
           {% endif %}
+      # PV usage over backup/essential
+      pv_backup_excess:
+        friendly_name: "PV Excess over Backup Power"
+        unit_of_measurement: 'W'
+        icon_template: "mdi:flash"
+        value_template: >-
+          {% if states('sensor.goodwe_ppv')|float > 0 %}
+            {{ (states('sensor.goodwe_ppv')|float - states('sensor.goodwe_pback_up')|float)|float|round(0)}}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+      # Battery template sensors
       battery_available:
         friendly_name: "Battery Available"
         unit_of_measurement: 'kWh'

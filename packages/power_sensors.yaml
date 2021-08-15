@@ -77,6 +77,20 @@ sensor:
     method: left
 
   - platform: integration
+    source: sensor.office_feed_2_energy_power
+    name: office_feed_2_usage
+    unit_prefix: k
+    round: 2
+    method: left
+
+  - platform: integration
+    source: sensor.server_feed_power
+    name: server_feed_usage
+    unit_prefix: k
+    round: 2
+    method: left
+
+  - platform: integration
     source: sensor.aircon_main_bedroom_energy_power
     name: aircon_main_bedroom_usage
     unit_prefix: k
@@ -115,6 +129,12 @@ utility_meter:
     cycle: daily
   office_feed_1_daily:
     source: sensor.office_feed_1_usage
+    cycle: daily
+  office_feed_2_daily:
+    source: sensor.office_feed_2_usage
+    cycle: daily
+  server_feed_daily:
+    source: sensor.server_feed_usage
     cycle: daily
   aircon_main_bedroom_daily:
     source: sensor.aircon_main_bedroom_usage

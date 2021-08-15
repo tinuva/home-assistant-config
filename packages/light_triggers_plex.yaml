@@ -5,6 +5,9 @@ automation:
     #  entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
     #  to: 'playing' 
     - platform: state
+      entity_id: media_player.plex_plex_for_kodi_sonytv
+      to: 'playing' 
+    - platform: state
       entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
       to: 'playing'
   condition:
