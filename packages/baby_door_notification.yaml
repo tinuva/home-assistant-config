@@ -20,21 +20,32 @@ automation:
     alias: Notify baby room door opened after closed for long
     description: Notify baby room door opened after closed for long
     trigger:
-    - entity_id: binary_sensor.baby_room_door_closed_long
-      platform: state
-      to: 'on'
+      - entity_id: binary_sensor.baby_room_door_closed_long
+        platform: state
+        to: 'on'
+    condition:
+      - condition: state
+        entity_id: binary_sensor.study_pir
+        state: 'off'
+        for:
+          minutes: 2
+      - condition: state
+        entity_id: binary_sensor.main_bedroom_pir
+        state: 'off'
+        for:
+          minutes: 2
     action:
-    - service: notify.slack
-      data:
+      - service: notify.slack
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  Baby room door opened!
-        target: ["#alerts"]
-        message: >
-          Baby room door opened!
+          data:
+            icon: ":rotating_light:"
+            username: "Home Alarm"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Baby room door opened!
+          target: ["#alerts"]
+          message: >
+            Baby room door opened!

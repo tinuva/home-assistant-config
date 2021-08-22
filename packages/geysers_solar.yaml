@@ -5,17 +5,17 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.solcast_forecast
-        below: '1.0'
-      - platform: numeric_state
-        entity_id: sensor.pv_backup_excess
-        below: '1.0'
+        below: '0.5'
+      #- platform: numeric_state
+      #  entity_id: sensor.pv_backup_excess
+      #  below: '0'
     condition:
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'
       - condition: time
         after: '8:00:00'
-        before: '17:59:59'
+        before: '16:59:59'
     action:
       - service: switch.turn_off
         data:
@@ -48,7 +48,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '1.5'
+        above: '0.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -88,7 +88,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '1.5'
+        above: '0.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -127,6 +127,9 @@ automation:
       - condition: state
         entity_id: switch.front_bathroom_geyser
         state: 'off'
+      - condition: time
+        after: '8:00:00'
+        before: '17:59:59'
     action:
       - service: switch.turn_off
         data:
@@ -138,7 +141,7 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.energy_non_essentials
-        above: '4000'
+        above: '4400'
     condition:
       - condition: state
         entity_id: switch.main_bathroom_geyser
@@ -146,6 +149,9 @@ automation:
       - condition: state
         entity_id: switch.front_bathroom_geyser
         state: 'on'
+      - condition: time
+        after: '20:00:00'
+        before: '16:59:59'
     action:
       - service: switch.turn_off
         data:
