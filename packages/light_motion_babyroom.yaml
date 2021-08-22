@@ -52,11 +52,11 @@ automation:
             {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
               {{2*60|int}}
             {% elif '20:00' <= time  <= '23:59' %}
-              {{2*60|int}}
+              {{15*60|int}}
             {% elif '00:00' <= time <= '05:29' %}
               {{2*60|int}}
             {% else %}
-              {{10*60|int}}
+              {{30*60|int}}
             {%- endif -%}
       - service: light.turn_on
         data_template:

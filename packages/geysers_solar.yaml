@@ -64,7 +64,7 @@ automation:
       - service: switch.turn_on
         data:
           entity_id: switch.front_bathroom_geyser
-      - delay: '00:00:05' # Waits 5 seconds
+      - delay: '00:00:15' # Waits 15 seconds
       - service: timer.cancel
         data_template:
           entity_id: timer.front_geyser
@@ -108,7 +108,7 @@ automation:
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
-      - delay: '00:00:05' # Waits 5 seconds
+      - delay: '00:00:15' # Waits 15 seconds
       - service: timer.cancel
         data_template:
           entity_id: timer.main_geyser
