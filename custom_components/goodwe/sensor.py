@@ -3,10 +3,15 @@ import asyncio
 import logging
 import voluptuous as vol
 from datetime import timedelta
+
 from .goodwe_inverter import discover, InverterError, SensorKind
 
 from homeassistant.helpers import config_validation as cv, entity_platform
-from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.components.sensor import (
+    PLATFORM_SCHEMA,
+    STATE_CLASS_MEASUREMENT,
+    SensorEntity,
+)
 from homeassistant.const import (
     CONF_IP_ADDRESS,
     CONF_PORT,
@@ -17,12 +22,16 @@ from homeassistant.const import (
     DEVICE_CLASS_CURRENT,
     DEVICE_CLASS_ENERGY,
     DEVICE_CLASS_VOLTAGE,
+    ELECTRIC_CURRENT_AMPERE,
+    ELECTRIC_POTENTIAL_VOLT,
     TEMP_CELSIUS,
 )
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.exceptions import PlatformNotReady
+from homeassistant.util.dt import utc_from_timestamp, utcnow
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,7 +78,12 @@ _ICONS = {
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Platform setup."""
     try:
-        inverter = await discover(config[CONF_IP_ADDRESS], config[CONF_PORT], config[CONF_NETWORK_TIMEOUT], config[CONF_NETWORK_RETRIES])
+        inverter = await discover(
+            config[CONF_IP_ADDRESS],
+            config[CONF_PORT],
+            config[CONF_NETWORK_TIMEOUT],
+            config[CONF_NETWORK_RETRIES],
+        )
     except InverterError as err:
         raise PlatformNotReady from err
 
@@ -227,7 +241,7 @@ class InverterEntity(Entity):
         }
 
 
-class InverterSensor(Entity):
+class InverterSensor(SensorEntity):
     """Class for a sensor."""
 
     def __init__(self, uid, sensor_id, sensor_name, unit, kind, hass):
@@ -239,22 +253,37 @@ class InverterSensor(Entity):
         self._uid = uid
         self._sensor_id = sensor_id
         self._sensor_name = sensor_name
-        self._unit = unit
-        if self._unit == "A":
-            self._device_class = DEVICE_CLASS_CURRENT
-        elif self._unit == "V":
-            self._device_class = DEVICE_CLASS_VOLTAGE
-        elif self._unit == "W":
-            self._device_class = DEVICE_CLASS_POWER
-        elif self._unit == "kWh":
-            self._device_class = DEVICE_CLASS_ENERGY
-        elif self._unit == "%" and kind == SensorKind.bat:
-            self._device_class = DEVICE_CLASS_BATTERY
-        elif self._unit == "C":
+        # self._last_reset = utc_from_timestamp(0)
+        if unit == "A":
+            self._unit = ELECTRIC_CURRENT_AMPERE
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_device_class = DEVICE_CLASS_CURRENT
+        elif unit == "V":
+            self._unit = ELECTRIC_POTENTIAL_VOLT
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_device_class = DEVICE_CLASS_VOLTAGE
+        elif unit == "W":
+            self._unit = unit
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_device_class = DEVICE_CLASS_POWER
+        elif unit == "kWh":
+            self._unit = unit
+            self._attr_state_class = STATE_CLASS_MEASUREMENT  # will be replaced with STATE_CLASS_TOTAL_INCREASING
+            self._attr_device_class = DEVICE_CLASS_ENERGY
+            self._attr_last_reset = utc_from_timestamp(0)
+        elif unit == "%" and kind == SensorKind.bat:
+            self._unit = unit
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_device_class = DEVICE_CLASS_BATTERY
+        elif unit == "C":
             self._unit = TEMP_CELSIUS
-            self._device_class = DEVICE_CLASS_TEMPERATURE
+            self._attr_state_class = STATE_CLASS_MEASUREMENT
+            self._attr_device_class = DEVICE_CLASS_TEMPERATURE
         else:
-            self._device_class = None
+            self._unit = unit
+            self._attr_state_class = None
+            self._attr_device_class = None
+
         if kind is not None:
             self._icon_name = _ICONS[kind]
         else:
@@ -263,10 +292,18 @@ class InverterSensor(Entity):
 
     def update_value(self, inverter_response):
         """Update the sensor value from the response received from inverter"""
+        old_value = self._value
         if self._sensor_id in inverter_response:
             self._value = inverter_response[self._sensor_id]
         else:
             self._value = None
+        if (
+            self._unit == "kWh"
+            and old_value
+            and self._value
+            and (old_value > self._value)
+        ):
+            self._attr_last_reset = utcnow()
         self.async_schedule_update_ha_state()
 
     @property
@@ -283,11 +320,6 @@ class InverterSensor(Entity):
     def name(self):
         """Name of this inverter attribute."""
         return self._sensor_name
-
-    @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return self._device_class
 
     @property
     def unit_of_measurement(self):
