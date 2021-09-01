@@ -66,5 +66,5 @@ alexa:
         - light
 
 spotify:
-  client_id: 547f01bd9f9b490aaa40208c5a042862
-  client_secret: 9f7349e28d02412dbc3179f1885a0e92
+  client_id: !secret spotify_client_id
+  client_secret: !secret spotify_client_secret
