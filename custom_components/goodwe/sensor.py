@@ -4,7 +4,7 @@ import logging
 import voluptuous as vol
 from datetime import timedelta
 
-from .goodwe_inverter import discover, InverterError, SensorKind
+from .goodwe.goodwe import connect, InverterError, SensorKind
 
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.components.sensor import (
@@ -52,6 +52,8 @@ SET_ONGRID_BATTERY_DOD_SERVICE_SCHEMA = vol.Schema(
     }
 )
 
+CONF_INCLUDE_UNKNOWN_SENSORS = "include_unknown_sensors"
+CONF_INVERTER_TYPE = "inverter_type"
 CONF_SENSOR_NAME_PREFIX = "sensor_name_prefix"
 CONF_NETWORK_TIMEOUT = "network_timeout"
 CONF_NETWORK_RETRIES = "network_retries"
@@ -60,6 +62,8 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Optional(CONF_PORT, default=8899): cv.port,
+        vol.Optional(CONF_INCLUDE_UNKNOWN_SENSORS, default=False): cv.boolean,
+        vol.Optional(CONF_INVERTER_TYPE, default=""): cv.string,
         vol.Optional(CONF_NETWORK_TIMEOUT, default=2): cv.positive_int,
         vol.Optional(CONF_NETWORK_RETRIES, default=3): cv.positive_int,
         vol.Optional(CONF_SCAN_INTERVAL, default=timedelta(seconds=30)): cv.time_period,
@@ -68,26 +72,32 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 )
 
 _ICONS = {
-    SensorKind.pv: "mdi:solar-power",
-    SensorKind.ac: "mdi:power-plug-outline",
-    SensorKind.ups: "mdi:power-plug-off-outline",
-    SensorKind.bat: "mdi:battery-high",
+    SensorKind.PV: "mdi:solar-power",
+    SensorKind.AC: "mdi:power-plug-outline",
+    SensorKind.UPS: "mdi:power-plug-off-outline",
+    SensorKind.BAT: "mdi:battery-high",
 }
 
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Platform setup."""
     try:
-        inverter = await discover(
+        inverter = await connect(
             config[CONF_IP_ADDRESS],
             config[CONF_PORT],
+            config[CONF_INVERTER_TYPE],
             config[CONF_NETWORK_TIMEOUT],
             config[CONF_NETWORK_RETRIES],
         )
     except InverterError as err:
         raise PlatformNotReady from err
 
-    entity = InverterEntity(inverter, config[CONF_SENSOR_NAME_PREFIX], hass)
+    entity = InverterEntity(
+        inverter,
+        config[CONF_SENSOR_NAME_PREFIX],
+        config[CONF_INCLUDE_UNKNOWN_SENSORS],
+        hass,
+    )
 
     refresh_job = InverterRefreshJob(hass, entity)
     hass.async_add_job(refresh_job.async_refresh)
@@ -96,11 +106,11 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     )
 
     # Add individual inverter sensor entities
-    for (sensor_id, _, _, unit, name, kind) in inverter.sensors():
-        uid = f"{DOMAIN}-{sensor_id}-{inverter.serial_number}"
-        sensor_name = f"{config[CONF_SENSOR_NAME_PREFIX]} {name}".strip()
+    for sensor in inverter.sensors():
+        uid = f"{DOMAIN}-{sensor.id_}-{inverter.serial_number}"
+        sensor_name = f"{config[CONF_SENSOR_NAME_PREFIX]} {sensor.name}".strip()
         refresh_job.sensors.append(
-            InverterSensor(uid, sensor_id, sensor_name, unit, kind, hass)
+            InverterSensor(uid, sensor.id_, sensor_name, sensor.unit, sensor.kind, hass)
         )
     async_add_entities(refresh_job.sensors)
 
@@ -137,7 +147,7 @@ class InverterRefreshJob:
         This is the only method that should fetch new data for Home Assistant.
         """
         try:
-            inverter_response = await self.entity.inverter.read_runtime_data()
+            inverter_response = await self.entity.read_runtime_data()
             self.ready.set()
         except InverterError as ex:
             _LOGGER.warning("Could not retrieve data from inverter: %s", ex)
@@ -152,17 +162,21 @@ class InverterRefreshJob:
 class InverterEntity(Entity):
     """Entity representing the inverter instance itself"""
 
-    def __init__(self, inverter, name_prefix, hass):
+    def __init__(self, inverter, name_prefix, include_unknown_sensors, hass):
         super().__init__()
         self.entity_id = async_generate_entity_id(
             ENTITY_ID_FORMAT, "inverter", hass=hass
         )
         self.inverter = inverter
+        self._include_unknown_sensors = include_unknown_sensors
         self._name_prefix = name_prefix
         self._uuid = f"{DOMAIN}-{inverter.serial_number}"
         self._value = None
         self._sensor = "ppv"
         self._data = {}
+
+    async def read_runtime_data(self):
+        return await self.inverter.read_runtime_data(self._include_unknown_sensors)
 
     async def set_work_mode(self, work_mode: int):
         """Set the inverter work mode"""
@@ -271,7 +285,7 @@ class InverterSensor(SensorEntity):
             self._attr_state_class = STATE_CLASS_MEASUREMENT  # will be replaced with STATE_CLASS_TOTAL_INCREASING
             self._attr_device_class = DEVICE_CLASS_ENERGY
             self._attr_last_reset = utc_from_timestamp(0)
-        elif unit == "%" and kind == SensorKind.bat:
+        elif unit == "%" and kind == SensorKind.BAT:
             self._unit = unit
             self._attr_state_class = STATE_CLASS_MEASUREMENT
             self._attr_device_class = DEVICE_CLASS_BATTERY

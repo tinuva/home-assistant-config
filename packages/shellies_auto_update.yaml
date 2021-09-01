@@ -8,6 +8,7 @@ automation:
   - alias: "Shelly New Firmware Update"
     id: 'snfn'
     mode: parallel
+    max: 100
     trigger:
       platform: mqtt
       topic: shellies/announce
@@ -49,6 +50,7 @@ automation:
   - alias: "Shelly New Firmware Notification Removal"
     id: 'snfnr'
     mode: parallel
+    max: 100
     trigger:
       platform: mqtt
       topic: shellies/announce

@@ -21,8 +21,10 @@ automation:
   # Main geyser on based on input time
   - alias: Turn on main geyser
     trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      - platform: time
+        at: '18:00:00'
     condition:
       - condition: state
         entity_id: timer.loadshedding_slot
@@ -35,7 +37,8 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-          {% else %}{{ 90 | int * 60 }}{% endif -%}
+          {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 120 | int * 60 }}
+          {% else %}{{ 60 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: switch.turn_on
       data:
@@ -68,6 +71,18 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.main_geyser
+      - platform: time
+        at: '5:55:00'
+      - platform: time
+        at: '5:58:00'
+      - platform: time
+        at: '5:59:00'
+      - platform: time
+        at: '19:50:00'
+      - platform: time
+        at: '19:55:00'
+      - platform: time
+        at: '19:59:00'
     action:
       - service: switch.turn_off
         data:
@@ -79,18 +94,24 @@ automation:
     trigger:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-      - platform: time
-        at: "19:00:00"
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
     condition:
       - condition: state
         entity_id: timer.loadshedding_slot
         state: 'idle'
+      - condition: template
+        value_template: "{{ '04:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on' }}"
     action:
       - service: timer.start
         data_template:
           entity_id: timer.front_geyser
           duration: >
-            {{ 60 | int * 60 }}
+            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+            {% set today_name = sensor_names[now().weekday()] %}
+            {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
+            {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 120 | int * 60 }}
+            {% else %}{{ 60 | int * 60 }}{% endif -%}
       - delay: '00:00:01' # Waits 1 seconds
       - service: switch.turn_on
         data:
@@ -123,6 +144,18 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.front_geyser
+      - platform: time
+        at: '6:25:00'
+      - platform: time
+        at: '6:29:00'
+      - platform: time
+        at: '6:30:00'
+      - platform: time
+        at: '19:50:00'
+      - platform: time
+        at: '19:55:00'
+      - platform: time
+        at: '19:59:00'
     action:
       - service: switch.turn_off
         data:

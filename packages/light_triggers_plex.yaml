@@ -22,14 +22,14 @@ automation:
     #  entity_id: sensor.illumination_7811dcb90d53
     #  below: 200
   action:
-  - service: timer.finish
-    data:
-      entity_id:
-        - timer.kitchenlight
-  - service: timer.cancel
-    data:
-      entity_id:
-        - timer.loungelight
+  #- service: timer.finish
+  #  data:
+  #    entity_id:
+  #      - timer.kitchenlight
+  #- service: timer.cancel
+  #  data:
+  #    entity_id:
+  #      - timer.loungelight
   - service: light.turn_on
     data:
       entity_id: light.lounge

@@ -113,13 +113,13 @@ automation:
         data_template:
           entity_id: timer.main_geyser
 
-  ## Turn off main geyser when only main geyser on and above 4.5kW non-essential
+  ## Turn off main geyser when only main geyser on and above 5kW non-essential
   - alias: Turn off main geyser when high kW
     mode: single
     trigger:
       - platform: numeric_state
         entity_id: sensor.energy_non_essentials
-        above: '4500'
+        above: '5000'
     condition:
       - condition: state
         entity_id: switch.main_bathroom_geyser
@@ -129,7 +129,7 @@ automation:
         state: 'off'
       - condition: time
         after: '8:00:00'
-        before: '17:59:59'
+        before: '16:59:59'
     action:
       - service: switch.turn_off
         data:
@@ -150,7 +150,7 @@ automation:
         entity_id: switch.front_bathroom_geyser
         state: 'on'
       - condition: time
-        after: '20:00:00'
+        after: '8:00:00'
         before: '16:59:59'
     action:
       - service: switch.turn_off
