@@ -78,11 +78,15 @@ automation:
       - platform: time
         at: '5:59:00'
       - platform: time
-        at: '19:50:00'
+        at: '18:50:00'
       - platform: time
-        at: '19:55:00'
+        at: '18:55:00'
       - platform: time
-        at: '19:59:00'
+        at: '18:59:00'
+      - platform: state
+        entity_id: switch.main_bathroom_geyser
+        to: 'on'
+        for: '03:00:00'
     action:
       - service: switch.turn_off
         data:
@@ -151,11 +155,15 @@ automation:
       - platform: time
         at: '6:30:00'
       - platform: time
-        at: '19:50:00'
+        at: '18:50:00'
       - platform: time
-        at: '19:55:00'
+        at: '18:55:00'
       - platform: time
-        at: '19:59:00'
+        at: '18:59:00'
+      - platform: state
+        entity_id: switch.front_bathroom_geyser
+        to: 'on'
+        for: '03:00:00'
     action:
       - service: switch.turn_off
         data:

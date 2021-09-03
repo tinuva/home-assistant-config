@@ -6,6 +6,9 @@ sensor:
     #network_timeout: 2
     #network_retries: 3
     #sensor_name_prefix: GoodWe
+    #inverter_type: ES
+    #comm_address: 247
+    #include_unknown_sensors: false
 
   - platform: template
     sensors:
@@ -105,33 +108,33 @@ sensor:
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (states('sensor.energy_buy_daily')|float * 291.90 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_daily')|float * 331.26 / 100)|round(2) }}
           {% else %}
-            {{ (states('sensor.energy_buy_daily')|float * 211.52 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_daily')|float * 240.04 / 100)|round(2) }}
           {% endif %}
       energy_buy_monthly_cost:
         friendly_name: "energy_buy_monthly_cost"
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (((states('sensor.energy_buy_monthly')|float - 600) * 291.90 / 100)|round(2) + (600 * 211.52 / 100))|round(2) }}
+            {{ (((states('sensor.energy_buy_monthly')|float - 600) * 331.26 / 100)|round(2) + (600 * 240.04 / 100))|round(2) }}
           {% else %}
-            {{ (states('sensor.energy_buy_monthly')|float * 211.52 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_monthly')|float * 240.04 / 100)|round(2) }}
           {% endif %}
       energy_generate_daily_saving:
         friendly_name: "energy_generate_daily_saving"
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (states('sensor.solar_generate_daily')|float * 291.90 / 100)|round(2) }}
+            {{ (states('sensor.solar_generate_daily')|float * 331.26 / 100)|round(2) }}
           {% else %}
-            {{ (states('sensor.solar_generate_daily')|float * 211.52 / 100)|round(2) }}
+            {{ (states('sensor.solar_generate_daily')|float * 240.04 / 100)|round(2) }}
           {% endif %}
       energy_generate_monthly_saving:
         friendly_name: "energy_generate_monthly_saving"
         icon_template: "mdi:flash"
         value_template: >-
-          {{ (states('sensor.solar_generate_monthly')|float * 211.52 / 100)|round(2) }}
+          {{ (states('sensor.solar_generate_monthly')|float * 240.04 / 100)|round(2) }}
 
       grid_mode:
         friendly_name_template: "Grid Mode"
