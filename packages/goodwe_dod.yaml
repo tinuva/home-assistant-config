@@ -119,7 +119,7 @@ automation:
     description: Set max DoD in morning when day forecast more accurate
     trigger:
       - platform: time
-        at: 06:30:00
+        at: 06:00:00
     condition: []
       # if loadshedding is below stage 5
       #- condition: numeric_state
