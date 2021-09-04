@@ -138,3 +138,4 @@ notebooks/
 airsonos.xml
 themes/ios-*
 www/cam_captures
+home-assistant.log.*
