@@ -11,16 +11,18 @@ class SensorKind(Enum):
     Enumeration of sensor kinds.
 
     Possible values are:
-    PV - photo-voltaic (e.g. dc voltage of pv panels)
-    AC - grid side (e.g. ac voltage of grid connected output)
-    UPS - ups/eps/backup side (e.g. ac voltage of backup/off-grid connected output)
+    PV - inverter photo-voltaic (e.g. dc voltage of pv panels)
+    AC - inverter grid output (e.g. ac voltage of grid connected output)
+    UPS - inverter ups/eps/backup output (e.g. ac voltage of backup/off-grid connected output)
     BAT - battery (e.g. dc voltage of connected battery pack)
+    GRID - power grid/smart meter (e.g. active power exported to grid)
     """
 
     PV = 1
     AC = 2
     UPS = 3
     BAT = 4
+    GRID = 5
 
 
 @dataclass
@@ -46,29 +48,21 @@ class Sensor:
         """Encode the (setting mostly) value to (usually) 2 byte raw register value"""
         raise NotImplementedError()
 
+
 class Inverter:
     """
     Common superclass for various inverter models implementations.
     Represents the inverter state and its basic behavior
     """
-
-    def __init__(
-            self,
-            host: str,
-            port: int,
-            timeout: int = 2,
-            retries: int = 3,
-            model_name: str = "",
-            serial_number: str = "",
-            software_version: str = "",
-    ):
+    def __init__(self, host: str, port: int, comm_addr: int = None, timeout: int = 2, retries: int = 3):
         self.host = host
         self.port = port
+        self.comm_addr = comm_addr
         self.timeout = timeout
         self.retries = retries
-        self.model_name = model_name
-        self.serial_number = serial_number
-        self.software_version = software_version
+        self.model_name: str = None
+        self.serial_number: str = None
+        self.software_version: str = None
         self.modbus_version: int = None
         self.rated_power: int = None
         self.ac_output_type: int = None
@@ -169,15 +163,13 @@ class Inverter:
         """
         raise NotImplementedError()
 
-    @classmethod
-    def sensors(cls) -> Tuple[Sensor, ...]:
+    def sensors(self) -> Tuple[Sensor, ...]:
         """
         Return tuple of sensor definitions
         """
         raise NotImplementedError()
 
-    @classmethod
-    def settings(cls) -> Tuple[Sensor, ...]:
+    def settings(self) -> Tuple[Sensor, ...]:
         """
         Return tuple of settings definitions
         """
