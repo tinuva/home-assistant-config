@@ -29,6 +29,11 @@ automation:
       - condition: state
         entity_id: timer.loadshedding_slot
         state: 'idle'
+      - condition: state
+        entity_id: timer.main_geyser
+        state: 'idle'
+        for:
+          hours: 6
     action:
     - service: timer.start
       data_template:
@@ -106,6 +111,11 @@ automation:
         state: 'idle'
       - condition: template
         value_template: "{{ ('04:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('17:00' <= states('sensor.time') < '20:00') }}"
+      - condition: state
+        entity_id: timer.front_geyser
+        state: 'idle'
+        for:
+          hours: 6
     action:
       - service: timer.start
         data_template:

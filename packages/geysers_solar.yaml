@@ -5,7 +5,7 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.solcast_forecast
-        below: '0.5'
+        below: '1'
       #- platform: numeric_state
       #  entity_id: sensor.pv_backup_excess
       #  below: '0'
@@ -65,9 +65,11 @@ automation:
         data:
           entity_id: switch.front_bathroom_geyser
       - delay: '00:00:15' # Waits 15 seconds
-      - service: timer.cancel
+      - service: timer.start
         data_template:
           entity_id: timer.front_geyser
+          duration: >
+            {{ 120 | int * 60 }}
 
   # Main geyser on based on battery
   - alias: Turn on Main geyser based on battery
@@ -97,21 +99,23 @@ automation:
       - condition: state
         entity_id: switch.main_bathroom_geyser
         state: 'off'
-      - condition: state
-        entity_id: switch.front_bathroom_geyser
-        state: 'off'
-      - condition: numeric_state
-        entity_id: input_number.set_goodwe_dod
-        above: '0'
-        below: '97'
+      #- condition: state
+      #  entity_id: switch.front_bathroom_geyser
+      #  state: 'off'
+      # condition: numeric_state
+      #  entity_id: input_number.set_goodwe_dod
+      #  above: '0'
+      #  below: '97'
     action:
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
       - delay: '00:00:15' # Waits 15 seconds
-      - service: timer.cancel
+      - service: timer.start
         data_template:
           entity_id: timer.main_geyser
+          duration: >
+            {{ 120 | int * 60 }}
 
   ## Turn off main geyser when only main geyser on and above 5kW non-essential
   - alias: Turn off main geyser when high kW

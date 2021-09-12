@@ -15,6 +15,26 @@ input_number:
     unit_of_measurement: '%'
     #step: 1
 
+template:
+  - trigger:
+      - platform: time_pattern
+        # This will update every night 30min
+        hours: "*"
+        minutes: "/30"
+      - platform: state
+        entity_id:
+          - sensor.solcast_forecast_data
+    sensor:
+      # Keep track how many days have past since a date
+      - name: solcast_forecast_average_30min
+        state: >-
+              {% if states('sensor.solcast_forecast_data') in ['unavailable','unknown','none'] -%}
+                {{ states('sensor.solcast_forecast_average_30min') }}
+              {% else %}
+                {{ state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default(0)|round(2) }}
+              {% endif %}
+        unit_of_measurement: 'kW'
+
 sensor:
   - platform: rest
     name: solcast_forecast_data
@@ -28,9 +48,14 @@ sensor:
     force_update: true
   - platform: template
     sensors:
-        solcast_forecast_average_30min:
-            value_template: "{{ state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default('variable is not defined')|round(2) }}"
-            unit_of_measurement: 'kW'
+        #solcast_forecast_average_30min:
+        #    value_template: >-
+        #      {% if states('sensor.solcast_forecast_data') in ['unavailable','unknown','none'] -%}
+        #        {{ states('sensor.solcast_forecast_average_30min') }}
+        #      {% else %}
+        #        {{ state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default(0)|round(2) }}
+        #      {% endif %}
+        #    unit_of_measurement: 'kW'
         solcast_forecast_average_60min:
             value_template: >-
               {{ ((state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default('variable is not defined') + state_attr('sensor.solcast_forecast_data', 'forecasts')[1].pv_estimate|default('variable is not defined'))/2)|round(2) }}
@@ -152,7 +177,7 @@ automation:
     description: Set max DoD to 11% during the day - leave battery for evening use
     trigger:
       - platform: time
-        at: '9:00:00'
+        at: '9:30:00'
     condition: []
     action:
       - service: solcast.update_forecast

@@ -39,9 +39,10 @@ automation:
         duration: >
           {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = day_names[now().weekday()] %}
-          {% if today_name == 'monday' %}{{ 5 * 60 | int * 60 }}
-          {% elif is_state('input_boolean.pool_cover_on','on') %}{{ 1 * 60 | int * 60 }}
-          {% else %}{{ 4 * 60 | int * 60 }}{% endif -%}
+          {% if 20 <= states('sensor.solcast_forecast')|float %}{{ 6 * 60 | int * 60 }}
+          {% elif 18 <= states('sensor.solcast_forecast')|float < 20 %}{{ 4 * 60 | int * 60 }}
+          {% elif 16 <= states('sensor.solcast_forecast')|float < 18 %}{{ 2 * 60 | int * 60 }}
+          {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
     - service: switch.turn_on
       data:
         entity_id: switch.pool_pump

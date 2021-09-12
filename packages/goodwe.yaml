@@ -34,6 +34,26 @@ sensor:
           {% else %}
             {{ 0 }}
           {% endif %}
+      # Template sensor for values of power sent to battery (goodwe_pbattery1 < 0)
+      battery_charge_power:
+       friendly_name: "Battery Charging Power"
+       unit_of_measurement: 'W'
+       value_template: >-
+         {% if states('sensor.goodwe_pbattery1')|float < 0 %}
+           {{ states('sensor.goodwe_pbattery1')|float * -1 }}
+         {% else %}
+           {{ 0 }}
+         {% endif %}
+      # Template sensor for values of power pulled from (goodwe_pbattery1 > 0)
+      battery_discharge_power: 
+       friendly_name: "Battery Discharging Power"
+       unit_of_measurement: 'W'
+       value_template: >-
+         {% if states('sensor.goodwe_pbattery1')|float > 0 %}
+           {{ states('sensor.goodwe_pbattery1')|float }}
+         {% else %}
+           {{ 0 }}
+         {% endif %}
       # Template sensor for values of non-essential energy usage
       energy_non_essentials:
         friendly_name: "non-essentials Power"
@@ -91,6 +111,19 @@ sensor:
     round: 2
     method: left
 
+  # Sensor for Riemann sum of charging power (Battery) (W -> kwh)
+  - platform: integration
+    source: sensor.battery_charge_power
+    name: Battery Total Charge
+    unit_prefix: k
+    method: left
+  # Sensor for Riemann sum of discharging power (Battery) (W -> kwh)
+  - platform: integration
+    source: sensor.battery_discharge_power
+    name: Battery Total Discharge
+    unit_prefix: k
+    method: left
+
   # Sensor for Riemann sum of solar energy generate (W -> Wh)
   - platform: integration
     source: sensor.goodwe_ppv
@@ -98,7 +131,6 @@ sensor:
     unit_prefix: k
     round: 2
     method: left
-
 
   - platform: template
     sensors:
@@ -146,6 +178,7 @@ sensor:
           {% endif %}
 
 utility_meter:
+  # Grid
   energy_buy_daily:
     source: sensor.energy_buy_sum
     cycle: daily
@@ -158,12 +191,27 @@ utility_meter:
   energy_sell_monthly:
     source: sensor.energy_sell_sum
     cycle: monthly
+  # Battery
+  battery_charge_daily:
+    source: sensor.battery_charge_power
+    cycle: daily
+  battery_charge_monthly:
+    source: sensor.battery_charge_power
+    cycle: monthly
+  battery_discharge_daily:
+    source: sensor.battery_discharge_power
+    cycle: daily
+  battery_discharge_monthly:
+    source: sensor.battery_discharge_power
+    cycle: monthly
+  # Other
   house_consumption_daily:
     source: sensor.goodwe_house_consumption
     cycle: daily
   house_consumption_monthly:
     source: sensor.goodwe_house_consumption
     cycle: monthly
+  # Solar
   solar_generate_daily:
     source: sensor.energy_solar_generate
     cycle: daily
