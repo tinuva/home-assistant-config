@@ -22,6 +22,12 @@ ENERGY_MODES: Dict[int, str] = {
 }
 
 GRID_MODES: Dict[int, str] = {
+    0: "Not connected to grid",
+    1: "Connected to grid",
+    2: "Fault",
+}
+
+GRID_IN_OUT_MODES: Dict[int, str] = {
     0: "Idle",
     1: "Exporting",
     2: "Importing",
@@ -152,4 +158,73 @@ SAFETY_COUNTRIES_ET: Dict[int, str] = {
     105: "cUSA_240VacHECO_14HO0x69",
     106: "cUSA_208VacHECO_14HM",
     107: "cUSA_240VacHECO_14HM",
+}
+
+ERROR_CODES: Dict[int, str] = {
+    31: 'Internal Communication Failure',
+    30: 'EEPROM R/W Failure',
+    29: 'Fac Failure',
+    28: 'DSP communication failure',
+    27: 'PhaseAngleFailure',
+    26: '',
+    25: 'Relay Check Failure',
+    24: '',
+    23: 'Vac Consistency Failure',
+    22: 'Fac Consistency Failure',
+    21: '',
+    20: 'Back-Up Over Load',
+    19: 'DC Injection High',
+    18: 'Isolation Failure',
+    17: 'Vac Failure',
+    16: 'External Fan Failure',
+    15: 'PV Over Voltage',
+    14: 'Utility Phase Failure',
+    13: 'Over Temperature',
+    12: 'InternalFan Failure',
+    11: 'DC Bus High',
+    10: 'Ground I Failure',
+    9: 'Utility Loss',
+    8: 'AC HCT Failure',
+    7: 'Relay Device Failure',
+    6: 'GFCI Device Failure',
+    5: '',
+    4: 'GFCI Consistency Failure',
+    3: 'DCI Consistency Failure',
+    2: '',
+    1: 'AC HCT Check Failure',
+    0: 'GFCI Device Check Failure',
+}
+
+BMS_ALARM_CODES: Dict[int, str] = {
+    15: 'Charging over-voltage 3',
+    14: 'Discharge under-voltage 3',
+    13: 'Cell high temperature 3',
+    12: 'Communication failure 2',
+    11: 'Charging circuit failure',
+    10: 'Discharge circuit fault',
+    9: 'Battery lock',
+    8: 'Battery break',
+    7: 'DC bus fault',
+    6: 'Precharge fault',
+    5: 'Discharging over-current 2',
+    4: 'Charging over-current 2',
+    3: 'Cell Low temperature 2',
+    2: 'Cell high temperature 2',
+    1: 'Discharging under-voltage 2',
+    0: 'Charging over-voltage 2',
+}
+
+BMS_WARNING_CODES: Dict[int, str] = {
+    11: 'System high temperature',
+    10: 'System low temperature 2',
+    9: 'System low temperature 1',
+    8: 'Cell imbalance',
+    7: 'System reboot',
+    6: 'communication failure 1',
+    5: 'Discharging over-current 1',
+    4: 'Charging over-current 1',
+    3: 'Cell low temperature 1',
+    2: 'Cell high temperature 1',
+    1: 'Discharge under-voltage 1',
+    0: 'Charging over-voltage 1',
 }

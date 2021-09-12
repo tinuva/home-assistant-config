@@ -26,8 +26,12 @@ class ET(Inverter):
         # Power4("ppv4", 34, "PV4 Power", Kind.PV),
         # ppv1 + ppv2 + ppv3 + ppv4
         Calculated("ppv", 0, lambda data, _: read_power(data, 10) + read_power(data, 18), "PV Power", "W", Kind.PV),
-        Integer("xx38", 38, "Unknown sensor@38"),
-        Integer("xx40", 40, "Unknown sensor@40"),
+        # Byte("pv4_mode", 38, "PV4 Mode", "", Kind.PV),
+        # Byte("pv3_mode", 39, "PV3 Mode", "", Kind.PV),
+        Byte("pv2_mode", 40, "PV2 Mode code", "", Kind.PV),
+        Enum("pv2_mode_label", 40, PV_MODES, "PV2 Mode", "", Kind.PV),
+        Byte("pv1_mode", 41, "PV1 Mode code", "", Kind.PV),
+        Enum("pv1_mode_label", 41, PV_MODES, "PV1 Mode", "", Kind.PV),
         Voltage("vgrid", 42, "On-grid L1 Voltage", Kind.AC),  # modbus 35121
         Current("igrid", 44, "On-grid L1 Current", Kind.AC),
         Frequency("fgrid", 46, "On-grid L1 Frequency", Kind.AC),
@@ -40,11 +44,13 @@ class ET(Inverter):
         Current("igrid3", 64, "On-grid L3 Current", Kind.AC),
         Frequency("fgrid3", 66, "On-grid L3 Frequency", Kind.AC),
         Power4("pgrid3", 68, "On-grid L3 Power", Kind.AC),
-        Integer("xx72", 72, "Unknown sensor@72"),
+        Integer("grid_mode", 72, "Grid Mode code", "", Kind.PV),
+        Enum2("grid_mode_label", 72, GRID_MODES, "Grid Mode", "", Kind.PV),
         Power4("total_inverter_power", 74, "Total Power", Kind.AC),
         Power4("active_power", 78, "Active Power", Kind.GRID),
         Calculated("grid_in_out", 78, lambda data, _: read_grid_mode(data, 78), "On-grid Mode code", "", Kind.GRID),
-        Calculated("grid_in_out_label", 0, lambda data, _: GRID_MODES.get(read_grid_mode(data, 78)), "On-grid Mode",
+        Calculated("grid_in_out_label", 0, lambda data, _: GRID_IN_OUT_MODES.get(read_grid_mode(data, 78)),
+                   "On-grid Mode",
                    "", Kind.GRID),
         Power4("reactive_power", 82, "Reactive Power", Kind.GRID),
         Power4("apparent_power", 86, "Apparent Power", Kind.GRID),
@@ -94,6 +100,9 @@ class ET(Inverter):
         Enum2("work_mode_label", 174, WORK_MODES_ET, "Work Mode"),
         Integer("operation_mode", 176, "Operation Mode code"),
         Long("error_codes", 178, "Error Codes"),
+        Calculated("errors", 0,
+                   lambda data, _: decode_bitmap(read_bytes4(data, 178), ERROR_CODES),
+                   "Errors", ""),
         Energy4("e_total", 182, "Total PV Generation", Kind.PV),
         Energy4("e_day", 186, "Today's PV Generation", Kind.PV),
         Energy4("e_total_exp", 190, "Total Energy (export)", Kind.AC),
@@ -130,7 +139,14 @@ class ET(Inverter):
         Integer("battery_warning_l", 20, "Battery Warning L", "", Kind.BAT),
         Integer("battery_protocol", 22, "Battery Protocol", "", Kind.BAT),
         Integer("battery_error_h", 24, "Battery Error H", "", Kind.BAT),
+        Calculated("battery_error", 0,
+                   lambda data, _: decode_bitmap(read_bytes2(data, 24) << 16 + read_bytes2(data, 12), BMS_ALARM_CODES),
+                   "Battery Error", "", Kind.BAT),
         Integer("battery_warning_h", 28, "Battery Warning H", "", Kind.BAT),
+        Calculated("battery_warning", 0,
+                   lambda data, _: decode_bitmap(read_bytes2(data, 28) << 16 + read_bytes2(data, 20),
+                                                 BMS_WARNING_CODES),
+                   "Battery Error", "", Kind.BAT),
         Integer("battery_sw_version", 30, "Battery Software Version", "", Kind.BAT),
         Integer("battery_hw_version", 32, "Battery Hardware Version", "", Kind.BAT),
         Integer("battery_max_cell_temp_id", 34, "Battery Max Cell Temperature ID", "", Kind.BAT),
@@ -206,7 +222,7 @@ class ET(Inverter):
         Integer("grid_export_limit", 47510, "Grid Export Limit", "W", Kind.GRID),
     )
 
-    def __init__(self, host: str, port: int, comm_addr: int = None, timeout: int = 2, retries: int = 3):
+    def __init__(self, host: str, port: int = 8899, comm_addr: int = 0, timeout: int = 1, retries: int = 3):
         super().__init__(host, port, comm_addr, timeout, retries)
         if not self.comm_addr:
             # Set the default inverter address
