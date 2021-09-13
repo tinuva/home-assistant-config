@@ -268,21 +268,21 @@ automation:
     mode: single
 
   ## When less than 4 kWh left on solcat set 1%
-  - alias: Goodwe When less than 6 kWh left on solcat set 1%
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.solcast_forecast
-        below: '6'
-      # also when geyser turn on in the morning
-      - platform: template
-        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
-        data:
-          value: 1
-    mode: single
+  #- alias: Goodwe When less than 6 kWh left on solcat set 1%
+  #  trigger:
+  #    - platform: numeric_state
+  #      entity_id: sensor.solcast_forecast
+  #      below: '6'
+  #    # also when geyser turn on in the morning
+  #    - platform: template
+  #      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+  #  action:
+  #    - service: input_number.set_value
+  #      target:
+  #        entity_id: input_number.set_goodwe_dod
+  #      data:
+  #        value: 1
+  #  mode: single
 
   # Input that sets DoD on GoodWe Inverter
   # Everything else will set this input. This allows for graphing+tracking.

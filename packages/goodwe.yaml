@@ -114,14 +114,16 @@ sensor:
   # Sensor for Riemann sum of charging power (Battery) (W -> kwh)
   - platform: integration
     source: sensor.battery_charge_power
-    name: Battery Total Charge
+    name: battery_total_charge
     unit_prefix: k
+    round: 2
     method: left
   # Sensor for Riemann sum of discharging power (Battery) (W -> kwh)
   - platform: integration
     source: sensor.battery_discharge_power
-    name: Battery Total Discharge
+    name: battery_total_discharge
     unit_prefix: k
+    round: 2
     method: left
 
   # Sensor for Riemann sum of solar energy generate (W -> Wh)
@@ -193,16 +195,16 @@ utility_meter:
     cycle: monthly
   # Battery
   battery_charge_daily:
-    source: sensor.battery_charge_power
+    source: sensor.battery_total_charge
     cycle: daily
   battery_charge_monthly:
-    source: sensor.battery_charge_power
+    source: sensor.battery_total_charge
     cycle: monthly
   battery_discharge_daily:
-    source: sensor.battery_discharge_power
+    source: sensor.battery_total_discharge
     cycle: daily
   battery_discharge_monthly:
-    source: sensor.battery_discharge_power
+    source: sensor.battery_total_discharge
     cycle: monthly
   # Other
   house_consumption_daily:

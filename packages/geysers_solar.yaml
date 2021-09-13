@@ -60,6 +60,9 @@ automation:
       - condition: state
         entity_id: switch.front_bathroom_geyser
         state: 'off'
+      - condition: time
+        after: '8:00:00'
+        before: '16:50:00'
     action:
       - service: switch.turn_on
         data:
@@ -99,6 +102,9 @@ automation:
       - condition: state
         entity_id: switch.main_bathroom_geyser
         state: 'off'
+      - condition: time
+        after: '8:00:00'
+        before: '16:50:00'
       #- condition: state
       #  entity_id: switch.front_bathroom_geyser
       #  state: 'off'
@@ -124,6 +130,8 @@ automation:
       - platform: numeric_state
         entity_id: sensor.energy_non_essentials
         above: '5000'
+        for:
+          seconds: 30
     condition:
       - condition: state
         entity_id: switch.main_bathroom_geyser
