@@ -1,14 +1,20 @@
-from datetime import timedelta
 import requests
 import json
 from collections import defaultdict
+from datetime import timedelta
 import logging
 import string
 from homeassistant.util import Throttle
 
-from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity
+from homeassistant.components.sensor import (
+    PLATFORM_SCHEMA,
+    SensorEntity,
+    SensorEntityDescription,
+    STATE_CLASS_MEASUREMENT,
+)
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+
 from homeassistant.const import (
     ATTR_ATTRIBUTION,
     CONF_NAME,
@@ -16,20 +22,17 @@ from homeassistant.const import (
     CONF_RESOURCES,
 )
 
+from .const import (
+    DEFAULT_COMPARE,
+    ICON,
+    DEFAULT_SCAN_INTERVAL,
+    ATTRIBUTION,
+    CONF_COMPARE,
+    DOMAIN,
+)
+
+
 _LOGGER = logging.getLogger(__name__)
-
-ICON = "mdi:cash-multiple"
-
-SCAN_INTERVAL = timedelta(seconds=60)
-
-ATTRIBUTION = "Data provided by cryptonator api"
-
-DEFAULT_COMPARE = "doge-eur"
-
-CONF_COMPARE = "compare"
-
-DOMAIN = "cryptostate"
-
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_RESOURCES, default=[]): vol.All(
         cv.ensure_list,
@@ -79,11 +82,15 @@ def setup_platform(hass, config, add_entities, discovery_info=None):
 
     entities = []
 
+    scan_interval = DEFAULT_SCAN_INTERVAL
+
     for resource in config[CONF_RESOURCES]:
         compare_ = resource[CONF_COMPARE]
         name = resource[CONF_NAME]
         
-        entities.append(CurrencySensor(hass, name, compare_, SCAN_INTERVAL))
+        entities.append(
+            CurrencySensor(hass, name, compare_, scan_interval)
+        )
 
     add_entities(entities, True)
 
@@ -95,6 +102,12 @@ class CurrencySensor(SensorEntity):
         self._name = name
         self._hass = hass
         self._compare = compare
+        self.entity_description = (
+            SensorEntityDescription(
+                key = "crypto",
+                state_class=STATE_CLASS_MEASUREMENT,
+            )
+        )
         self.update = Throttle(interval)(self._update)
 
     @property
