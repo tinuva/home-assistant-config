@@ -63,6 +63,16 @@ automation:
       - condition: time
         after: '8:00:00'
         before: '16:50:00'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: timer.front_geyser
+          state: 'idle'
+          for:
+            hours: 2
+        - condition: state
+          entity_id: timer.front_geyser
+          state: 'active'
     action:
       - service: switch.turn_on
         data:
@@ -93,7 +103,7 @@ automation:
       # Since we have solar, check forecast then continue
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '0.5'
+        above: '1'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -105,6 +115,16 @@ automation:
       - condition: time
         after: '8:00:00'
         before: '16:50:00'
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: timer.main_geyser
+          state: 'idle'
+          for:
+            hours: 2
+        - condition: state
+          entity_id: timer.main_geyser
+          state: 'active'
       #- condition: state
       #  entity_id: switch.front_bathroom_geyser
       #  state: 'off'
