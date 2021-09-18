@@ -39,8 +39,9 @@ automation:
         duration: >
           {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = day_names[now().weekday()] %}
-          {% if 20 <= states('sensor.solcast_forecast')|float %}{{ 6 * 60 | int * 60 }}
-          {% elif 16 <= states('sensor.solcast_forecast')|float < 20 %}{{ 4 * 60 | int * 60 }}
+          {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
+          {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 6 * 60 | int * 60 }}
+          {% elif 16 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
           {% elif 15.5 <= states('sensor.solcast_forecast')|float < 16 %}{{ 2 * 60 | int * 60 }}
           {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
     - service: switch.turn_on

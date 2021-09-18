@@ -142,6 +142,12 @@ automation:
           entity_id: timer.main_geyser
           duration: >
             {{ 120 | int * 60 }}
+      - condition: state
+        entity_id: switch.pool_pump
+        state: 'on'
+      - service: switch.turn_off
+        data:
+          entity_id: switch.pool_pump
 
   ## Turn off main geyser when only main geyser on and above 5kW non-essential
   - alias: Turn off main geyser when high kW

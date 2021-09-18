@@ -172,15 +172,16 @@ automation:
     mode: queued
     max: 2
 
-  ## 9% at 5:30am
+  ## set DoD at 6am after geyser was on for the morning
   - id: '1605879219606'
     alias: Goodwe DoD Morning
     description: Set max DoD in morning when day forecast more accurate
+    mode: single
     trigger:
       - platform: time
         at: 06:00:00
       - platform: numeric_state
-        entity_id: switch.main_bathroom_geyser
+        entity_id: sensor.main_bathroom_geyser_power
         below: '100'
         for:
           seconds: 15
@@ -212,7 +213,18 @@ automation:
             {% elif soc_today >= 8 and soc_today < 9 %}35
             {% elif soc_today >= 7 and soc_today < 8 %}12
             {% else %}1{% endif -%}
-    mode: single
+      - condition: state
+        entity_id: switch.main_bathroom_geyser
+        state: 'on'
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
+      - condition: state
+        entity_id: timer.main_geyser
+        state: 'active'
+      - service: timer.finish
+        data:
+          entity_id: timer.main_geyser
 
   ## 9% at 9:00am
   - id: '1605879219607'
@@ -310,7 +322,8 @@ automation:
           value: 11
     mode: single
 
-  ## When less than 4 kWh left on solcat set 1%
+  ## Set DoD to 1% when solar forecast drop (legacy, disabled for now)
+  ## or to 1% when geyser turn on, in the morning
   - alias: Goodwe When less than 6 kWh left on solcat set 1%
     trigger:
       #- platform: numeric_state
@@ -319,6 +332,11 @@ automation:
       # also when geyser turn on in the morning
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      - condition: template
+        value_template: >-
+          {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 21)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:
