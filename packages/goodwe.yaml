@@ -36,24 +36,28 @@ sensor:
           {% endif %}
       # Template sensor for values of power sent to battery (goodwe_pbattery1 < 0)
       battery_charge_power:
-       friendly_name: "Battery Charging Power"
-       unit_of_measurement: 'W'
-       value_template: >-
-         {% if states('sensor.goodwe_pbattery1')|float < 0 %}
-           {{ states('sensor.goodwe_pbattery1')|float * -1 }}
-         {% else %}
-           {{ 0 }}
-         {% endif %}
+        friendly_name: "Battery Charging Power"
+        unit_of_measurement: 'W'
+        value_template: >-
+          {% if states('sensor.goodwe_pbattery1')|float < 0 %}
+            {{ states('sensor.goodwe_pbattery1')|float * -1 }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+        device_class: power
+        #icon: mdi:battery-high # not possible?
       # Template sensor for values of power pulled from (goodwe_pbattery1 > 0)
       battery_discharge_power: 
-       friendly_name: "Battery Discharging Power"
-       unit_of_measurement: 'W'
-       value_template: >-
-         {% if states('sensor.goodwe_pbattery1')|float > 0 %}
-           {{ states('sensor.goodwe_pbattery1')|float }}
-         {% else %}
-           {{ 0 }}
-         {% endif %}
+        friendly_name: "Battery Discharging Power"
+        unit_of_measurement: 'W'
+        value_template: >-
+          {% if states('sensor.goodwe_pbattery1')|float > 0 %}
+            {{ states('sensor.goodwe_pbattery1')|float }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+        device_class: power
+        #icon: mdi:battery-high # not possible?
       # Template sensor for values of non-essential energy usage
       energy_non_essentials:
         friendly_name: "non-essentials Power"
@@ -125,7 +129,6 @@ sensor:
     unit_prefix: k
     round: 2
     method: left
-
   # Sensor for Riemann sum of solar energy generate (W -> Wh)
   - platform: integration
     source: sensor.goodwe_ppv
@@ -176,8 +179,26 @@ sensor:
           {% if states('sensor.goodwe_grid_mode') in ['unavailable','unknown','none'] -%}
             {{ states('sensor.grid_mode') }}
           {% else %}
-            {{ states('sensor.goodwe_grid_mode') | int }}
+            {% if 1 <= states('sensor.goodwe_grid_mode')|int <= 2 -%}
+            1
+            {% else %}
+              {{ states('sensor.goodwe_grid_mode')|int }}
+            {% endif %}
           {% endif %}
+
+  - platform: average
+    name: 'GoodWe Average House Consumption 30min'
+    duration:
+      minutes: 30
+    entities:
+      - sensor.goodwe_house_consumption
+
+  - platform: average
+    name: 'GoodWe Average Solar Generation 30min'
+    duration:
+      minutes: 30
+    entities:
+      - sensor.goodwe_ppv
 
 utility_meter:
   # Grid
@@ -254,7 +275,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.grid_mode
-        from: '2' # only notify this if grid was lost. Sometimes inverter goes into mode 2 - "inverter abnormal stopping power"
+        from: '0' # only notify this if grid was lost. Sometimes inverter goes into mode 2 - "inverter abnormal stopping power"
         to: '1'
     condition:
       >
@@ -279,7 +300,7 @@ automation:
   - alias: notification - grid power check
     trigger:
       - platform: state
-        entity_id: sensor.grid_mode
+        entity_id: sensor.goodwe_grid_mode
         to: '2'
     condition:
       >

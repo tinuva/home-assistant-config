@@ -34,6 +34,14 @@ automation:
       - entity_id: alarm_control_panel.home_alarm
         platform: state
         to: 'disarmed'
+    condition:
+      - condition: time
+        weekday:
+          - mon
+          - tue
+          - wed
+          - thu
+          - fri
     action:
       - service: switch.turn_on
         entity_id: 

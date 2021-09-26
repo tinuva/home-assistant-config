@@ -1,5 +1,15 @@
 # From: https://github.com/bieniu/ha-shellies-discovery
 automation:
+  - alias: '[Shellies] Initialize on Hass Started'
+    initial_state: on
+    trigger:
+      - platform: homeassistant
+        event: start
+    action:
+      - service: automation.trigger
+        data:
+          entity_id: automation.shellies_announce
+
   - id: shellies_announce
     alias: 'Shellies Announce'
     trigger:

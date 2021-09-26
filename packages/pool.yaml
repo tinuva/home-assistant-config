@@ -27,11 +27,19 @@ automation:
         entity_id: timer.loadshedding_slot
         state: 'idle'
       - condition: state
-        entity_id: sensor.goodwe_grid_mode
+        entity_id: sensor.grid_mode
         state: '1'
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
-        above: '16'
+        above: '17'
+      - condition: or
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.solcast_forecast
+            above: '20'
+          - condition: numeric_state
+            entity_id: sensor.goodwe_battery_soc
+            above: '50'
     action:
     - service: timer.start
       data_template:
@@ -41,8 +49,7 @@ automation:
           {% set today_name = day_names[now().weekday()] %}
           {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
           {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 6 * 60 | int * 60 }}
-          {% elif 16 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
-          {% elif 15.5 <= states('sensor.solcast_forecast')|float < 16 %}{{ 2 * 60 | int * 60 }}
+          {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
           {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
     - service: switch.turn_on
       data:
@@ -75,6 +82,11 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.pool_pump
+      #- platform: numeric_state
+      #  entity_id: sensor.goodwe_average_solar_generation_30min
+      #  below: '1200'
+      #- platform: template
+      #  value_template: "{{ (states('sensor.goodwe_average_solar_generation_30min')|float + 200) < states('sensor.goodwe_average_house_consumption_30min')|float }}"
     action:
       - service: switch.turn_off
         data:

@@ -193,7 +193,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ start_time < states('sensor.time') <= '06:00' }}
+          {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
     action:
       - service: solcast.update_forecast
         data: {}
@@ -204,14 +204,12 @@ automation:
         data:
           value: >
             {% set soc_today = states('sensor.solcast_forecast')|int %}
-            {% if soc_today >= 18 %}70
-            {% elif soc_today >= 14 and soc_today < 18 %}60
-            {% elif soc_today >= 12 and soc_today < 14 %}55
-            {% elif soc_today >= 11 and soc_today < 12 %}50
-            {% elif soc_today >= 10 and soc_today < 11 %}45
-            {% elif soc_today >= 9 and soc_today < 10 %}40
-            {% elif soc_today >= 8 and soc_today < 9 %}35
-            {% elif soc_today >= 7 and soc_today < 8 %}12
+            {% if soc_today >= 20 %}70
+            {% elif soc_today >= 16 and soc_today < 20 %}60
+            {% elif soc_today >= 12 and soc_today < 16 %}50
+            {% elif soc_today >= 11 and soc_today < 12 %}40
+            {% elif soc_today >= 10 and soc_today < 11 %}30
+            {% elif soc_today >= 9 and soc_today < 10 %}20
             {% else %}1{% endif -%}
       - condition: state
         entity_id: switch.main_bathroom_geyser
@@ -232,7 +230,7 @@ automation:
     description: Set max DoD to 11% during the day - leave battery for evening use
     trigger:
       - platform: time
-        at: '9:30:00'
+        at: '10:00:00'
     condition: []
     action:
       - service: solcast.update_forecast
@@ -244,7 +242,7 @@ automation:
         data:
           value: >
             {% set soc_today = states('sensor.solcast_forecast')|int %}
-            {% if soc_today <= 7 %}1
+            {% if soc_today <= 10 %}1
             {% else %}11{% endif -%}
     mode: single
 
@@ -288,13 +286,12 @@ automation:
         data:
           value: >
             {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
-            {% if soc_tomorrow >= 18 %}70
-            {% elif soc_tomorrow >= 14 and soc_tomorrow < 18 %}60
-            {% elif soc_tomorrow >= 12 and soc_tomorrow < 14 %}55
-            {% elif soc_tomorrow >= 11 and soc_tomorrow < 12 %}50
-            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}45
-            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}40
-            {% elif soc_tomorrow >= 8 and soc_tomorrow < 9 %}35
+            {% if soc_tomorrow >= 20 %}70
+            {% elif soc_tomorrow >= 16 and soc_tomorrow < 20 %}60
+            {% elif soc_tomorrow >= 12 and soc_tomorrow < 16 %}50
+            {% elif soc_tomorrow >= 11 and soc_tomorrow < 12 %}40
+            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}30
+            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}20
             {% else %}11{% endif -%}
     mode: single
 
@@ -336,7 +333,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 21)) or ('09:00' < states('sensor.time')) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 23)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:

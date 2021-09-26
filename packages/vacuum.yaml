@@ -43,7 +43,11 @@ sensor:
       vacuum_valetudo_state:
         friendly_name: Vacuum Valetudo State
         value_template: >-
-          {{ states.vacuum.rockrobo.attributes.valetudo_state.name }}
+          {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
+            {{ states('sensor.vacuum_valetudo_state') }}
+          {% else %}
+            {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
+          {% endif %}
 
 binary_sensor:
   - platform: template
@@ -119,26 +123,32 @@ automation:
   - alias: Notify when Robot has error
     description: Notify when Robot has error
     trigger:
-    - entity_id: sensor.vacuum_error_code
-      platform: state
-      from: '0'
-    condition: []
+      - entity_id: sensor.vacuum_error_code
+        platform: state
+        from: '0'
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('sensor.vacuum_error_code') != '' and states('sensor.vacuum_error_code') not in ['unavailable','unknown','none'] }}
+      #- condition:
+      #  value_template: >-
+      #    {{ trigger.platform == 'state' and trigger.from_state.state|default('') != '' }}
     action:
-    - service: notify.slack
-      data_template:
-        data:
-          icon: ":robot_face:"
-          username: "Vacuum Robot"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
-        title: 'Vacuum Robot Error'
-        target: ["#general"]
-        message: >
-          Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":robot_face:"
+            username: "Vacuum Robot"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
+          title: 'Vacuum Robot Error'
+          target: ["#general"]
+          message: >
+            Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
 
   ### Notify when failed to docked after returning
   - alias: Notify when Robot failed to dock
@@ -170,44 +180,51 @@ automation:
   - alias: Notify when Robot State Error
     description: Notify when Robot State Error
     trigger:
-    - entity_id: sensor.vacuum_valetudo_state
-      platform: state
-      to: 'Error'
-    condition: []
+      - entity_id: sensor.vacuum_valetudo_state
+        platform: state
+        to: 'Error'
+    #condition:
+    #  - condition: template
+    #    value_template: >-
+    #      {{ states('sensor.vacuum_valetudo_state') != '' and states('sensor.vacuum_valetudo_state') not in ['unavailable','unknown','none'] }}
+    #  - condition:
+    #    value_template: >-
+    #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
     action:
-    - service: notify.slack
-      data_template:
-        data:
-          icon: ":robot_face:"
-          username: "Vacuum Robot"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  Vacuum Robot Error - Check out why!
-        title: 'Vacuum Robot'
-        target: ["#general"]
-        message: >
-          Vacuum Robot Error - Check out why!
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":robot_face:"
+            username: "Vacuum Robot"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Vacuum Robot Error - Check out why!
+                    From state: {{ trigger.from_state.state }}
+          title: 'Vacuum Robot'
+          target: ["#general"]
+          message: >
+            Vacuum Robot Error - Check out why!
 
   ### Notify last clean results
   - alias: Notify when Robot State Change
     description: Notify when Robot State Change
     trigger:
-    #- entity_id: vacuum.rockrobo
-    #  platform: state
-    #  from: 'cleaning'
-    #  to: 'returning'
-    - entity_id: binary_sensor.vacuum_finished_cleaning
-      platform: state
-      to: 'on'
-    condition: []
-    #- condition: state
-    #      entity_id: binary_sensor.vacuum_finished_cleaning
-    #      state: 'on'
+      #- entity_id: vacuum.rockrobo
+      #  platform: state
+      #  from: 'cleaning'
+      #  to: 'returning'
+      - entity_id: binary_sensor.vacuum_finished_cleaning
+        platform: state
+        to: 'on'
+    #condition:
+    #  - condition:
+    #    value_template: >-
+    #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
     action:
-    - service: script.notify_robot_cleaning_stats
+      - service: script.notify_robot_cleaning_stats
 
 script:
   ### Notify last clean results

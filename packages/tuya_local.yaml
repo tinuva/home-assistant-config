@@ -55,32 +55,32 @@ localtuya:
         unit_of_measurement: "V"
 
   ## Qualitel Smart Energy Monitoring plug
-  - host: 192.168.241.210
-    device_id: !secret server_feed_device_id
-    local_key: !secret server_feed_local_key
-    friendly_name: Server Feed
-    protocol_version: "3.3"
-    entities:
-      - platform: switch
-        friendly_name: Server Feed
-        id: 1
-        current: 18
-        voltage: 20
-        current_consumption: 19
-      - platform: sensor
-        friendly_name: Server Feed Current
-        id: 18
-        device_class: current
-        unit_of_measurement: "mA"
-      - platform: sensor
-        friendly_name: Server Feed Power
-        id: 19
-        scaling: 0.1
-        device_class: power
-        unit_of_measurement: "W"
-      - platform: sensor
-        friendly_name: Server Feed Voltage
-        id: 20
-        scaling: 0.1
-        device_class: voltage
-        unit_of_measurement: "V"
+#  - host: 192.168.241.210
+#    device_id: !secret server_feed_device_id
+#    local_key: !secret server_feed_local_key
+#    friendly_name: Server Feed
+#    protocol_version: "3.3"
+#    entities:
+#      - platform: switch
+#        friendly_name: Server Feed
+#        id: 1
+#        current: 18
+#        voltage: 20
+#        current_consumption: 19
+#      - platform: sensor
+#        friendly_name: Server Feed Current
+#        id: 18
+#        device_class: current
+#        unit_of_measurement: "mA"
+#      - platform: sensor
+#        friendly_name: Server Feed Power
+#        id: 19
+#        scaling: 0.1
+#        device_class: power
+#        unit_of_measurement: "W"
+#      - platform: sensor
+#        friendly_name: Server Feed Voltage
+#        id: 20
+#        scaling: 0.1
+#        device_class: voltage
+#        unit_of_measurement: "V"
