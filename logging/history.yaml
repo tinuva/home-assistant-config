@@ -1,0 +1,43 @@
+include:
+  domains:
+    - light
+    - device_tracker
+    - binary_sensor
+    - group
+    - media_player
+    - person
+    - proximity
+  entities:
+    - input_select.day_mode
+    - sensor.owm_temperature
+    - sensor.owm_humidity
+    - sensor.owm_pressure
+    - sensor.owm_wind_speed
+    - sensor.gismeteo_temperature
+    - sensor.gismeteo_humidity
+    - sensor.gismeteo_pressure
+    - sensor.gismeteo_wind_speed
+    - sensor.pressure
+    - sensor.kitchen_temperature
+    - sensor.kitchen_humidity
+    - sensor.kitchen_co2
+    - sensor.kitchen_tvoc
+    - sensor.bathroom_temperature
+    - sensor.bathroom_humidity
+exclude:
+  domains:
+    - automation
+    - alert
+    - camera
+    - sun
+    - calendar
+#    - sensor
+    - switch
+    - script
+  entities:
+    - group.all_automations
+    - group.all_scripts
+    - group.all_switches
+    - group.all_lights
+    - group.all_devices
+    - sensor.bathroom_drying_ontime

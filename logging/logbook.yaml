@@ -1,0 +1,20 @@
+include:
+  domains:
+    - light
+    - automation
+    - binary_sensor
+    - device_tracker
+  # entities:
+exclude:
+  domains:
+    - alert
+    - camera
+    - media_player
+    - sun
+    - calendar
+    - sensor
+    - group
+    - switch
+    - script
+  entities:
+    - sensor.bathroom_drying_ontime

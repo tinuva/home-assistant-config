@@ -18,9 +18,17 @@ default_config:
 http: !include includes/http.yaml
 
 # Logging and history
-logger: !include includes/logger.yaml
+
+# ########################################
+# ###              LOGGING             ###
+# ########################################
+history: !include logging/history.yaml
+logbook: !include logging/logbook.yaml
+logger: !include logging/logger.yaml
+
 recorder: !include includes/recorder.yaml
-#device_tracker: !include includes/device_trackers.yaml
+influxdb: !include includes/influxdb.yaml
+
 
 # Managed via UI
 scene: !include scenes.yaml
@@ -51,7 +59,7 @@ notify: !include includes/notify.yaml
 proximity: !include includes/proximity.yaml
 discovery: !include includes/discovery.yaml
 mqtt: !include includes/mqtt.yaml
-influxdb: !include includes/influxdb.yaml
+
 python_script:
 
 alexa:
