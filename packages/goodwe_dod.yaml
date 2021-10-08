@@ -10,7 +10,7 @@ input_number:
   set_goodwe_dod:
     name: Set Goodwe DoD
     min: 0
-    max: 70
+    max: 80
     mode: box
     unit_of_measurement: '%'
     #step: 1
@@ -204,8 +204,10 @@ automation:
         data:
           value: >
             {% set soc_today = states('sensor.solcast_forecast')|int %}
-            {% if soc_today >= 20 %}70
-            {% elif soc_today >= 16 and soc_today < 20 %}60
+            {% if soc_today >= 23 %}75
+            {% elif soc_today >= 20 and soc_today < 23 %}70
+            {% elif soc_today >= 18 and soc_today < 20 %}65
+            {% elif soc_today >= 16 and soc_today < 18 %}60
             {% elif soc_today >= 12 and soc_today < 16 %}50
             {% elif soc_today >= 11 and soc_today < 12 %}40
             {% elif soc_today >= 10 and soc_today < 11 %}30
@@ -227,7 +229,7 @@ automation:
   ## 9% at 9:00am
   - id: '1605879219607'
     alias: Goodwe DoD Day
-    description: Set max DoD to 11% during the day - leave battery for evening use
+    description: Set max DoD to 16% during the day - leave battery for evening use
     trigger:
       - platform: time
         at: '10:00:00'
@@ -243,7 +245,7 @@ automation:
           value: >
             {% set soc_today = states('sensor.solcast_forecast')|int %}
             {% if soc_today <= 10 %}1
-            {% else %}11{% endif -%}
+            {% else %}16{% endif -%}
     mode: single
 
   # At 8pm set SoC based on forecast
@@ -256,7 +258,7 @@ automation:
       # if current SoC above 85%
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
-        above: '85'
+        above: '75'
       # if battery SoH is above 50 for some safety
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soh
@@ -286,17 +288,19 @@ automation:
         data:
           value: >
             {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
-            {% if soc_tomorrow >= 20 %}70
-            {% elif soc_tomorrow >= 16 and soc_tomorrow < 20 %}60
+            {% if soc_tomorrow >= 23 %}75
+            {% elif soc_tomorrow >= 20 and soc_tomorrow < 23 %}70
+            {% elif soc_tomorrow >= 18 and soc_tomorrow < 20 %}65
+            {% elif soc_tomorrow >= 16 and soc_tomorrow < 18 %}60
             {% elif soc_tomorrow >= 12 and soc_tomorrow < 16 %}50
             {% elif soc_tomorrow >= 11 and soc_tomorrow < 12 %}40
             {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}30
             {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}20
-            {% else %}11{% endif -%}
+            {% else %}16{% endif -%}
     mode: single
 
-  ## When Eskom turns on LoadShedding set 11%
-  - alias: Goodwe 11% when LoadShedding start above stage 4
+  ## When Eskom turns on LoadShedding set 16%
+  - alias: Goodwe 16% when LoadShedding start above stage 4
     trigger:
       #- platform: state
       #  entity_id: input_boolean.loadshedding_slot_active
@@ -316,7 +320,7 @@ automation:
         target:
           entity_id: input_number.set_goodwe_dod
         data:
-          value: 11
+          value: 16
     mode: single
 
   ## Set DoD to 1% when solar forecast drop (legacy, disabled for now)
@@ -333,7 +337,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 23)) or ('09:00' < states('sensor.time')) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 22)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:

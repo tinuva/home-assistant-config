@@ -31,17 +31,32 @@ automation:
         entity_id: sensor.goodwe_battery_mode_label
         to: 'Standby'
         for:
-          minutes: 1
+          seconds: 25
+      - platform: numeric_state
+        entity_id: sensor.goodwe_battery_charge_limit
+        below: '74'
       - platform: numeric_state
         entity_id: sensor.main_bathroom_geyser_power
         below: '50'
     condition:
-      - condition: state
-        entity_id: sensor.goodwe_battery_mode_label
-        state: 'Standby'
-      - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
-        above: '99'
+      - condition: or
+        conditions:
+        - condition: and
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.goodwe_battery_soc
+            above: '99'
+          - condition: state
+            entity_id: sensor.goodwe_battery_mode_label
+            state: 'Standby'
+        - condition: and
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.goodwe_battery_charge_limit
+            below: '74'
+          - condition: time
+            after: '11:00:00'
+            before: '16:00:00'
       - condition: numeric_state
         entity_id: sensor.main_bathroom_geyser_power
         below: '50'
@@ -69,7 +84,7 @@ automation:
           entity_id: timer.front_geyser
           state: 'idle'
           for:
-            hours: 2
+            hours: 5
         - condition: state
           entity_id: timer.front_geyser
           state: 'active'
@@ -83,6 +98,12 @@ automation:
           entity_id: timer.front_geyser
           duration: >
             {{ 120 | int * 60 }}
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
+      - service: timer.finish
+        data_template:
+          entity_id: timer.main_geyser
 
   # Main geyser on based on battery
   - alias: Turn on Main geyser based on battery
@@ -90,13 +111,28 @@ automation:
       - platform: state
         entity_id: sensor.goodwe_battery_mode_label
         to: 'Standby'
+      - platform: numeric_state
+        entity_id: sensor.goodwe_battery_charge_limit
+        below: '74'
     condition:
-      - condition: state
-        entity_id: sensor.goodwe_battery_mode_label
-        state: 'Standby'
-      - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
-        above: '99'
+      - condition: or
+        conditions:
+        - condition: and
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.goodwe_battery_soc
+            above: '99'
+          - condition: state
+            entity_id: sensor.goodwe_battery_mode_label
+            state: 'Standby'
+        - condition: and
+          conditions:
+          - condition: numeric_state
+            entity_id: sensor.goodwe_battery_charge_limit
+            below: '74'
+          - condition: time
+            after: '11:00:00'
+            before: '15:00:00'
       #- condition: numeric_state
       #  entity_id: sensor.front_bathroom_geyser_power
       #  below: '50'
@@ -121,7 +157,7 @@ automation:
           entity_id: timer.main_geyser
           state: 'idle'
           for:
-            hours: 2
+            hours: 5
         - condition: state
           entity_id: timer.main_geyser
           state: 'active'

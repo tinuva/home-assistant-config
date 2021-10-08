@@ -1,0 +1,20 @@
+input_datetime:
+  office_feed2_off_time_1:
+    name: office_feed2 off time 1
+    has_date: false
+    has_time: true
+
+automation:
+  # off based on input time
+  - alias: Turn off office_feed2 1
+    trigger:
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.office_feed2_off_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+    condition:
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+    action:
+      - service: switch.turn_off
+        data:
+          entity_id: switch.office_feed_2

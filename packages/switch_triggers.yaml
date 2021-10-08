@@ -42,6 +42,8 @@ automation:
           - wed
           - thu
           - fri
+          - sat
+          - sun
     action:
       - service: switch.turn_on
         entity_id: 

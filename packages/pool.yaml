@@ -23,12 +23,12 @@ automation:
       platform: template
       value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
     condition:
-      - condition: state
-        entity_id: timer.loadshedding_slot
-        state: 'idle'
-      - condition: state
-        entity_id: sensor.grid_mode
-        state: '1'
+      #- condition: state
+      #  entity_id: timer.loadshedding_slot
+      #  state: 'idle'
+      #- condition: state
+      #  entity_id: sensor.grid_mode
+      #  state: '1'
       - condition: numeric_state
         entity_id: sensor.solcast_forecast
         above: '17'
@@ -36,10 +36,10 @@ automation:
         conditions:
           - condition: numeric_state
             entity_id: sensor.solcast_forecast
-            above: '20'
+            above: '19'
           - condition: numeric_state
             entity_id: sensor.goodwe_battery_soc
-            above: '50'
+            above: '43'
     action:
     - service: timer.start
       data_template:
@@ -213,5 +213,24 @@ automation:
         data:
           entity_id: timer.pool_pump
       - service: switch.turn_on
+        data:
+          entity_id: switch.pool_pump
+
+  - trigger:
+    - platform: time
+      at: "13:00:00"
+    condition:
+      - condition: state
+        entity_id: timer.pool_pump
+        state: 'active'
+      # if current SoC below 85%
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soc
+        below: '85'
+    action:
+      - service: timer.finish
+        data:
+          entity_id: timer.pool_pump
+      - service: switch.turn_off
         data:
           entity_id: switch.pool_pump
