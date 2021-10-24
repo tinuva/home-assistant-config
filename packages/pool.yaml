@@ -20,40 +20,75 @@ automation:
   # Pool pump on based on input time
   - alias: Turn on pool pump
     trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    condition:
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      - platform: numeric_state
+        entity_id: sensor.main_bathroom_geyser_power
+        below: '50'
+    #condition:
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'
       #- condition: state
       #  entity_id: sensor.grid_mode
       #  state: '1'
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast
-        above: '17'
-      - condition: or
-        conditions:
-          - condition: numeric_state
-            entity_id: sensor.solcast_forecast
-            above: '19'
-          - condition: numeric_state
-            entity_id: sensor.goodwe_battery_soc
-            above: '43'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.pool_pump
-        duration: >
-          {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = day_names[now().weekday()] %}
-          {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
-          {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 6 * 60 | int * 60 }}
-          {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
-          {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
-    - service: switch.turn_on
-      data:
-        entity_id: switch.pool_pump
+      - choose:
+        # Morning
+        - conditions:
+            - condition: time
+              after: '8:00:00'
+              before: '11:00:00'
+            - condition: numeric_state
+              entity_id: sensor.solcast_forecast
+              above: '17'
+            - condition: or
+              conditions:
+                - condition: numeric_state
+                  entity_id: sensor.solcast_forecast
+                  above: '19'
+                - condition: numeric_state
+                  entity_id: sensor.goodwe_battery_soc
+                  above: '43'
+          sequence:
+            - service: timer.start
+              data_template:
+                entity_id: timer.pool_pump
+                duration: >
+                  {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+                  {% set today_name = day_names[now().weekday()] %}
+                  {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
+                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 6 * 60 | int * 60 }}
+                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
+                  {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
+            - service: switch.turn_on
+              data:
+                entity_id: switch.pool_pump
+        # Afternoon after geyser
+        - conditions:
+            - condition: time
+              after: '12:00:00'
+              before: '16:00:00'
+            - condition: numeric_state
+              entity_id: sensor.solcast_forecast
+              above: '3'
+          sequence:
+            - service: timer.start
+              data_template:
+                entity_id: timer.pool_pump
+                duration: >
+                  {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+                  {% set today_name = day_names[now().weekday()] %}
+                  {% if 5 <= states('sensor.solcast_forecast')|float %}{{ 4 * 60 | int * 60 }}
+                  {% elif 4 <= states('sensor.solcast_forecast')|float < 5 %}{{ 3 * 60 | int * 60 }}
+                  {% elif 3 <= states('sensor.solcast_forecast')|float < 4 %}{{ 2 * 60 | int * 60 }}
+                  {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
+            - service: switch.turn_on
+              data:
+                entity_id: switch.pool_pump
+        default:
+          - service: switch.turn_off
+            entity_id: switch.pool_pump
 
   # start timer when turned on (2 min)
   - alias: Start timer after Turn on pool pump
@@ -82,155 +117,14 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.pool_pump
+      - platform: time
+        at: "17:30:00"
       #- platform: numeric_state
       #  entity_id: sensor.goodwe_average_solar_generation_30min
       #  below: '1200'
       #- platform: template
       #  value_template: "{{ (states('sensor.goodwe_average_solar_generation_30min')|float + 200) < states('sensor.goodwe_average_house_consumption_30min')|float }}"
     action:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.pool_pump
-
-
-  #### Loadshedding work-arounds
-  # When in loadshedding, start timer and pause
-  - alias: Turn on pool pump timer in loadshedding
-    trigger:
-      platform: template
-      value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    condition:
-      - condition: state
-        entity_id: timer.loadshedding_slot
-        state: 'active'
-    action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.pool_pump
-        duration: >
-          {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = day_names[now().weekday()] %}
-          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 300 | int * 60 }}{% endif -%}
-    # Waits 1 seconds
-    - delay: '00:00:01'
-    - service: timer.pause
-      data_template:
-        entity_id: timer.pool_pump
-
-  # Resume pool pump after loadshedding finished
-  - alias: Turn on pool pump after loadshedding slot ended
-    trigger:
-      - platform: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.loadshedding_slot
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'paused'
-    action:
-      # Starts or restarts a timer with the provided duration. 
-      # If no duration is given, it will either restart with its initial 
-      # value, or continue a paused timer with the remaining duration.
-      - service: timer.start  
-        data:
-          entity_id: timer.pool_pump
-      - service: switch.turn_on
-        data:
-          entity_id: switch.pool_pump
-
-  # Pause pool pump if loadshedding slot started
-  - alias: Pause pool pump if loadshedding slot started
-    trigger:
-      - platform: event
-        event_type: timer.started
-        event_data:
-          entity_id: timer.loadshedding_slot
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'active'
-    action:
-      - service: timer.pause
-        data:
-          entity_id: timer.pool_pump
-      - service: switch.turn_off
-        data:
-          entity_id: switch.pool_pump
-
-
-  # Pause pool pump if power loss and but not loadshedding slot
-  - alias: Pause pool pump if power loss and but not loadshedding slot
-    trigger:
-      - platform: state
-        entity_id: sensor.goodwe_grid_mode
-        to: '0'
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'active'
-      - condition: state
-        entity_id: timer.loadshedding_slot
-        state: 'idle'          
-    action:
-      - service: timer.pause
-        data:
-          entity_id: timer.pool_pump
-      - service: switch.turn_off
-        data:
-          entity_id: switch.pool_pump
-
-  # start delay if grid return and times in pause state 
-  - alias: start delay if grid return and times in pause state
-    trigger:
-      - platform: state
-        entity_id: sensor.goodwe_grid_mode
-        to: '1'
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'paused'
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.pool_pump_grid_pause
-          duration: >
-            {{ 5 | int * 60 }} 
-  # then start if delay completed
-  - alias: resume pool pump after grid start delay
-    trigger:
-      - platform: event
-        event_type: timer.finished
-        event_data:
-          entity_id: timer.pool_pump_grid_pause
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'paused'
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.pool_pump
-      - service: switch.turn_on
-        data:
-          entity_id: switch.pool_pump
-
-  - trigger:
-    - platform: time
-      at: "13:00:00"
-    condition:
-      - condition: state
-        entity_id: timer.pool_pump
-        state: 'active'
-      # if current SoC below 85%
-      - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
-        below: '85'
-    action:
-      - service: timer.finish
-        data:
-          entity_id: timer.pool_pump
       - service: switch.turn_off
         data:
           entity_id: switch.pool_pump
