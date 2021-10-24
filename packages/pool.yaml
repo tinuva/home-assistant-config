@@ -118,7 +118,7 @@ automation:
         event_data:
           entity_id: timer.pool_pump
       - platform: time
-        at: "17:30:00"
+        at: "17:00:00"
       #- platform: numeric_state
       #  entity_id: sensor.goodwe_average_solar_generation_30min
       #  below: '1200'
