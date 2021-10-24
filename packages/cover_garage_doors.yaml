@@ -56,7 +56,8 @@ alert:
   garage_door_front:
     name: Front Garage Door is open
     #done_message: Front Garage is closed
-    entity_id: binary_sensor.front_garage_door_window
+    #entity_id: binary_sensor.front_garage_door_window
+    entity_id: input_boolean.front_garage_after_dark
     state: 'on'   # Optional, 'on' is the default value
     repeat:
       - 15
@@ -68,7 +69,8 @@ alert:
   garage_door_back:
     name: Back Garage Door is open
     #done_message: Back Garage is closed
-    entity_id: binary_sensor.back_garage_door
+    #entity_id: binary_sensor.back_garage_door
+    entity_id: input_boolean.back_garage_after_dark
     state: 'on'   # Optional, 'on' is the default value
     repeat:
       - 15
@@ -128,3 +130,80 @@ script:
                   value: Leave it
                   name: 'anything_just_not_blank'
                   type: button
+
+group:
+  garage_doors:
+    name: Garage Doors
+    entities:
+      - binary_sensor.front_garage_door_window
+      - binary_sensor.back_garage_door
+
+input_boolean:
+  # This switch turns on if the garage is open after dark and triggers the garage_after_dark alert.
+  front_garage_after_dark:
+    name: Front Garage Open After Dark
+    icon: mdi:message-alert
+  back_garage_after_dark:
+    name: Back Garage Open After Dark
+    icon: mdi:message-alert
+
+automation:
+  # If garage doors are closed kick off script to turn them off, and turn off alert.
+  - id: front_garage_closed
+    alias: Front Garage Closed
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.front_garage_door_window
+      from: 'on'
+      to: 'off'
+    action:
+    #- service: script.driveway_off
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.front_garage_after_dark
+    initial_state: true
+
+  # If garage is still open at 10:30pm turn on alart to make sure it get closed.
+  - id: front_close_garage_lights_out
+    alias: Close Front Garage at lights out
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '20:00:00'
+    condition:
+    - condition: state
+      entity_id: binary_sensor.front_garage_door_window
+      state: "on"
+    action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.front_garage_after_dark
+
+  # If garage doors are closed kick off script to turn them off, and turn off alert.
+  - id: back_garage_closed
+    alias: Back Garage Closed
+    trigger:
+    - platform: state
+      entity_id: binary_sensor.back_garage_door
+      from: 'on'
+      to: 'off'
+    action:
+    #- service: script.driveway_off
+    - service: input_boolean.turn_off
+      data:
+        entity_id: input_boolean.back_garage_after_dark
+    initial_state: true
+
+  # If garage is still open at 10:30pm turn on alart to make sure it get closed.
+  - id: back_close_garage_lights_out
+    alias: Close Back Garage at lights out
+    initial_state: true
+    trigger:
+    - platform: time
+      at: '20:00:00'
+    condition:
+    - condition: state
+      entity_id: binary_sensor.back_garage_door
+      state: "on"
+    action:
+    - service: input_boolean.turn_on
+      entity_id: input_boolean.back_garage_after_dark
