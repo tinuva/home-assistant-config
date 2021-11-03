@@ -101,7 +101,7 @@ automation:
                   *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
                   Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
         title: 'Zone/Sensor Fault'
-        target: ["#alerts"]
+        target: ["#logs"]
         message: >
           *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
           Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
@@ -130,7 +130,7 @@ automation:
                 text: >
                   *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}    
         title: 'Zone/Sensor Fault'
-        target: ["#alerts"]
+        target: ["#logs"]
         message: >
           *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}          
 
@@ -159,7 +159,7 @@ automation:
                 text: >
                   *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
-        target: ["#alerts"]
+        target: ["#logs"]
         message: >
           *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
   - alias: Notify Repeat when front beam stuck on 
@@ -186,6 +186,6 @@ automation:
                 text: >
                   *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
         title: 'Zone/Sensor Fault'
-        target: ["#alerts"]
+        target: ["#logs"]
         message: >
           *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}

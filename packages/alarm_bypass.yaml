@@ -60,7 +60,7 @@ automation:
                 type: mrkdwn
                 text: >
                   Setting alarm bypass on main bed room window
-        target: ["#alerts"]
+        target: ["#logs"]
         message: >
           Setting alarm bypass on main bed room window
     - service: envisalink.alarm_keypress

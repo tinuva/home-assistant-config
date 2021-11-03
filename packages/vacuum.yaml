@@ -91,7 +91,7 @@ automation:
                 text: >
                   Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
         title: 'Vacuum Robot'
-        target: ["#general"]
+        target: ["#logs"]
         message: >
           Vacuum Robot is now {{ states.vacuum.rockrobo.state }}
           
@@ -146,7 +146,7 @@ automation:
                   text: >
                     Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
           title: 'Vacuum Robot Error'
-          target: ["#general"]
+          target: ["#logs"]
           message: >
             Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }} 
 
@@ -172,7 +172,7 @@ automation:
                 text: >
                   Vacuum Robot failed to dock!
         title: 'Vacuum Robot'
-        target: ["#general"]
+        target: ["#logs"]
         message: >
           Vacuum Robot failed to dock!
 
@@ -204,7 +204,7 @@ automation:
                     Vacuum Robot Error - Check out why!
                     From state: {{ trigger.from_state.state }}
           title: 'Vacuum Robot'
-          target: ["#general"]
+          target: ["#logs"]
           message: >
             Vacuum Robot Error - Check out why!
 
@@ -238,7 +238,7 @@ script:
           seconds: 5
       - service: notify.slack
         data_template:
-          target: ["#general"]
+          target: ["#logs"]
           message: >
             {{ states.sensor.vacuum_last_clean_stats.state }}
           data:
@@ -251,7 +251,7 @@ script:
                     {{ states.sensor.vacuum_last_clean_stats.state }}
       - service: notify.slack
         data_template:
-          target: ["#general"]
+          target: ["#logs"]
           data:
             file: 
               path: "/config/www/cam_captures/rockrobo_map_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
