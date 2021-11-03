@@ -1,10 +1,10 @@
-solcast:
-  api_key: !secret solcast_api
-  resource_id: !secret solcast_resource
-  api_limit: 20
-  disable_ssl_check: False
-  disable_automatic_forecast_fetching: True
-  disable_automatic_history_fetching: True
+#solcast:
+#  api_key: !secret solcast_api
+#  resource_id: !secret solcast_resource
+#  api_limit: 20
+#  disable_ssl_check: False
+#  disable_automatic_forecast_fetching: True
+#  disable_automatic_history_fetching: True
 
 input_number:
   set_goodwe_dod:
@@ -35,7 +35,8 @@ rest:
 template:
   - sensor:
       - name: "Solcast Forecast Energy Today Remaining"
-        unique_id: solcast_forecast_energy_today_remaining
+        #unique_id: solcast_forecast_energy_today_remaining
+        unique_id: solcast_forecast
         unit_of_measurement: "kWh"
         device_class: energy
         state: >
@@ -190,22 +191,22 @@ template:
       state: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
 
 automation:
-  - id: '1606211453192'
-    alias: Solcast Update
-    description: Update the Solcast prediction for the day
-    trigger:
-      - platform: time_pattern
-        hours: /01
-    condition:
-      - condition: sun
-        before: sunset
-        before_offset: -00:30:00
-        after: sunrise
-        after_offset: 00:30:00
-    action:
-      - service: solcast.update_forecast
-        data: {}
-    mode: single
+  #- id: '1606211453192'
+  #  alias: Solcast Update
+  #  description: Update the Solcast prediction for the day
+  #  trigger:
+  #    - platform: time_pattern
+  #      hours: /01
+  #  condition:
+  #    - condition: sun
+  #      before: sunset
+  #      before_offset: -00:30:00
+  #      after: sunrise
+  #      after_offset: 00:30:00
+  #  action:
+  #    - service: solcast.update_forecast
+  #      data: {}
+  #  mode: single
 
   # Input that sets DoD on GoodWe Inverter
   # Everything else will set this input. This allows for graphing+tracking.
@@ -339,15 +340,13 @@ automation:
           entity_id: input_number.set_goodwe_dod
         data:
           value: >
-            {% set soc_tomorrow = state_attr('sensor.solcast_forecast', 'tomorrow') %}
-            {% if soc_tomorrow >= 23 %}75
-            {% elif soc_tomorrow >= 20 and soc_tomorrow < 23 %}70
-            {% elif soc_tomorrow >= 18 and soc_tomorrow < 20 %}65
-            {% elif soc_tomorrow >= 16 and soc_tomorrow < 18 %}60
-            {% elif soc_tomorrow >= 12 and soc_tomorrow < 16 %}50
-            {% elif soc_tomorrow >= 11 and soc_tomorrow < 12 %}40
-            {% elif soc_tomorrow >= 10 and soc_tomorrow < 11 %}30
-            {% elif soc_tomorrow >= 9 and soc_tomorrow < 10 %}20
+            {% set soc_tomorrow = states('sensor.solcast_forecast_energy_tomorrow')|int %}
+            {% if soc_tomorrow >= 23 %}70
+            {% elif soc_tomorrow >= 20 and soc_tomorrow < 23 %}60
+            {% elif soc_tomorrow >= 18 and soc_tomorrow < 20 %}55
+            {% elif soc_tomorrow >= 16 and soc_tomorrow < 18 %}50
+            {% elif soc_tomorrow >= 12 and soc_tomorrow < 16 %}40
+            {% elif soc_tomorrow >= 10 and soc_tomorrow < 12 %}30
             {% else %}16{% endif -%}
     mode: single
 
@@ -389,7 +388,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (state_attr('sensor.solcast_forecast', 'tomorrow')|float < 22)) or ('09:00' < states('sensor.time')) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 22)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:
