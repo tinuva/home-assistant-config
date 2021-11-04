@@ -1,11 +1,3 @@
-#solcast:
-#  api_key: !secret solcast_api
-#  resource_id: !secret solcast_resource
-#  api_limit: 20
-#  disable_ssl_check: False
-#  disable_automatic_forecast_fetching: True
-#  disable_automatic_history_fetching: True
-
 input_number:
   set_goodwe_dod:
     name: Set Goodwe DoD
@@ -176,7 +168,7 @@ template:
     sensor:
     - name: "Solcast Forecast Energy Today Predicted"
       unique_id: solcast_forecast_energy_today_predicted
-      state: "{{ states('sensor.solcast_forecast_energy_today_remaining') }}"
+      state: "{{ states('sensor.solcast_forecast') }}"
       unit_of_measurement: 'kWh'
       device_class: energy
     - name: "Solcast Forecast Peak Time Today Predicted"
@@ -191,23 +183,6 @@ template:
       state: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
 
 automation:
-  #- id: '1606211453192'
-  #  alias: Solcast Update
-  #  description: Update the Solcast prediction for the day
-  #  trigger:
-  #    - platform: time_pattern
-  #      hours: /01
-  #  condition:
-  #    - condition: sun
-  #      before: sunset
-  #      before_offset: -00:30:00
-  #      after: sunrise
-  #      after_offset: 00:30:00
-  #  action:
-  #    - service: solcast.update_forecast
-  #      data: {}
-  #  mode: single
-
   # Input that sets DoD on GoodWe Inverter
   # Everything else will set this input. This allows for graphing+tracking.
   - id: '1620734902145'
@@ -221,7 +196,7 @@ automation:
       - service: goodwe.set_ongrid_battery_dod
         data:
           entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: '{{ states.input_number.set_goodwe_dod.state|int }}'
+          ongrid_battery_dod: '{{ states('sensor.set_goodwe_dod')|int }}'
     mode: queued
     max: 2
 
@@ -248,9 +223,6 @@ automation:
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
           {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
     action:
-      - service: solcast.update_forecast
-        data: {}
-      - delay: '00:00:10' # Waits x seconds
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
@@ -288,9 +260,6 @@ automation:
         at: '10:00:00'
     condition: []
     action:
-      - service: solcast.update_forecast
-        data: {}
-      - delay: '00:00:10' # Waits x seconds
       - service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
@@ -317,9 +286,6 @@ automation:
         entity_id: sensor.goodwe_battery_soh
         above: '50'
     action:
-      - service: solcast.update_forecast
-        data: {}
-      - delay: '00:00:10' # Waits x seconds
       # cancel timers
       - service: timer.cancel
         data_template:
