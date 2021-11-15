@@ -17,7 +17,7 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 90 | int * 60 }}{% endif -%}
+          {% else %}{{ 180 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: timer.pause
       data_template:
@@ -82,7 +82,7 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 60 | int * 60 }}{% endif -%}
+          {% else %}{{ 180 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: timer.pause
       data_template:

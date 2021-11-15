@@ -37,8 +37,8 @@ automation:
         # Morning
         - conditions:
             - condition: time
-              after: '8:00:00'
-              before: '11:00:00'
+              after: '9:00:00'
+              before: '16:00:00'
             - condition: numeric_state
               entity_id: sensor.solcast_forecast
               above: '17'

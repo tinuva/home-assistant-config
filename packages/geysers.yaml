@@ -42,8 +42,8 @@ automation:
           {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
           {% set today_name = sensor_names[now().weekday()] %}
           {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-          {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 120 | int * 60 }}
-          {% else %}{{ 60 | int * 60 }}{% endif -%}
+          {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
+          {% else %}{{ 180 | int * 60 }}{% endif -%}
     - delay: '00:00:01' # Waits 1 seconds
     - service: switch.turn_on
       data:
@@ -67,7 +67,7 @@ automation:
       data_template:
         entity_id: timer.main_geyser
         duration: >
-          {{ 60 | int * 60 }}
+          {{ 180 | int * 60 }}
 
   # Main geyser off when timer finish
   - alias: Turn off main geyser
@@ -91,7 +91,7 @@ automation:
       - platform: state
         entity_id: switch.main_bathroom_geyser
         to: 'on'
-        for: '03:00:00'
+        for: '04:00:00'
     action:
       - service: switch.turn_off
         data:
@@ -124,8 +124,8 @@ automation:
             {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
             {% set today_name = sensor_names[now().weekday()] %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-            {% elif '17:00' <= states('sensor.time') <= '19:00' %}{{ 120 | int * 60 }}
-            {% else %}{{ 60 | int * 60 }}{% endif -%}
+            {% elif '17:00' <= states('sensor.time') <= '19:00' %}{{ 180 | int * 60 }}
+            {% else %}{{ 180 | int * 60 }}{% endif -%}
       - delay: '00:00:01' # Waits 1 seconds
       - service: switch.turn_on
         data:
@@ -149,7 +149,7 @@ automation:
       data_template:
         entity_id: timer.front_geyser
         duration: >
-          {{ 60 | int * 60 }}
+          {{ 180 | int * 60 }}
 
   # front geyser off when timer finish (and main then on to chain)
   - alias: Turn off front geyser
@@ -173,7 +173,7 @@ automation:
       - platform: state
         entity_id: switch.front_bathroom_geyser
         to: 'on'
-        for: '03:00:00'
+        for: '04:00:00'
     action:
       - service: switch.turn_off
         data:
