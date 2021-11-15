@@ -7,181 +7,6 @@ input_number:
     unit_of_measurement: '%'
     #step: 1
 
-rest:
-- resource: !secret solcast_forecast_resource
-  #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
-  scan_interval: '00:30:00' # RATE LIMIT!
-  sensor:
-  - name: "Solcast Forecast Data"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate|round(2) }}"
-    json_attributes:
-    - forecasts
-  - name: "Solcast Forecast 10"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate10|round(2) }}"
-  - name: "Solcast Forecast 90"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate90|round(2) }}"
-
-template:
-  - sensor:
-      - name: "Solcast Forecast Energy Today Remaining"
-        #unique_id: solcast_forecast_energy_today_remaining
-        unique_id: solcast_forecast
-        unit_of_measurement: "kWh"
-        device_class: energy
-        state: >
-          {% set ns = namespace (fc_today = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 0 %}
-              {% set ns.fc_today = ns.fc_today + (forecast.pv_estimate/2)|float %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_today|round(2) }}
-      - name: "Solcast Forecast Energy Tomorrow"
-        unique_id: solcast_forecast_energy_tomorrow
-        unit_of_measurement: "kWh"
-        device_class: energy
-        state: >
-          {% set ns = namespace (fc_tommorrow = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 1 %}
-              {% set ns.fc_tommorrow = ns.fc_tommorrow + (forecast.pv_estimate/2)|float %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_tommorrow|round(2) }}
-      - name: "Solcast Forecast Peak Power Today"
-        unique_id: solcast_forecast_peak_power_today
-        unit_of_measurement: "kW"
-        device_class: power
-        state_class: measurement
-        state: >
-          {% set ns = namespace (fc_today_max = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 0 %}
-              {% if ns.fc_today_max < forecast.pv_estimate|float %}
-                {% set ns.fc_today_max = forecast.pv_estimate|float %}
-              {%- endif %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_today_max|round(2) }}
-      - name: "Solcast Forecast Peak Power Tomorrow"
-        unique_id: solcast_forecast_peak_power_tomorrow
-        unit_of_measurement: "kW"
-        device_class: power
-        state_class: measurement
-        state: >
-          {% set ns = namespace (fc_tomorrow_max = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 1 %}
-              {% if ns.fc_tomorrow_max < forecast.pv_estimate|float %}
-                {% set ns.fc_tomorrow_max = forecast.pv_estimate|float %}
-              {%- endif %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_tomorrow_max|round(2) }}
-      - name: "Solcast Forecast Peak Time Today"
-        unique_id: solcast_forecast_peak_time_today
-        icon: mdi:clock
-        state: >
-          {% set ns = namespace (fc_today_max = 0, fc_today_max_time = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 0 %}
-              {% if ns.fc_today_max < forecast.pv_estimate|float %}
-                {% set ns.fc_today_max = forecast.pv_estimate|float %}
-                {% set ns.fc_today_max_time = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).time() %}
-              {%- endif %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_today_max_time }}
-      - name: "Solcast Forecast Peak Time Tomorrow"
-        unique_id: solcast_forecast_peak_time_tomorrow
-        icon: mdi:clock
-        state: >
-          {% set ns = namespace (fc_tomorrow_max = 0, fc_tomorrow_max_time = 0) %}
-          {% for forecast in state_attr('sensor.solcast_forecast_data', 'forecasts')|default('variable is not defined') %}
-            {% set daydiff = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).date() - as_local(utcnow()).date() %} 
-            {% if daydiff.days == 1 %}
-              {% if ns.fc_tomorrow_max < forecast.pv_estimate|float %}
-                {% set ns.fc_tomorrow_max = forecast.pv_estimate|float %}
-                {% set ns.fc_tomorrow_max_time = as_local(strptime(forecast.period_end, '%Y-%m-%dT%H:%M:%S.%f0Z').replace(tzinfo=utcnow().tzinfo)).time() %}
-              {%- endif %}
-            {%- endif %}
-          {%- endfor %}
-          {{ ns.fc_tomorrow_max_time }}
-      - name: "Solcast Forecast Power Current Hour"
-        unique_id: solcast_forecast_power_current_hour
-        state: >
-          {{ (state_attr('sensor.solcast_forecast_data', 'forecasts')[0].pv_estimate|default('variable is not defined') + state_attr('sensor.solcast_forecast_data', 'forecasts')[1].pv_estimate|default('variable is not defined'))|round(2) }}
-        unit_of_measurement: 'kW'
-        device_class: power
-      - name: "Solcast Forecast Power Next 12 Hours"
-        unique_id: solcast_forecast_power_next_12_hours
-        state: >
-          {% set ns = namespace (fc_next12 = 0) %}
-          {% for i in range(0, 24) %}
-            {% set ns.fc_next12 = ns.fc_next12 + states.sensor.solcast_forecast_data.attributes['forecasts'][i]['pv_estimate']|float %}
-          {%- endfor %}
-          {{ ns.fc_next12|round(2) }}
-        unit_of_measurement: 'kW'
-        device_class: power
-      - name: "Solcast Forecast Power Next 24 Hours"
-        unique_id: solcast_forecast_power_next_24_hours
-        state: >
-          {% set ns = namespace (fc_next24 = 0) %}
-          {% for i in range(0, 48) %}
-            {% set ns.fc_next24 = ns.fc_next24 + states.sensor.solcast_forecast_data.attributes['forecasts'][i]['pv_estimate']|float %}
-          {%- endfor %}
-          {{ ns.fc_next24|round(2) }}
-        unit_of_measurement: 'kW'
-        device_class: power
-      - name: "Solcast Forecast Energy Current Hour"
-        unique_id: solcast_forecast_energy_current_hour
-        state: >
-          {% set ns = namespace (fc_energy_current = 0) %}
-          {% for i in range(0, 2) %}
-            {% set ns.fc_energy_current = ns.fc_energy_current + (states.sensor.solcast_forecast_data.attributes['forecasts'][i]['pv_estimate']/2)|float %}
-          {%- endfor %}
-          {{ ns.fc_energy_current|round(2) }}
-        unit_of_measurement: 'kWh'
-        device_class: energy
-      - name: "Solcast Forecast Energy Next Hour"
-        unique_id: solcast_forecast_energy_next_hour
-        state: >
-          {% set ns = namespace (fc_energy_next = 0) %}
-          {% for i in range(2, 4) %}
-            {% set ns.fc_energy_next = ns.fc_energy_next + (states.sensor.solcast_forecast_data.attributes['forecasts'][i]['pv_estimate']/2)|float %}
-          {%- endfor %}
-          {{ ns.fc_energy_next|round(2) }}
-        unit_of_measurement: 'kWh'
-        device_class: energy
-  - trigger:
-    - platform: sun
-      event: sunrise
-      offset: "-00:15:00"
-    sensor:
-    - name: "Solcast Forecast Energy Today Predicted"
-      unique_id: solcast_forecast_energy_today_predicted
-      state: "{{ states('sensor.solcast_forecast') }}"
-      unit_of_measurement: 'kWh'
-      device_class: energy
-    - name: "Solcast Forecast Peak Time Today Predicted"
-      unique_id: solcast_forecast_peak_time_today_predicted
-      icon: mdi:clock
-      state: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
-    - name: "Solcast Forecast Peak Power Today Predicted"
-      unique_id: solcast_forecast_peak_power_today_predicted
-      unit_of_measurement: "kW"
-      device_class: power
-      state_class: measurement
-      state: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
-
 automation:
   # Input that sets DoD on GoodWe Inverter
   # Everything else will set this input. This allows for graphing+tracking.
@@ -196,7 +21,7 @@ automation:
       - service: goodwe.set_ongrid_battery_dod
         data:
           entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: '{{ states('sensor.set_goodwe_dod')|int }}'
+          ongrid_battery_dod: "{{ states('input_number.set_goodwe_dod')|int }}"
     mode: queued
     max: 2
 
@@ -230,13 +55,11 @@ automation:
           value: >
             {% set soc_today = states('sensor.solcast_forecast')|int %}
             {% if soc_today >= 23 %}75
-            {% elif soc_today >= 20 and soc_today < 23 %}70
-            {% elif soc_today >= 18 and soc_today < 20 %}65
-            {% elif soc_today >= 16 and soc_today < 18 %}60
-            {% elif soc_today >= 12 and soc_today < 16 %}50
-            {% elif soc_today >= 11 and soc_today < 12 %}40
-            {% elif soc_today >= 10 and soc_today < 11 %}30
-            {% elif soc_today >= 9 and soc_today < 10 %}20
+            {% elif soc_today >= 20 and soc_today < 23 %}60
+            {% elif soc_today >= 18 and soc_today < 20 %}55
+            {% elif soc_today >= 16 and soc_today < 18 %}50
+            {% elif soc_today >= 12 and soc_today < 16 %}40
+            {% elif soc_today >= 10 and soc_today < 12 %}30
             {% else %}1{% endif -%}
       - condition: state
         entity_id: switch.main_bathroom_geyser
@@ -354,7 +177,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 22)) or ('09:00' < states('sensor.time')) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:
@@ -362,4 +185,3 @@ automation:
         data:
           value: 1
     mode: single
-
