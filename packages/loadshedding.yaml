@@ -16,6 +16,18 @@ input_boolean:
   loadshedding_slot_active:
     name: Loadshedding slot active
 
+template:
+  - sensor:
+      - name: "CoCT Loadshedding Stage"
+        #unique_id: solcast_forecast_energy_today_remaining
+        unique_id: coct_loadshedding_stage
+        state: >
+          {% set stage = states('sensor.eskom_loadshedding_stage') %}
+          {% if '06:00' <= states('sensor.time') < '20:00' and stage|int > 0 %}
+          {% set stage = states('sensor.eskom_loadshedding_stage')|int - 1 %}
+          {% endif %}
+          {{ stage }}
+
 timer:
   loadshedding_slot:
     duration: '02:35:00'
@@ -45,3 +57,4 @@ automation:
       - service: timer.start
         data:
           entity_id: timer.loadshedding_slot
+          duration: '02:30:00'
