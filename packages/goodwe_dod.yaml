@@ -5,7 +5,32 @@ input_number:
     max: 80
     mode: box
     unit_of_measurement: '%'
-    #step: 1
+
+script:
+  ######################################################################
+  # Re-usable script to set the DoD via input
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.goodwe_set_dod
+  #   data:
+  #     forecast: "50"
+  ######################################################################
+  goodwe_set_dod:
+    sequence:
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: >
+            {% set forecast_int = forecast|int %}
+            {% if forecast_int >= 23 %}70
+            {% elif forecast_int >= 20 and forecast_int < 23 %}60
+            {% elif forecast_int >= 18 and forecast_int < 20 %}55
+            {% elif forecast_int >= 16 and forecast_int < 18 %}50
+            {% elif forecast_int >= 12 and forecast_int < 16 %}40
+            {% elif forecast_int >= 10 and forecast_int < 12 %}30
+            {% else %}16{% endif -%}
 
 automation:
   # Input that sets DoD on GoodWe Inverter
@@ -38,29 +63,15 @@ automation:
         below: '100'
         for:
           seconds: 15
-    condition: #[]
-      # if loadshedding is below stage 5
-      #- condition: numeric_state
-      #  entity_id: sensor.eskom_loadshedding_stage
-      #  below: 5
+    condition:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
           {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
     action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
+      - service: script.goodwe_set_dod
         data:
-          value: >
-            {% set soc_today = states('sensor.solcast_forecast')|int %}
-            {% if soc_today >= 23 %}75
-            {% elif soc_today >= 20 and soc_today < 23 %}60
-            {% elif soc_today >= 18 and soc_today < 20 %}55
-            {% elif soc_today >= 16 and soc_today < 18 %}50
-            {% elif soc_today >= 12 and soc_today < 16 %}40
-            {% elif soc_today >= 10 and soc_today < 12 %}30
-            {% else %}1{% endif -%}
+          forecast: "{{ states('sensor.solcast_forecast') }}"
       - condition: state
         entity_id: switch.main_bathroom_geyser
         state: 'on'
@@ -124,28 +135,14 @@ automation:
         data:
           entity_id: switch.front_bathroom_geyser
       # set DoD
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
+      - service: script.goodwe_set_dod
         data:
-          value: >
-            {% set soc_tomorrow = states('sensor.solcast_forecast_energy_tomorrow')|int %}
-            {% if soc_tomorrow >= 23 %}70
-            {% elif soc_tomorrow >= 20 and soc_tomorrow < 23 %}60
-            {% elif soc_tomorrow >= 18 and soc_tomorrow < 20 %}55
-            {% elif soc_tomorrow >= 16 and soc_tomorrow < 18 %}50
-            {% elif soc_tomorrow >= 12 and soc_tomorrow < 16 %}40
-            {% elif soc_tomorrow >= 10 and soc_tomorrow < 12 %}30
-            {% else %}16{% endif -%}
+          forecast: "{{ states('sensor.solcast_forecast_energy_tomorrow') }}"
     mode: single
 
   ## When Eskom turns on LoadShedding set 16%
   - alias: Goodwe 16% when LoadShedding start above stage 4
     trigger:
-      #- platform: state
-      #  entity_id: input_boolean.loadshedding_slot_active
-      #  from: 'off'
-      #  to: 'on'
       - platform: numeric_state
         entity_id: sensor.eskom_loadshedding_stage
         above: 4
@@ -163,14 +160,9 @@ automation:
           value: 16
     mode: single
 
-  ## Set DoD to 1% when solar forecast drop (legacy, disabled for now)
-  ## or to 1% when geyser turn on, in the morning
-  - alias: Goodwe When less than 6 kWh left on solcat set 1%
+  ## Set DoD to 1% when geyser turn on, in the morning
+  - alias: Goodwe set DoD 1%
     trigger:
-      #- platform: numeric_state
-      #  entity_id: sensor.solcast_forecast
-      #  below: '6'
-      # also when geyser turn on in the morning
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
     condition:
