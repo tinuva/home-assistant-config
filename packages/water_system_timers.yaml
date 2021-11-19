@@ -10,7 +10,7 @@ timer:
 
 automation:
 # Start timer after switch turn on
-- alias: Turn on back lights when there is movement
+- alias: Start water timers after turn on
   trigger:
   - platform: state
     entity_id: switch.water_sprayers
