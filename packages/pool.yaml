@@ -67,7 +67,7 @@ automation:
         # Afternoon after geyser
         - conditions:
             - condition: time
-              after: '12:00:00'
+              after: '11:10:00'
               before: '16:00:00'
             - condition: numeric_state
               entity_id: sensor.solcast_forecast

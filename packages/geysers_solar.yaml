@@ -39,7 +39,7 @@ automation:
         entity_id: sensor.main_bathroom_geyser_power
         below: '50'
       - platform: time
-        at: '13:00:00'
+        at: '13:30:00'
     condition:
       - condition: or
         conditions:
@@ -63,9 +63,9 @@ automation:
         entity_id: sensor.main_bathroom_geyser_power
         below: '50'
       # Since we have solar, check forecast then continue
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast
-        above: '0.5'
+      #- condition: numeric_state
+      #  entity_id: sensor.solcast_forecast
+      #  above: '0.5'
       - condition: sun
         before: sunset
         before_offset: -00:30:00
@@ -117,7 +117,7 @@ automation:
         entity_id: sensor.goodwe_battery_charge_limit
         below: '74'
       - platform: time
-        at: '11:00:00'
+        at: '11:30:00'
     condition:
       - condition: or
         conditions:
@@ -182,15 +182,6 @@ automation:
           entity_id: timer.main_geyser
           duration: >
             {{ 180 | int * 60 }}
-      - condition: state
-        entity_id: switch.pool_pump
-        state: 'on'
-      - service: switch.turn_off
-        data:
-          entity_id: switch.pool_pump
-      - service: timer.finish
-        data_template:
-          entity_id: timer.pool_pump
 
   ## Turn off main geyser when only main geyser on and above 5kW non-essential
   #- alias: Turn off main geyser when high kW
