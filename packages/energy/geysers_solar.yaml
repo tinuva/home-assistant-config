@@ -27,14 +27,14 @@ automation:
   # Front geyser on based on battery
   - alias: Turn on front geyser based on battery
     trigger:
-      - platform: state
-        entity_id: sensor.goodwe_battery_mode_label
-        to: 'Standby'
-        for:
-          seconds: 25
-      - platform: numeric_state
-        entity_id: sensor.goodwe_battery_charge_limit
-        below: '74'
+      #- platform: state
+      #  entity_id: sensor.goodwe_battery_mode_label
+      #  to: 'Standby'
+      #  for:
+      #    seconds: 25
+      #- platform: numeric_state
+      #  entity_id: sensor.goodwe_battery_charge_limit
+      #  below: '74'
       - platform: numeric_state
         entity_id: sensor.main_bathroom_geyser_power
         below: '50'

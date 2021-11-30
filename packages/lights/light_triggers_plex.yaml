@@ -34,6 +34,7 @@ automation:
     data:
       entity_id: light.lounge
       brightness: '30'
+      transition: 10
   - condition: time
     after: "20:15:00"
   - service: automation.trigger
@@ -63,3 +64,4 @@ automation:
     data:
       entity_id:
         - light.kitchen
+      transition: 10

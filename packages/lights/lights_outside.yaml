@@ -2,13 +2,13 @@ light:
   - platform: group
     name: Lights whole night
     entities:
-      - light.outside_kitchen_front
+      - light.outside_kitchen
   - platform: group
     name: Lights while awake
     entities:
-      - light.outside_braai
-      - light.outside_lounge
-      - light.outside_main_bedroom_lights
+      - light.courtyard_braai
+      - light.courtyard_lounge
+      - light.courtyard_main_bedroom
       #- light.pool_light
 
 automation:

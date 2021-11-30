@@ -19,7 +19,8 @@ automation:
     action:
       service: light.turn_off
       data:
-        entity_id: light.main_bedroom_lights
+        entity_id: light.main_bedroom
+        transition: 30
   
   # Motion = Turn on
   - alias: Turn on mainbedroom lights when there is movement
@@ -36,17 +37,18 @@ automation:
       - condition: or
         conditions:
         - condition: state
-          entity_id: light.main_bedroom_lights
+          entity_id: light.main_bedroom
           state: 'off'
           for:
             seconds: 15
         - condition: state
-          entity_id: light.main_bedroom_lights
+          entity_id: light.main_bedroom
           state: 'on'
     action:
       - service: light.turn_on
         data_template:
-          entity_id: light.main_bedroom_lights
+          entity_id: light.main_bedroom
+          transition: 30
           brightness_pct: >-
             {% set hours = [[0,18],[500,19],[600,20],[630,21],[700,25],[730,30],
                           [800,30],[900,30],[1630,30],[1700,30],[1730,30],

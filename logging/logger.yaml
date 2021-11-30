@@ -10,12 +10,12 @@
 default: warn
 # default: debug
 logs:
-  root: debug
+  #root: debug
   homeassistant: fatal
   homeassistant.loader: error
   # homeassistant.core: debug
   # homeassistant.helpers.entity: error
-  homeassistant.helpers.script: debug
+  #homeassistant.helpers.script: debug
 
   custom_components.localtuya: fatal
 
@@ -33,7 +33,7 @@ logs:
   # homeassistant.components.device_tracker.owntracks: error
   homeassistant.components.discovery: warn
   # homeassistant.components.ffmpeg: debug
-  homeassistant.components.hassio: debug
+  #homeassistant.components.hassio: debug
 #   homeassistant.components.influxdb: debug
   # homeassistant.components.http: error
   # homeassistant.components.light: warn
@@ -42,7 +42,7 @@ logs:
   # homeassistant.components.notify: error
   # homeassistant.components.python_script: debug
   homeassistant.components.sensor: fatal
-  homeassistant.components.sensor.travisci: debug
+  #homeassistant.components.sensor.travisci: debug
   homeassistant.components.shell_command: debug
   # homeassistant.components.ssdp: debug
   # homeassistant.components.telegram: error
@@ -50,9 +50,11 @@ logs:
   # homeassistant.components.websocket_api: error
   # homeassistant.components.weather: debug
   # homeassistant.components.zeroconf: debug
-  homeassistant.components.alexa.state_report: fatal
+  #homeassistant.components.alexa.state_report: fatal
   homeassistant.components.speedtestdotnet]: fatal 
 
   slixmpp.basexmpp: error
   slixmpp.stringprep: fatal
   aioharmony.harmonyclient: fatal
+
+  homeassistant.components.alexa: debug

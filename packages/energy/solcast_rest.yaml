@@ -3,17 +3,17 @@ rest:
   #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
   scan_interval: '00:30:00' # RATE LIMIT!
   sensor:
-  - name: "Solcast Forecast Data"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate|round(2) }}"
-    json_attributes:
-    - forecasts
-  - name: "Solcast Forecast 10"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate10|round(2) }}"
-  - name: "Solcast Forecast 90"
-    force_update: true
-    value_template: "{{ value_json.forecasts[0].pv_estimate90|round(2) }}"
+    - name: "Solcast Forecast Data"
+      force_update: true
+      value_template: "{{ value_json.forecasts[0].pv_estimate|round(2) }}"
+      json_attributes:
+      - forecasts
+    - name: "Solcast Forecast 10"
+      force_update: true
+      value_template: "{{ value_json.forecasts[0].pv_estimate10|round(2) }}"
+    - name: "Solcast Forecast 90"
+      force_update: true
+      value_template: "{{ value_json.forecasts[0].pv_estimate90|round(2) }}"
 
 template:
   - sensor:
@@ -152,23 +152,49 @@ template:
           {{ ns.fc_energy_next|round(2) }}
         unit_of_measurement: 'kWh'
         device_class: energy
-  - trigger:
-    - platform: sun
-      event: sunrise
-      offset: "-00:15:00"
-    sensor:
-    - name: "Solcast Forecast Energy Today Predicted"
-      unique_id: solcast_forecast_energy_today_predicted
-      state: "{{ states('sensor.solcast_forecast') }}"
-      unit_of_measurement: 'kWh'
-      device_class: energy
-    - name: "Solcast Forecast Peak Time Today Predicted"
-      unique_id: solcast_forecast_peak_time_today_predicted
-      icon: mdi:clock
-      state: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
-    - name: "Solcast Forecast Peak Power Today Predicted"
-      unique_id: solcast_forecast_peak_power_today_predicted
-      unit_of_measurement: "kW"
-      device_class: power
-      state_class: measurement
-      state: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+
+sensor:
+  - platform: mqtt
+    name: "Solcast Forecast Energy Today Predicted"
+    state_topic: "home/solcast/energy_today_predicted"
+    unit_of_measurement: 'kWh'
+    device_class: energy
+    unique_id: sensor.solcast_forecast_energy_today_predicted
+  - platform: mqtt
+    name: "Solcast Forecast Peak Time Today Predicted"
+    state_topic: "home/solcast/peak_time_today_predicted"
+    icon: mdi:clock
+    unique_id: sensor.solcast_forecast_peak_time_today_predicted
+  - platform: mqtt
+    name: "Solcast Forecast Peak Power Today Predicted"
+    state_topic: "home/solcast/peak_power_today_predicted"
+    unit_of_measurement: "kW"
+    device_class: power
+    state_class: measurement
+    unique_id: sensor.solcast_forecast_peak_power_today_predicted
+
+automation:
+  - alias: Solcast Forecast to MQTT
+    description: Put Solcast predicted values in MQTT
+    trigger:
+      - platform: sun
+        event: sunrise
+        offset: '-00:15:00'
+    condition: []
+    action:
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/energy_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_power_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_time_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
+          retain: true
+    mode: single

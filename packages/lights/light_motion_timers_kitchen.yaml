@@ -31,6 +31,7 @@ automation:
       - service: light.turn_off
         data:
           entity_id: light.kitchen
+          transition: 10
 
   ### Turn on Kitchen Lights when movement
   # Motion = Turn on
@@ -55,6 +56,7 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.kitchen
+          transition: 10
           brightness: >-
             {% set time = states('sensor.time') %}
             {%- if(is_state('input_boolean.kitchenwork','on')) -%}
@@ -102,6 +104,7 @@ automation:
       - service: light.turn_on
         data:
           entity_id: light.kitchen
+          transition: 10
           brightness: 175
   # Timer end = Turn off
   - alias: Turn off Kitchenwork timer
@@ -124,6 +127,7 @@ automation:
       - service: light.turn_off
         data:
           entity_id: light.kitchen
+          transition: 10
       - service: timer.cancel
         data:
           entity_id: timer.kitchenwork

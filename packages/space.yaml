@@ -1,0 +1,77 @@
+###############################################################################
+#   @author         :   tinuva
+#   @date           :   11/25/2021
+#   @package        :   Space
+#   @description    :   Tracking space. Inspiration and code taking from https://github.com/CCOSTAN/Home-AssistantConfig#logo
+#   @original       :   https://github.com/CCOSTAN/Home-AssistantConfig/blob/master/config/packages/space.yaml 
+#   @from           :   https://github.com/thejeffreystone/home-assistant-configuration/blob/e08d6a00cc007723f0d0fadfc25f3758cef71dac/config/packages/space.yaml
+###############################################################################
+
+homeassistant:
+  customize:
+    binary_sensor.iss:
+      icon: mdi:satellite-variant
+      friendly_name: ISS Visibility
+      hidden: False
+      homebridge_hidden: true
+    sensor.launch_window:
+      hidden: False
+      icon: mdi:rocket
+      friendly_name: Rocket Launch Window
+
+binary_sensor:
+  - platform: iss
+    show_on_map: false
+
+sensor:
+  - platform: moon
+  - platform: launch_library
+
+automation:
+  - id: iss_message
+    initial_state: true
+    alias: 'ISS message'
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.iss
+        to: 'on'
+        from: 'off'
+    action:
+      - service: script.voicealert
+        data:
+          icon: ':rocket:'
+          object: 'Space'
+          target: 'general'
+          message: >-
+            {{ [
+            "The ISS is passing over. Wave.",
+            "The ISS just flew by with there are {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people doing cool stuff.",
+            "The ISS just flew by with {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people in it."
+            ] | random }}
+            
+  - id: full_moon_msg
+    initial_state: true
+    alias: 'Full Moon -message'
+    trigger:
+      - platform: sun
+        event: sunset
+        offset: -00:15:00
+    condition:
+      - condition: state
+        entity_id: sensor.moon
+        state: 'full_moon'
+    action:
+      - service: script.voicealert
+        data:
+          icon: ':moon:'
+          object: 'Space'
+          target: 'general'
+          message: >
+            {{ [
+            'There is a Full Moon out tonight. and this time it is the actual moon. And not the neighbor. ',
+            'Hey look, There is the full moon. ',
+            'The moon is huge! And full. ',
+            'If you went outside right now you might see the full moon. Of course if you wait long enough there will be one inside the house too. ',
+            'If you want to see the full moon, tonight is the night.'] 
+            | random }}

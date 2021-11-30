@@ -22,9 +22,9 @@ automation:
     trigger:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-      - platform: numeric_state
-        entity_id: sensor.main_bathroom_geyser_power
-        below: '50'
+      #- platform: numeric_state
+      #  entity_id: sensor.main_bathroom_geyser_power
+      #  below: '50'
     #condition:
       #- condition: state
       #  entity_id: timer.loadshedding_slot

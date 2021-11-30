@@ -58,20 +58,19 @@ shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
 proximity: !include includes/proximity.yaml
 discovery: !include includes/discovery.yaml
-mqtt: !include includes/mqtt.yaml
 
 python_script:
 
-alexa:
-  smart_home:
-    locale: en-GB
-    endpoint: https://api.amazonalexa.com/v3/events
-    client_id: !secret alexa_client_id
-    client_secret: !secret alexa_client_secret
-    filter:
-      include_domains:
-        - switch
-        - light
+#alexa:
+#  smart_home:
+#    locale: en-GB
+#    endpoint: https://api.amazonalexa.com/v3/events
+#    client_id: !secret alexa_client_id
+#    client_secret: !secret alexa_client_secret
+#    filter:
+#      include_domains:
+#        - switch
+#        - light
 
 spotify:
   client_id: !secret spotify_client_id

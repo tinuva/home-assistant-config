@@ -20,6 +20,7 @@ automation:
       service: light.turn_off
       data:
         entity_id: light.small_bedroom
+        transition: 10
 
   # Motion = Turn on
   - alias: Turn on smallbedroom lights when there is movement
@@ -61,6 +62,7 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.small_bedroom
+          transition: 10
           brightness_pct: >-
             {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
                           [800,70],[900,75],[1630,75],[1700,70],[1730,65],

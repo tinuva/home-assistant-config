@@ -1,0 +1,117 @@
+script:
+  ######################################################################
+  # Re-usable script to send log message
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.log
+  #   data:
+  #     icon: ':robot_face:'            # optional
+  #     object: 'Vacuum Robot'          # required
+  #     message: 'The robot is stuck'   # required
+  #     target: 'logs'                  # optional - default 'logs'
+  ######################################################################
+  ######################################################################
+  log:
+    sequence:
+      - service: notify.slack
+        data_template:
+          target: >
+            {% if target is defined %}
+              ["#{{ target }}"]
+            {% else %}
+              ["#logs"]
+            {% endif %}
+          message: '{{ message }}'
+          data:
+            icon: >
+              {% if icon is defined %}
+                {{ icon }}
+              {% else %}
+                :house:
+              {% endif %}
+            username: '{{ object }}'
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: '{{ message }}'
+
+  ######################################################################
+  # Re-usable script to send alert message
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.alert
+  #   data:
+  #     icon: ':robot_face:'            # optional
+  #     object: 'Vacuum Robot'          # required
+  #     message: 'The robot is stuck'   # required
+  #     target: 'alerts'                # optional - default 'alerts'
+  ######################################################################
+  ######################################################################
+  alert:
+    sequence:
+      - service: notify.slack
+        data_template:
+          target: >
+            {% if target is defined %}
+              ["#{{ target }}"]
+            {% else %}
+              ["#alerts"]
+            {% endif %}
+          message: '{{ message }}'
+          data:
+            icon: >
+              {% if icon is defined %}
+                {{ icon }}
+              {% else %}
+                :house:
+              {% endif %}
+            username: '{{ object }}'
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: '{{ message }}'
+
+  ######################################################################
+  # Re-usable script to send alert message
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.alert
+  #   data:
+  #     icon: ':robot_face:'            # optional
+  #     object: 'Vacuum Robot'          # required
+  #     message: 'The robot is stuck'   # required
+  #     target: 'alerts'                # optional - default 'alerts'
+  ######################################################################
+  ######################################################################
+  voicealert:
+    sequence:
+      - service: script.alert
+        data:
+          icon: >
+            {% if icon is defined %}
+              {{ icon }}
+            {% else %}
+              :house:
+            {% endif %}
+          object: '{{ object }}'
+          target: >
+            {% if target is defined %}
+              ["#{{ target }}"]
+            {% else %}
+              ["#alerts"]
+            {% endif %}
+          message: '{{ message }}'
+      # Vocal message only certain times of the day
+      - condition: time
+        after: '06:00:00'
+        before: '21:30:00'
+      - service: notify.alexa_media_david_s_echo
+        data:
+          message: '{{ message }}'
+          data:
+            type: 'tts'

@@ -169,7 +169,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) or ('09:00' < states('sensor.time')) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 21)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
         target:

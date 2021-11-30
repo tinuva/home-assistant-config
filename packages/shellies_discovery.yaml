@@ -38,6 +38,7 @@ automation:
         fw_ver: '{{ trigger.payload_json.fw_ver }}'
         model: '{{ trigger.payload_json.model }}'
         mode: '{{ trigger.payload_json.mode | default }}'
+        host: '{{ trigger.payload_json.ip }}'
         discovery_prefix: 'homeassistant'
         qos: 2
         # Dimmers
