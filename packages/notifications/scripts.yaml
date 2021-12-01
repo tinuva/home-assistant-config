@@ -101,9 +101,9 @@ script:
           object: '{{ object }}'
           target: >
             {% if target is defined %}
-              ["#{{ target }}"]
+              {{ target }}
             {% else %}
-              ["#alerts"]
+              alerts
             {% endif %}
           message: '{{ message }}'
       # Vocal message only certain times of the day
