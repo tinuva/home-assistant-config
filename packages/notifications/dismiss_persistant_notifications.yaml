@@ -1,0 +1,92 @@
+# https://community.home-assistant.io/t/how-to-dismiss-persistent-notification/148620/3
+automation:
+  - alias: 'persistent notification created'
+    trigger:
+      platform: event
+      event_type: call_service
+      event_data:
+        domain: persistent_notification
+        #service: create
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'][:6] != 'shelly' }}"
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service'] != 'dismiss' }}"
+    action:
+      - service: script.log
+        data:
+          object: 'persistent_notification'
+          message: >
+            Persistent notification created. {{now()}}
+            {{ trigger.event.as_dict()['data']}}
+          target: 'alerts-david'    
+      - service: system_log.write
+        data_template:
+          message: >
+            Persistent notification created. {{now()}}
+            {{ trigger.event.as_dict()['data']}}
+          level: warning
+
+  - alias: 'persistent notification dismissed'
+    trigger:
+      platform: event
+      event_type: call_service
+      event_data:
+        domain: persistent_notification
+        service: dismiss
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'][:6] != 'shelly' }}"
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'notification' }}"
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'invalid_config' }}"
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'http-login' }}"
+    action:
+      - service: system_log.write
+        data_template:
+          message: >
+            Persistent notification dismissed. {{now()}}
+            {{ trigger.event.as_dict()['data']}}
+          level: warning
+      - service: script.log
+        data:
+          object: 'persistent_notification'
+          message: >
+            Persistent notification dismissed. {{now()}}
+            {{ trigger.event.as_dict()['data']}}
+          target: 'alerts-david' 
+
+  - alias: 'persistent notification dismiss http login'
+    trigger:
+    - platform: event
+      event_type: state_changed
+      event_data:
+        entity_id: persistent_notification.http_login
+    condition:
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['new_state'] != None }}"
+    action:
+      - service: persistent_notification.dismiss
+        data_template:
+          notification_id: http-login
+      - service: script.log
+        data:
+          object: "{{ trigger.event.as_dict()['data']['new_state']['title'] }}"
+          message: "{{ trigger.event.as_dict()['data']['new_state']['message'] }}"
+          target: 'alerts-david' 
+
+  - alias: 'persistent notification dismiss config discovery'
+    trigger:
+      - platform: event
+        event_type: state_changed
+        event_data:
+          entity_id: persistent_notification.config_entry_discovery
+    condition:
+      - condition: template
+        value_template: "{{ states('persistent_notification.config_entry_discovery') == 'notifying' }}"
+    action:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: config_entry_discovery
