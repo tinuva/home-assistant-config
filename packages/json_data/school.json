@@ -1,0 +1,27 @@
+{
+    "EVENTS2022": {
+        "static": {
+            "1/10": "School Opens",
+            "6/17": "School Holiday (closed)",
+            "8/8": "School Holiday (closed)",
+            "12/15": "School Closes"
+        }
+    },
+    "PUBLICHOLIDAYS2022": {
+        "static": {
+            "1/1": "New Year's Day",
+            "3/21": "Human Right's Day",
+            "4/15": "Good Friday",
+            "4/18": "Family Day",
+            "4/27": "Freedom Day",
+            "5/1": "Worker's Day",
+            "5/2": "Worker's Day Observed",
+            "6/16": "Youth Day",
+            "8/9": "National Woman's Day",
+            "9/24": "Heritage Day",
+            "12/16": "Dayy of Reconciliation",
+            "12/25": "Christmas Day",
+            "12/26": "Day of Goodwill"
+        }
+    }
+}
