@@ -10,7 +10,8 @@
 #- from github.com/tinuva/home-assistant-config
 use_x_forwarded_for: true
 trusted_proxies:
-  - 172.36.0.0/24
+  - 172.30.0.0/24
+  - 192.168.241.13/32
 cors_allowed_origins:
   - https://google.com
   - https://www.home-assistant.io
