@@ -1,5 +1,24 @@
 # https://community.home-assistant.io/t/how-to-dismiss-persistent-notification/148620/3
 automation:
+  - alias: 'persistent notification dismiss http login'
+    trigger:
+    - platform: event
+      event_type: state_changed
+      event_data:
+        entity_id: persistent_notification.http_login
+    condition:
+      - condition: template
+        value_template: "{{ states('persistent_notification.http_login') == 'notifying' }}"
+    action:
+      - service: script.log
+        data:
+          object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
+          message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
+          target: 'alerts-david' 
+      - service: persistent_notification.dismiss
+        data_template:
+          notification_id: http_login
+
   - alias: 'persistent notification created'
     trigger:
       platform: event
@@ -42,7 +61,9 @@ automation:
       - condition: template
         value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'invalid_config' }}"
       - condition: template
-        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'http-login' }}"
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'http_login' }}"
+      - condition: template
+        value_template: "{{ trigger.event.as_dict()['data']['service_data']['notification_id'] != 'config_entry_discovery' }}"
     action:
       - service: system_log.write
         data_template:
@@ -58,23 +79,23 @@ automation:
             {{ trigger.event.as_dict()['data']}}
           target: 'alerts-david' 
 
-  - alias: 'persistent notification dismiss http login'
+  - alias: 'persistent notification log and dismiss invalid config'
     trigger:
-    - platform: event
-      event_type: state_changed
-      event_data:
-        entity_id: persistent_notification.http_login
+      - platform: event
+        event_type: state_changed
+        event_data:
+          entity_id: persistent_notification.invalid_config
     condition:
       - condition: template
-        value_template: "{{ trigger.event.as_dict()['data']['new_state'] != None }}"
+        value_template: "{{ states('persistent_notification.invalid_config') == 'notifying' }}"
     action:
       - service: persistent_notification.dismiss
-        data_template:
-          notification_id: http-login
+        data:
+          notification_id: invalid_config
       - service: script.log
         data:
-          object: "{{ trigger.event.as_dict()['data']['new_state']['title'] }}"
-          message: "{{ trigger.event.as_dict()['data']['new_state']['message'] }}"
+          object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
+          message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
           target: 'alerts-david' 
 
   - alias: 'persistent notification dismiss config discovery'
@@ -87,6 +108,11 @@ automation:
       - condition: template
         value_template: "{{ states('persistent_notification.config_entry_discovery') == 'notifying' }}"
     action:
+      - service: script.log
+        data:
+          object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
+          message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
+          target: 'alerts-david' 
       - service: persistent_notification.dismiss
         data:
           notification_id: config_entry_discovery
