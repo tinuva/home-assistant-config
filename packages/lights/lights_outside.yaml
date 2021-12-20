@@ -9,7 +9,7 @@ light:
       - light.courtyard_braai
       - light.courtyard_lounge
       - light.courtyard_main_bedroom
-      #- light.pool_light
+      - light.pool
 
 automation:
   ## Whole night
@@ -74,7 +74,7 @@ automation:
         data_template:
           entity_id: >
             light.lights_while_awake
-            {% if is_state('input_boolean.pool_cover_on','off') %},{{ " " }}light.pool_light{% endif -%}
+            {% if is_state('input_boolean.pool_cover_on','off') %},{{ " " }}light.pool{% endif -%}
   ## While not awake
   - alias: "Turn off outside lights and check every minute - whole not awake"
     trigger:
@@ -105,4 +105,4 @@ automation:
       - service: light.turn_off
         entity_id: 
           - light.lights_while_awake
-          - light.pool_light
+          - light.pool

@@ -10,6 +10,9 @@ automation:
     - platform: state
       entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
       to: 'playing'
+    - platform: state
+      entity_id: media_player.plex_plex_for_android_tv_shield_android_tv
+      to: 'playing'
   condition:
     condition: and
     conditions:
@@ -34,7 +37,7 @@ automation:
     data:
       entity_id: light.lounge
       brightness: '30'
-      transition: 10
+      transition: 20
   - condition: time
     after: "20:15:00"
   - service: automation.trigger

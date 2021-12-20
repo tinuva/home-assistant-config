@@ -74,7 +74,7 @@ automation:
         shelly1-8CAAB505C111:
           relay-0: "light"
           relay-0-name: Braai Bathroom
-        shelly1-93A63B:
+        shelly1-8CAAB5056074:
           relay-0: "light"
           relay-0-name: Pool
         shelly1-8CAAB505CAFC:
