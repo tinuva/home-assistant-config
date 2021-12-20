@@ -1,230 +1,230 @@
-automation:
-  ## Turn off geysers when solcast below 1kWh
-  #- alias: Turn off geysers when solcast below 1.5kWh
-  #  mode: single
-  #  trigger:
-  #    - platform: numeric_state
-  #      entity_id: sensor.solcast_forecast
-  #      below: '1'
-  #    #- platform: numeric_state
-  #    #  entity_id: sensor.pv_backup_excess
-  #    #  below: '0'
-  #  condition:
-  #    - condition: state  # 'day' condition: from sunrise until sunset
-  #      entity_id: sun.sun
-  #      state: 'above_horizon'
-  #    - condition: time
-  #      after: '8:00:00'
-  #      before: '16:59:59'
-  #  action:
-  #    - service: switch.turn_off
-  #      data:
-  #        entity_id: switch.main_bathroom_geyser
-  #    - service: switch.turn_off
-  #      data:
-  #        entity_id: switch.front_bathroom_geyser
+# automation:
+#   ## Turn off geysers when solcast below 1kWh
+#   #- alias: Turn off geysers when solcast below 1.5kWh
+#   #  mode: single
+#   #  trigger:
+#   #    - platform: numeric_state
+#   #      entity_id: sensor.solcast_forecast
+#   #      below: '1'
+#   #    #- platform: numeric_state
+#   #    #  entity_id: sensor.pv_backup_excess
+#   #    #  below: '0'
+#   #  condition:
+#   #    - condition: state  # 'day' condition: from sunrise until sunset
+#   #      entity_id: sun.sun
+#   #      state: 'above_horizon'
+#   #    - condition: time
+#   #      after: '8:00:00'
+#   #      before: '16:59:59'
+#   #  action:
+#   #    - service: switch.turn_off
+#   #      data:
+#   #        entity_id: switch.main_bathroom_geyser
+#   #    - service: switch.turn_off
+#   #      data:
+#   #        entity_id: switch.front_bathroom_geyser
 
-  # Front geyser on based on battery
-  - alias: Turn on front geyser based on battery
-    trigger:
-      #- platform: state
-      #  entity_id: sensor.goodwe_battery_mode_label
-      #  to: 'Standby'
-      #  for:
-      #    seconds: 25
-      #- platform: numeric_state
-      #  entity_id: sensor.goodwe_battery_charge_limit
-      #  below: '74'
-      - platform: numeric_state
-        entity_id: sensor.main_bathroom_geyser_power
-        below: '50'
-      - platform: time
-        at: '13:30:00'
-    condition:
-      - condition: or
-        conditions:
-        - condition: and
-          conditions:
-          - condition: numeric_state
-            entity_id: sensor.goodwe_battery_soc
-            above: '99'
-          - condition: state
-            entity_id: sensor.goodwe_battery_mode_label
-            state: 'Standby'
-        - condition: or
-          conditions:
-          - condition: numeric_state
-            entity_id: sensor.goodwe_battery_charge_limit
-            below: '74'
-          - condition: time
-            after: '11:00:00'
-            before: '16:30:00'
-      - condition: numeric_state
-        entity_id: sensor.main_bathroom_geyser_power
-        below: '50'
-      # Since we have solar, check forecast then continue
-      #- condition: numeric_state
-      #  entity_id: sensor.solcast_forecast
-      #  above: '0.5'
-      - condition: sun
-        before: sunset
-        before_offset: -00:30:00
-        after: sunrise
-        after_offset: 00:30:00
-      - condition: state
-        entity_id: switch.main_bathroom_geyser
-        state: 'on'
-      - condition: state
-        entity_id: switch.front_bathroom_geyser
-        state: 'off'
-      - condition: time
-        after: '8:00:00'
-        before: '16:50:00'
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: timer.front_geyser
-          state: 'idle'
-          for:
-            hours: 4
-        - condition: state
-          entity_id: timer.front_geyser
-          state: 'active'
-    action:
-      - service: switch.turn_on
-        data:
-          entity_id: switch.front_bathroom_geyser
-      - delay: '00:00:15' # Waits 15 seconds
-      - service: timer.start
-        data_template:
-          entity_id: timer.front_geyser
-          duration: >
-            {{ 180 | int * 60 }}
-      - service: switch.turn_off
-        data:
-          entity_id: switch.main_bathroom_geyser
-      - service: timer.finish
-        data_template:
-          entity_id: timer.main_geyser
+#   # Front geyser on based on battery
+#   - alias: Turn on front geyser based on battery
+#     trigger:
+#       #- platform: state
+#       #  entity_id: sensor.goodwe_battery_mode_label
+#       #  to: 'Standby'
+#       #  for:
+#       #    seconds: 25
+#       #- platform: numeric_state
+#       #  entity_id: sensor.goodwe_battery_charge_limit
+#       #  below: '74'
+#       - platform: numeric_state
+#         entity_id: sensor.main_bathroom_geyser_power
+#         below: '50'
+#       - platform: time
+#         at: '13:30:00'
+#     condition:
+#       - condition: or
+#         conditions:
+#         - condition: and
+#           conditions:
+#           - condition: numeric_state
+#             entity_id: sensor.goodwe_battery_soc
+#             above: '99'
+#           - condition: state
+#             entity_id: sensor.goodwe_battery_mode_label
+#             state: 'Standby'
+#         - condition: or
+#           conditions:
+#           - condition: numeric_state
+#             entity_id: sensor.goodwe_battery_charge_limit
+#             below: '74'
+#           - condition: time
+#             after: '11:00:00'
+#             before: '16:30:00'
+#       - condition: numeric_state
+#         entity_id: sensor.main_bathroom_geyser_power
+#         below: '50'
+#       # Since we have solar, check forecast then continue
+#       #- condition: numeric_state
+#       #  entity_id: sensor.solcast_forecast
+#       #  above: '0.5'
+#       - condition: sun
+#         before: sunset
+#         before_offset: -00:30:00
+#         after: sunrise
+#         after_offset: 00:30:00
+#       - condition: state
+#         entity_id: switch.main_bathroom_geyser
+#         state: 'on'
+#       - condition: state
+#         entity_id: switch.front_bathroom_geyser
+#         state: 'off'
+#       - condition: time
+#         after: '8:00:00'
+#         before: '16:50:00'
+#       - condition: or
+#         conditions:
+#         - condition: state
+#           entity_id: timer.front_geyser
+#           state: 'idle'
+#           for:
+#             hours: 4
+#         - condition: state
+#           entity_id: timer.front_geyser
+#           state: 'active'
+#     action:
+#       - service: switch.turn_on
+#         data:
+#           entity_id: switch.front_bathroom_geyser
+#       - delay: '00:00:15' # Waits 15 seconds
+#       - service: timer.start
+#         data_template:
+#           entity_id: timer.front_geyser
+#           duration: >
+#             {{ 180 | int * 60 }}
+#       - service: switch.turn_off
+#         data:
+#           entity_id: switch.main_bathroom_geyser
+#       - service: timer.finish
+#         data_template:
+#           entity_id: timer.main_geyser
 
-  # Main geyser on based on battery
-  - alias: Turn on Main geyser based on battery
-    trigger:
-      - platform: state
-        entity_id: sensor.goodwe_battery_mode_label
-        to: 'Standby'
-      - platform: numeric_state
-        entity_id: sensor.goodwe_battery_charge_limit
-        below: '74'
-      - platform: time
-        at: '11:30:00'
-    condition:
-      - condition: or
-        conditions:
-        - condition: and
-          conditions:
-          - condition: numeric_state
-            entity_id: sensor.goodwe_battery_soc
-            above: '99'
-          - condition: state
-            entity_id: sensor.goodwe_battery_mode_label
-            state: 'Standby'
-        - condition: or
-          conditions:
-          - condition: numeric_state
-            entity_id: sensor.goodwe_battery_charge_limit
-            below: '74'
-          - condition: time
-            after: '11:00:00'
-            before: '16:30:00'
-      #- condition: numeric_state
-      #  entity_id: sensor.front_bathroom_geyser_power
-      #  below: '50'
-      # Since we have solar, check forecast then continue
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast
-        above: '0.75'
-      - condition: sun
-        before: sunset
-        before_offset: -00:30:00
-        after: sunrise
-        after_offset: 00:30:00
-      - condition: state
-        entity_id: switch.main_bathroom_geyser
-        state: 'off'
-      - condition: time
-        after: '8:00:00'
-        before: '16:50:00'
-      - condition: or
-        conditions:
-        - condition: state
-          entity_id: timer.main_geyser
-          state: 'idle'
-          for:
-            hours: 4
-        - condition: state
-          entity_id: timer.main_geyser
-          state: 'active'
-      #- condition: state
-      #  entity_id: switch.front_bathroom_geyser
-      #  state: 'off'
-      # condition: numeric_state
-      #  entity_id: input_number.set_goodwe_dod
-      #  above: '0'
-      #  below: '97'
-    action:
-      - service: switch.turn_on
-        data:
-          entity_id: switch.main_bathroom_geyser
-      - delay: '00:00:15' # Waits 15 seconds
-      - service: timer.start
-        data_template:
-          entity_id: timer.main_geyser
-          duration: >
-            {{ 180 | int * 60 }}
+#   # Main geyser on based on battery
+#   - alias: Turn on Main geyser based on battery
+#     trigger:
+#       - platform: state
+#         entity_id: sensor.goodwe_battery_mode_label
+#         to: 'Standby'
+#       - platform: numeric_state
+#         entity_id: sensor.goodwe_battery_charge_limit
+#         below: '74'
+#       - platform: time
+#         at: '11:30:00'
+#     condition:
+#       - condition: or
+#         conditions:
+#         - condition: and
+#           conditions:
+#           - condition: numeric_state
+#             entity_id: sensor.goodwe_battery_soc
+#             above: '99'
+#           - condition: state
+#             entity_id: sensor.goodwe_battery_mode_label
+#             state: 'Standby'
+#         - condition: or
+#           conditions:
+#           - condition: numeric_state
+#             entity_id: sensor.goodwe_battery_charge_limit
+#             below: '74'
+#           - condition: time
+#             after: '11:00:00'
+#             before: '16:30:00'
+#       #- condition: numeric_state
+#       #  entity_id: sensor.front_bathroom_geyser_power
+#       #  below: '50'
+#       # Since we have solar, check forecast then continue
+#       - condition: numeric_state
+#         entity_id: sensor.solcast_forecast
+#         above: '0.75'
+#       - condition: sun
+#         before: sunset
+#         before_offset: -00:30:00
+#         after: sunrise
+#         after_offset: 00:30:00
+#       - condition: state
+#         entity_id: switch.main_bathroom_geyser
+#         state: 'off'
+#       - condition: time
+#         after: '8:00:00'
+#         before: '16:50:00'
+#       - condition: or
+#         conditions:
+#         - condition: state
+#           entity_id: timer.main_geyser
+#           state: 'idle'
+#           for:
+#             hours: 4
+#         - condition: state
+#           entity_id: timer.main_geyser
+#           state: 'active'
+#       #- condition: state
+#       #  entity_id: switch.front_bathroom_geyser
+#       #  state: 'off'
+#       # condition: numeric_state
+#       #  entity_id: input_number.set_goodwe_dod
+#       #  above: '0'
+#       #  below: '97'
+#     action:
+#       - service: switch.turn_on
+#         data:
+#           entity_id: switch.main_bathroom_geyser
+#       - delay: '00:00:15' # Waits 15 seconds
+#       - service: timer.start
+#         data_template:
+#           entity_id: timer.main_geyser
+#           duration: >
+#             {{ 180 | int * 60 }}
 
-  ## Turn off main geyser when only main geyser on and above 5kW non-essential
-  #- alias: Turn off main geyser when high kW
-  #  mode: single
-  #  trigger:
-  #    - platform: numeric_state
-  #      entity_id: sensor.energy_non_essentials
-  #      above: '5000'
-  #      for:
-  #        seconds: 30
-  #  condition:
-  #    - condition: state
-  #      entity_id: switch.main_bathroom_geyser
-  #      state: 'on'
-  #    - condition: state
-  #      entity_id: switch.front_bathroom_geyser
-  #      state: 'off'
-  #    - condition: time
-  #      after: '8:00:00'
-  #      before: '16:59:59'
-  #  action:
-  #    - service: switch.turn_off
-  #      data:
-  #        entity_id: switch.main_bathroom_geyser
+#   ## Turn off main geyser when only main geyser on and above 5kW non-essential
+#   #- alias: Turn off main geyser when high kW
+#   #  mode: single
+#   #  trigger:
+#   #    - platform: numeric_state
+#   #      entity_id: sensor.energy_non_essentials
+#   #      above: '5000'
+#   #      for:
+#   #        seconds: 30
+#   #  condition:
+#   #    - condition: state
+#   #      entity_id: switch.main_bathroom_geyser
+#   #      state: 'on'
+#   #    - condition: state
+#   #      entity_id: switch.front_bathroom_geyser
+#   #      state: 'off'
+#   #    - condition: time
+#   #      after: '8:00:00'
+#   #      before: '16:59:59'
+#   #  action:
+#   #    - service: switch.turn_off
+#   #      data:
+#   #        entity_id: switch.main_bathroom_geyser
 
-  ## Turn off front geyser when both geysers on and above 4kW non-essential
-  #- alias: Turn off front geyser when high kW
-  #  mode: single
-  #  trigger:
-  #    - platform: numeric_state
-  #      entity_id: sensor.energy_non_essentials
-  #      above: '4400'
-  #  condition:
-  #    - condition: state
-  #      entity_id: switch.main_bathroom_geyser
-  #      state: 'on'
-  #    - condition: state
-  #      entity_id: switch.front_bathroom_geyser
-  #      state: 'on'
-  #    - condition: time
-  #      after: '8:00:00'
-  #      before: '16:59:59'
-  #  action:
-  #    - service: switch.turn_off
-  #      data:
-  #        entity_id: switch.front_bathroom_geyser
+#   ## Turn off front geyser when both geysers on and above 4kW non-essential
+#   #- alias: Turn off front geyser when high kW
+#   #  mode: single
+#   #  trigger:
+#   #    - platform: numeric_state
+#   #      entity_id: sensor.energy_non_essentials
+#   #      above: '4400'
+#   #  condition:
+#   #    - condition: state
+#   #      entity_id: switch.main_bathroom_geyser
+#   #      state: 'on'
+#   #    - condition: state
+#   #      entity_id: switch.front_bathroom_geyser
+#   #      state: 'on'
+#   #    - condition: time
+#   #      after: '8:00:00'
+#   #      before: '16:59:59'
+#   #  action:
+#   #    - service: switch.turn_off
+#   #      data:
+#   #        entity_id: switch.front_bathroom_geyser

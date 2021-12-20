@@ -58,8 +58,8 @@ automation:
                   {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
                   {% set today_name = day_names[now().weekday()] %}
                   {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
-                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 6 * 60 | int * 60 }}
-                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 4 * 60 | int * 60 }}
+                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 7 * 60 | int * 60 }}
+                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 6 * 60 | int * 60 }}
                   {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
             - service: switch.turn_on
               data:
@@ -119,6 +119,15 @@ automation:
           entity_id: timer.pool_pump
       - platform: time
         at: "17:00:00"
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "14:00" and states('sensor.goodwe_battery_soc')|int < 50) }}
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "15:00" and states('sensor.goodwe_battery_soc')|int < 70) }}
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "16:00" and states('sensor.goodwe_battery_soc')|int < 89) }}
       #- platform: numeric_state
       #  entity_id: sensor.goodwe_average_solar_generation_30min
       #  below: '1200'

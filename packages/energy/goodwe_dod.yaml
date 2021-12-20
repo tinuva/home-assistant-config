@@ -18,28 +18,27 @@ script:
   ######################################################################
   goodwe_set_dod:
     sequence:
-      - service: script.goodwe_set_dod_action
-        data:
-          forecast: "{{ forecast }}"
+      - alias: "Set variables"
+        variables:
           dod: >
             {% set forecast_int = forecast|int %}
-            {% if forecast_int >= 23 %}70
-            {% elif forecast_int >= 20 and forecast_int < 23 %}65
-            {% elif forecast_int >= 18 and forecast_int < 20 %}60
+            {% if forecast_int >= 28 %}70
+            {% elif forecast_int >= 23 and forecast_int < 28 %}65
+            {% elif forecast_int >= 20 and forecast_int < 23 %}60
+            {% elif forecast_int >= 18 and forecast_int < 20 %}55
             {% elif forecast_int >= 16 and forecast_int < 18 %}50
             {% elif forecast_int >= 12 and forecast_int < 16 %}40
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% else %}16{% endif -%}
-
-  goodwe_set_dod_action:
-    sequence:
-      - service: input_number.set_value
+      - alias: "Set DoD on inverter"
+        service: input_number.set_value
         target:
           entity_id: input_number.set_goodwe_dod
         data:
           value: >
             {{ dod }}
-      - service: script.log
+      - alias: "Log action taken"
+        service: script.log
         data:
           icon: ':zap:'
           object: 'GoodWe'
@@ -177,7 +176,7 @@ automation:
         above: 4
       - condition: numeric_state
         entity_id: sensor.solcast_forecast_energy_today_predicted
-        below: 20
+        below: 26
     action:
       - service: input_number.set_value
         target:
@@ -195,7 +194,7 @@ automation:
       - condition: template
         value_template: >-
           {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 21)) }}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 30)) }}
         # {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 21)) or ('09:00' < states('sensor.time')) }}
     action:
       - service: input_number.set_value
