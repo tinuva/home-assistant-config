@@ -24,9 +24,12 @@ automation:
             - condition: template
               value_template: "{{ not is_state('climate.midea_ac_32985348871179', 'off') }}"
           sequence:
-            - service: switch.turn_off
+            # climate.turn_off doesn't seem to work, so using hvac_mode
+            - service: climate.set_hvac_mode
               data:
-                entity_id: switch.office_feed_2
+                hvac_mode: off
+              target:
+                entity_id: climate.midea_ac_32985348871179
             - delay: '00:02:00' # Wait
             - service: switch.turn_off
               data:
