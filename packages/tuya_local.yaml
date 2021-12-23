@@ -1,6 +1,6 @@
 localtuya:
   ## CBI Astute Smart Switch
-  - host: 192.168.241.150
+  - host: 10.0.0.55 #68:57:2D:D2:FE:D2
     device_id: !secret geyser_mainbathroom_device_id
     local_key: !secret geyser_mainbathroom_local_key
     friendly_name: Main Bathroom Geyser
@@ -27,7 +27,7 @@ localtuya:
         device_class: voltage
         unit_of_measurement: "V"
   ## CBI Astute Smart Switch
-  - host: 192.168.241.152
+  - host: 10.0.0.56 #68:57:2D:D2:F5:C7
     device_id: !secret geyser_frontbathroom_device_id
     local_key: !secret geyser_frontbathroom_local_key
     friendly_name: Front Bathroom Geyser
