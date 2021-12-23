@@ -6,7 +6,7 @@ input_datetime:
 
 automation:
   # off based on input time
-  - alias: Turn off office_feed2 1
+  - alias: Turn off office_feed2
     trigger:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.office_feed2_off_time_1', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
@@ -15,6 +15,22 @@ automation:
         entity_id: binary_sensor.workday_sensor
         state: "on"
     action:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.office_feed_2
+      - choose:
+        # If the AC on this plug is on, first turn it off then wait before turning off plug
+        - conditions:
+            - condition: template
+              value_template: "{{ not is_state('climate.midea_ac_32985348871179', 'off') }}"
+          sequence:
+            - service: switch.turn_off
+              data:
+                entity_id: switch.office_feed_2
+            - delay: '00:02:00' # Wait
+            - service: switch.turn_off
+              data:
+                entity_id: switch.office_feed_2
+        # Else just turn off the plug
+        default:
+          - service: switch.turn_off
+            data:
+              entity_id: switch.office_feed_2
+
