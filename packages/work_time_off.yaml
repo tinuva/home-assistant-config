@@ -14,6 +14,9 @@ automation:
       - condition: state
         entity_id: binary_sensor.workday_sensor
         state: "on"
+      - condition: state
+        entity_id: input_boolean.holiday
+        state: "off"
     action:
       - choose:
         # If the AC on this plug is on, first turn it off then wait before turning off plug
