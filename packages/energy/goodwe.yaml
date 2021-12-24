@@ -1,7 +1,7 @@
 sensor:
   - platform: goodwe
     scan_interval: 10
-    ip_address: 10.0.0.225
+    ip_address: 10.0.0.59
     #port: 8899
     #network_timeout: 2
     #network_retries: 3
