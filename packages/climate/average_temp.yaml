@@ -1,0 +1,7 @@
+sensor:
+  - platform: average
+    name: 'Average Temperature Outside last 2 days'
+    duration:
+      days: 2
+    entities:
+      - sensor.outside_temperature

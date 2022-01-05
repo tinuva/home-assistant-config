@@ -4,7 +4,7 @@ automation:
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0xF4D6/Click'
+        topic: 'tele/zigbee/Kitchen Button/Click'
         payload: 'single'
     action:
       - service: light.toggle
@@ -13,13 +13,35 @@ automation:
     #  - service: input_boolean.toggle
     #    data:
     #      entity_id: input_boolean.kitchenwork
+  - alias: 'MQTT Zigbee Button Kitchen hold action'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'tele/zigbee/Kitchen Button/Action'
+        payload: 'single'
+    action:
+      - service: light.turn_on
+        data_template:
+          entity_id: light.kitchen
+          transition: 50
+          brightness: >-
+            {% set time = states('sensor.time') %}
+            {%- if(is_state('input_boolean.kitchenwork','on')) -%}
+            185
+            {% elif '18:00' <= time <= '20:25' %}
+            175
+            {% elif '05:30' <= time <= '07:30' %}
+            175
+            {%- else -%}
+            175
+            {%- endif -%}
 
   # Main Bathroom button
   - alias: 'MQTT Zigbee Button Main Bathroom single click'
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x3E63/Click'
+        topic: 'tele/zigbee/Main Bathroom Button/Click'
         payload: 'single'
     condition:
       - condition: state 
@@ -35,7 +57,7 @@ automation:
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x3E63/Click'
+        topic: 'tele/zigbee/Main Bathroom Button/Click'
         payload: 'single'
     condition:
       - condition: state 
@@ -50,22 +72,22 @@ automation:
           entity_id: light.main_bathroom
 
   # Lounge button
-  - alias: 'MQTT Zigbee Button Main Bathroom hold action'
+  - alias: 'MQTT Zigbee Button Lounge hold action'
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x4C00/Action'
+        topic: 'tele/zigbee/Lounge Button/Action'
         payload: 'hold'
     action:
       - service: automation.trigger
         data:
           entity_id:
             - automation.set_lights_when_plex_kodi_is_playing
-  - alias: 'MQTT Zigbee Button Main Bathroom single click'
+  - alias: 'MQTT Zigbee Button Lounge single click'
     initial_state: true
     trigger:
       - platform: mqtt
-        topic: 'tele/zigbee/0x4C00/Click'
+        topic: 'tele/zigbee/Lounge Button/Click'
         payload: 'single'
     action:
       - service: light.turn_off

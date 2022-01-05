@@ -56,14 +56,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Occupancy/config
+          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Occupancy/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
               "device_class": "occupancy",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Occupancy",
               "payload_off": "0",
               "payload_on": "1",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_occupancy",
@@ -72,7 +72,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Occupancy
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Occupancy
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Occupancy }}
@@ -95,14 +95,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}ZoneStatusChange/config
+          topic: homeassistant/binary_sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}ZoneStatusChange/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
               "device_class": "opening",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/ZoneStatusChange",
               "payload_off": "0",
               "payload_on": "1",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_zone",
@@ -111,7 +111,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/ZoneStatusChange
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/ZoneStatusChange
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].ZoneStatusChange }}
@@ -138,14 +138,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Humidity/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Humidity/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Humidity",
               "device_class": "humidity",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Humidity",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Humidity",
               "expire_after": "7200",
               "unit_of_measurement": "%",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_humidity",
@@ -154,7 +154,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Humidity
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Humidity
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Humidity }}
@@ -181,14 +181,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Temperature/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Temperature/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Temperature",
               "device_class": "temperature",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Temperature",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Temperature",
               "expire_after": "7200",
               "unit_of_measurement": "°C",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_temperature",
@@ -197,7 +197,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Temperature
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Temperature
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Temperature }}
@@ -220,14 +220,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Pressure/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Pressure/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Pressure",
               "device_class": "pressure",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Pressure",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Pressure",
               "expire_after": "7200",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_pressure",
               "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
@@ -235,7 +235,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Pressure
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Pressure
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Pressure }}
@@ -258,14 +258,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Illuminance/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Illuminance/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Illuminance",
               "device_class": "illuminance",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Illuminance",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Illuminance",
               "expire_after": "7200",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_illuminance",
               "device": {"mf": "Tasmota", "mdl": "Zigbee", "identifiers": ["{{ trigger.payload_json.ZbReceived[code].Device }}"], "name": "{{ trigger.payload_json.ZbReceived[code].Name }}"}
@@ -273,7 +273,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Illuminance
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Illuminance
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Illuminance }}
@@ -295,14 +295,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}Battery/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}Battery/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} Battery",
               "device_class": "battery",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Battery",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Battery",
               "expire_after": "7200",
               "unit_of_measurement": "%",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_battery",
@@ -311,7 +311,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Battery
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Battery
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].BatteryPercentage }}
@@ -333,14 +333,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}LinkQuality/config
+          topic: homeassistant/sensor/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}LinkQuality/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }} LinkQuality",
               "icon": "mdi:wifi",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/LinkQuality",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/LinkQuality",
               "expire_after": "7200",
               "unit_of_measurement": "LQI",
               "unique_id": "{{ trigger.payload_json.ZbReceived[code].Device }}_linkquality",
@@ -349,7 +349,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/LinkQuality
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/LinkQuality
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].LinkQuality }}
@@ -433,14 +433,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: homeassistant/switch/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/config
+          topic: homeassistant/switch/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/config
           retain: true
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {
               "name": "{{ trigger.payload_json.ZbReceived[code].Name }}",
-              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Power",
-              "command_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/SetPower",
+              "state_topic": "tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Power",
+              "command_topic": "tele/zigbee/{{ trigger.payload_json.ZbReceived[code].Device }}/SetPower",
               "state_off": "0",
               "state_on": "1",
               "payload_off": "Off",
@@ -451,7 +451,7 @@ automation:
       - service: mqtt.publish
         data_template:
           topic: > 
-            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Power
+            tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Power
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].Power }}
