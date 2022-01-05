@@ -58,6 +58,38 @@ binary_sensor:
           {{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}
 
 automation:
+  ### Clean
+  - alias: Start vacuum cleaning
+    trigger:
+      - platform: time
+        at: '05:45:00'
+    action:
+      - choose:
+        # Work day mornings when not holiday
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.workday_sensor
+              state: "on"
+            - condition: state
+              entity_id: input_boolean.holiday
+              state: "off"
+            - condition: state
+              entity_id: input_boolean.guest
+              state: "off"
+          sequence:
+            - service: vacuum.start
+              data:
+                entity_id: vacuum.rockrobo
+        # No conditions met so log and do nothing
+        default:
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':robot_face:'
+              object: 'Vacuum Robot'
+              message: >
+                Not cleaning because no conditions met
+
   ### Notify state change
   - alias: Notify when Robot State Change
     description: Notify when Robot State Change
