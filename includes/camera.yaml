@@ -8,9 +8,16 @@
 #
 #
 #- from github.com/tinuva/home-assistant-config
-- platform: ffmpeg
+- platform: mjpeg
+  mjpeg_url: !secret camera_front_stream
   name: Front Camera
-  input: !secret camera_front
-- platform: ffmpeg
+- platform: mjpeg
+  mjpeg_url: !secret camera_back_stream
   name: Back Camera
-  input: !secret camera_back
+
+#- platform: ffmpeg
+#  name: Front Camera
+#  input: !secret camera_front
+#- platform: ffmpeg
+#  name: Back Camera
+#  input: !secret camera_back
