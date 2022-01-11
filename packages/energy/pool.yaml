@@ -121,10 +121,13 @@ automation:
         at: "17:00:00"
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "14:00" and states('sensor.goodwe_battery_soc')|int < 50) }}
+          {{ (now().time().strftime("%R") == "11:30" and states('sensor.goodwe_battery_soc')|int < 50) }}
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "15:00" and states('sensor.goodwe_battery_soc')|int < 70) }}
+          {{ (now().time().strftime("%R") == "14:00" and states('sensor.goodwe_battery_soc')|int < 60) }}
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "15:00" and states('sensor.goodwe_battery_soc')|int < 75) }}
       - platform: template
         value_template: >
           {{ (now().time().strftime("%R") == "16:00" and states('sensor.goodwe_battery_soc')|int < 89) }}
