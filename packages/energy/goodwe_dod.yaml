@@ -116,7 +116,6 @@ automation:
           entity_id: number.depth_of_discharge_on_grid
         data:
           value: >
-            {{ dod }}
             {% set soc_today = states('sensor.solcast_forecast_energy_today_predicted')|int %}
             {% if soc_today <= 10 %}1
             {% else %}16{% endif -%}
