@@ -180,6 +180,8 @@ automation:
       - platform: sun
         event: sunrise
         offset: '-00:15:00'
+      #- platform: time
+      #  at: '06:52:00'
     condition: []
     action:
       - service: mqtt.publish
