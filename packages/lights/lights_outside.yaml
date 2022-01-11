@@ -9,7 +9,7 @@ light:
       - light.courtyard_braai
       - light.courtyard_lounge
       - light.courtyard_main_bedroom
-      - light.pool
+      #- light.pool
 
 automation:
   ## Whole night

@@ -50,7 +50,7 @@ automation:
           entity_id: light.main_bedroom
           transition: >
             {%- if(is_state('binary_sensor.either_parent_phones_charging','on')) -%}
-            150
+            300
             {%- else -%}
             30
             {%- endif -%}
