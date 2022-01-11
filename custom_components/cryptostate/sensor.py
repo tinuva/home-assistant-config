@@ -51,23 +51,36 @@ def get_data(compare):
 
     parsed_url = URL.format(compare)
     #The headers are used to simulate a human request
-    req = requests.get(parsed_url, headers={"User-Agent": "Mozilla/5.0 (Platform; Security; OS-or-CPU; Localization; rv:1.4) Gecko/20030624 Netscape/7.1 (ax)"})
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
+
+    req = ""
+    try:
+        req = requests.get(parsed_url, headers=headers, timeout=10)
+        req.raise_for_status()
+    except requests.exceptions.HTTPError as errh:
+        _LOGGER.error(errh)
+    except requests.exceptions.ConnectionError as errc:
+        _LOGGER.error(errc)
+    except requests.exceptions.Timeout as errt:
+        _LOGGER.error(errt)
+    except requests.exceptions.RequestException as err:
+        _LOGGER.error(err)
 
     resp_parsed = ""
-    if (req.ok):
+    if (req.status_code == 200):
+        #The request is ok
         jsone = req.json()
         resp = json.dumps(jsone)
         resp_parsed = json.loads(resp)
-    else:
-        _LOGGER.error("Cannot perform the request")
 
-
-    if (resp_parsed["success"]):
-        return resp_parsed["ticker"]["price"]
+        if (resp_parsed["success"]):
+            return resp_parsed["ticker"]["price"]
+        else:
+            _LOGGER.warning("Recivied an error in the ticker")
+            _LOGGER.error(resp_parsed["error"])
+            return resp_parsed["error"]
     else:
-        _LOGGER.warning("Cannot perform the request")
-        _LOGGER.error(resp_parsed["error"])
-        return resp_parsed["error"]
+        _LOGGER.error(f"Request returned a bad error code {req.status_code}")
 
 def parse_unit_of_mesurament(compare):
     """Parse the input for the unit of mesurament"""
