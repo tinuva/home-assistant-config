@@ -31,12 +31,12 @@ script:
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% else %}16{% endif -%}
       - alias: "Set DoD on inverter"
-        service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
+        service: number.set_value
         data:
           value: >
             {{ dod }}
+        target:
+          entity_id: number.depth_of_discharge_on_grid
       - alias: "Log action taken"
         service: script.log
         data:
@@ -51,21 +51,15 @@ automation:
   - id: '1620734902145'
     alias: 'Set DoD on Goodwe based on input'
     trigger:
-      - entity_id: input_number.set_goodwe_dod
+      - entity_id: number.depth_of_discharge_on_grid
         platform: state
-    condition: []
     action:
-      - delay: 2 # seconds
-      - service: goodwe.set_ongrid_battery_dod
-        data:
-          entity_id: sensor.goodwe_inverter
-          ongrid_battery_dod: "{{ states('input_number.set_goodwe_dod')|int }}"
       - service: script.log
         data:
           icon: ':zap:'
           object: 'GoodWe'
           message: >
-            Setting DoD to {{ states('input_number.set_goodwe_dod')|int }} based on input value updated
+            DoD set to {{ states('number.depth_of_discharge_on_grid')|int }} based on input value updated
     mode: queued
     max: 2
 
@@ -116,11 +110,13 @@ automation:
         entity_id: sensor.solcast_forecast_energy_today_predicted
         below: '18'
     action:
-      - service: input_number.set_value
+      - alias: "Set DoD on inverter"
+        service: number.set_value
         target:
-          entity_id: input_number.set_goodwe_dod
+          entity_id: number.depth_of_discharge_on_grid
         data:
           value: >
+            {{ dod }}
             {% set soc_today = states('sensor.solcast_forecast_energy_today_predicted')|int %}
             {% if soc_today <= 10 %}1
             {% else %}16{% endif -%}
@@ -178,28 +174,11 @@ automation:
         entity_id: sensor.solcast_forecast_energy_today_predicted
         below: 26
     action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
+      - alias: "Set DoD on inverter"
+        service: number.set_value
         data:
           value: 16
+        target:
+          entity_id: number.depth_of_discharge_on_grid
     mode: single
 
-  ## Set DoD to 1% when geyser turn on, in the morning
-  - alias: Goodwe set DoD 1%
-    trigger:
-      - platform: template
-        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-    condition:
-      - condition: template
-        value_template: >-
-          {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 30)) }}
-        # {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 21)) or ('09:00' < states('sensor.time')) }}
-    action:
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
-        data:
-          value: 1
-    mode: single
