@@ -16,6 +16,83 @@ timer:
     name: Front Geyser Timer
     duration: '02:00:00'
 
+script:
+  ######################################################################
+  # Re-usable script to start main bedroom geyser
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: geyser_on_mainbedroom
+  #   data:
+  #      N/A
+  ######################################################################
+  geyser_on_mainbedroom:
+    sequence:
+      - alias: "Set variables"
+        variables:
+          duration: >
+            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+            {% set today_name = sensor_names[now().weekday()] %}
+            {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
+            {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
+            {% else %}{{ 180 | int * 60 }}{% endif -%}
+      - service: timer.start
+        data_template:
+          entity_id: timer.main_geyser
+          duration: "{{ duration }}"
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: switch.turn_on
+        data:
+          entity_id: switch.main_bathroom_geyser
+      # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
+      - condition: template
+        value_template: >-
+          {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 30)) }}
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: 1
+          
+  ######################################################################
+  # Re-usable script to start main bedroom geyser
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: geyser_on_mainbedroom
+  #   data:
+  #      N/A
+  ######################################################################
+  geyser_on_front:
+    sequence:
+      - alias: "Set variables"
+        variables:
+          duration: >
+            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+            {% set today_name = sensor_names[now().weekday()] %}
+            {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
+            {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
+            {% else %}{{ 180 | int * 60 }}{% endif -%}
+      - service: timer.start
+        data_template:
+          entity_id: timer.front_geyser
+          duration: "{{ duration }}"
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: switch.turn_on
+        data:
+          entity_id: switch.front_bathroom_geyser
+      # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
+      - condition: template
+        value_template: >-
+          {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
+          {{ ((start_time <= states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 30)) }}
+      - service: input_number.set_value
+        target:
+          entity_id: input_number.set_goodwe_dod
+        data:
+          value: 1
+
 automation:
   ### Main Geyser ###
   # Main geyser on based on input time
@@ -28,31 +105,46 @@ automation:
       - platform: numeric_state
         entity_id: sensor.front_bathroom_geyser_power
         below: '50'
-    condition:
-      - condition: state
-        entity_id: timer.loadshedding_slot
-        state: 'idle'
-      - condition: state
-        entity_id: timer.main_geyser
-        state: 'idle'
-        for:
-          hours: 6
-      - condition: template
-        value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('12:00' <= states('sensor.time') < '18:05') }}"
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.main_geyser
-        duration: >
-          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = sensor_names[now().weekday()] %}
-          {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-          {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
-          {% else %}{{ 180 | int * 60 }}{% endif -%}
-    - delay: '00:00:01' # Waits 1 seconds
-    - service: switch.turn_on
-      data:
-        entity_id: switch.main_bathroom_geyser
+      - choose:
+        # Turn on between 11am and 2pm for sun times
+        - conditions:
+          - condition: state
+            entity_id: timer.loadshedding_slot
+            state: 'idle'
+          - condition: template
+            value_template: "{{ ('11:00' <= states('sensor.time') <= '14:00') }}"
+          sequence:
+            - service: script.geyser_on_mainbedroom
+        # Turn on early AM and late PM only if haven't been on in previous 6 hours
+        # Also, if average temp below 21degree
+        - conditions:
+          - condition: state
+            entity_id: timer.loadshedding_slot
+            state: 'idle'
+          - condition: state
+            entity_id: timer.main_geyser
+            state: 'idle'
+            for:
+              hours: 6
+          - condition: numeric_state
+            entity_id: sensor.average_temperature_outside_last_2_days
+            below: '21'
+          - condition: template
+            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('14:00' <= states('sensor.time') < '18:05') }}"
+          sequence:
+            - service: script.geyser_on_mainbedroom
+        # No conditions met so log and do nothing
+        default:
+          - condition: template
+            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('11:00' <= states('sensor.time') <= '14:00') }}"
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':zap:'
+              object: 'Geyser - main bedroom'
+              message: >
+                Not turning on main bedroom geyser because no conditions met
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
@@ -112,31 +204,46 @@ automation:
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
         at: '11:30:00'
-    condition:
-      - condition: state
-        entity_id: timer.loadshedding_slot
-        state: 'idle'
-      - condition: template
-        value_template: "{{ ('04:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('11:00' <= states('sensor.time') < '18:05') }}"
-      - condition: state
-        entity_id: timer.front_geyser
-        state: 'idle'
-        for:
-          hours: 6
     action:
-      - service: timer.start
-        data_template:
-          entity_id: timer.front_geyser
-          duration: >
-            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-            {% set today_name = sensor_names[now().weekday()] %}
-            {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
-            {% elif '17:00' <= states('sensor.time') <= '19:00' %}{{ 180 | int * 60 }}
-            {% else %}{{ 180 | int * 60 }}{% endif -%}
-      - delay: '00:00:01' # Waits 1 seconds
-      - service: switch.turn_on
-        data:
-          entity_id: switch.front_bathroom_geyser
+      - choose:
+        # Turn on between 11am and 2pm for sun times
+        - conditions:
+          - condition: state
+            entity_id: timer.loadshedding_slot
+            state: 'idle'
+          - condition: template
+            value_template: "{{ ('11:00' <= states('sensor.time') <= '14:00') }}"
+          sequence:
+            - service: script.geyser_on_front
+        # Turn on early AM and late PM only if haven't been on in previous 6 hours
+        # Also, if average temp below 21degree
+        - conditions:
+          - condition: state
+            entity_id: timer.loadshedding_slot
+            state: 'idle'
+          - condition: state
+            entity_id: timer.front_geyser
+            state: 'idle'
+            for:
+              hours: 6
+          - condition: numeric_state
+            entity_id: sensor.average_temperature_outside_last_2_days
+            below: '21'
+          - condition: template
+            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('14:00' <= states('sensor.time') < '18:05') }}"
+          sequence:
+            - service: script.geyser_on_front
+        # No conditions met so log and do nothing
+        default:
+          - condition: template
+            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('11:00' <= states('sensor.time') <= '14:00') }}"
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':zap:'
+              object: 'Geyser - front'
+              message: >
+                Not turning on front geyser because no conditions met
 
   # start timer when turned on 
   - alias: Start timer after Turn on front geyser
