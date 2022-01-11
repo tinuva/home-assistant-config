@@ -35,15 +35,15 @@ cover:
         open_cover:
           service: switch.turn_on
           data:
-            entity_id: switch.garagedoor_back_gragedoor_back
+            entity_id: switch.gragedoor_back
         close_cover:
           service: switch.turn_on
           data:
-            entity_id: switch.garagedoor_back_gragedoor_back
+            entity_id: switch.gragedoor_back
         stop_cover:
           service: switch.turn_on
           data:
-            entity_id: switch.garagedoor_back_gragedoor_back
+            entity_id: switch.gragedoor_back
         icon_template: >-
           {% if is_state('binary_sensor.back_garage_door', 'on') %}
             mdi:garage-open
