@@ -316,19 +316,17 @@ views:
         show_empty: false
         type: custom:auto-entities
       type: vertical-stack
-    - aspect_ratio: 0%
-      camera_image: camera.front_camera
-      camera_view: live
+    - camera_image: camera.front_camera
       entities:
-      - entity: camera.front_camera
-      title: Front Camera
+      - camera.front_camera
+      tap_action:
+        action: more-info
       type: picture-glance
-    - aspect_ratio: 0%
-      camera_image: camera.back_camera
-      camera_view: live
+    - camera_image: camera.back_camera
       entities:
-      - entity: camera.back_camera
-      title: Back Camera
+      - camera.back_camera
+      tap_action:
+        action: more-info
       type: picture-glance
     type: vertical-stack
   - cards:
@@ -495,6 +493,7 @@ views:
       - entity_id: '*awake*'
       - entity_id: '*night*'
       - entity_id: '*outside*'
+      - entity_id: '*court*'
       - entity_id: '*braai*'
       include:
       - entity_id: light.*bath*
@@ -514,6 +513,7 @@ views:
       - entity_id: '*awake*'
       - entity_id: '*night*'
       - entity_id: '*outside*'
+      - entity_id: '*court*'
       - entity_id: light.*bed*
       - entity_id: light.*ensuite*
       - entity_id: light.*garage*
@@ -553,6 +553,7 @@ views:
       - entity_id: '*awake*'
       - entity_id: '*night*'
       - entity_id: '*outside*'
+      - entity_id: '*court*'
       - entity_id: light.*bath*
       - entity_id: light.*bed*
       - entity_id: light.*ensuite*
@@ -574,6 +575,10 @@ views:
       - entity_id: '*gateway*'
       - entity_id: '*firmware_update'
       - entity_id: '*garagedoor*'
+      - entity_id: '*gragedoor*'
+      - entity_id: '*keepin*'
+      - entity_id: '*keepout*'
+      - entity_id: '*aircon*'
       - name: '*Pool*'
       - name: '*Geyser*'
       - entity_id: switch.88e9fe88abfe
@@ -593,13 +598,37 @@ views:
 - badges: []
   cards:
   - cards:
+    - entity: weather.home
+      type: weather-forecast
+    - card:
+        show_header_toggle: false
+        type: entities
+      filter:
+        include:
+        - entities:
+          - entity: sensor.weather_today_min
+            name: Min
+          entity: sensor.weather_today_max
+          name: Today predicted
+          state_header: Max
+          type: custom:multiple-entity-row
+      show_empty: false
+      sort:
+        method: state
+        numeric: true
+        reverse: true
+      type: custom:auto-entities
     - experimental:
         color_threshold: true
+      graph_span: 48h
       header:
         colorize_states: false
         show: true
         show_states: true
-        title: Outside temperature (Feels like)
+        title: Outside temperature
+      now:
+        label: now
+        show: true
       series:
       - color_threshold:
         - color: '#7e0001'
@@ -638,21 +667,24 @@ views:
           value: -7
         curve: smooth
         entity: sensor.heat_index
+        extend_to_end: false
         group_by:
           duration: 30min
           func: avg
         show:
           extremas: true
         stroke_width: 2
-      type: custom:apexcharts-card
-    - experimental:
-        color_threshold: true
-      header:
-        colorize_states: false
-        show: true
-        show_states: true
-        title: Inside temperature
-      series:
+      - color: '#797D7F'
+        entity: sensor.outside_temperature
+        extend_to_end: false
+        fill_raw: last
+        group_by:
+          duration: 30m
+          func: avg
+        name: Temperature
+        opacity: 0.5
+        stroke_width: 2
+        unit: °C
       - color_threshold:
         - color: '#7e0001'
           value: 37
@@ -688,105 +720,161 @@ views:
           value: -4
         - color: '#662e93'
           value: -7
-        curve: smooth
-        entity: sensor.office_temperature
-        group_by:
-          duration: 30min
-          func: avg
+        data_generator: "const res = entity.attributes.forecast.map((entry) => {\n\
+          \  return [new Date(entry.datetime).getTime(), entry.temperature];\n});\n\
+          return [[new Date().getTime(), parseFloat(entity.attributes.temperature)],\
+          \ ...res]\n"
+        entity: weather.home_hourly
+        extend_to_end: false
+        name: Hourly forecast
+        opacity: 0.7
         show:
-          extremas: true
+          in_header: false
         stroke_width: 2
-      - color_threshold:
-        - color: '#7e0001'
-          value: 37
-        - color: '#9a0000'
-          value: 35
-        - color: '#d80100'
-          value: 32
-        - color: '#fe0000'
-          value: 29
-        - color: '#f46523'
-          value: 26
-        - color: '#ff9e07'
-          value: 24
-        - color: '#ffd728'
-          value: 21
-        - color: '#ffff01'
-          value: 18
-        - color: '#cdff00'
-          value: 15
-        - color: '#80ff00'
-          value: 13
-        - color: '#3ab54a'
-          value: 10
-        - color: '#05f7f8'
-          value: 7
-        - color: '#00ccff'
-          value: 4
-        - color: '#017eff'
-          value: 2
-        - color: '#0000fe'
-          value: -1
-        - color: '#1b1464'
-          value: -4
-        - color: '#662e93'
-          value: -7
-        curve: smooth
-        entity: sensor.lounge_temperature
-        group_by:
-          duration: 30min
-          func: avg
-        show:
-          extremas: true
-        stroke_width: 2
+        type: line
+        unit: °C
+      span:
+        offset: -14h
+        start: day
       type: custom:apexcharts-card
-    - entity: weather.home
-      type: weather-forecast
     layout: vertical
     layout_type: vertical
     min_columns: 3
     type: custom:layout-card
     view_layout: vertical
-  - card:
-      show_header_toggle: false
-      title: Temperature
-      type: entities
-    filter:
-      exclude:
-      - entity_id: '*gateway*'
-      - entity_id: '*disk*'
-      - entity_id: '*shelly*'
-      - entity_id: '*goodwe*'
-      - entity_id: '*mi_9t*'
-      - entity_id: '*nokia*'
-      include:
-      - entity_id: sensor.temperature_*
-      - entity_id: sensor.*_temperature
-      - entity_id: sensor.heat_index
-    show_empty: false
-    sort:
-      method: state
-      numeric: true
-      reverse: true
-    type: custom:auto-entities
-  - card:
-      show_header_toggle: false
-      title: Humidity
-      type: entities
-    filter:
-      exclude:
-      - entity_id: '*gateway*'
-      - entity_id: '*disk*'
-      - entity_id: '*shelly*'
-      include:
-      - entity_id: sensor.humidity*
-      - entity_id: sensor.*_humidity
-    show_empty: false
-    sort:
-      method: state
-      numeric: true
-      reverse: true
-    type: custom:auto-entities
+  - cards:
+    - card:
+        show_header_toggle: false
+        title: Temperature
+        type: entities
+      filter:
+        exclude:
+        - entity_id: '*gateway*'
+        - entity_id: '*disk*'
+        - entity_id: '*shelly*'
+        - entity_id: '*goodwe*'
+        - entity_id: '*mi_9t*'
+        - entity_id: '*nokia*'
+        include:
+        - entities:
+          - entity: sensor.heat_index
+            name: Feels like
+          - entity: sensor.outside_humidity
+            name: Humidity
+          entity: sensor.outside_temperature
+          name: Outside
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.office_humidity
+            name: Humidity
+          entity: sensor.office_temperature
+          name: Office
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.front_bathroom_humidity
+            name: Humidity
+          entity: sensor.front_bathroom_temperature
+          name: Front Bathroom
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.scullery_humidity
+            name: Humidity
+          entity: sensor.scullery_temperature
+          name: Scullery
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.baby_room_humidity
+            name: Humidity
+          entity: sensor.baby_room_temperature
+          name: Baby Room
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.main_bathroom_humidity
+            name: Humidity
+          entity: sensor.main_bathroom_temperature
+          name: Main Bathroom
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.main_bedroom_humidity
+            name: Humidity
+          entity: sensor.main_bedroom_temperature
+          name: Main Bedroom
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.lounge_humidity
+            name: Humidity
+          entity: sensor.lounge_temperature
+          name: Lounge
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entities:
+          - entity: sensor.fridge_humidity
+            name: Humidity
+          entity: sensor.fridge_temperature
+          name: Fridge
+          state_header: Temp
+          type: custom:multiple-entity-row
+        - entity: sensor.poolsense_temperature
+          name: Pool
+          state_header: Temp
+          type: custom:multiple-entity-row
+      show_empty: false
+      sort:
+        method: state
+        numeric: true
+        reverse: true
+      type: custom:auto-entities
+    layout: vertical
+    layout_type: vertical
+    min_columns: 3
+    type: custom:layout-card
+    view_layout: vertical
+  - cards:
+    - control:
+      - hvac
+      entity: climate.midea_ac_30786325862093
+      layout:
+        mode:
+          headings: false
+          icons: true
+          names: true
+        step: row
+      step_size: '1'
+      type: custom:simple-thermostat
+    - control:
+      - hvac
+      entity: climate.midea_ac_30786325862153
+      layout:
+        mode:
+          headings: false
+          icons: true
+          names: true
+        step: row
+      step_size: '1'
+      type: custom:simple-thermostat
+    - control:
+      - hvac
+      entity: climate.midea_ac_32985348871179
+      layout:
+        mode:
+          headings: false
+          icons: true
+          names: true
+        step: row
+      step_size: '1'
+      type: custom:simple-thermostat
+    layout: vertical
+    layout_type: vertical
+    min_columns: 3
+    type: custom:layout-card
+    view_layout: vertical
   icon: mdi:thermometer
   path: weather
   title: Weather
@@ -864,50 +952,42 @@ views:
         to: 4000
       type: custom:bar-card
     - entities:
-      - complementary: false
-        entity: sensor.goodwe_battery_soc
-        entity_row: true
-        positions:
-          minmax: inside
-        target: 84
-      severity:
-      - color: Red
-        from: 0
-        to: 25
-      - color: Orange
-        from: 25
-        to: 35
-      - color: Yellow
-        from: 35
-        to: 50
-      - color: Green
-        from: 51
-        to: 100
-      type: custom:bar-card
-    - columns: 2
-      complementary: false
-      entities:
-      - entity: sensor.battery_tocharge
-        name: to-charge
-      - entity: sensor.battery_available
-        name: available
-      max: 14
-      positions:
-        icon: 'off'
-        minmax: inside
-      type: custom:bar-card
-    - entities:
       - entities:
         - entity: sensor.goodwe_battery_temperature
           name: Temp
         - entity: sensor.goodwe_battery_soh
           name: SoH
-        - entity: sensor.goodwe_battery_soc
-          name: SoC
+        - entity: sensor.battery_available
+          name: Available
+        - entity: sensor.battery_tocharge
+          name: ToCharge
         entity: sensor.goodwe_battery_mode_label
         name: Battery Status
         state_header: Mode
         type: custom:multiple-entity-row
+      - columns: 1
+        entities:
+        - entity: sensor.goodwe_battery_soc
+          name: Battery SoC
+        entity_row: true
+        max: 100
+        severity:
+        - color: Red
+          from: 0
+          to: 20
+        - color: Orange
+          from: 20
+          to: 30
+        - color: Yellow
+          from: 30
+          to: 40
+        - color: '#669900'
+          from: 40
+          to: 80
+        - color: Green
+          from: 80
+          to: 100
+        type: custom:bar-card
       - entities:
         - entity: sensor.goodwe_vbattery1
           name: false
@@ -924,6 +1004,8 @@ views:
         state_header: Discharge
         type: custom:multiple-entity-row
       - entity: sensor.goodwe_battery_warning
+      show_header_toggle: false
+      state_color: false
       type: entities
     layout: vertical
     layout_type: vertical
@@ -953,6 +1035,7 @@ views:
         name: Actual
         show:
           extremas: false
+          in_header: false
         stroke_width: 2
         unit: W
       - color: '#3498DB'
@@ -962,6 +1045,7 @@ views:
         name: Forecast History
         show:
           extremas: false
+          in_header: false
         stroke_width: 2
         transform: return x * 1000;
         unit: W
@@ -1099,9 +1183,11 @@ views:
         state_header: Mode
         type: custom:multiple-entity-row
       - entity: sensor.goodwe_work_mode_label
+      - entity: sensor.goodwe_work_mode
       - entity: sensor.goodwe_temperature
       - entity: sensor.goodwe_error_codes
-      - entity: input_number.set_goodwe_dod
+      - entity: number.depth_of_discharge_on_grid
+      - entity: sensor.diag_status
       title: Inverter
       type: entities
     - entities:
@@ -1340,31 +1426,6 @@ views:
       - entity: input_boolean.pool_cover_on
       type: entities
     type: vertical-stack
-  - entity: vacuum.rockrobo
-    image: default
-    map: camera.rockrobo_map
-    stats:
-      cleaning:
-      - attribute: currentCleanArea
-        subtitle: Cleaning area
-        unit: m2
-      - attribute: currentCleanTime
-        subtitle: Cleaning time
-        unit: minutes
-      default:
-      - attribute: filter
-        subtitle: Filter
-        unit: hours
-      - attribute: sideBrush
-        subtitle: Side brush
-        unit: hours
-      - attribute: mainBrush
-        subtitle: Main brush
-        unit: hours
-      - attribute: sensor
-        subtitle: Sensors
-        unit: hours
-    type: custom:vacuum-card
   - calibration_source:
       calibration_points:
       - map:
@@ -1603,6 +1664,21 @@ views:
           service_data:
             entity_id: automation.shellies_announce
       type: custom:paper-buttons-row
+    - buttons:
+      - entity: automation.turn_on_pool_pump
+        name: Start pool pump
+        state_styles:
+          Unlocked:
+            icon:
+              color: rgb(5, 147, 255)
+            text:
+              color: rgb(5, 147, 255)
+        tap_action:
+          action: call-service
+          service: automation.trigger
+          service_data:
+            entity_id: automation.turn_on_pool_pump
+      type: custom:paper-buttons-row
     title: Manual automation triggers
     type: entities
   - bulk_rename:
@@ -1682,7 +1758,6 @@ views:
       unit: mV
     type: custom:apexcharts-card
   - entities:
-    - entity: sensor.poolsense_last_seen
     - entity: sensor.poolsense_battery
     - entity: sensor.poolsense_temperature
     - entity: binary_sensor.poolsense_chlorine_status
