@@ -105,10 +105,19 @@ automation:
     trigger:
       - platform: time
         at: '10:00:00'
+      # If office AC is on turn at turn off pool
+      - platform: template
+        value_template: >
+          {{ ('07:00' <= now().time().strftime("%R") <= '15:00' and states('climate.midea_ac_32985348871179') != "fan_only") }}
     condition:
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
-        below: '18'
+      - condition: or
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.solcast_forecast_energy_today_predicted
+            below: '18'
+          - condition: template
+            value_template: >
+              {{ states('climate.midea_ac_32985348871179') != "off" and states('climate.midea_ac_32985348871179') != "fan_only"}}
     action:
       - alias: "Set DoD on inverter"
         service: number.set_value

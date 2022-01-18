@@ -176,6 +176,8 @@ sensor:
 automation:
   - alias: Solcast Forecast to MQTT
     description: Put Solcast predicted values in MQTT
+    mode: queued
+    max: 2
     trigger:
       - platform: sun
         event: sunrise
@@ -184,19 +186,30 @@ automation:
       #  at: '06:52:00'
     condition: []
     action:
-      - service: mqtt.publish
-        data:
-          topic: home/solcast/energy_today_predicted
-          payload_template: "{{ states('sensor.solcast_forecast') }}"
-          retain: true
-      - service: mqtt.publish
-        data:
-          topic: home/solcast/peak_power_today_predicted
-          payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
-          retain: true
-      - service: mqtt.publish
-        data:
-          topic: home/solcast/peak_time_today_predicted
-          payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
-          retain: true
-    mode: single
+      - choose:
+        # Morning
+        - conditions:
+            - condition: template
+              value_template: >-
+                {{ states('sensor.solcast_forecast') == "unavailable" }}
+          sequence:
+            - delay: '00:00:30' # Waits 30 seconds
+            - service: automation.trigger
+              target:
+                entity_id: automation.solcast_forecast_to_mqtt
+        default:
+          - service: mqtt.publish
+            data:
+              topic: home/solcast/energy_today_predicted
+              payload_template: "{{ states('sensor.solcast_forecast') }}"
+              retain: true
+          - service: mqtt.publish
+            data:
+              topic: home/solcast/peak_power_today_predicted
+              payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+              retain: true
+          - service: mqtt.publish
+            data:
+              topic: home/solcast/peak_time_today_predicted
+              payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
+              retain: true

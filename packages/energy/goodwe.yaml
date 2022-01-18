@@ -12,6 +12,21 @@ sensor:
 
   - platform: template
     sensors:
+      # Template sensor to display input value only
+      goodwe_depth_of_discharge_on_grid:
+        friendly_name: "Depth of discharge (on-grid)"
+        unit_of_measurement: '%'
+        icon_template: "mdi:battery-arrow-down"
+        value_template: >-
+          {% if states('number.depth_of_discharge_on_grid')|int > 0 %}
+            {{ (states('number.depth_of_discharge_on_grid')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+      goodwe_inverter_operation_mode:
+        friendly_name: "Inverter operation mode"
+        icon_template: "mdi:solar-power"
+        value_template: "{{ (states('select.inverter_operation_mode')) }}"
       # Template sensor for values of energy bought (active_power < 0)
       energy_buy:
         friendly_name: "GoodWe Grid Power"
