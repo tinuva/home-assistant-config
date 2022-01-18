@@ -1,0 +1,69 @@
+automation:
+  - alias: Inverter set general mode
+    description: Inverter set general mode after reaching 100% in backup mode
+    trigger:
+      - platform: state
+        entity_id: sensor.goodwe_battery_mode_label
+        to: 'Standby'
+        for:
+          seconds: 25
+    condition:
+      - condition: state
+        entity_id: sensor.goodwe_battery_soc
+        state: '100'
+      - condition: state
+        entity_id: sensor.goodwe_battery_mode_label
+        state: 'Standby'
+      - condition: state
+        entity_id: sensor.goodwe_inverter_operation_mode
+        state: 'Backup mode'
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.inverter_operation_mode
+        data:
+          option: General mode
+      - alias: "Log action taken"
+        service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            Setting inverter to 'General mode' after battery SoC reached 100% in 'Backup mode'
+      - delay: '00:00:30' # Waits 30 seconds
+      - condition: numeric_state
+        entity_id: sensor.goodwe_depth_of_discharge_on_grid
+        below: '6'
+      - alias: "Set DoD on inverter"
+        service: number.set_value
+        data:
+          value: 16
+        target:
+          entity_id: number.depth_of_discharge_on_grid
+
+  - alias: Inverter set backup mode
+    description: Inverter set backup mode at 6pm if battery didn't charge to 100%
+    mode: single
+    trigger:
+      - platform: time
+        at: '18:00:00'
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soc_daily_max
+        below: 100
+      - condition: state
+        entity_id: sensor.goodwe_inverter_operation_mode
+        state: 'General mode'
+    action:
+      - service: select.select_option
+        target:
+          entity_id: select.inverter_operation_mode
+        data:
+          option: General mode
+      - alias: "Log action taken"
+        service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            Setting inverter to 'Backup mode' because battery SoC never reached 100% in 'General mode' (Max: {{ states('sensor.goodwe_battery_soc_daily_max') }})
