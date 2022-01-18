@@ -113,12 +113,19 @@ automation:
   # pool pump off when timer finish
   - alias: Turn off pool pump
     trigger:
+      # Timer finished
       - platform: event
         event_type: timer.finished
         event_data:
           entity_id: timer.pool_pump
+      # If office AC is on at 12 turn off pool
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "12:00" and states('climate.midea_ac_32985348871179') != "off") }}
+      # At 5pm
       - platform: time
         at: "17:00:00"
+      # Additional checks if battery needs lots of charging
       - platform: template
         value_template: >
           {{ (now().time().strftime("%R") == "11:30" and states('sensor.goodwe_battery_soc')|int < 50) }}
@@ -131,12 +138,10 @@ automation:
       - platform: template
         value_template: >
           {{ (now().time().strftime("%R") == "16:00" and states('sensor.goodwe_battery_soc')|int < 89) }}
-      #- platform: numeric_state
-      #  entity_id: sensor.goodwe_average_solar_generation_30min
-      #  below: '1200'
-      #- platform: template
-      #  value_template: "{{ (states('sensor.goodwe_average_solar_generation_30min')|float + 200) < states('sensor.goodwe_average_house_consumption_30min')|float }}"
     action:
       - service: switch.turn_off
         data:
           entity_id: switch.pool_pump
+      - service: timer.finish
+        data:
+          entity_id: timer.pool_pump

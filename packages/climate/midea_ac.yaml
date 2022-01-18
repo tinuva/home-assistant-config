@@ -31,3 +31,42 @@ climate:
     token: !secret midea_ac3_token
     k1: !secret midea_ac3_k1
     prompt_tone: false
+
+automation:
+  # AC-Office PM
+  - alias: Turn off office AC end of work day
+    trigger:
+      # If office AC is on at 5:30 turn off 
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_32985348871179') != "off") }}
+    action:
+      - service: climate.set_hvac_mode
+        target:
+          entity_id: climate.midea_ac_32985348871179
+        data:
+          hvac_mode: fan_only
+
+  # AC-MainBed AM
+  - alias: Turn off mainbed AC in morning
+    trigger:
+      # If mainbed AC is on at 5:30 turn off 
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_30786325862093') != "off") }}
+    action:
+      - service: climate.turn_off
+        target:
+          entity_id: climate.midea_ac_30786325862093
+
+  # AC-childBed AM
+  - alias: Turn off childBed AC in morning
+    trigger:
+      # If mainbed AC is on at 5:30 turn off 
+      - platform: template
+        value_template: >
+          {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_30786325862153') != "off") }}
+    action:
+      - service: climate.turn_off
+        target:
+          entity_id: climate.midea_ac_30786325862153
