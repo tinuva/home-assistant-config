@@ -1,0 +1,43 @@
+sensor:
+  - platform: mqtt
+    name: "Weather today max"
+    state_topic: "home/weather/today/max"
+    unit_of_measurement: '°C'
+    device_class: temperature
+    unique_id: sensor.weather_today_max
+  - platform: mqtt
+    name: "Weather today min"
+    state_topic: "home/weather/today/min"
+    unit_of_measurement: '°C'
+    device_class: temperature
+    unique_id: sensor.weather_today_min
+
+automation:
+  - alias: Weather Forecast to MQTT
+    description: Put Weather predicted values in MQTT
+    trigger:
+      - platform: time
+        at: 01:00:00
+    condition: []
+    action:
+      - service: mqtt.publish
+        data:
+          topic: home/weather/today/max
+          payload_template: >
+            {% set tomorrow = (as_timestamp(now().date() + timedelta(days=1)) | timestamp_utc)
+              .replace(' ', 'T') ~ '+00:00' %}
+            {% set today = state_attr('weather.home_hourly', 'forecast')
+              | selectattr('datetime', 'lt', tomorrow) | map(attribute='temperature') | list %}
+            {{ today | max }}
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/weather/today/min
+          payload_template: >
+            {% set tomorrow = (as_timestamp(now().date() + timedelta(days=1)) | timestamp_utc)
+              .replace(' ', 'T') ~ '+00:00' %}
+            {% set today = state_attr('weather.home_hourly', 'forecast')
+              | selectattr('datetime', 'lt', tomorrow) | map(attribute='temperature') | list %}
+            {{ today | min }}
+          retain: true
+    mode: single
