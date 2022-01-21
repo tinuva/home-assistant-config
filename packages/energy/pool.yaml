@@ -121,7 +121,7 @@ automation:
       # If office AC is on at 12 turn off pool
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "12:00" and (states('climate.midea_ac_32985348871179') == "cool") or (states('climate.midea_ac_32985348871179') == "heat") or (states('climate.midea_ac_32985348871179') == "dry) or (states('climate.midea_ac_32985348871179') == "auto)) }}
+          {{ (now().time().strftime("%R") == "12:00" and (states('climate.midea_ac_32985348871179') == "cool") or (states('climate.midea_ac_32985348871179') == "heat") or (states('climate.midea_ac_32985348871179') == "dry") or (states('climate.midea_ac_32985348871179') == "auto")) }}
       # At 5pm
       - platform: time
         at: "17:00:00"

@@ -22,14 +22,13 @@ automation:
       - service: script.ac_mainbedroom_off
       - service: script.ac_childbedroom_off
 
-scripts:
+script:
   # AC-MainBed AM
   ac_mainbedroom_off:
     sequence:
       - condition: template
         value_template: >
           {{ (states('climate.midea_ac_30786325862093') != "off") }}
-    action:
       - service: climate.turn_off
         target:
           entity_id: climate.midea_ac_30786325862093
@@ -40,7 +39,6 @@ scripts:
       - condition: template
         value_template: >
           {{ (states('climate.midea_ac_30786325862153') != "off") }}
-    action:
       - service: climate.turn_off
         target:
           entity_id: climate.midea_ac_30786325862153
