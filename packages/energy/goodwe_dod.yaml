@@ -30,6 +30,14 @@ script:
             {% elif forecast_int >= 12 and forecast_int < 16 %}40
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% else %}16{% endif -%}
+      - alias: "Log action taken"
+        service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
+      - delay: '00:00:02' # Waits 2 seconds
       - alias: "Set DoD on inverter"
         service: number.set_value
         data:
@@ -37,13 +45,6 @@ script:
             {{ dod }}
         target:
           entity_id: number.depth_of_discharge_on_grid
-      - alias: "Log action taken"
-        service: script.log
-        data:
-          icon: ':zap:'
-          object: 'GoodWe'
-          message: >
-            Setting DoD to {{ dod }} based on {{ forecast }}kWh forecast
 
 automation:
   # Input that sets DoD on GoodWe Inverter
