@@ -1,0 +1,50 @@
+sensor:
+  - platform: average
+    name: 'GoodWe Average Battery Charge Rate'
+    duration:
+      minutes: 5
+    entities:
+      - sensor.battery_charge_power
+  - platform: template
+    sensors:
+      # This works, but needs average charge sensor to make the estimated time more reliable
+      goodwe_battery_charging_remaining_minutes: 
+        value_template: >
+          {% set x = states('sensor.battery_tocharge') | float(0) %}
+          {% set y = states('sensor.goodwe_average_battery_charge_rate') | float(0) %}
+          {% if y < 0 %}
+            Battery Discharging
+          {% elif y == 0 %}
+            Battery Idle/Discharging
+          {% else %}
+            {% set ct = x / (y/1000) * 60 %}
+            {% if ct == 0 %}
+              Unknown
+            {% else %}
+              {{ ct | int }}
+            {% endif %}
+          {% endif %}
+      # Display in H:M if more than 60 minutes
+      goodwe_battery_charging_remaining_time:
+        value_template: >
+          {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
+          {% if ct == 0 %}
+            Unknown
+          {% elif ct > 60 %}
+            {{ ct // 60 }}:{{ '{:0>2d}'.format((ct%60)|int) }} hours
+          {% else %}
+            {{ ct }} minutes
+          {% endif %}
+      # Display finish time?
+      goodwe_battery_charging_finish_time:
+        value_template: >
+          {% if is_state('sensor.goodwe_battery_charging_remaining_minutes','Unknown') %}
+            Unknown
+          {% else %}
+            {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
+            {% if ct == 0 %}
+              Done
+            {% else %}
+              {{ (as_timestamp(now()) + ct|int * 60) | timestamp_custom("%H:%M") }}
+            {% endif %}
+          {% endif %}
