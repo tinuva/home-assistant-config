@@ -30,6 +30,9 @@ script:
             {% elif forecast_int >= 12 and forecast_int < 16 %}40
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% else %}16{% endif -%}
+      - condition: template
+        value_template: >-
+          {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
       - alias: "Log action taken"
         service: script.log
         data:
