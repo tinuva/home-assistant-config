@@ -27,7 +27,7 @@ sensor:
           {% set battery_dod_ongrid = states('sensor.goodwe_depth_of_discharge_on_grid') %}
           {% set battery_dod_offgrid = 20 %}
           {% set battery_dod = iif(is_state('sensor.goodwe_work_mode_label', 'Normal (On-Grid)'), battery_dod_ongrid, battery_dod_offgrid) %}
-          {% set battery_current = (battery_capacity * ((battery_dod|int - states('sensor.goodwe_battery_soc')|int)/100))|round(2) %}
+          {% set battery_current = (battery_capacity * ((states('sensor.goodwe_battery_soc')|int - (100 - battery_dod|int))/100))|round(2) %}
           {{ battery_current }}
       #To charge: {{ battery_to_charge }}
       battery_tocharge:
