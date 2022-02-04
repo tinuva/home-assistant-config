@@ -1,69 +1,26 @@
 automation:
   - alias: Bypass zone with burglar bars
     trigger:
-    - entity_id: binary_sensor.main_bedroom_window
-      platform: state
-      to: 'on'
-    - entity_id: alarm_control_panel.home_alarm
-      platform: state
-      to: 'disarmed'
-    - entity_id: sensor.home_alarm_keypad
-      platform: state
-      to: 'Not Ready'
+      - entity_id: binary_sensor.main_bedroom_window
+        platform: state
+        to: 'on'
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'disarmed'
+      - entity_id: sensor.home_alarm_keypad
+        platform: state
+        to: 'Not Ready'
     condition:
       - condition: state
-        entity_id: binary_sensor.main_bedroom_window
-        state: 'on'
-      - condition: state
-        entity_id: alarm_control_panel.home_alarm
-        state: 'disarmed'
-      - condition: or
-        conditions:
-            - condition: state
-              entity_id: sensor.home_alarm_keypad
-              state: 'Not Ready'
-            - condition: state
-              entity_id: sensor.home_alarm_keypad
-              state: 'Disarmed'
-      - condition: state
+        entity_id: switch.main_bedroom_window_bypass
         state: 'off'
-        entity_id:
-          #- binary_sensor.babyroom_pir
-          - binary_sensor.babyroom_window
-          - binary_sensor.back_beam
-          - binary_sensor.back_garage_door
-          #- binary_sensor.back_garage_pir
-          #- binary_sensor.braai_room_pir
-          #- binary_sensor.ensuite_pir
-          - binary_sensor.front_beam
-          - binary_sensor.front_door
-          - binary_sensor.front_garage_door_window
-          #- binary_sensor.kitchen_pir
-          - binary_sensor.kitchen_window
-          #- binary_sensor.lounge_pir
-          - binary_sensor.lounge_window
-          #- binary_sensor.main_bedroom_pir
-          - binary_sensor.scullery_door
-          - binary_sensor.sculllery_window
-          #- binary_sensor.spare_bedroom_pir
-          #- binary_sensor.study_pir
-          - binary_sensor.study_window
     action:
-    - service: notify.slack
-      data:
+      - service: script.log
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  Setting alarm bypass on main bed room window
-        target: ["#logs"]
-        message: >
-          Setting alarm bypass on main bed room window
-    - service: envisalink.alarm_keypress
-      data_template:
-        entity_id: alarm_control_panel.home_alarm
-        keypress: '*115#'
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+            Setting alarm bypass on main bed room window
+      - service: switch.turn_on
+        data:
+          entity_id: switch.main_bedroom_window_bypass
