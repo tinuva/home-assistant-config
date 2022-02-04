@@ -1,4 +1,6 @@
 sensor:
+  # This sensor requires the following package installed in HACS
+  ### https://github.com/Limych/ha-average
   - platform: average
     name: 'GoodWe Average Battery Dis/Charge Rate'
     duration:
