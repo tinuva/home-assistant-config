@@ -156,7 +156,25 @@ automation:
             entity_id: sensor.average_temperature_outside_last_1_day
             below: '21'
           - condition: template
-            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('14:00' <= states('sensor.time') < '18:05') }}"
+            value_template: "{{ ('14:00' < states('sensor.time') < '18:05') }}"
+          sequence:
+            - service: script.geyser_on_mainbedroom
+        - conditions:
+          - condition: state
+            entity_id: timer.loadshedding_slot
+            state: 'idle'
+          - condition: state
+            entity_id: timer.main_geyser
+            state: 'idle'
+            for:
+              hours: 6
+          - condition: numeric_state
+            entity_id: sensor.average_temperature_outside_last_1_day
+            below: '21'
+          - condition: template
+            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
+          - condition: template
+            value_template: "{{ (trigger.platform != 'numeric_state')  }}"
           sequence:
             - service: script.geyser_on_mainbedroom
         # No conditions met so log and do nothing
@@ -170,6 +188,8 @@ automation:
               object: 'Geyser - main bedroom'
               message: >
                 Not turning on main bedroom geyser because no conditions met
+                Trigger: 
+                {{ trigger }}
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
