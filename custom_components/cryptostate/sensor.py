@@ -21,6 +21,7 @@ from homeassistant.const import (
 )
 
 from .const import (
+    URL,
     DEFAULT_COMPARE,
     ICON,
     DEFAULT_SCAN_INTERVAL,
@@ -44,27 +45,19 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     )
 })
 
-URL = "https://api.cryptonator.com/api/ticker/{0}"
 
 def get_data(compare):
     """Get The request from the api"""
 
     parsed_url = URL.format(compare)
     #The headers are used to simulate a human request
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-
+    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:96.0) Gecko/20100101 Firefox/96.0'}
     req = ""
     try:
         req = requests.get(parsed_url, headers=headers, timeout=10)
         req.raise_for_status()
-    except requests.exceptions.HTTPError as errh:
-        _LOGGER.error(errh)
-    except requests.exceptions.ConnectionError as errc:
-        _LOGGER.error(errc)
-    except requests.exceptions.Timeout as errt:
-        _LOGGER.error(errt)
-    except requests.exceptions.RequestException as err:
-        _LOGGER.error(err)
+    except Exception as e:
+        _LOGGER.error(e)
 
     resp_parsed = ""
     if (req.status_code == 200):
@@ -89,6 +82,7 @@ def parse_unit_of_mesurament(compare):
 
     return s[1].upper()
 
+# See https://github.com/custom-components/feedparser/blob/master/custom_components/feedparser/sensor.py
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Setup the currency sensor"""
 
