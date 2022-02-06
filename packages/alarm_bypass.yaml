@@ -14,6 +14,9 @@ automation:
       - condition: state
         entity_id: switch.main_bedroom_window_bypass
         state: 'off'
+      - condition: state
+        entity_id: binary_sensor.main_bedroom_window
+        state: 'on'
     action:
       - service: script.log
         data:
