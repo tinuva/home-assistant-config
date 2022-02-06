@@ -7,6 +7,16 @@ sensor:
       minutes: 5
     entities:
       - sensor.goodwe_pbattery1
+
+  - platform: statistics
+    name: Battery SoC change over 10 minutes
+    entity_id: sensor.goodwe_battery_soc
+    state_characteristic: change
+    max_age:
+      minutes: 10
+    sampling_size: 50
+    precision: 0.1
+
   - platform: template
     sensors:
       # Battery template sensors
