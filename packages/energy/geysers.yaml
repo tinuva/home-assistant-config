@@ -117,7 +117,6 @@ script:
         data_template:
           entity_id: timer.main_geyser
 
-
 automation:
   ### Main Geyser ###
   # Main geyser on based on input time
@@ -130,6 +129,13 @@ automation:
       - platform: numeric_state
         entity_id: sensor.front_bathroom_geyser_power
         below: '50'
+    condition:
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
+          - condition: template
+            value_template: "{{ not trigger.from_state }}"
     action:
       - choose:
         # Turn on between 11am and 2pm for sun times
@@ -174,13 +180,15 @@ automation:
           - condition: template
             value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
           - condition: template
-            value_template: "{{ (trigger.platform != 'numeric_state')  }}"
+            value_template: "{{ trigger.platform != 'numeric_state' }}"
           sequence:
             - service: script.geyser_on_mainbedroom
-        # No conditions met so log and do nothing
+        # No conditions met so log and do nothing (exceptions to logging apply)
         default:
           - condition: template
-            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('11:00' <= states('sensor.time') <= '14:00') }}"
+            value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+          - condition: template
+            value_template: "{{ not (trigger.platform == 'time') }}"
           - alias: "Log action taken"
             service: script.log
             data:
@@ -238,7 +246,28 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.main_bathroom_geyser
-  
+
+  - alias: Turn off main geyser after load drop
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.main_bathroom_geyser_power
+        below: '50'
+    condition:
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
+          - condition: template
+            value_template: "{{ not trigger.from_state }}"
+    action:
+      - service: timer.finish
+        data_template:
+          entity_id: timer.main_geyser
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: switch.turn_off
+        data:
+          entity_id: switch.main_bathroom_geyser
+
   ### Front Geyser ###
   # Front geyser on based on input time (changed to fix 7pm if never on for the day)
   - alias: Turn on front geyser
