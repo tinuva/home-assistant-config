@@ -47,20 +47,26 @@ automation:
                 - condition: numeric_state
                   entity_id: sensor.solcast_forecast
                   above: '19'
-                - condition: numeric_state
-                  entity_id: sensor.goodwe_battery_soc
-                  above: '43'
+                #- condition: numeric_state
+                #  entity_id: sensor.goodwe_battery_soc
+                #  above: '43'
           sequence:
-            - service: timer.start
-              data_template:
-                entity_id: timer.pool_pump
+            - alias: "Set variables"
+              variables:
                 duration: >
                   {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
                   {% set today_name = day_names[now().weekday()] %}
-                  {% if 21 <= states('sensor.solcast_forecast')|float %}{{ 8 * 60 | int * 60 }}
-                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{{ 7 * 60 | int * 60 }}
-                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{{ 6 * 60 | int * 60 }}
-                  {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
+                  {% set duration = 1 %}
+                  {% if 21 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
+                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{% set duration = 7 %}
+                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{% set duration = 6 %}
+                  {% else %}{% set duration = 1 %}{% endif -%}
+                  {% if states('sensor.goodwe_battery_soc')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
+                  {{ duration|int * 60 * 60 }}
+            - service: timer.start
+              data_template:
+                entity_id: timer.pool_pump
+                duration: "{{ duration }}"
             - service: switch.turn_on
               data:
                 entity_id: switch.pool_pump
