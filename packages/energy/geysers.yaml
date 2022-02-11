@@ -310,7 +310,9 @@ automation:
         # No conditions met so log and do nothing
         default:
           - condition: template
-            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00') or ('11:00' <= states('sensor.time') <= '14:00') }}"
+            value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+          - condition: template
+            value_template: "{{ not (trigger.platform == 'time') }}"
           - alias: "Log action taken"
             service: script.log
             data:
