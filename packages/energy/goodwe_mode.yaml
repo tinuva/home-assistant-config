@@ -54,6 +54,10 @@ automation:
       - condition: state
         entity_id: sensor.goodwe_inverter_operation_mode
         state: 'General mode'
+      # if current SoC above 64% - else we really top up too much from grid
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soc
+        above: '64'
     action:
       - service: select.select_option
         target:

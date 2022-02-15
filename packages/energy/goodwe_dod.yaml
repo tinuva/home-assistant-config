@@ -112,7 +112,7 @@ automation:
       # If office AC is on turn at turn off pool
       - platform: template
         value_template: >
-          {{ ('07:00' <= now().time().strftime("%R") <= '15:00' and states('climate.midea_ac_32985348871179') != "fan_only") }}
+          {{ ('07:00' <= now().time().strftime("%R") <= '15:00') and (states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none']) }}
     condition:
       - condition: or
         conditions:
@@ -121,7 +121,7 @@ automation:
             below: '30'
           - condition: template
             value_template: >
-              {{ states('climate.midea_ac_32985348871179') != "off" and states('climate.midea_ac_32985348871179') != "fan_only"}}
+              {{ states('climate.midea_ac_32985348871179') != "off" and (states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none']) }}
     action:
       - alias: "Set DoD on inverter"
         service: number.set_value
@@ -141,7 +141,7 @@ automation:
       - platform: time
         at: '20:00:00'
     condition:
-      # if current SoC above 85%
+      # if current SoC above 75%
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
         above: '75'
