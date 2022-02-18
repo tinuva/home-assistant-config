@@ -64,7 +64,7 @@ automation:
       - condition: or
         conditions:
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 0' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 0 }}"
           - condition: template
             value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_tuesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 1 }}"
           - condition: template
