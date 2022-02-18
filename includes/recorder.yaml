@@ -13,7 +13,7 @@ exclude:
   domains:
     - automation
     - updater
-    - weather
+    #- weather
     - sun
   entities:
     - sensor.last_boot # Comes from 'systemmonitor' sensor platform
