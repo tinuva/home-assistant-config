@@ -64,15 +64,15 @@ automation:
       - condition: or
         conditions:
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and day_names[now().weekday()] == 'Monday' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 0' }}"
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_tuesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and day_names[now().weekday()] == 'Tueday' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_tuesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 1 }}"
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_wednesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and day_names[now().weekday()] == 'Wednesday' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_wednesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 2 }}"
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_thursday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and day_names[now().weekday()] == 'Thursday' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_thursday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 3 }}"
           - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and day_names[now().weekday()] == 'Friday' }}"
+            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 4 }}"
     action:
       - choose:
         # If the AC on this plug is on, first turn it off then wait before turning off plug
