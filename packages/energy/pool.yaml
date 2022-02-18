@@ -57,9 +57,11 @@ automation:
                   {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
                   {% set today_name = day_names[now().weekday()] %}
                   {% set duration = 1 %}
-                  {% if 21 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
-                  {% elif 19 <= states('sensor.solcast_forecast')|float < 21 %}{% set duration = 7 %}
-                  {% elif 17 <= states('sensor.solcast_forecast')|float < 19 %}{% set duration = 6 %}
+                  {% if 25 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
+                  {% elif 22 <= states('sensor.solcast_forecast')|float < 25 %}{% set duration = 7 %}
+                  {% elif 20 <= states('sensor.solcast_forecast')|float < 22 %}{% set duration = 6 %}
+                  {% elif 18 <= states('sensor.solcast_forecast')|float < 19 %}{% set duration = 5 %}
+                  {% elif 17 <= states('sensor.solcast_forecast')|float < 18 %}{% set duration = 4 %}
                   {% else %}{% set duration = 1 %}{% endif -%}
                   {% if states('sensor.goodwe_battery_soc')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
                   {{ duration|int * 60 * 60 }}
