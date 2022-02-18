@@ -1,3 +1,7 @@
+logger:
+  logs:
+    msmart: debug
+
 homeassistant:
   customize:
     climate.midea_ac_30786325862093:
