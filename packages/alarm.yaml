@@ -20,6 +20,7 @@ envisalink:
   zonedump_interval: 30
   timeout: 10
   panic_type: Police
+  #create_zone_bypass_switches: true
   partitions:
     1:
       name: 'Home Alarm'
