@@ -1,0 +1,41 @@
+alias: 'Geyser: Toggle On/Off'
+description: |-
+  Turn on the Geyser
+  Turn off the Geyser
+trigger:
+  - platform: time
+    at: '16:00'
+    id: geyser-on
+  - platform: numeric_state
+    entity_id: sensor.geyser_power
+    for:
+      hours: 0
+      minutes: 15
+      seconds: 0
+    below: '1000'
+    id: geyser-off
+condition: []
+action:
+  # If trigger is geyser-on run this
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: geyser-on
+        sequence:
+          - type: turn_on
+            device_id: [removed]
+            entity_id: switch.geyser_switch
+            domain: switch
+  # If trigger is geyser-off run this
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: geyser-off
+        sequence:
+          # only run after 5:30pm
+          - condition: time
+            after: '17:30:00'
+          - type: turn_off
+            device_id: [removed]
+            entity_id: switch.geyser_switch
+            domain: switch
