@@ -46,7 +46,7 @@ automation:
           message: >-
             {{ [
             "The ISS is passing over. Wave.",
-            "The ISS just flew by with there are {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people doing cool stuff.",
+            "The ISS just flew by and there are {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people doing cool stuff.",
             "The ISS just flew by with {{states.binary_sensor.iss.attributes.number_of_people_in_space}} people in it."
             ] | random }}
             
