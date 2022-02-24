@@ -18,3 +18,4 @@ exclude:
     - script
   entities:
     - sensor.bathroom_drying_ontime
+    - sensor.octoprint_last_event
