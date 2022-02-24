@@ -1,6 +1,6 @@
 logger:
   logs:
-    msmart: debug
+    msmart: warn
 
 homeassistant:
   customize:
