@@ -1,17 +1,21 @@
 automation:
   # AC-Office PM
-  - alias: Turn off office AC end of work day
+  - alias: Set office AC end of work day
     trigger:
-      # If office AC is on at 5:30 turn off 
+      # If office AC is on at 5:30
       - platform: template
         value_template: >
           {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_32985348871179') != "off") }}
     action:
-      - service: climate.set_hvac_mode
-        target:
-          entity_id: climate.midea_ac_32985348871179
+      # Only run script if AC is ON
+      - condition: template
+        value_template: >
+          {{ (states("climate.midea_ac_32985348871179") != "off") }}
+      - service: script.ac
         data:
-          hvac_mode: fan_only
+          ac: "climate.midea_ac_32985348871179"
+          speed: "Auto"
+          mode: "fan_only"
 
   # AC-Bedrooms AM
   - alias: Turn off bedroom ACs in the AM
@@ -19,26 +23,94 @@ automation:
       - platform: time
         at: '5:30:00'
     action:
-      - service: script.ac_mainbedroom_off
-      - service: script.ac_childbedroom_off
+      # Main Bedroom
+      - choose:
+          - conditions:
+              # Only run script if AC is ON
+              - condition: template
+                value_template: >
+                  {{ (states("climate.midea_ac_30786325862093") != "off") }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862093"
+                  speed: "Silent"
+                  mode: "fan_only"
+      # Childroom
+      - choose:
+          - conditions:
+              # Only run script if AC is ON
+              - condition: template
+                value_template: >
+                  {{ (states("climate.midea_ac_30786325862153") != "off") }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862153"
+                  speed: "Silent"
+                  mode: "fan_only"
 
 script:
-  # AC-MainBed AM
-  ac_mainbedroom_off:
+  ######################################################################
+  # Re-usable script to change ac to silent fan in the am
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.ac
+  #   data:
+  #     ac: "climate.xxx"
+  #     speed: "Auto" (optional - default is Auto)
+  #     mode: "fan_only" (optional - default is fan_only)
+  ######################################################################
+  ac:
     sequence:
+      # Only run script if AC is ON
       - condition: template
         value_template: >
-          {{ (states('climate.midea_ac_30786325862093') != "off") }}
-      - service: climate.turn_off
+          {{ (states(ac) != "off") }}
+      # Set variables
+      - variables:
+          fan_speed: >
+            {% if speed is defined %}
+              {{ speed }}
+            {% else %}
+              Auto
+            {% endif %}
+          ac_mode: >
+            {% if speed is defined %}
+              {{ mode }}
+            {% else %}
+              fan_only
+            {% endif %}
+      # If AC not in mode - set to mode
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ (states(ac) != ac_mode) }}
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':thermometer:'
+                  object: 'Aircon'
+                  message: >
+                    script.log (ac_automations.yaml): ac: {{ state_attr(ac, 'friendly_name') }} fan_speed: {{ fan_speed }} ac_mode: {{ ac_mode }}
+              - service: climate.set_hvac_mode
+                target:
+                  entity_id: "{{ ac }}"
+                data:
+                  hvac_mode: "{{ ac_mode }}"
+      # Wait a sec
+      - delay: '00:00:01'
+      # Set fan speed
+      - service: script.log
+        data:
+          icon: ':thermometer:'
+          object: 'Aircon'
+          message: >
+            script.log (ac_automations.yaml): ac: {{ state_attr(ac, 'friendly_name') }} fan_speed: {{ fan_speed }}
+      - service: climate.set_fan_mode
+        data:
+          fan_mode: "{{ fan_speed }}"
         target:
-          entity_id: climate.midea_ac_30786325862093
-
-  # AC-childBed AM
-  ac_childbedroom_off:
-    sequence:
-      - condition: template
-        value_template: >
-          {{ (states('climate.midea_ac_30786325862153') != "off") }}
-      - service: climate.turn_off
-        target:
-          entity_id: climate.midea_ac_30786325862153
+          entity_id: "{{ ac }}"
