@@ -21,7 +21,7 @@ binary_sensor:
 automation:
   ### Notify alarm state change
   - id: '1586327112617'
-    alias: Notify Alarm Armed Home
+    alias: Notify Alarm Armed State
     description: Notify when Alarm panel is armed or disarmed
     trigger:
     - entity_id: alarm_control_panel.home_alarm
@@ -30,20 +30,31 @@ automation:
       - condition: template
         value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
     action:
-    - service: notify.slack
-      data:
-        data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
+      - choose:
+        # If arming home or from disarming home - log instead of alert
+        - conditions:
+            - condition: or
+              conditions:
+                - condition:  template
+                  value_template: >
+                    {{ trigger.to_state.state == 'armed_home' }}
+                - condition:  template
+                  value_template: >
+                    {{ trigger.from_state.state == 'armed_home' }}
+          sequence:
+            - service: script.log
+              data:
+                icon: ':rotating_light:'
+                object: 'Home Alarm'
+                message: >
                   Home alarm {{ states.sensor.home_alarm_keypad.state }}
-        target: ["#alerts"]
-        message: >
-          Home alarm {{ states.sensor.home_alarm_keypad.state }}
+        default:
+          - service: script.alert
+            data:
+              icon: ':rotating_light:'
+              object: 'Home Alarm'
+              message: >
+                Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
   ### Notify sensor that triggered alarm --- WIP
   - id: '1586327112618'
@@ -55,23 +66,13 @@ automation:
       to: 'triggered'
     condition: []
     action:
-    - service: notify.slack
-      data_template:
+      - service: script.alert
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  *ALARM TRIGGERED!* on: {{- '\n' -}}
-                  {{ states.sensor.armed_away.state }}
-        title: '*ALARM TRIGGERED!*'
-        target: ["#alerts"]
-        message: >
-          *ALARM TRIGGERED!* on: {{- '\n' -}}
-          {{ states.sensor.armed_away.state }}
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+            *ALARM TRIGGERED!* on: {{- '\n' -}}
+            {{ states.sensor.armed_away.state }}
 
   ### Notify keypad error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
@@ -88,23 +89,13 @@ automation:
       to: 'off'
     condition: []
     action:
-    - service: notify.slack
-      data_template:
+      - service: script.alert
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
-                  Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
-        title: 'Zone/Sensor Fault'
-        target: ["#logs"]
-        message: >
-          *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
-          Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+            *ALARM Fault* {% if(states.binary_sensor.alarm_trouble.state == "off") %}Resolved{% endif %}{{- '\n' -}}
+            Current keypad state: {{ states.sensor.home_alarm_keypad.state }}
           
   ### Notify battery error
   - alias: Notify when Alarm panel keypad has zone/sensor fault
@@ -118,21 +109,12 @@ automation:
       to: 'off'
     condition: []
     action:
-    - service: notify.slack
-      data_template:
+      - service: script.alert
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}    
-        title: 'Zone/Sensor Fault'
-        target: ["#logs"]
-        message: >
-          *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}          
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+            *ALARM Battery Fault!* {% if (states.binary_sensor.alarm_battery_trouble.state == "off") %}Resolved{% endif %}
 
   ### Notify front beam stuck error
   - alias: Notify when front beam stuck on
@@ -147,21 +129,13 @@ automation:
         seconds: 0
     condition: []
     action:
-    - service: notify.slack
-      data_template:
+      - service: script.alert
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
-        title: 'Zone/Sensor Fault'
-        target: ["#logs"]
-        message: >
-          *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+             *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+
   - alias: Notify Repeat when front beam stuck on 
     description: Notify Repeat when front beam stuck on
     trigger:
@@ -174,18 +148,9 @@ automation:
       for:
         minutes: 30
     action:
-    - service: notify.slack
-      data_template:
+      - service: script.alert
         data:
-          icon: ":rotating_light:"
-          username: "Home Alarm"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
-        title: 'Zone/Sensor Fault'
-        target: ["#logs"]
-        message: >
-          *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
+          icon: ':rotating_light:'
+          object: 'Home Alarm'
+          message: >
+            *ALARM Fault on Front Beam!* {% if (states.binary_sensor.front_beam.state == "off") %}Resolved{% endif %}
