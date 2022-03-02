@@ -14,10 +14,10 @@ automation:
         entity_id: binary_sensor.octoprint_printing
         from: 'on'
         to: 'off'
-      - platform: state
-        entity_id: binary_sensor.octoprint_printing_2
-        from: 'on'
-        to: 'off'
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.octoprint_print_progress
+        above: '0'
     action:
       - service: script.log
         data:
@@ -25,7 +25,8 @@ automation:
           icon: ':printer:'
           object: '3D Printer'
           message: >
-            Printing stopped @ progress: {{ states('sensor.octoprint_print_progress') }} Time: {{ states('sensor.octoprint_print_time') }}
+            Printing stopped @ progress: {{ states('sensor.octoprint_print_progress') | int }} {{- '\n' -}}
+            Time: {{ states('sensor.octoprint_print_time') }} {{- '\n' -}}
             File: {{ states('sensor.octoprint_print_file') }}
 
   - alias: 3dprint temp changed
@@ -40,9 +41,6 @@ automation:
         - condition: state
           entity_id: switch.octoprint_printing
           state: 'on'
-        - condition: state
-          entity_id: switch.octoprint_printing_2
-          state: 'on'
     action:
       - service: script.log
         data:
@@ -50,7 +48,8 @@ automation:
           icon: ':printer:'
           object: '3D Printer'
           message: >
-            Printing target temperatures changed @ progress: {{ states('sensor.octoprint_print_progress') }} Time: {{ states('sensor.octoprint_print_time') }} Left: {{ states('sensor.octoprint_print_time_left') }}
-            File: {{ states('sensor.octoprint_print_file') }}
-            Bed Target: {{ states('sensor.octoprint_bed_target') }}
+            Printing target temperatures changed @ progress: {{ states('sensor.octoprint_print_progress') | int }} {{- '\n' -}}
+            Time: {{ states('sensor.octoprint_print_time') }} Left: {{ states('sensor.octoprint_print_time_left') }} {{- '\n' -}}
+            File: {{ states('sensor.octoprint_print_file') }} {{- '\n' -}}
+            Bed Target: {{ states('sensor.octoprint_bed_target') }} {{- '\n' -}}
             Hotend Target: {{ states('sensor.octoprint_tool_0_target') }}
