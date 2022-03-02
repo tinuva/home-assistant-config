@@ -1,11 +1,12 @@
 {
     "domain": "cryptostate",
     "name": "CryptoState",
-    "documentation": "https://github.com/PepegaBruh/CryptoTrakcer",
+    "documentation": "https://github.com/BigNocciolino/CryptoTracker",
     "dependencies": [],
-    "issue_tracker": "https://github.com/PepegaBruh/CryptoTrakcer/issues",
+    "issue_tracker": "https://github.com/BigNocciolino/CryptoTracker/issues",
     "codeowners": ["@PepegaBruh"],
     "requirements": [],
+    "config_flow": true,
     "iot_class": "local_polling",
-    "version": "1.1.0"
+    "version": "2.0.0"
 }

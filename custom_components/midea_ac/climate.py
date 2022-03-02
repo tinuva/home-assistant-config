@@ -27,6 +27,7 @@ from homeassistant.helpers.restore_state import RestoreEntity
 
 _LOGGER = logging.getLogger(__name__)
 
+CONF_TYPE = 'type'
 CONF_HOST = 'host'
 CONF_ID = 'id'
 CONF_TOKEN = 'token'
@@ -46,6 +47,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Optional(CONF_TOKEN, default=""): cv.string,
     vol.Optional(CONF_K1, default=""): cv.string,
     vol.Optional(CONF_PORT, default=6444): vol.Coerce(int),
+    vol.Optional(CONF_TYPE, default=0xac): vol.Coerce(int),
     vol.Optional(CONF_PROMPT_TONE, default=True): vol.Coerce(bool),
     vol.Optional(CONF_TEMP_STEP, default=1.0): vol.Coerce(float),
     vol.Optional(CONF_INCLUDE_OFF_AS_STATE, default=True): vol.Coerce(bool),
@@ -75,8 +77,15 @@ async def async_setup_platform(hass, config, async_add_entities,
     keep_last_known_online_state = config.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE)
 
     device = ac(device_ip, int(device_id), device_port)
+    device._type = config.get(CONF_TYPE)
     if device_token and device_k1:
-        device.authenticate(device_k1, device_token)
+        # device.authenticate(device_k1, device_token)
+        device._protocol_version = 3
+        device._token = bytearray.fromhex(device_token)
+        device._key = bytearray.fromhex(device_k1)
+        device._lan_service._token = device._token
+        device._lan_service._key = device._key
+        
     # device = client.setup()
     device.prompt_tone = prompt_tone
     device.keep_last_known_online_state = keep_last_known_online_state
@@ -191,7 +200,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     @property
     def name(self):
         """Return the name of the climate device."""
-        return "midea_ac_{}".format(self._device.id)
+        return "midea_{:2x}_{}".format(self._device._type, self._device.id)
 
     @property
     def temperature_unit(self):
