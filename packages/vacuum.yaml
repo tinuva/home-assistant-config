@@ -2,6 +2,10 @@
 #vacuum:
 #  - platform: mqtt
 
+input_boolean:
+  floor_disaster_zone:
+    name: Floor disaster zone
+
 timer:
   # When calling the start service on a timer that is already running, it resets 
   # the duration it will need to finish and restart the timer without triggering 
@@ -76,6 +80,11 @@ automation:
             - condition: state
               entity_id: input_boolean.guest
               state: "off"
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: input_boolean.floor_disaster_zone
+                  state: "on"
           sequence:
             - service: vacuum.start
               data:
@@ -89,6 +98,15 @@ automation:
               object: 'Vacuum Robot'
               message: >
                 Not cleaning because no conditions met
+          - condition: state
+            entity_id: input_boolean.floor_disaster_zone
+            state: "on"
+          - service: script.log
+            data:
+              icon: ':robot_face:'
+              object: 'Vacuum Robot'
+              message: >
+                Not cleaning because floor is a disaster zone set
 
   ### Notify state change
   - alias: Notify when Robot State Change
