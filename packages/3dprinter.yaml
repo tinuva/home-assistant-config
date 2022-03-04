@@ -1,3 +1,9 @@
+camera:
+  - platform: mjpeg
+    name: OctoPrint
+    still_image_url: https://octo.heaven.za.net/webcam/?action=snapshot
+    mjpeg_url: https://octo.heaven.za.net/webcam/?action=stream
+
 logbook:
   exclude:
     entities:
@@ -19,11 +25,12 @@ automation:
         entity_id: sensor.octoprint_print_progress
         above: '0'
     action:
-      - service: script.log
+      - service: script.alert
         data:
           target: 'alerts-david'
           icon: ':printer:'
           object: '3D Printer'
+          camera: 'camera.octoprint'
           message: >
             Printing stopped @ progress: {{ states('sensor.octoprint_print_progress') | int }} {{- '\n' -}}
             Time: {{ states('sensor.octoprint_print_time') }} {{- '\n' -}}
@@ -42,7 +49,7 @@ automation:
           entity_id: switch.octoprint_printing
           state: 'on'
     action:
-      - service: script.log
+      - service: script.alert
         data:
           target: 'alerts-david'
           icon: ':printer:'
