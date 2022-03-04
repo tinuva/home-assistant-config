@@ -1,4 +1,53 @@
 automation:
+  # AC-Office AM
+  - alias: Set office AC start of work day
+    trigger:
+      - platform: time
+        at: '7:30:00'
+    condition:
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: "on"
+      - condition: state
+        entity_id: input_boolean.holiday
+        state: "off"
+    action:
+      # Only run script if AC is OFF
+      - condition: template
+        value_template: >
+          {{ (states("climate.midea_ac_32985348871179") == "off") }}
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: numeric_state
+                    entity_id: sensor.weather_today_max
+                    below: '30'
+                  # office/study window is open, do fan instead of cooling
+                  - condition: state
+                    entity_id: binary_sensor.study_window
+                    state: "on"
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_32985348871179"
+                  speed: "Auto"
+                  mode: "fan_only"
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.weather_today_max
+                above: '29'
+              # office/study window to be closed
+              - condition: state
+                entity_id: binary_sensor.study_window
+                state: "off"
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_32985348871179"
+                  speed: "Auto"
+                  mode: "cool"
+
   # AC-Office PM
   - alias: Set office AC end of work day
     trigger:
@@ -50,6 +99,19 @@ automation:
                   speed: "Silent"
                   mode: "fan_only"
 
+  # AC-Bedrooms PM
+  - alias: Turn on bedroom ACs in the PM
+    trigger:
+      - platform: time
+        at: '20:00:00'
+    action:
+      # Main Bedroom
+      - service: script.ac
+        data:
+          ac: "climate.midea_ac_30786325862093"
+          speed: "Full"
+          mode: "fan_only"
+
 script:
   ######################################################################
   # Re-usable script to change ac to silent fan in the am
@@ -64,10 +126,6 @@ script:
   ######################################################################
   ac:
     sequence:
-      # Only run script if AC is ON
-      - condition: template
-        value_template: >
-          {{ (states(ac) != "off") }}
       # Set variables
       - variables:
           fan_speed: >
