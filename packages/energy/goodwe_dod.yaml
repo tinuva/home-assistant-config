@@ -29,6 +29,7 @@ script:
             {% elif forecast_int >= 16 and forecast_int < 18 %}50
             {% elif forecast_int >= 12 and forecast_int < 16 %}40
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
+            {% elif forecast_int >= 8 and forecast_int < 10 %}20
             {% else %}16{% endif -%}
       - condition: template
         value_template: >-
@@ -80,27 +81,29 @@ automation:
         below: '100'
         for:
           seconds: 15
+      - platform: state
+        entity_id: sensor.solcast_forecast
     condition:
-      - condition: template
-        value_template: >-
-          {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-          {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
+      - condition: or
+        conditions:
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.platform == 'numeric_state' }}"
+              - condition: template
+                value_template: >-
+                  {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
+                  {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
+          - condition: and
+            conditions:
+              - condition: template
+                value_template: "{{ trigger.platform == 'time' or trigger.platform == 'state' }}"
+              - condition: template
+                value_template: "{{ states('sensor.time') < '6:00' }}"
     action:
       - service: script.goodwe_set_dod
         data:
           forecast: "{{ states('sensor.solcast_forecast') }}"
-      - condition: state
-        entity_id: switch.main_bathroom_geyser
-        state: 'on'
-      - service: switch.turn_off
-        data:
-          entity_id: switch.main_bathroom_geyser
-      - condition: state
-        entity_id: timer.main_geyser
-        state: 'active'
-      - service: timer.finish
-        data:
-          entity_id: timer.main_geyser
 
   ## 16% at 10:00am
   - id: '1605879219607'
