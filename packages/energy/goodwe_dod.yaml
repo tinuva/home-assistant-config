@@ -84,9 +84,6 @@ automation:
       - platform: state
         entity_id: sensor.solcast_forecast
     condition:
-      - condition: state
-        entity_id: timer.main_geyser
-        state: 'idle'
       - condition: or
         conditions:
           - condition: and
@@ -103,6 +100,9 @@ automation:
                 value_template: "{{ trigger.platform == 'time' or trigger.platform == 'state' }}"
               - condition: template
                 value_template: "{{ states('sensor.time') < '6:00' }}"
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'idle'
     action:
       - service: script.goodwe_set_dod
         data:
