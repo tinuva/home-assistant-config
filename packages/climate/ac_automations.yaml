@@ -104,13 +104,50 @@ automation:
     trigger:
       - platform: time
         at: '20:00:00'
+      - platform: numeric_state
+        entity_id: sensor.outside_temperature
+        below: '22'
+      - platform: numeric_state
+        entity_id: sensor.outside_temperature
+        below: '20'
     action:
       # Main Bedroom
-      - service: script.ac
-        data:
-          ac: "climate.midea_ac_30786325862093"
-          speed: "Full"
-          mode: "fan_only"
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: numeric_state
+                    entity_id: sensor.main_bedroom_temperature
+                    below: '23'
+                  - condition: numeric_state
+                    entity_id: sensor.outside_temperature
+                    below: '22'
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862093"
+                  speed: "Medium"
+                  mode: "fan_only"
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.main_bedroom_temperature
+                above: '22'
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862093"
+                  speed: "Full"
+                  mode: "fan_only"
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.outside_temperature
+                below: '20'
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862093"
+                  speed: "Auto"
+                  mode: "fan_only"
 
 script:
   ######################################################################

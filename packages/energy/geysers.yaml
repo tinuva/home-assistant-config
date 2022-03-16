@@ -28,6 +28,14 @@ script:
   ######################################################################
   geyser_on_mainbedroom:
     sequence:
+      - repeat:
+          while:
+            - condition: state
+              entity_id: switch.main_bathroom_geyser
+              state: 'unavailable'
+          sequence:
+            - delay:
+                seconds: 30
       - alias: "Set variables"
         variables:
           duration: >
@@ -68,6 +76,14 @@ script:
   ######################################################################
   geyser_on_front:
     sequence:
+      - repeat:
+          while:
+            - condition: state
+              entity_id: switch.front_bathroom_geyser
+              state: 'unavailable'
+          sequence:
+            - delay:
+                seconds: 30
       - alias: "Set variables"
         variables:
           duration: >
@@ -136,6 +152,9 @@ automation:
             value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
           - condition: template
             value_template: "{{ not trigger.from_state }}"
+      - condition: numeric_state
+        entity_id: sensor.front_bathroom_geyser_power
+        below: '50'
     action:
       - choose:
         # Turn on between 11am and 2pm for sun times
