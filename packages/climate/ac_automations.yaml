@@ -70,7 +70,7 @@ automation:
   - alias: Turn off bedroom ACs in the AM
     trigger:
       - platform: time
-        at: '5:30:00'
+        at: '5:00:00'
     action:
       # Main Bedroom
       - choose:

@@ -34,6 +34,12 @@ automation:
         state: 'off'
         for:
           minutes: 2
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ ('12:00' < states('sensor.time') < '15:00') }}"
+          - condition: template
+            value_template: "{{ ('20:00' < states('sensor.time') < '6:00') }}"
     action:
       - service: notify.slack
         data:
