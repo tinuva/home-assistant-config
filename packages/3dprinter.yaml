@@ -3,6 +3,7 @@ camera:
     name: OctoPrint
     still_image_url: https://octo.heaven.za.net/webcam/?action=snapshot
     mjpeg_url: https://octo.heaven.za.net/webcam/?action=stream
+    verify_ssl: false
 
 logbook:
   exclude:
