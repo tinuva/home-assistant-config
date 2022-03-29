@@ -1,0 +1,40 @@
+input_number:
+  brightness_level:
+    name: Brightness level
+    min: 0
+    max: 255
+    step: 1
+
+script:
+  fade_lights:
+    alias: Fading Lights
+    fields:
+      light:
+        description: Light to fade
+        example: imac_lamp
+    sequence:
+      - variables:
+          light_entity: light.{{ light }}
+      # setting our input number to 255
+      - service: input_number.set_value
+        entity_id: input_number.brightness_level
+        data:
+          value: 255
+      - repeat:
+          while:
+            - condition: numeric_state
+              entity_id: input_number.brightness_level
+              above: 0
+          sequence:
+            - service: light.turn_on
+              target:
+                entity_id: "{{ light_entity }}"
+              data:
+                brightness: "{{ states('input_number.brightness_level')|int }}"
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 1
+                milliseconds: 0
+            - service: input_number.decrement
+              entity_id: input_number.brightness_level
