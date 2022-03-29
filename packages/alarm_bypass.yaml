@@ -7,6 +7,8 @@ automation:
       - entity_id: alarm_control_panel.home_alarm
         platform: state
         to: 'disarmed'
+        for:
+          seconds: 30
       - entity_id: sensor.home_alarm_keypad
         platform: state
         to: 'Not Ready'
