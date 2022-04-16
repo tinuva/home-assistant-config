@@ -44,6 +44,7 @@
   * [Aqara wireless button/switch](https://www.banggood.com/Original-Aqara-ZigBee-Wireless-Smart-Switch-Upgrade-Version-Smart-Home-Remote-Controller-Button-From-Xiaomi-Mijia-Eco-System-p-1478531.html?p=DX050122090268201806&custlinkid=1222446)
   This acts as a button you can press to trigger anything you want in Home Assistant
   * [Sonoff Zigbee door/windows sensor](https://www.banggood.com/Original-Aqara-ZigBee-Version-Window-Door-Sensor-Smart-Home-Kit-Remote-Alarm-Xiaomi-Eco-System-p-1149705.html?p=DX050122090268201806&custlinkid=1222463) for indoors doors not on the Alarm system
+  * [Xiaomi Mi Light Detection Smart Sensor](https://www.takealot.com/xiaomi-mi-light-detection-smart-sensor/PLID72760298?gclsrc=aw.ds)
 
 
 ## Automation plans

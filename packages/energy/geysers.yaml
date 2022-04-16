@@ -192,7 +192,7 @@ automation:
               hours: 6
           - condition: numeric_state
             entity_id: sensor.average_temperature_outside_last_1_day
-            below: '21'
+            below: '16'
           - condition: template
             value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
           - condition: template
@@ -318,7 +318,7 @@ automation:
               hours: 6
           - condition: numeric_state
             entity_id: sensor.average_temperature_outside_last_1_day
-            below: '21'
+            below: '16'
           - condition: template
             value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('14:00' <= states('sensor.time') < '18:05') }}"
           sequence:

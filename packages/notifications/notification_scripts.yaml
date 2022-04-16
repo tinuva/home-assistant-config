@@ -90,6 +90,13 @@ script:
                 message: '{{ message }}'
                 target: '{{ target }}'                
                 data:
+                  icon: "{{ icon }}"
+                  username: '{{ object }}'
+            - service: notify.slack
+              data:
+                message: ''
+                target: '{{ target }}'                
+                data:
                   #icon: "{{ icon }}"
                   #username: '{{ object }}'
                   file: 
