@@ -46,13 +46,13 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.lounge
-          transition: 10
-          brightness: >-
-            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            30
-            {%- else -%}
-            60
-            {%- endif -%}
+          # transition: 10
+          # brightness: >-
+          #   {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+          #   30
+          #   {%- else -%}
+          #   60
+          #   {%- endif -%}
       - condition: state
         entity_id: alarm_control_panel.home_alarm
         state: 'armed_home'

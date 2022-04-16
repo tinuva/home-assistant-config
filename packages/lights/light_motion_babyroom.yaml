@@ -62,22 +62,22 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.small_bedroom
-          transition: 10
-          brightness_pct: >-
-            {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
-                          [800,70],[900,75],[1630,75],[1700,70],[1730,65],
-                          [1800,55],[1830,50],[1900,40],[1930,35],[2000,30],
-                          [2010,25],[2020,20],[2030,17],[2100,15],[2300,1]] %}
-            {% set t = states('sensor.time').replace(':','')|int %}
-            {% set ns = namespace(level = 0) %}
-            {% for h in hours if t >= h[0] %}
-              {% set ns.level = h[1] %}
-            {% endfor %}
-            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            15
-            {%- else -%}
-            {{ ns.level }}
-            {%- endif -%}
+          # transition: 10
+          # brightness_pct: >-
+          #   {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
+          #                 [800,70],[900,75],[1630,75],[1700,70],[1730,65],
+          #                 [1800,55],[1830,50],[1900,40],[1930,35],[2000,30],
+          #                 [2010,25],[2020,20],[2030,17],[2100,15],[2300,1]] %}
+          #   {% set t = states('sensor.time').replace(':','')|int %}
+          #   {% set ns = namespace(level = 0) %}
+          #   {% for h in hours if t >= h[0] %}
+          #     {% set ns.level = h[1] %}
+          #   {% endfor %}
+          #   {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+          #   15
+          #   {%- else -%}
+          #   {{ ns.level }}
+          #   {%- endif -%}
 
   # Light turn on and no timer then set brights
   - alias: Set brightness on smallbedroom light turn on
@@ -95,18 +95,60 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.small_bedroom
-          brightness_pct: >-
-            {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
-                          [800,70],[900,75],[1630,75],[1700,70],[1730,65],
-                          [1800,55],[1830,45],[1900,45],[1930,45],[2000,28],
-                          [2010,24],[2020,22],[2030,20],[2100,18],[2300,1]] %}
-            {% set t = states('sensor.time').replace(':','')|int %}
-            {% set ns = namespace(level = 0) %}
-            {% for h in hours if t >= h[0] %}
-              {% set ns.level = h[1] %}
-            {% endfor %}
-            {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            15
-            {%- else -%}
-            {{ ns.level }}
-            {%- endif -%}
+          # brightness_pct: >-
+          #   {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
+          #                 [800,70],[900,75],[1630,75],[1700,70],[1730,65],
+          #                 [1800,55],[1830,45],[1900,45],[1930,45],[2000,28],
+          #                 [2010,24],[2020,22],[2030,20],[2100,18],[2300,1]] %}
+          #   {% set t = states('sensor.time').replace(':','')|int %}
+          #   {% set ns = namespace(level = 0) %}
+          #   {% for h in hours if t >= h[0] %}
+          #     {% set ns.level = h[1] %}
+          #   {% endfor %}
+          #   {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+          #   15
+          #   {%- else -%}
+          #   {{ ns.level }}
+          #   {%- endif -%}
+
+  - alias: Sleep mode small bedroom lights
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.either_parent_phones_charging
+      - platform: state
+        entity_id: alarm_control_panel.home_alarm
+      - platform: time
+        at: "20:00:00"
+      - platform: time
+        at: "6:00:00"
+    action:
+      - choose:
+        # Morning
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.either_parent_phones_charging
+                  state: 'on'
+                - condition: state
+                  entity_id: alarm_control_panel.home_alarm
+                  state: 'armed_home'
+                - condition: time
+                  after: '19:59:59'
+                - condition: time
+                  before: '6:00:00'
+          sequence:
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.adaptive_lighting_sleep_mode_small_bedroom
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.either_parent_phones_charging
+              state: 'off'
+            - condition: state
+              entity_id: alarm_control_panel.home_alarm
+              state: 'disarmed'
+          sequence:
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.adaptive_lighting_sleep_mode_small_bedroom

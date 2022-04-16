@@ -48,27 +48,27 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.main_bedroom
-          transition: >
-            {%- if(is_state('binary_sensor.either_parent_phones_charging','on')) -%}
-            300
-            {%- else -%}
-            30
-            {%- endif -%}
-          brightness_pct: >-
-            {% set hours = [[0,18],[500,19],[600,20],[630,21],[700,25],[730,30],
-                          [800,30],[900,30],[1630,30],[1700,30],[1730,30],
-                          [1800,30],[1830,30],[1900,26],[1930,24],[2000,23],
-                          [2030,22],[2100,21],[2200,20],[2230,19],[2300,18]] %}
-            {% set t = states('sensor.time').replace(':','')|int %}
-            {% set ns = namespace(level = 0) %}
-            {% for h in hours if t >= h[0] %}
-              {% set ns.level = h[1] %}
-            {% endfor %}
-            {%- if(is_state('alarm_control_panel.home_alarm','armed_home') or is_state('binary_sensor.either_parent_phones_charging','on')) -%}
-            14
-            {%- else -%}
-            {{ ns.level }}
-            {%- endif -%}
+          # transition: >
+          #   {%- if(is_state('binary_sensor.either_parent_phones_charging','on')) -%}
+          #   300
+          #   {%- else -%}
+          #   30
+          #   {%- endif -%}
+          # brightness_pct: >-
+          #   {% set hours = [[0,18],[500,19],[600,20],[630,21],[700,25],[730,30],
+          #                 [800,30],[900,30],[1630,30],[1700,30],[1730,30],
+          #                 [1800,30],[1830,30],[1900,26],[1930,24],[2000,23],
+          #                 [2030,22],[2100,21],[2200,20],[2230,19],[2300,18]] %}
+          #   {% set t = states('sensor.time').replace(':','')|int %}
+          #   {% set ns = namespace(level = 0) %}
+          #   {% for h in hours if t >= h[0] %}
+          #     {% set ns.level = h[1] %}
+          #   {% endfor %}
+          #   {%- if(is_state('alarm_control_panel.home_alarm','armed_home') or is_state('binary_sensor.either_parent_phones_charging','on')) -%}
+          #   14
+          #   {%- else -%}
+          #   {{ ns.level }}
+          #   {%- endif -%}
       - service: timer.start
         data:
           entity_id: timer.mainbedroomlight
@@ -85,3 +85,51 @@ automation:
             {% else %}
               {{2*60|int}}
             {%- endif -%}
+
+  - alias: Sleep mode mainbedroom lights
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.either_parent_phones_charging
+      - platform: state
+        entity_id: alarm_control_panel.home_alarm
+    action:
+      - choose:
+        # Morning
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: state
+                  entity_id: binary_sensor.either_parent_phones_charging
+                  state: 'on'
+                - condition: state
+                  entity_id: alarm_control_panel.home_alarm
+                  state: 'armed_home'
+          sequence:
+              # - alias: "Log action taken"
+              #   service: script.log
+              #   data:
+              #     icon: ':zap:'
+              #     object: 'Adaptive lights'
+              #     message: >
+              #       Setting main bedroom sleep mode on
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.adaptive_lighting_sleep_mode_main_bedroom
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.either_parent_phones_charging
+              state: 'off'
+            - condition: state
+              entity_id: alarm_control_panel.home_alarm
+              state: 'disarmed'
+          sequence:
+              # - alias: "Log action taken"
+                # service: script.log
+                # data:
+                  # icon: ':zap:'
+                  # object: 'Adaptive lights'
+                  # message: >
+                    # Setting main bedroom sleep mode off
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.adaptive_lighting_sleep_mode_main_bedroom

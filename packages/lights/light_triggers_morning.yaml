@@ -5,7 +5,7 @@ automation:
     trigger:
     - platform: sun
       event: sunrise
-      offset: "+00:20:00"
+      offset: "+01:20:00"
     action:
     - service: light.turn_off
       data_template:

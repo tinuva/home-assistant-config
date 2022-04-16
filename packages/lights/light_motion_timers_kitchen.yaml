@@ -56,22 +56,22 @@ automation:
       - service: light.turn_on
         data_template:
           entity_id: light.kitchen
-          transition: 10
-          brightness: >-
-            {% set time = states('sensor.time') %}
-            {%- if(is_state('input_boolean.kitchenwork','on')) -%}
-            185
-            {%- elif(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
-            30
-            {% elif '18:00' <= time <= '20:25' %}
-            175
-            {% elif '05:30' <= time <= '07:30' %}
-            175
-            {%- elif(is_state('media_player.plex_plex_for_android_tv_bravia_vu1','playing')) -%}
-            30
-            {%- else -%}
-            175
-            {%- endif -%}
+          # transition: 10
+          # brightness: >-
+          #   {% set time = states('sensor.time') %}
+          #   {%- if(is_state('input_boolean.kitchenwork','on')) -%}
+          #   185
+          #   {%- elif(is_state('alarm_control_panel.home_alarm','armed_home')) -%}
+          #   30
+          #   {% elif '18:00' <= time <= '20:25' %}
+          #   175
+          #   {% elif '05:30' <= time <= '07:30' %}
+          #   175
+          #   {%- elif(is_state('media_player.plex_plex_for_android_tv_bravia_vu1','playing')) -%}
+          #   30
+          #   {%- else -%}
+          #   175
+          #   {%- endif -%}
       - condition: state
         entity_id: alarm_control_panel.home_alarm
         state: 'armed_home'
@@ -105,7 +105,7 @@ automation:
         data:
           entity_id: light.kitchen
           transition: 10
-          brightness: 175
+          #brightness: 175
   # Timer end = Turn off
   - alias: Turn off Kitchenwork timer
     trigger:
