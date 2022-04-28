@@ -25,7 +25,10 @@ automation:
       #- platform: numeric_state
       #  entity_id: sensor.main_bathroom_geyser_power
       #  below: '50'
-    #condition:
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.average_temperature_outside_last_1_day
+        above: '19.9'
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'
