@@ -10,7 +10,7 @@ adaptive_lighting:
   sunrise_offset: 1800
   sunset_offset: -1800 
   take_over_control: true
-  detect_non_ha_changes: false
+  detect_non_ha_changes: true
   only_once: false
   name: "lounge"
   lights:
@@ -27,7 +27,7 @@ adaptive_lighting:
   sunrise_offset: 1800
   sunset_offset: -1800 
   take_over_control: true
-  detect_non_ha_changes: false
+  detect_non_ha_changes: true
   only_once: false
   name: "kitchen"
   lights:
@@ -44,7 +44,7 @@ adaptive_lighting:
   sunrise_offset: 1800
   sunset_offset: -1800 
   take_over_control: true
-  detect_non_ha_changes: false
+  detect_non_ha_changes: true
   only_once: false
   name: "main bedroom"
   lights:
@@ -61,7 +61,7 @@ adaptive_lighting:
   sunrise_offset: 1800
   sunset_offset: -1800 
   take_over_control: true
-  detect_non_ha_changes: false
+  detect_non_ha_changes: true
   only_once: false
   name: "small bedroom"
   lights:
