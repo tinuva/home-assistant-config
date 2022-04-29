@@ -9,6 +9,7 @@ rules:
 ignore: |
   lovelace-ui.yaml
   custom_components/
+  blueprints/
   rhasspy/
   notebooks/
   .git
