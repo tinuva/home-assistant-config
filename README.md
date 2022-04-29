@@ -1,6 +1,17 @@
 
 # Tinuva's Home Assistant config files
 
+![Project Maintenance][maintenance-shield]
+[![License][license-shield]](LICENSE.md)
+
+[![GitHub Actions][actions-shield]][actions]
+[![GitHub Activity][commits-shield]][commits]
+[![GitHub Last Commit][last-commit-shield]][commits]
+
+![GitHub Stars][stars-shield]
+![GitHub Watchers][watchers-shield]
+![GitHub Forks][forks-shield]
+
 ## Noteworthy (useful) automations
 * [Bahtroom Light/Fan](packages/bathroom_humidity.yaml) that uses the Xiaomi Aqara humidity sensors to automatically turn the fan on/off during day time
 * [Camera Slack Notification](packages/camera_notifications.yaml)
@@ -49,3 +60,18 @@
 
 ## Automation plans
 * Still many ideas not fleshed out yet - WIP
+
+[commits-shield]: https://img.shields.io/github/commit-activity/y/tinuva/home-assistant-config.svg
+[commits]: https://github.com/tinuva/home-assistant-config/commits/master
+[contributors]: https://github.com/tinuva/home-assistant-config/graphs/contributors
+[frenck]: https://github.com/frenck
+[actions-shield]: https://github.com/tinuva/home-assistant-config/workflows/Home%20Assistant%20CI/badge.svg
+[actions]: https://github.com/tinuva/home-assistant-config/actions
+[home-assistant]: https://home-assistant.io
+[issue]: https://github.com/tinuva/home-assistant-config/issues
+[license-shield]: https://img.shields.io/github/license/tinuva/home-assistant-config.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2020.svg
+[last-commit-shield]: https://img.shields.io/github/last-commit/tinuva/home-assistant-config.svg
+[stars-shield]: https://img.shields.io/github/stars/tinuva/home-assistant-config.svg?style=social&label=Stars
+[forks-shield]: https://img.shields.io/github/forks/tinuva/home-assistant-config.svg?style=social&label=Forks
+[watchers-shield]: https://img.shields.io/github/watchers/tinuva/home-assistant-config.svg?style=social&label=Watchers
