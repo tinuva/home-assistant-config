@@ -1,3 +1,5 @@
+---
+
 binary_sensor:
   - platform: workday
     country: ZA
@@ -98,19 +100,19 @@ automation:
                   entity_id: timer.88e9fe88abfe
                   duration: >
                     {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
-          # Else just turn off the plug
-          default:
-            - service: switch.turn_off
-              data:
-                entity_id: switch.office_feed_2
-            - service: switch.turn_off
-              data:
-                entity_id: switch.88e9fe88abfe
-            - service: timer.start
-              data_template:
-                entity_id: timer.88e9fe88abfe
-                duration: >
-                  {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
+        # Else just turn off the plug
+        default:
+          - service: switch.turn_off
+            data:
+              entity_id: switch.office_feed_2
+          - service: switch.turn_off
+            data:
+              entity_id: switch.88e9fe88abfe
+          - service: timer.start
+            data_template:
+              entity_id: timer.88e9fe88abfe
+              duration: >
+                {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
 
   # start timer when turned off
   - alias: Start timer after Turn off network access

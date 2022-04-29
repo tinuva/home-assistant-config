@@ -1,3 +1,5 @@
+---
+
 timer:
   disarm_window:
     name: Alarm Disarm Window
@@ -13,20 +15,20 @@ automation:
     condition:
       - condition: and
         conditions:
-        - condition: state  # Alarm armed home only
-          entity_id: alarm_control_panel.home_alarm
-          state: 'armed_home'
+          - condition: state  # Alarm armed home only
+            entity_id: alarm_control_panel.home_alarm
+            state: 'armed_home'
       - condition: or
         conditions:
-        - condition: time # between times
-          after: "05:00:00"
-          before: "05:45:00"
-          weekday:
-            - mon
-            - tue
-            - wed
-            - thu
-            - fri
+          - condition: time # between times
+            after: "05:00:00"
+            before: "05:45:00"
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
         - condition: time # between times
           after: "06:00:00"
           before: "08:45:00"
@@ -49,26 +51,26 @@ automation:
         state: 'active'
       - condition: and
         conditions:
-        - condition: state  # Alarm armed home only
-          entity_id: alarm_control_panel.home_alarm
-          state: 'armed_home'
+          - condition: state  # Alarm armed home only
+            entity_id: alarm_control_panel.home_alarm
+            state: 'armed_home'
       - condition: or
         conditions:
-        - condition: time # between times
-          after: "05:00:00"
-          before: "05:45:00"
-          weekday:
-            - mon
-            - tue
-            - wed
-            - thu
-            - fri
-        - condition: time # between times
-          after: "06:00:00"
-          before: "08:45:00"
-          weekday:
-            - sat
-            - sun
+          - condition: time # between times
+            after: "05:00:00"
+            before: "05:45:00"
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
+          - condition: time # between times
+            after: "06:00:00"
+            before: "08:45:00"
+            weekday:
+              - sat
+              - sun
     action:
       - service: timer.cancel
         data:

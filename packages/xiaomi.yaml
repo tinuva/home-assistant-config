@@ -1,3 +1,5 @@
+---
+
 ### Tis is now redundant and required to set up using the GUI
 xiaomi_aqara:
   # Docs: https://www.home-assistant.io/integrations/xiaomi_aqara/

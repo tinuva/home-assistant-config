@@ -1,3 +1,5 @@
+---
+
 group:
   feeds_off_while_sleeping:
     name: Feeds off while sleeping
@@ -23,7 +25,7 @@ automation:
         to: 'armed_away'
     action:
       - service: switch.turn_off
-        entity_id: 
+        entity_id:
           - group.feeds_off_while_sleeping
           - group.feeds_off_while_sleeping_without_auto_turn_on
 
@@ -46,5 +48,5 @@ automation:
           - sun
     action:
       - service: switch.turn_on
-        entity_id: 
+        entity_id:
           - group.feeds_off_while_sleeping

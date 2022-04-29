@@ -1,7 +1,8 @@
+---
 # From: https://github.com/bieniu/ha-shellies-discovery
 automation:
   - alias: '[Shellies] Initialize on Hass Started'
-    initial_state: on
+    initial_state: 'on'
     trigger:
       - platform: homeassistant
         event: start
@@ -22,7 +23,7 @@ automation:
       data:
         topic: shellies/command
         payload: announce
-  
+
   - id: 'shellies_discovery'
     alias: 'Shellies Discovery'
     mode: queued

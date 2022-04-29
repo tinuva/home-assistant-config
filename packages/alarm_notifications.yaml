@@ -49,13 +49,13 @@ automation:
                   object: 'Home Alarm'
                   message: >
                     Home alarm {{ states.sensor.home_alarm_keypad.state }}
-          default:
-            - service: script.alert
-              data:
-                icon: ':rotating_light:'
-                object: 'Home Alarm'
-                message: >
-                  Home alarm {{ states.sensor.home_alarm_keypad.state }}
+        default:
+          - service: script.alert
+            data:
+              icon: ':rotating_light:'
+              object: 'Home Alarm'
+              message: >
+                Home alarm {{ states.sensor.home_alarm_keypad.state }}
 
   ### Notify sensor that triggered alarm --- WIP
   - id: '1586327112618'

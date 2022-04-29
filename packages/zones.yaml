@@ -14,13 +14,13 @@ zone:
     longitude: !secret longitude_home
     radius: 50
     icon: mdi:home
-  
+
   - name: Work
     latitude: !secret latitude_work
     longitude: !secret longitude_work
     radius: 310
     icon: mdi:work
-  
+
   - name: Curro Rosen Castle
     latitude: !secret latitude_currorosencastle
     longitude: !secret longitude_currorosencastle
@@ -43,84 +43,84 @@ automation:
   - alias: Parent arrived at School
     description: Parent arrived at School
     trigger:
-    - entity_id: device_tracker.mi_9t
-      platform: state
-      to: 'Curro Rosen Castle'
-    - entity_id: device_tracker.nokia_6_1
-      platform: state
-      to: 'Curro Rosen Castle'
+      - entity_id: device_tracker.mi_9t
+        platform: state
+        to: 'Curro Rosen Castle'
+      - entity_id: device_tracker.nokia_6_1
+        platform: state
+        to: 'Curro Rosen Castle'
     action:
-    - service: notify.slack
-      data_template:
-        data:
-          icon: ":car:"
-          username: "Tracking"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
-                  {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
-                  arrived at Curro Rosen Castle
-        target: ["#general"]
-        message: >
-          {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
-          {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
-          arrived at Curro Rosen Castle
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":car:"
+            username: "Tracking"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
+                    {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
+                    arrived at Curro Rosen Castle
+          target: ["#general"]
+          message: >
+            {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
+            {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
+            arrived at Curro Rosen Castle
 
   - alias: Parent left School
     description: Parent left School
     trigger:
-    - entity_id: device_tracker.mi_9t
-      platform: state
-      from: 'Curro Rosen Castle'
-    - entity_id: device_tracker.nokia_6_1
-      platform: state
-      from: 'Curro Rosen Castle'
+      - entity_id: device_tracker.mi_9t
+        platform: state
+        from: 'Curro Rosen Castle'
+      - entity_id: device_tracker.nokia_6_1
+        platform: state
+        from: 'Curro Rosen Castle'
     action:
-    - service: notify.slack
-      data_template:
-        data:
-          icon: ":car:"
-          username: "Tracking"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
-                  {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
-                  left Curro Rosen Castle
-        target: ["#general"]
-        message: >
-          {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
-          {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
-          left Curro Rosen Castle
+      - service: notify.slack
+        data_template:
+          data:
+            icon: ":car:"
+            username: "Tracking"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
+                    {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
+                    left Curro Rosen Castle
+          target: ["#general"]
+          message: >
+            {% if (trigger.from_state.object_id == 'mi_9t') %}David{% endif %}
+            {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
+            left Curro Rosen Castle
 
   # Start robot vacuum when Dave leave the house in the morning
   - alias: Dave left the house in the morning - start vacuum
     description: Dave left the house in the morning - start vacuum
     trigger:
-    - entity_id: device_tracker.mi_9t
-      platform: state
-      from: 'home'
+      - entity_id: device_tracker.mi_9t
+        platform: state
+        from: 'home'
     condition:
       - condition: and
         conditions:
-        - condition: time
-          after: '07:00:00'
-          before: '08:00:00'
-          weekday:
-            - mon
-            - tue
-            - wed
-            - thu
-            - fri
+          - condition: time
+            after: '07:00:00'
+            before: '08:00:00'
+            weekday:
+              - mon
+              - tue
+              - wed
+              - thu
+              - fri
         - condition: state
           entity_id: vacuum.rockrobo
           state: 'docked'
     action:
-    - service: vacuum.start
-      data:
-        entity_id: vacuum.rockrobo
+      - service: vacuum.start
+        data:
+          entity_id: vacuum.rockrobo

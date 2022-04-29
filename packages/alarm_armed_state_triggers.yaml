@@ -1,28 +1,30 @@
+---
+
 automation:
   ### Turn off all lights when Alarm is armed
   - alias: Turn off lights when Alarm is armed
     description: Turn off lights when Alarm is armed
     trigger:
-    - entity_id: alarm_control_panel.home_alarm
-      platform: state
-      to: 'armed_home'
-    - entity_id: alarm_control_panel.home_alarm
-      platform: state
-      to: 'armed_away'
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'armed_home'
+      - entity_id: alarm_control_panel.home_alarm
+        platform: state
+        to: 'armed_away'
     action:
-    - service: light.turn_off
-      data_template:
-        entity_id: >
-          {%- set data = namespace(lights_todo=[]) -%}
-          {%- set domains = ['light'] -%}
-          {%- for domain in domains -%}
-            {%- for item in states[domain]  -%}
-              {%- if item.entity_id not in states.light.lights_whole_night.attributes.entity_id and item.attributes.icon != 'mdi:lightbulb-group' %}
-                {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
-              {%- endif -%}
+      - service: light.turn_off
+        data_template:
+          entity_id: >
+            {%- set data = namespace(lights_todo=[]) -%}
+            {%- set domains = ['light'] -%}
+            {%- for domain in domains -%}
+              {%- for item in states[domain]  -%}
+                {%- if item.entity_id not in states.light.lights_whole_night.attributes.entity_id and item.attributes.icon != 'mdi:lightbulb-group' %}
+                  {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
+                {%- endif -%}
+              {%- endfor -%}
             {%- endfor -%}
-          {%- endfor -%}
-          {{ data.lights_todo | join(",") }}
+            {{ data.lights_todo | join(",") }}
 
   ### Lock Pet door if alarm armed away
   #- alias: Lock Pet door if alarm armed away

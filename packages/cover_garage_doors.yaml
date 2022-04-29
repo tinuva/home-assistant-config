@@ -152,58 +152,58 @@ automation:
   - id: front_garage_closed
     alias: Front Garage Closed
     trigger:
-    - platform: state
-      entity_id: binary_sensor.front_garage_door_window
-      from: 'on'
-      to: 'off'
+      - platform: state
+        entity_id: binary_sensor.front_garage_door_window
+        from: 'on'
+        to: 'off'
     action:
-    #- service: script.driveway_off
-    - service: input_boolean.turn_off
-      data:
-        entity_id: input_boolean.front_garage_after_dark
-    initial_state: true
+      #- service: script.driveway_off
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.front_garage_after_dark
+      initial_state: true
 
   # If garage is still open at 10:30pm turn on alart to make sure it get closed.
   - id: front_close_garage_lights_out
     alias: Close Front Garage at lights out
     initial_state: true
     trigger:
-    - platform: time
-      at: '20:00:00'
+      - platform: time
+        at: '20:00:00'
     condition:
-    - condition: state
-      entity_id: binary_sensor.front_garage_door_window
-      state: "on"
+      - condition: state
+        entity_id: binary_sensor.front_garage_door_window
+        state: "on"
     action:
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.front_garage_after_dark
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.front_garage_after_dark
 
   # If garage doors are closed kick off script to turn them off, and turn off alert.
   - id: back_garage_closed
     alias: Back Garage Closed
-    trigger:
-    - platform: state
-      entity_id: binary_sensor.back_garage_door
-      from: 'on'
-      to: 'off'
-    action:
-    #- service: script.driveway_off
-    - service: input_boolean.turn_off
-      data:
-        entity_id: input_boolean.back_garage_after_dark
     initial_state: true
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.back_garage_door
+        from: 'on'
+        to: 'off'
+    action:
+      #- service: script.driveway_off
+      - service: input_boolean.turn_off
+        data:
+          entity_id: input_boolean.back_garage_after_dark
 
   # If garage is still open at 10:30pm turn on alart to make sure it get closed.
   - id: back_close_garage_lights_out
     alias: Close Back Garage at lights out
     initial_state: true
     trigger:
-    - platform: time
-      at: '20:00:00'
+      - platform: time
+        at: '20:00:00'
     condition:
-    - condition: state
-      entity_id: binary_sensor.back_garage_door
-      state: "on"
+      - condition: state
+        entity_id: binary_sensor.back_garage_door
+        state: "on"
     action:
-    - service: input_boolean.turn_on
-      entity_id: input_boolean.back_garage_after_dark
+      - service: input_boolean.turn_on
+        entity_id: input_boolean.back_garage_after_dark

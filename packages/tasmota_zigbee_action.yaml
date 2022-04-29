@@ -1,3 +1,5 @@
+---
+
 automation:
   # Kitchen button
   - alias: 'MQTT Zigbee Button Kitchen single click'
@@ -44,7 +46,7 @@ automation:
         topic: 'tele/zigbee/Main Bathroom Button/Click'
         payload: 'single'
     condition:
-      - condition: state 
+      - condition: state
         entity_id: timer.main_bathroom
         state: 'idle'
     action:
@@ -60,7 +62,7 @@ automation:
         topic: 'tele/zigbee/Main Bathroom Button/Click'
         payload: 'single'
     condition:
-      - condition: state 
+      - condition: state
         entity_id: timer.main_bathroom
         state: 'active'
     action:

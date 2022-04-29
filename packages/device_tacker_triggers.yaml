@@ -1,3 +1,5 @@
+---
+
 binary_sensor:
   platform: template
   sensors:
@@ -5,7 +7,7 @@ binary_sensor:
       friendly_name: "Is both parents phones charging"
       value_template: >-
         {{ (is_state('sensor.mi_9t_battery_state', 'charging')
-          or is_state('sensor.mi_9t_battery_state', 'full')) 
+          or is_state('sensor.mi_9t_battery_state', 'full'))
           and (is_state('sensor.nokia_6_1_battery_state', 'charging')
           or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
       # silly workaround needed - mi9t phone shows not_charging when in fact charging...
@@ -14,7 +16,7 @@ binary_sensor:
       friendly_name: "Is either parents phones charging"
       value_template: >-
         {{ (is_state('sensor.mi_9t_battery_state', 'charging')
-          or is_state('sensor.mi_9t_battery_state', 'full')) 
+          or is_state('sensor.mi_9t_battery_state', 'full'))
           or (is_state('sensor.nokia_6_1_battery_state', 'charging')
           or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
 
@@ -22,14 +24,14 @@ automation:
   - alias: Parents both in bed when both phones charge
     description: Parents both in bed when both phones charge
     trigger:
-    - entity_id: binary_sensor.both_parent_phones_charging
-      platform: state
-      to: 'on'
+      - entity_id: binary_sensor.both_parent_phones_charging
+        platform: state
+        to: 'on'
     condition:
       - condition: state
         entity_id: binary_sensor.both_parent_phones_charging
         state: 'on'
-      - condition: state  # 'night' condition: from sunset until sunrise 
+      - condition: state  # 'night' condition: from sunset until sunrise
         entity_id: sun.sun
         state: 'below_horizon'
       - condition: state
@@ -46,14 +48,14 @@ automation:
   - alias: Parents both in bed when both phones charge need bypass
     description: Parents both in bed when both phones charge
     trigger:
-    - entity_id: binary_sensor.both_parent_phones_charging
-      platform: state
-      to: 'on'
+      - entity_id: binary_sensor.both_parent_phones_charging
+        platform: state
+        to: 'on'
     condition:
       - condition: state
         entity_id: binary_sensor.both_parent_phones_charging
         state: 'on'
-      - condition: state  # 'night' condition: from sunset until sunrise 
+      - condition: state  # 'night' condition: from sunset until sunrise
         entity_id: sun.sun
         state: 'below_horizon'
       - condition: state
@@ -65,10 +67,10 @@ automation:
         for:
           minutes: 1
     action:
-    - service: envisalink.alarm_keypress
-      data_template:
-        entity_id: alarm_control_panel.home_alarm
-        keypress: '*125#'
-    - service: alarm_control_panel.alarm_arm_home
-      data:
-        entity_id: alarm_control_panel.home_alarm
+      - service: envisalink.alarm_keypress
+        data_template:
+          entity_id: alarm_control_panel.home_alarm
+          keypress: '*125#'
+      - service: alarm_control_panel.alarm_arm_home
+        data:
+          entity_id: alarm_control_panel.home_alarm

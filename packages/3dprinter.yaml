@@ -1,3 +1,5 @@
+---
+
 camera:
   - platform: mjpeg
     name: OctoPrint
@@ -46,9 +48,9 @@ automation:
     condition:
       - condition: or
         conditions:
-        - condition: state
-          entity_id: switch.octoprint_printing
-          state: 'on'
+          - condition: state
+            entity_id: switch.octoprint_printing
+            state: 'on'
     action:
       - service: script.alert
         data:
