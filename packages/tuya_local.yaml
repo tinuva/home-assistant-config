@@ -1,3 +1,5 @@
+---
+
 localtuya:
   ## CBI Astute Smart Switch
   - host: 10.0.0.55 #68:57:2D:D2:FE:D2

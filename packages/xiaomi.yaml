@@ -18,10 +18,10 @@ automation:
           minutes: 15
           seconds: 0
     action:
-    - service: notify.slack
-      data:
-        target: ["#alerts"]
-        message: Xiaomi Aqara gateway is unavailable - temp/humidity sensors offline...
+      - service: notify.slack
+        data:
+          target: ["#alerts"]
+          message: Xiaomi Aqara gateway is unavailable - temp/humidity sensors offline...
 
   - alias: Notify Xiaomi Aqara gateway is available
     description: Notify Xiaomi Aqara gateway is available
@@ -30,10 +30,10 @@ automation:
         entity_id: sensor.illumination_7811dcb90d53
         from: 'unavailable'
     action:
-    - service: notify.slack
-      data:
-        target: ["#alerts"]
-        message: Xiaomi Aqara gateway is available/restored
+      - service: notify.slack
+        data:
+          target: ["#alerts"]
+          message: Xiaomi Aqara gateway is available/restored
 
   - alias: Notify when fridge temperature goes up
     description: Notify when fridge temperature goes up
@@ -44,8 +44,8 @@ automation:
       - condition: template # bathroom vs outside
         value_template: "{{states.sensor.temperature_158d0001f54c03.state|float > 7 }}"
     action:
-    - service: notify.slack
-      data:
-        target: ["#alerts"]
-        message: >
-          Fridge temperature above 7 degrees - currently at {{ states.sensor.temperature_158d0001f54c03.state|float|round(1) }}
+      - service: notify.slack
+        data:
+          target: ["#alerts"]
+          message: >
+            Fridge temperature above 7 degrees - currently at {{ states.sensor.temperature_158d0001f54c03.state|float|round(1) }}

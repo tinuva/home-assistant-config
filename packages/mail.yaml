@@ -1,3 +1,4 @@
+---
 sensor:
   - platform: seventeentrack
     username: !secret seventeentrack_user
@@ -7,7 +8,7 @@ sensor:
 
 automation:
   - alias: "Seventeentrack Update"
-    initial_state: on
+    initial_state: 'on'
     trigger:
       platform: event
       event_type: state_changed
@@ -18,24 +19,24 @@ automation:
           value_template: "{{ trigger.event.data.entity_id.startswith('sensor.seventeentrack_package_') }}"
         - condition: or
           conditions:
-          - condition: and
-            conditions:
-              - condition: template
-                value_template: "{{ trigger.event.data.new_state.attributes.location != None }}"
-              - condition: template
-                value_template: "{{ trigger.event.data.new_state.attributes.location|trim != '' }}"
-          - condition: and
-            conditions:
-              - condition: template
-                value_template: "{{ trigger.event.data.new_state.attributes.info_text != None }}"
-              - condition: template
-                value_template: "{{ trigger.event.data.new_state.attributes.info_text|trim != '' }}"
-        #  - condition: template
-        #    value_template: "{{ 'out for delivery' in trigger.event.data.new_state.attributes.info_text|lower }}"
-        #  - condition: template
-        #    value_template: "{{ 'delivered' in trigger.event.data.new_state.attributes.info_text|lower }}"
-        #  - condition: template
-        #    value_template: "{{ 'onboard' in trigger.event.data.new_state.attributes.info_text|lower }}"
+            - condition: and
+              conditions:
+                - condition: template
+                  value_template: "{{ trigger.event.data.new_state.attributes.location != None }}"
+                - condition: template
+                  value_template: "{{ trigger.event.data.new_state.attributes.location|trim != '' }}"
+            - condition: and
+              conditions:
+                - condition: template
+                  value_template: "{{ trigger.event.data.new_state.attributes.info_text != None }}"
+                - condition: template
+                  value_template: "{{ trigger.event.data.new_state.attributes.info_text|trim != '' }}"
+          #  - condition: template
+          #    value_template: "{{ 'out for delivery' in trigger.event.data.new_state.attributes.info_text|lower }}"
+          #  - condition: template
+          #    value_template: "{{ 'delivered' in trigger.event.data.new_state.attributes.info_text|lower }}"
+          #  - condition: template
+          #    value_template: "{{ 'onboard' in trigger.event.data.new_state.attributes.info_text|lower }}"
     action:
       - service: notify.slack
         data_template:

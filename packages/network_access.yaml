@@ -76,17 +76,30 @@ automation:
     action:
       - choose:
         # If the AC on this plug is on, first turn it off then wait before turning off plug
-        - conditions:
-            - condition: template
-              value_template: "{{ not is_state('climate.midea_ac_32985348871179', 'off') }}"
-          sequence:
-            # climate.turn_off doesn't seem to work, so using hvac_mode
-            - service: climate.set_hvac_mode
-              data:
-                hvac_mode: "off"
-              target:
-                entity_id: climate.midea_ac_32985348871179
-            - delay: '00:00:30' # Wait
+          - conditions:
+              - condition: template
+                value_template: "{{ not is_state('climate.midea_ac_32985348871179', 'off') }}"
+            sequence:
+              # climate.turn_off doesn't seem to work, so using hvac_mode
+              - service: climate.set_hvac_mode
+                data:
+                  hvac_mode: "off"
+                target:
+                  entity_id: climate.midea_ac_32985348871179
+              - delay: '00:00:30' # Wait
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.office_feed_2
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.88e9fe88abfe
+              - service: timer.start
+                data_template:
+                  entity_id: timer.88e9fe88abfe
+                  duration: >
+                    {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
+          # Else just turn off the plug
+          default:
             - service: switch.turn_off
               data:
                 entity_id: switch.office_feed_2
@@ -97,20 +110,7 @@ automation:
               data_template:
                 entity_id: timer.88e9fe88abfe
                 duration: >
-                  {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }} 
-        # Else just turn off the plug
-        default:
-          - service: switch.turn_off
-            data:
-              entity_id: switch.office_feed_2
-          - service: switch.turn_off
-            data:
-              entity_id: switch.88e9fe88abfe
-          - service: timer.start
-            data_template:
-              entity_id: timer.88e9fe88abfe
-              duration: >
-                {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }} 
+                  {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
 
   # start timer when turned off
   - alias: Start timer after Turn off network access
@@ -127,11 +127,11 @@ automation:
         entity_id: timer.88e9fe88abfe_off_time_duration
         state: 'idle'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.88e9fe88abfe
-        duration: >
-          {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }} 
+      - service: timer.start
+        data_template:
+          entity_id: timer.88e9fe88abfe
+          duration: >
+            {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
 
   # 88e9fe88abfe on when timer finish
   - alias: Turn on 88e9fe88abfe
