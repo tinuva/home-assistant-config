@@ -122,6 +122,7 @@ automation:
                   - condition: numeric_state
                     entity_id: sensor.outside_temperature
                     below: '22'
+                    above: '19.9'
             sequence:
               - service: script.ac
                 data:
@@ -132,6 +133,9 @@ automation:
               - condition: numeric_state
                 entity_id: sensor.main_bedroom_temperature
                 above: '22'
+              - condition: numeric_state
+                entity_id: sensor.outside_temperature
+                above: '19.9'
             sequence:
               - service: script.ac
                 data:
@@ -146,8 +150,7 @@ automation:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862093"
-                  speed: "Auto"
-                  mode: "fan_only"
+                  mode: "off"
 
 script:
   ######################################################################
