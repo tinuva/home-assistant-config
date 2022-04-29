@@ -127,7 +127,6 @@ secrets.yaml
 .vscode/
 appdaemon/compiled
 appdaemon/dashboards/
-blueprints/
 home-assistant_v2.db
 home-assistant_v2.db-shm
 home-assistant_v2.db-wal
