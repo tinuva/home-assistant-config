@@ -53,7 +53,7 @@ sensor:
           {% set battery_to_charge = (battery_capacity - battery_current)|round(2) %}
           {{ battery_to_charge }}
       # Remaining minutes
-      goodwe_battery_charging_remaining_minutes: 
+      goodwe_battery_charging_remaining_minutes:
         icon_template: "mdi:battery-high"
         value_template: >
           {% set y = states('sensor.goodwe_average_battery_dis_charge_rate') | float(0) %}

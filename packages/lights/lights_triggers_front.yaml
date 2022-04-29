@@ -5,7 +5,7 @@ automation:
         entity_id: binary_sensor.front_door
         to: 'on'
     condition:
-      - condition: state  # 'night' condition: from sunset until sunrise 
+      - condition: state  # 'night' condition: from sunset until sunrise
         entity_id: sun.sun
         state: 'below_horizon'
     action:
@@ -13,7 +13,7 @@ automation:
         data:
           entity_id:
             - light.outside_porch
-  
+
   - alias: Turn off porch lights when front door closed for 10min
     trigger:
       - platform: state

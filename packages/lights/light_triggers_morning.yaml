@@ -1,22 +1,24 @@
+---
+
 automation:
   ### Turn off all lights in the morning
   - alias: Turn off all lights in the morning
     description: Turn off all lights in the morning
     trigger:
-    - platform: sun
-      event: sunrise
-      offset: "+01:20:00"
+      - platform: sun
+        event: sunrise
+        offset: "+01:20:00"
     action:
-    - service: light.turn_off
-      data_template:
-        entity_id: >
-          {%- set data = namespace(lights_todo=[]) -%}
-          {%- set domains = ['light'] -%}
-          {%- for domain in domains -%}
-            {%- for item in states[domain]  -%}
-              {%- if item.entity_id not in ['light.main_bathroom'] and item.attributes.icon != 'mdi:lightbulb-group' %}
-                {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
-              {%- endif -%}
+      - service: light.turn_off
+        data_template:
+          entity_id: >
+            {%- set data = namespace(lights_todo=[]) -%}
+            {%- set domains = ['light'] -%}
+            {%- for domain in domains -%}
+              {%- for item in states[domain]  -%}
+                {%- if item.entity_id not in ['light.main_bathroom'] and item.attributes.icon != 'mdi:lightbulb-group' %}
+                  {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
+                {%- endif -%}
+              {%- endfor -%}
             {%- endfor -%}
-          {%- endfor -%}
-          {{ data.lights_todo | join(",") }}
+            {{ data.lights_todo | join(",") }}

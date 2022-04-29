@@ -1,70 +1,70 @@
 automation:
-- alias: Set lights when Plex(kodi) is playing
-  trigger:
-    #- platform: state
-    #  entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
-    #  to: 'playing' 
-    - platform: state
-      entity_id: media_player.plex_plex_for_kodi_sonytv
-      to: 'playing' 
-    - platform: state
-      entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
-      to: 'playing'
-    - platform: state
-      entity_id: media_player.plex_plex_for_android_tv_shield_android_tv
-      to: 'playing'
-  condition:
-    condition: and
-    conditions:
-    - condition: template
-      value_template: "{{ 'playing' in trigger.to_state.state }}"
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    #- condition: numeric_state
-    #  entity_id: sensor.illumination_7811dcb90d53
-    #  below: 200
-  action:
-  #- service: timer.finish
-  #  data:
-  #    entity_id:
-  #      - timer.kitchenlight
-  #- service: timer.cancel
-  #  data:
-  #    entity_id:
-  #      - timer.loungelight
-  - service: light.turn_on
-    data:
-      entity_id: light.lounge
-      #brightness: '30'
-      #transition: 20
-  - condition: time
-    after: "20:15:00"
-  - service: automation.trigger
-    data:
-      entity_id:
-        - automation.set_kitchen_lights_when_plex_kodi_is_playing
-      skip_condition: false
+  - alias: Set lights when Plex(kodi) is playing
+    trigger:
+      #- platform: state
+      #  entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+      #  to: 'playing'
+      - platform: state
+        entity_id: media_player.plex_plex_for_kodi_sonytv
+        to: 'playing'
+      - platform: state
+        entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
+        to: 'playing'
+      - platform: state
+        entity_id: media_player.plex_plex_for_android_tv_shield_android_tv
+        to: 'playing'
+    condition:
+      condition: and
+      conditions:
+        - condition: template
+          value_template: "{{ 'playing' in trigger.to_state.state }}"
+        - condition: state  # 'night' condition: from sunset until sunrise
+          entity_id: sun.sun
+          state: 'below_horizon'
+        #- condition: numeric_state
+        #  entity_id: sensor.illumination_7811dcb90d53
+        #  below: 200
+    action:
+      #- service: timer.finish
+      #  data:
+      #    entity_id:
+      #      - timer.kitchenlight
+      #- service: timer.cancel
+      #  data:
+      #    entity_id:
+      #      - timer.loungelight
+      - service: light.turn_on
+        data:
+          entity_id: light.lounge
+          #brightness: '30'
+          #transition: 20
+      - condition: time
+        after: "20:15:00"
+      - service: automation.trigger
+        data:
+          entity_id:
+            - automation.set_kitchen_lights_when_plex_kodi_is_playing
+          skip_condition: false
 
-- alias: Set kitchen lights when Plex(kodi) is playing
-  trigger:
-    - platform: state
-      entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
-      to: 'playing-disabled'
-  condition:
-    condition: and
-    conditions:
-    #- condition: template
-    #  value_template: "{{ 'playing' in trigger.to_state.state }}"
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-    - condition: state
-      entity_id: input_boolean.kitchenwork
-      state: 'off'
-  action:
-  - service: light.turn_off
-    data:
-      entity_id:
-        - light.kitchen
-      transition: 10
+  - alias: Set kitchen lights when Plex(kodi) is playing
+    trigger:
+      - platform: state
+        entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
+        to: 'playing-disabled'
+    condition:
+      condition: and
+      conditions:
+        #- condition: template
+        #  value_template: "{{ 'playing' in trigger.to_state.state }}"
+        - condition: state  # 'night' condition: from sunset until sunrise
+          entity_id: sun.sun
+          state: 'below_horizon'
+        - condition: state
+          entity_id: input_boolean.kitchenwork
+          state: 'off'
+    action:
+      - service: light.turn_off
+        data:
+          entity_id:
+            - light.kitchen
+          transition: 10

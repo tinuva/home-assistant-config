@@ -154,7 +154,7 @@ group:
 
 sensor:
   - platform: template
-    sensors: 
+    sensors:
       armed_home:
         friendly_name: Armed Home
         value_template: >-
@@ -166,7 +166,7 @@ sensor:
           {%- endfor %}
 
   - platform: template
-    sensors: 
+    sensors:
       armed_away:
         friendly_name: Armed Away
         value_template: >-

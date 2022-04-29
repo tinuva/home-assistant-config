@@ -1,3 +1,5 @@
+---
+
 sensor:
   - platform: template
     sensors:
@@ -6,24 +8,24 @@ sensor:
         unit_of_measurement: "W"
         icon_template: "mdi:flash"
         value_template: >
-          {{ ((states.sensor.shelly_dimmer_d42c70_power_0.state | float) + 
-          (states.sensor.shelly_dimmer_d3eac3_power_0.state | float) + 
-          (states.sensor.shelly_dimmer_d3e771_power_0.state | float) + 
-          (states.sensor.shelly_dimmer_2_40f520016df0_power_0.state | float) + 
-          (states.sensor.shelly_dimmer_2_40f52000229e_power_0.state | float) + 
-          (states.sensor.scullery_power.state | float) + 
-          (states.sensor.outside_main_bathroom_power.state | float) + 
-          (states.sensor.main_ensuite_power.state | float) + 
-          (states.sensor.main_bathroom_power.state | float) + 
-          (states.sensor.hallway_power.state | float) + 
-          (states.sensor.hallway_entry_power.state | float) + 
-          (states.sensor.front_hallway_power.state | float) + 
-          (states.sensor.front_door_power.state | float) + 
-          (states.sensor.front_bathroom_power.state | float) + 
-          (states.sensor.dining_power.state | float) + 
-          (states.sensor.courtyard_lounge_power.state | float) + 
-          (states.sensor.courtyard_braai_power.state | float) + 
-          (states.sensor.courtyard_main_bedroom_power.state | float) + 
+          {{ ((states.sensor.shelly_dimmer_d42c70_power_0.state | float) +
+          (states.sensor.shelly_dimmer_d3eac3_power_0.state | float) +
+          (states.sensor.shelly_dimmer_d3e771_power_0.state | float) +
+          (states.sensor.shelly_dimmer_2_40f520016df0_power_0.state | float) +
+          (states.sensor.shelly_dimmer_2_40f52000229e_power_0.state | float) +
+          (states.sensor.scullery_power.state | float) +
+          (states.sensor.outside_main_bathroom_power.state | float) +
+          (states.sensor.main_ensuite_power.state | float) +
+          (states.sensor.main_bathroom_power.state | float) +
+          (states.sensor.hallway_power.state | float) +
+          (states.sensor.hallway_entry_power.state | float) +
+          (states.sensor.front_hallway_power.state | float) +
+          (states.sensor.front_door_power.state | float) +
+          (states.sensor.front_bathroom_power.state | float) +
+          (states.sensor.dining_power.state | float) +
+          (states.sensor.courtyard_lounge_power.state | float) +
+          (states.sensor.courtyard_braai_power.state | float) +
+          (states.sensor.courtyard_main_bedroom_power.state | float) +
           (states.sensor.bar_power.state | float)) | round(1) }}
 
   # Sensor for Riemann sum of energy bought (W -> Wh)

@@ -141,7 +141,7 @@ automation:
     mode: single
 
   # At 8pm set SoC based on forecast
-  - alias: Goodwe DoD Night 
+  - alias: Goodwe DoD Night
     description: Set DoD based on conditions
     trigger:
       - platform: time
@@ -199,4 +199,3 @@ automation:
         target:
           entity_id: number.depth_of_discharge_on_grid
     mode: single
-

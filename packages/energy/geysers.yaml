@@ -64,7 +64,7 @@ script:
           entity_id: input_number.set_goodwe_dod
         data:
           value: 1
-          
+
   ######################################################################
   # Re-usable script to start main bedroom geyser
   ######################################################################
@@ -157,48 +157,48 @@ automation:
         below: '50'
     action:
       - choose:
-        # Turn on between 11am and 2pm for sun times
-        - conditions:
-          - condition: state
-            entity_id: timer.loadshedding_slot
-            state: 'idle'
-          - condition: template
-            value_template: "{{ ('12:40' <= states('sensor.time') <= '14:00') }}"
-          sequence:
-            - service: script.geyser_on_mainbedroom
-        # Turn on early AM and late PM only if haven't been on in previous 6 hours
-        # Also, if average temp below 21degree
-        - conditions:
-          - condition: state
-            entity_id: timer.loadshedding_slot
-            state: 'idle'
-          - condition: state
-            entity_id: timer.main_geyser
-            state: 'idle'
-            for:
-              hours: 6
-          - condition: template
-            value_template: "{{ ('14:00' < states('sensor.time') < '18:05') }}"
-          sequence:
-            - service: script.geyser_on_mainbedroom
-        - conditions:
-          - condition: state
-            entity_id: timer.loadshedding_slot
-            state: 'idle'
-          - condition: state
-            entity_id: timer.main_geyser
-            state: 'idle'
-            for:
-              hours: 6
-          - condition: numeric_state
-            entity_id: sensor.average_temperature_outside_last_1_day
-            below: '16'
-          - condition: template
-            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
-          - condition: template
-            value_template: "{{ trigger.platform != 'numeric_state' }}"
-          sequence:
-            - service: script.geyser_on_mainbedroom
+          # Turn on between 11am and 2pm for sun times
+          - conditions:
+            - condition: state
+              entity_id: timer.loadshedding_slot
+              state: 'idle'
+            - condition: template
+              value_template: "{{ ('12:40' <= states('sensor.time') <= '14:00') }}"
+            sequence:
+              - service: script.geyser_on_mainbedroom
+          # Turn on early AM and late PM only if haven't been on in previous 6 hours
+          # Also, if average temp below 21degree
+          - conditions:
+              - condition: state
+                entity_id: timer.loadshedding_slot
+                state: 'idle'
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'idle'
+                for:
+                  hours: 6
+              - condition: template
+                value_template: "{{ ('14:00' < states('sensor.time') < '18:05') }}"
+            sequence:
+              - service: script.geyser_on_mainbedroom
+          - conditions:
+              - condition: state
+                entity_id: timer.loadshedding_slot
+                state: 'idle'
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'idle'
+                for:
+                  hours: 6
+              - condition: numeric_state
+                entity_id: sensor.average_temperature_outside_last_1_day
+                below: '16'
+              - condition: template
+                value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
+              - condition: template
+                value_template: "{{ trigger.platform != 'numeric_state' }}"
+            sequence:
+              - service: script.geyser_on_mainbedroom
         # No conditions met so log and do nothing (exceptions to logging apply)
         default:
           - condition: template
@@ -212,7 +212,7 @@ automation:
               object: 'Geyser - main bedroom'
               message: >
                 Not turning on main bedroom geyser because no conditions met
-                Trigger: 
+                Trigger:
                 {{ trigger }}
 
   # start timer when turned on
@@ -229,11 +229,11 @@ automation:
         entity_id: timer.main_geyser
         state: 'idle'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.main_geyser
-        duration: >
-          {{ 180 | int * 60 }}
+      - service: timer.start
+        data_template:
+          entity_id: timer.main_geyser
+          duration: >
+            {{ 180 | int * 60 }}
 
   # Main geyser off when timer finish
   - alias: Turn off main geyser
@@ -296,33 +296,33 @@ automation:
         at: '12:00:00'
     action:
       - choose:
-        # Turn on between 11am and 2pm for sun times
-        - conditions:
-          - condition: state
-            entity_id: timer.loadshedding_slot
-            state: 'idle'
-          - condition: template
-            value_template: "{{ ('12:00' <= states('sensor.time') <= '14:00') }}"
-          sequence:
-            - service: script.geyser_on_front
-        # Turn on early AM and late PM only if haven't been on in previous 6 hours
-        # Also, if average temp below 21degree
-        - conditions:
-          - condition: state
-            entity_id: timer.loadshedding_slot
-            state: 'idle'
-          - condition: state
-            entity_id: timer.front_geyser
-            state: 'idle'
-            for:
-              hours: 6
-          - condition: numeric_state
-            entity_id: sensor.average_temperature_outside_last_1_day
-            below: '16'
-          - condition: template
-            value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('14:00' <= states('sensor.time') < '18:05') }}"
-          sequence:
-            - service: script.geyser_on_front
+          # Turn on between 11am and 2pm for sun times
+          - conditions:
+              - condition: state
+                entity_id: timer.loadshedding_slot
+                state: 'idle'
+              - condition: template
+                value_template: "{{ ('12:00' <= states('sensor.time') <= '14:00') }}"
+            sequence:
+              - service: script.geyser_on_front
+          # Turn on early AM and late PM only if haven't been on in previous 6 hours
+          # Also, if average temp below 21degree
+          - conditions:
+              - condition: state
+                entity_id: timer.loadshedding_slot
+                state: 'idle'
+              - condition: state
+                entity_id: timer.front_geyser
+                state: 'idle'
+                for:
+                  hours: 6
+              - condition: numeric_state
+                entity_id: sensor.average_temperature_outside_last_1_day
+                below: '16'
+              - condition: template
+                value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('14:00' <= states('sensor.time') < '18:05') }}"
+            sequence:
+              - service: script.geyser_on_front
         # No conditions met so log and do nothing
         default:
           - condition: template
@@ -337,7 +337,7 @@ automation:
               message: >
                 Not turning on front geyser because no conditions met
 
-  # start timer when turned on 
+  # start timer when turned on
   - alias: Start timer after Turn on front geyser
     trigger:
       - platform: state
@@ -351,11 +351,11 @@ automation:
         entity_id: timer.front_geyser
         state: 'idle'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.front_geyser
-        duration: >
-          {{ 180 | int * 60 }}
+      - service: timer.start
+        data_template:
+          entity_id: timer.front_geyser
+          duration: >
+            {{ 180 | int * 60 }}
 
   # front geyser off when timer finish (and main then on to chain)
   - alias: Turn off front geyser

@@ -1,10 +1,12 @@
+---
+
 cover:
   # Front property gate
   - platform: mqtt
     device_class: gate
     state_topic: "stat/front-gate/POWER2"              #SwitchTopic Enabled
     command_topic: "cmnd/front-gate/POWER1"
-    availability_topic: "tele/front-gate/LWT"  
+    availability_topic: "tele/front-gate/LWT"
     name: "Front Gate"
     qos: 0
     retain: false
@@ -14,7 +16,7 @@ cover:
     state_open: "ON"
     state_closed: "OFF"
     payload_available: "Online"
-    payload_not_available: "Offline"  
+    payload_not_available: "Offline"
 
 ## Alert
 alert:

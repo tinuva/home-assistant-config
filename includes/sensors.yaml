@@ -129,13 +129,13 @@
 #  scan_interval: 300
 
 #- platform: template
-#  sensors: 
+#  sensors:
 #    virgin_active_tygervalley_occupancy:
 #      value_template: "{{ state_attr('sensor.virgin_active_tygervalley', 'active')|int / state_attr('sensor.virgin_active_tygervalley', #'maxLimit')|int * 100}}"
 #      friendly_name: "Virgin Active - Tygervalley Occupancy"
 #      unit_of_measurement: '%'
 #- platform: template
-#  sensors: 
+#  sensors:
 #    virgin_active_durbanville_occupancy:
 #      value_template: "{{ state_attr('sensor.virgin_active_durbanville', 'active')|int / state_attr('sensor.virgin_active_durbanville', #'maxLimit')|int * 100}}"
 #      friendly_name: "Virgin Active - Durbanville Occupancy"

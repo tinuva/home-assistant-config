@@ -2,10 +2,10 @@
 automation:
   - alias: 'persistent notification dismiss http login'
     trigger:
-    - platform: event
-      event_type: state_changed
-      event_data:
-        entity_id: persistent_notification.http_login
+      - platform: event
+        event_type: state_changed
+        event_data:
+          entity_id: persistent_notification.http_login
     condition:
       - condition: template
         value_template: "{{ states('persistent_notification.http_login') == 'notifying' }}"
@@ -14,7 +14,7 @@ automation:
         data:
           object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
           message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
-          target: 'alerts-david' 
+          target: 'alerts-david'
       - service: persistent_notification.dismiss
         data_template:
           notification_id: http_login
@@ -38,7 +38,7 @@ automation:
           message: >
             Persistent notification created. {{now()}}
             {{ trigger.event.as_dict()['data']}}
-          target: 'alerts-david'    
+          target: 'alerts-david'
       - service: system_log.write
         data_template:
           message: >
@@ -77,7 +77,7 @@ automation:
           message: >
             Persistent notification dismissed. {{now()}}
             {{ trigger.event.as_dict()['data']}}
-          target: 'alerts-david' 
+          target: 'alerts-david'
 
   - alias: 'persistent notification log and dismiss invalid config'
     trigger:
@@ -96,7 +96,7 @@ automation:
         data:
           object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
           message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
-          target: 'alerts-david' 
+          target: 'alerts-david'
 
   - alias: 'persistent notification dismiss config discovery'
     trigger:
@@ -112,7 +112,7 @@ automation:
         data:
           object: "{{ trigger.event.as_dict()['data']['new_state'].title }}"
           message: "{{ trigger.event.as_dict()['data']['new_state'].message }}"
-          target: 'alerts-david' 
+          target: 'alerts-david'
       - service: persistent_notification.dismiss
         data:
           notification_id: config_entry_discovery

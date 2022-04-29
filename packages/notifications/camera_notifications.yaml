@@ -10,26 +10,26 @@ automation:
   # camera alerts disabled - start timer to re-enable
   - alias: Start timer when Camera Alerts disabled
     trigger:
-    - platform: state
-      entity_id: input_boolean.camera_alerts
-      to: 'off'
+      - platform: state
+        entity_id: input_boolean.camera_alerts
+        to: 'off'
     action:
-    - service: timer.start
-      data:
-        entity_id: timer.camera_alerts_disabled
-    - service: notify.slack
-      data_template:
-        target: ["#alerts"]
+      - service: timer.start
         data:
-          icon: ":movie_camera:"
-          username: "Camera Alert"
-          blocks_template:
-            - type: section
-              text:
-                type: mrkdwn
-                text: >
-                  Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}
-        message: "Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
+          entity_id: timer.camera_alerts_disabled
+      - service: notify.slack
+        data_template:
+          target: ["#alerts"]
+          data:
+            icon: ":movie_camera:"
+            username: "Camera Alert"
+            blocks_template:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}
+          message: "Camera Alerts disabled for: {{ states.timer.camera_alerts_disabled.attributes.duration|string }}"
   # timer ended, turn camera alerts on
   - alias: Turn camera alerts back on
     trigger:
@@ -38,9 +38,9 @@ automation:
       event_data:
         entity_id: timer.camera_alerts_disabled
     action:
-    - service: input_boolean.turn_on
-      data:
-        entity_id: input_boolean.camera_alerts
+      - service: input_boolean.turn_on
+        data:
+          entity_id: input_boolean.camera_alerts
 
   - id: '1686327112618'
     alias: Notify Front Beam Motion
@@ -50,9 +50,9 @@ automation:
     #max: 1
     max_exceeded: debug # see if we can remove warning
     trigger:
-    - entity_id: binary_sensor.front_beam
-      platform: state
-      to: 'on'
+      - entity_id: binary_sensor.front_beam
+        platform: state
+        to: 'on'
     condition:
       - condition: state
         entity_id: input_boolean.camera_alerts
@@ -79,8 +79,8 @@ automation:
         for:
           seconds: 30
     action:
-    - service: script.notify_front_camera_alert
-    - delay: '00:00:10' # seconds
+      - service: script.notify_front_camera_alert
+      - delay: '00:00:10' # seconds
 
 script:
   notify_front_camera_alert:
@@ -93,13 +93,13 @@ script:
         data_template:
           message: "Front Camera Capture @ /config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
           level: debug
-      - delay: 
+      - delay:
           seconds: 4
       - service: notify.slack
         data_template:
           target: ["#alerts"]
           message: "Motion detected at Front Beam"
           data:
-            file: 
+            file:
               path: "/config/www/cam_captures/front_{{ now ().year }}_{{ now ().month }}_{{ now ().day }}_{{ now ().hour }}_{{ now ().minute }}.jpg"
               ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files

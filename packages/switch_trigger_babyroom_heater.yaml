@@ -1,3 +1,5 @@
+---
+
 #input_boolean:
 #  babyroom_heater_daytime:
 #    name: Babyroom Heater Day Time
@@ -36,7 +38,7 @@
 #          True
 #          {%- else -%}
 #          False
-#          {%- endif -%}          
+#          {%- endif -%}
 #    action:
 #      - service: switch.turn_on
 #        entity_id: switch.heater_baby_room
@@ -66,7 +68,7 @@
 #          False
 #          {%- else -%}
 #          True
-#          {%- endif -%}   
+#          {%- endif -%}
 #    action:
 #      - service: switch.turn_off
 #        entity_id: switch.heater_baby_room
@@ -81,7 +83,7 @@
 #script:
 #  turn_off_babyheater_switch_delayed:
 #    sequence:
-#      - delay: 
+#      - delay:
 #          seconds: 5
 #      - service: switch.turn_off
 #        entity_id: switch.heater_baby_room

@@ -1,9 +1,9 @@
 timer:
-  # When calling the start service on a timer that is already running, it resets 
-  # the duration it will need to finish and restart the timer without triggering 
-  # a canceled or finished event. This, for example, makes it easy to create 
-  # timed lights that get triggered by motion. Starting a timer triggers a 
-  # started event unless the timer is paused, in that case, it triggers a 
+  # When calling the start service on a timer that is already running, it resets
+  # the duration it will need to finish and restart the timer without triggering
+  # a canceled or finished event. This, for example, makes it easy to create
+  # timed lights that get triggered by motion. Starting a timer triggers a
+  # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   mainbedroomlight:
     duration: '00:10:00'
@@ -21,7 +21,7 @@ automation:
       data:
         entity_id: light.main_bedroom
         transition: 30
-  
+
   # Motion = Turn on
   - alias: Turn on mainbedroom lights when there is movement
     trigger:
@@ -31,19 +31,19 @@ automation:
     condition:
       - condition: and
         conditions:
-        - condition: state  # 'night' condition: from sunset until sunrise 
-          entity_id: sun.sun
-          state: 'below_horizon'
+          - condition: state  # 'night' condition: from sunset until sunrise
+            entity_id: sun.sun
+            state: 'below_horizon'
       - condition: or
         conditions:
-        - condition: state
-          entity_id: light.main_bedroom
-          state: 'off'
-          for:
-            seconds: 15
-        - condition: state
-          entity_id: light.main_bedroom
-          state: 'on'
+          - condition: state
+            entity_id: light.main_bedroom
+            state: 'off'
+            for:
+              seconds: 15
+          - condition: state
+            entity_id: light.main_bedroom
+            state: 'on'
     action:
       - service: light.turn_on
         data_template:
@@ -94,17 +94,17 @@ automation:
         entity_id: alarm_control_panel.home_alarm
     action:
       - choose:
-        # Morning
-        - conditions:
-            - condition: or
-              conditions:
-                - condition: state
-                  entity_id: binary_sensor.either_parent_phones_charging
-                  state: 'on'
-                - condition: state
-                  entity_id: alarm_control_panel.home_alarm
-                  state: 'armed_home'
-          sequence:
+          # Morning
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: binary_sensor.either_parent_phones_charging
+                    state: 'on'
+                  - condition: state
+                    entity_id: alarm_control_panel.home_alarm
+                    state: 'armed_home'
+            sequence:
               # - alias: "Log action taken"
               #   service: script.log
               #   data:
@@ -115,14 +115,14 @@ automation:
               - service: switch.turn_on
                 data:
                   entity_id: switch.adaptive_lighting_sleep_mode_main_bedroom
-        - conditions:
-            - condition: state
-              entity_id: binary_sensor.either_parent_phones_charging
-              state: 'off'
-            - condition: state
-              entity_id: alarm_control_panel.home_alarm
-              state: 'disarmed'
-          sequence:
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.either_parent_phones_charging
+                state: 'off'
+              - condition: state
+                entity_id: alarm_control_panel.home_alarm
+                state: 'disarmed'
+            sequence:
               # - alias: "Log action taken"
                 # service: script.log
                 # data:

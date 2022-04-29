@@ -1,3 +1,5 @@
+---
+
 # If your robot is not auto detected you might need this for manual setup
 #vacuum:
 #  - platform: mqtt
@@ -26,7 +28,7 @@ sensor:
     sensors:
       vacuum_error_message:
         friendly_name: 'Vacuum Error Message'
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"   
+        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
   - platform: template
     sensors:
       vacuum_last_clean_stats:

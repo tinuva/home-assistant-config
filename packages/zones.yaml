@@ -117,9 +117,9 @@ automation:
               - wed
               - thu
               - fri
-        - condition: state
-          entity_id: vacuum.rockrobo
-          state: 'docked'
+          - condition: state
+            entity_id: vacuum.rockrobo
+            state: 'docked'
     action:
       - service: vacuum.start
         data:

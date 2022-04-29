@@ -10,18 +10,18 @@ automation:
         entity_id: timer.loadshedding_slot
         state: 'active'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.main_geyser
-        duration: >
-          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = sensor_names[now().weekday()] %}
-          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 180 | int * 60 }}{% endif -%}
-    - delay: '00:00:01' # Waits 1 seconds
-    - service: timer.pause
-      data_template:
-        entity_id: timer.main_geyser
+      - service: timer.start
+        data_template:
+          entity_id: timer.main_geyser
+          duration: >
+            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+            {% set today_name = sensor_names[now().weekday()] %}
+            {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+            {% else %}{{ 180 | int * 60 }}{% endif -%}
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: timer.pause
+        data_template:
+          entity_id: timer.main_geyser
 
   # Resume Main geyser after loadshedding finished
   - alias: Turn on Main geyser after loadshedding slot ended
@@ -35,10 +35,10 @@ automation:
         entity_id: timer.main_geyser
         state: 'paused'
     action:
-      # Starts or restarts a timer with the provided duration. 
-      # If no duration is given, it will either restart with its initial 
+      # Starts or restarts a timer with the provided duration.
+      # If no duration is given, it will either restart with its initial
       # value, or continue a paused timer with the remaining duration.
-      - service: timer.start  
+      - service: timer.start
         data:
           entity_id: timer.main_geyser
       - service: switch.turn_on
@@ -75,18 +75,18 @@ automation:
         entity_id: timer.loadshedding_slot
         state: 'active'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.front_geyser
-        duration: >
-          {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-          {% set today_name = sensor_names[now().weekday()] %}
-          {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
-          {% else %}{{ 180 | int * 60 }}{% endif -%}
-    - delay: '00:00:01' # Waits 1 seconds
-    - service: timer.pause
-      data_template:
-        entity_id: timer.front_geyser
+      - service: timer.start
+        data_template:
+          entity_id: timer.front_geyser
+          duration: >
+            {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+            {% set today_name = sensor_names[now().weekday()] %}
+            {% if today_name == 'sunday' %}{{ 300 | int * 60 }}
+            {% else %}{{ 180 | int * 60 }}{% endif -%}
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: timer.pause
+        data_template:
+          entity_id: timer.front_geyser
 
   # Resume Front geyser after loadshedding finished
   - alias: Turn on Front geyser after loadshedding slot ended
@@ -100,10 +100,10 @@ automation:
         entity_id: timer.front_geyser
         state: 'paused'
     action:
-      # Starts or restarts a timer with the provided duration. 
-      # If no duration is given, it will either restart with its initial 
+      # Starts or restarts a timer with the provided duration.
+      # If no duration is given, it will either restart with its initial
       # value, or continue a paused timer with the remaining duration.
-      - service: timer.start  
+      - service: timer.start
         data:
           entity_id: timer.front_geyser
       - service: switch.turn_on

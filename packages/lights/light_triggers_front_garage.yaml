@@ -1,3 +1,5 @@
+---
+
 timer:
   front_garage_light:
     duration: '00:05:00'
@@ -6,39 +8,39 @@ automation:
 ### front garage entrance is through the garage door itself and door to house
 ### front Garage
 
-# Timer end = Turn off
-- alias: Turn off front garage lights after timer finished
-  trigger:
-    platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.front_garage_light
-  action:
-    service: light.turn_off
-    data:
-      entity_id: light.front_garage
+  # Timer end = Turn off
+  - alias: Turn off front garage lights after timer finished
+    trigger:
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.front_garage_light
+    action:
+      service: light.turn_off
+      data:
+        entity_id: light.front_garage
 
-# Open/Close = Start timer
-- alias: Turn on front garage lights when door opened or closed
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.front_garage_door_window
-    to: 'off'
-  - platform: state
-    entity_id: binary_sensor.front_garage_door_window
-    to: 'on'
-  - platform: state
-    entity_id: binary_sensor.garage_inside_door
-    to: 'on'
-  condition:
-    - condition: state  # 'night' condition: from sunset until sunrise 
-      entity_id: sun.sun
-      state: 'below_horizon'
-  action:
-  - service: light.turn_on
-    data:
-      entity_id:
-        - light.front_garage
-  - service: timer.start
-    data:
-      entity_id: timer.front_garage_light
+  # Open/Close = Start timer
+  - alias: Turn on front garage lights when door opened or closed
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.front_garage_door_window
+        to: 'off'
+      - platform: state
+        entity_id: binary_sensor.front_garage_door_window
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.garage_inside_door
+        to: 'on'
+    condition:
+      - condition: state  # 'night' condition: from sunset until sunrise
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+      - service: light.turn_on
+        data:
+          entity_id:
+            - light.front_garage
+      - service: timer.start
+        data:
+          entity_id: timer.front_garage_light

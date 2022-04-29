@@ -1,68 +1,70 @@
+---
+
 adaptive_lighting:
-- prefer_rgb_color: false
-  transition: 45
-  initial_transition: 1
-  sleep_transition: 10
-  interval: 90
-  min_brightness: 1
-  max_brightness: 40
-  sleep_brightness: 1
-  sunrise_offset: 1800
-  sunset_offset: -1800 
-  take_over_control: true
-  detect_non_ha_changes: true
-  only_once: false
-  name: "lounge"
-  lights:
-    - light.lounge
+  - prefer_rgb_color: false
+    transition: 45
+    initial_transition: 1
+    sleep_transition: 10
+    interval: 90
+    min_brightness: 1
+    max_brightness: 40
+    sleep_brightness: 1
+    sunrise_offset: 1800
+    sunset_offset: -1800
+    take_over_control: true
+    detect_non_ha_changes: true
+    only_once: false
+    name: "lounge"
+    lights:
+      - light.lounge
 
-- prefer_rgb_color: false
-  transition: 45
-  initial_transition: 1
-  sleep_transition: 10
-  interval: 90
-  min_brightness: 10
-  max_brightness: 60
-  sleep_brightness: 10
-  sunrise_offset: 1800
-  sunset_offset: -1800 
-  take_over_control: true
-  detect_non_ha_changes: true
-  only_once: false
-  name: "kitchen"
-  lights:
-    - light.kitchen
+  - prefer_rgb_color: false
+    transition: 45
+    initial_transition: 1
+    sleep_transition: 10
+    interval: 90
+    min_brightness: 10
+    max_brightness: 60
+    sleep_brightness: 10
+    sunrise_offset: 1800
+    sunset_offset: -1800
+    take_over_control: true
+    detect_non_ha_changes: true
+    only_once: false
+    name: "kitchen"
+    lights:
+      - light.kitchen
 
-- prefer_rgb_color: false
-  transition: 45
-  initial_transition: 1
-  sleep_transition: 10
-  interval: 90
-  min_brightness: 15
-  max_brightness: 30
-  sleep_brightness: 14
-  sunrise_offset: 1800
-  sunset_offset: -1800 
-  take_over_control: true
-  detect_non_ha_changes: true
-  only_once: false
-  name: "main bedroom"
-  lights:
-    - light.main_bedroom
+  - prefer_rgb_color: false
+    transition: 45
+    initial_transition: 1
+    sleep_transition: 10
+    interval: 90
+    min_brightness: 15
+    max_brightness: 30
+    sleep_brightness: 14
+    sunrise_offset: 1800
+    sunset_offset: -1800
+    take_over_control: true
+    detect_non_ha_changes: true
+    only_once: false
+    name: "main bedroom"
+    lights:
+      - light.main_bedroom
 
-- prefer_rgb_color: false
-  transition: 45
-  initial_transition: 1
-  sleep_transition: 10
-  interval: 90
-  min_brightness: 15
-  max_brightness: 30
-  sleep_brightness: 15
-  sunrise_offset: 1800
-  sunset_offset: -1800 
-  take_over_control: true
-  detect_non_ha_changes: true
-  only_once: false
-  name: "small bedroom"
-  lights:
-    - light.small_bedroom
+  - prefer_rgb_color: false
+    transition: 45
+    initial_transition: 1
+    sleep_transition: 10
+    interval: 90
+    min_brightness: 15
+    max_brightness: 30
+    sleep_brightness: 15
+    sunrise_offset: 1800
+    sunset_offset: -1800
+    take_over_control: true
+    detect_non_ha_changes: true
+    only_once: false
+    name: "small bedroom"
+    lights:
+      - light.small_bedroom

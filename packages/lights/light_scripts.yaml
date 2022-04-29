@@ -1,3 +1,5 @@
+---
+
 input_number:
   brightness_level:
     name: Brightness level

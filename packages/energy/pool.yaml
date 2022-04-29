@@ -37,66 +37,66 @@ automation:
       #  state: '1'
     action:
       - choose:
-        # Morning
-        - conditions:
-            - condition: time
-              after: '9:00:00'
-              before: '16:00:00'
-            - condition: numeric_state
-              entity_id: sensor.solcast_forecast
-              above: '17'
-            - condition: or
-              conditions:
-                - condition: numeric_state
-                  entity_id: sensor.solcast_forecast
-                  above: '19'
-                #- condition: numeric_state
-                #  entity_id: sensor.goodwe_battery_soc
-                #  above: '43'
-          sequence:
-            - alias: "Set variables"
-              variables:
-                duration: >
-                  {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-                  {% set today_name = day_names[now().weekday()] %}
-                  {% set duration = 1 %}
-                  {% if 25 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
-                  {% elif 22 <= states('sensor.solcast_forecast')|float < 25 %}{% set duration = 7 %}
-                  {% elif 20 <= states('sensor.solcast_forecast')|float < 22 %}{% set duration = 6 %}
-                  {% elif 18 <= states('sensor.solcast_forecast')|float < 20 %}{% set duration = 5 %}
-                  {% elif 17 <= states('sensor.solcast_forecast')|float < 18 %}{% set duration = 4 %}
-                  {% else %}{% set duration = 1 %}{% endif -%}
-                  {% if states('sensor.goodwe_battery_soc')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
-                  {{ duration|int * 60 * 60 }}
-            - service: timer.start
-              data_template:
-                entity_id: timer.pool_pump
-                duration: "{{ duration }}"
-            - service: switch.turn_on
-              data:
-                entity_id: switch.pool_pump
-        # Afternoon after geyser
-        - conditions:
-            - condition: time
-              after: '11:10:00'
-              before: '16:00:00'
-            - condition: numeric_state
-              entity_id: sensor.solcast_forecast
-              above: '3'
-          sequence:
-            - service: timer.start
-              data_template:
-                entity_id: timer.pool_pump
-                duration: >
-                  {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
-                  {% set today_name = day_names[now().weekday()] %}
-                  {% if 5 <= states('sensor.solcast_forecast')|float %}{{ 4 * 60 | int * 60 }}
-                  {% elif 4 <= states('sensor.solcast_forecast')|float < 5 %}{{ 3 * 60 | int * 60 }}
-                  {% elif 3 <= states('sensor.solcast_forecast')|float < 4 %}{{ 2 * 60 | int * 60 }}
-                  {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
-            - service: switch.turn_on
-              data:
-                entity_id: switch.pool_pump
+          # Morning
+          - conditions:
+              - condition: time
+                after: '9:00:00'
+                before: '16:00:00'
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast
+                above: '17'
+              - condition: or
+                conditions:
+                  - condition: numeric_state
+                    entity_id: sensor.solcast_forecast
+                    above: '19'
+                  #- condition: numeric_state
+                  #  entity_id: sensor.goodwe_battery_soc
+                  #  above: '43'
+            sequence:
+              - alias: "Set variables"
+                variables:
+                  duration: >
+                    {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+                    {% set today_name = day_names[now().weekday()] %}
+                    {% set duration = 1 %}
+                    {% if 25 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
+                    {% elif 22 <= states('sensor.solcast_forecast')|float < 25 %}{% set duration = 7 %}
+                    {% elif 20 <= states('sensor.solcast_forecast')|float < 22 %}{% set duration = 6 %}
+                    {% elif 18 <= states('sensor.solcast_forecast')|float < 20 %}{% set duration = 5 %}
+                    {% elif 17 <= states('sensor.solcast_forecast')|float < 18 %}{% set duration = 4 %}
+                    {% else %}{% set duration = 1 %}{% endif -%}
+                    {% if states('sensor.goodwe_battery_soc')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
+                    {{ duration|int * 60 * 60 }}
+              - service: timer.start
+                data_template:
+                  entity_id: timer.pool_pump
+                  duration: "{{ duration }}"
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.pool_pump
+          # Afternoon after geyser
+          - conditions:
+              - condition: time
+                after: '11:10:00'
+                before: '16:00:00'
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast
+                above: '3'
+            sequence:
+              - service: timer.start
+                data_template:
+                  entity_id: timer.pool_pump
+                  duration: >
+                    {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
+                    {% set today_name = day_names[now().weekday()] %}
+                    {% if 5 <= states('sensor.solcast_forecast')|float %}{{ 4 * 60 | int * 60 }}
+                    {% elif 4 <= states('sensor.solcast_forecast')|float < 5 %}{{ 3 * 60 | int * 60 }}
+                    {% elif 3 <= states('sensor.solcast_forecast')|float < 4 %}{{ 2 * 60 | int * 60 }}
+                    {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.pool_pump
         default:
           - service: switch.turn_off
             entity_id: switch.pool_pump
@@ -116,11 +116,12 @@ automation:
         entity_id: timer.pool_pump
         state: 'idle'
     action:
-    - service: timer.start
-      data_template:
-        entity_id: timer.pool_pump
-        duration: >
-          {{ 2 | int * 60 }} 
+      - service: timer.start
+        data_template:
+          entity_id: timer.pool_pump
+          duration: >
+            {{ 2 | int * 60 }}
+
   # pool pump off when timer finish
   - alias: Turn off pool pump
     trigger:

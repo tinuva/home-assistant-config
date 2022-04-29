@@ -62,7 +62,7 @@ sensor:
         device_class: power
         #icon: mdi:battery-high # not possible?
       # Template sensor for values of power pulled from (goodwe_pbattery1 > 0)
-      battery_discharge_power: 
+      battery_discharge_power:
         friendly_name: "Battery Discharging Power"
         unit_of_measurement: 'W'
         value_template: >-
@@ -388,10 +388,10 @@ automation:
                 text:
                   type: mrkdwn
                   text: >
-                    GoodWe Battery State of Health LOW 
+                    GoodWe Battery State of Health LOW
                     Current SoH: {{ states('sensor.goodwe_battery_soh') }}
           title: 'Power'
           target: ["#alerts"]
           message: >
-            GoodWe Battery State of Health LOW 
+            GoodWe Battery State of Health LOW
             Current SoH: {{ states('sensor.goodwe_battery_soh') }}

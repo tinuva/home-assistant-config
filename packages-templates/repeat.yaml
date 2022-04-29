@@ -17,7 +17,7 @@ action:
             id: geyser-on
         sequence:
           - type: turn_on
-            device_id: 
+            #device_id:
             entity_id: switch.geyser
             domain: switch
       - conditions:
@@ -28,12 +28,12 @@ action:
               until:
                 - type: is_power
                   condition: device
-                  device_id: 
+                  #device_id:
                   entity_id: sensor.geyser_power
                   domain: sensor
                   below: 100
               sequence:
                 - type: turn_off
-                  device_id: 
+                  #device_id:
                   entity_id: switch.geyser
                   domain: switch

@@ -1,3 +1,5 @@
+---
+
 light:
   - platform: group
     name: Lights whole night
@@ -34,7 +36,7 @@ automation:
           #before_offset: "-00:20:00"
     action:
       - service: light.turn_on
-        entity_id: 
+        entity_id:
           - light.lights_whole_night
 
   ## Whole day
@@ -54,9 +56,9 @@ automation:
           #before_offset: "00:20:00"
     action:
       - service: light.turn_off
-        entity_id: 
+        entity_id:
           - light.lights_whole_night
-  
+
   ## While awake
   - alias: "Turn on outside lights and check every minute - whole awake"
     trigger:
@@ -118,7 +120,7 @@ automation:
             state: armed_away
     action:
       - service: light.turn_off
-        entity_id: 
+        entity_id:
           - light.lights_while_awake
           - light.lights_while_awake_with_guests
           - light.pool

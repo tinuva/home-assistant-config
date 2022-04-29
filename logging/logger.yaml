@@ -51,7 +51,7 @@ logs:
   # homeassistant.components.weather: debug
   # homeassistant.components.zeroconf: debug
   #homeassistant.components.alexa.state_report: fatal
-  homeassistant.components.speedtestdotnet]: fatal 
+  homeassistant.components.speedtestdotnet]: fatal
 
   slixmpp.basexmpp: error
   slixmpp.stringprep: fatal

@@ -11,18 +11,18 @@
 
 ### Devices tested and confirmed working
 
-# Sonoff Basic ZBR3 (router/repeater) 
+# Sonoff Basic ZBR3 (router/repeater)
 # https://www.banggood.com/SONOFF-BASICZBR3-Zig-Bee-DIY-Smart-Switch-Controlled-Via-SmartThing-APP-Works-With-SmartThings-Hub-Alexa-p-1593931.html?p=DX050122090268201806&custlinkid=1222451
 
 # Sonoff Zigbee Door/Window sensor
 # https://www.banggood.com/Original-Aqara-ZigBee-Version-Window-Door-Sensor-Smart-Home-Kit-Remote-Alarm-Xiaomi-Eco-System-p-1149705.html?p=DX050122090268201806&custlinkid=1222463
 
-# Xiaomi Aqara Temperature/Humidity sensor 
+# Xiaomi Aqara Temperature/Humidity sensor
 # https://www.banggood.com/XIAOMI-Portable-Real-time-High-Accuracy-Temperature-Humidity-Intelligent-Sensor-Control-Smart-Detector-Auto-Alarm-Monitoring-Home-Office-Thermometer-Measurer-p-1632931.html?p=DX050122090268201806&custlinkid=1189773
 
-# Xiaomi Aqara button (press button trigger stuff) 
+# Xiaomi Aqara button (press button trigger stuff)
 # https://www.banggood.com/Original-Aqara-ZigBee-Wireless-Smart-Switch-Upgrade-Version-Smart-Home-Remote-Controller-Button-From-Xiaomi-Mijia-Eco-System-p-1478531.html?p=DX050122090268201806&custlinkid=1222446
-# Sample config - Available actions: Click and Hold 
+# Sample config - Available actions: Click and Hold
 # automation:
 #   # Kitchen button
 #   - alias: 'MQTT Zigbee Button Kitchen single click'
@@ -36,6 +36,7 @@
 #         data:
 #           entity_id: input_boolean.kitchenwork
 
+---
 # Start of package. package/tasmota_zigbee.yaml
 automation:
   ## Zigbee2tasmota MQTT demultiplexer automations
@@ -71,7 +72,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Occupancy
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -110,7 +111,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/ZoneStatusChange
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -153,7 +154,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Humidity
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -196,7 +197,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Temperature
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -234,7 +235,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Pressure
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -272,7 +273,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Illuminance
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -310,7 +311,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Battery
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -348,7 +349,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/LinkQuality
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
@@ -371,17 +372,17 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Click
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].click }}
           #retain: true
       - delay:
-           seconds: 2
+          seconds: 2
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Click
           payload: ""
           #retain: true
@@ -402,14 +403,14 @@ automation:
     action:
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}
             {{ trigger.payload_json.ZbReceived[code].action }}
           #retain: true
       - delay:
-           seconds: 2
+          seconds: 2
       - service: mqtt.publish
         data_template:
           topic: > 
@@ -450,7 +451,7 @@ automation:
             }
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] |lower|replace(' ','_') }}/Power
           payload: >
             {% set code = (trigger.payload_json.ZbReceived.keys() | list)[0] %}

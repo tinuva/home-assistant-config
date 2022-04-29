@@ -13,7 +13,7 @@
 #  petdoor_mode_unlocked:
 #    name: Pet Door Unlocked
 #    icon: mdi:door-open
-# 
+#
 #  petdoor_mode_locked_in:
 #    name: Pet Door Locked In
 #    icon: mdi:door-closed
