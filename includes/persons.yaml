@@ -9,7 +9,7 @@
 #
 #- from github.com/tinuva/home-assistant-config
 - id: david
-  name: David  
+  name: David
   user_id: c58b84c8b5fe4d94b3013f471f8c8615
   device_trackers:
     - device_tracker.mi_9t

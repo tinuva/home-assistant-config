@@ -18,7 +18,7 @@ automation:
         entity_id: binary_sensor.back_beam
         to: 'on'
     condition:
-      - condition: state  # 'night' condition: from sunset until sunrise 
+      - condition: state  # 'night' condition: from sunset until sunrise
         entity_id: sun.sun
         state: 'below_horizon'
     action:

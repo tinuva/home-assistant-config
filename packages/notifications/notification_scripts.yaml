@@ -88,7 +88,7 @@ script:
               - service: notify.slack
                 data:
                   message: '{{ message }}'
-                  target: '{{ target }}'               
+                  target: '{{ target }}'
                   data:
                     icon: "{{ icon }}"
                     username: '{{ object }}'

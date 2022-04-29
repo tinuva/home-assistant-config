@@ -413,7 +413,7 @@ automation:
           seconds: 2
       - service: mqtt.publish
         data_template:
-          topic: > 
+          topic: >
             tele/zigbee/{{ (trigger.payload_json.ZbReceived.keys() | list)[0] }}/Action
           payload: ""
           #retain: true

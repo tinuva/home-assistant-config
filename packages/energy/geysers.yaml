@@ -159,11 +159,11 @@ automation:
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
-            - condition: state
-              entity_id: timer.loadshedding_slot
-              state: 'idle'
-            - condition: template
-              value_template: "{{ ('12:40' <= states('sensor.time') <= '14:00') }}"
+              - condition: state
+                entity_id: timer.loadshedding_slot
+                state: 'idle'
+              - condition: template
+                value_template: "{{ ('12:40' <= states('sensor.time') <= '14:00') }}"
             sequence:
               - service: script.geyser_on_mainbedroom
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
