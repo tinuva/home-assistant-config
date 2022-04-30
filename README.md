@@ -12,6 +12,12 @@
 ![GitHub Watchers][watchers-shield]
 ![GitHub Forks][forks-shield]
 
+## About
+
+This is my personal Home Assistant configuration, running my home automations.
+
+Follow me on my journey and be sure to hit the GitHub :star2:
+
 ## Noteworthy (useful) automations
 * [Bahtroom Light/Fan](packages/bathroom_humidity.yaml) that uses the Xiaomi Aqara humidity sensors to automatically turn the fan on/off during day time
 * [Camera Slack Notification](packages/camera_notifications.yaml)
@@ -57,9 +63,40 @@
   * [Sonoff Zigbee door/windows sensor](https://www.banggood.com/Original-Aqara-ZigBee-Version-Window-Door-Sensor-Smart-Home-Kit-Remote-Alarm-Xiaomi-Eco-System-p-1149705.html?p=DX050122090268201806&custlinkid=1222463) for indoors doors not on the Alarm system
   * [Xiaomi Mi Light Detection Smart Sensor](https://www.takealot.com/xiaomi-mi-light-detection-smart-sensor/PLID72760298?gclsrc=aw.ds)
 
+## Contributing
 
-## Automation plans
-* Still many ideas not fleshed out yet - WIP
+I consider my personal Home Assistant configuration an active open-source project.
+So if you feel like adding an improvement, feel free to contribute.
+
+Thank you for being involved! :heart_eyes:
+
+## Authors & contributors
+
+The original setup of this repository is by [David Bezuidenhout][tinuva].
+
+## License
+
+MIT License
+
+Copyright (c) 2018-2022 Franck Nijhof
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 [commits-shield]: https://img.shields.io/github/commit-activity/y/tinuva/home-assistant-config.svg
 [commits]: https://github.com/tinuva/home-assistant-config/commits/master
