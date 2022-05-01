@@ -3,7 +3,6 @@
 
 ![Project Maintenance][maintenance-shield]
 [![License][license-shield]](LICENSE.md)
-
 [![GitHub Actions][actions-shield]][actions]
 [![GitHub Activity][commits-shield]][commits]
 [![GitHub Last Commit][last-commit-shield]][commits]
@@ -78,7 +77,7 @@ The original setup of this repository is by [David Bezuidenhout][tinuva].
 
 MIT License
 
-Copyright (c) 2018-2022 Franck Nijhof
+Copyright (c) 2018-2022 David Bezuidenhout
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -98,10 +97,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+[tinuva]: https://github.com/tinuva
 [commits-shield]: https://img.shields.io/github/commit-activity/y/tinuva/home-assistant-config.svg
 [commits]: https://github.com/tinuva/home-assistant-config/commits/master
 [contributors]: https://github.com/tinuva/home-assistant-config/graphs/contributors
-[frenck]: https://github.com/frenck
 [actions-shield]: https://github.com/tinuva/home-assistant-config/workflows/Home%20Assistant%20CI/badge.svg
 [actions]: https://github.com/tinuva/home-assistant-config/actions
 [home-assistant]: https://home-assistant.io
