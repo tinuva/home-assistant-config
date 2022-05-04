@@ -16,6 +16,7 @@ logs:
   homeassistant.config: debug
   homeassistant.helpers.entity: error
   homeassistant.helpers.script: debug
+  homeassistant.loader: error
 
   custom_components.localtuya: fatal
 
