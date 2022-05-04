@@ -159,19 +159,19 @@ automation:
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
-              - condition: state
-                entity_id: timer.loadshedding_slot
-                state: 'idle'
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
               - condition: template
-                value_template: "{{ ('12:40' <= states('sensor.time') <= '14:00') }}"
+                value_template: "{{ ('11:00' <= states('sensor.time') <= '14:00') }}"
             sequence:
               - service: script.geyser_on_mainbedroom
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
           # Also, if average temp below 21degree
           - conditions:
-              - condition: state
-                entity_id: timer.loadshedding_slot
-                state: 'idle'
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
               - condition: state
                 entity_id: timer.main_geyser
                 state: 'idle'
@@ -182,9 +182,9 @@ automation:
             sequence:
               - service: script.geyser_on_mainbedroom
           - conditions:
-              - condition: state
-                entity_id: timer.loadshedding_slot
-                state: 'idle'
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
               - condition: state
                 entity_id: timer.main_geyser
                 state: 'idle'
@@ -293,24 +293,24 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '12:00:00'
+        at: '11:15:00'
     action:
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
-              - condition: state
-                entity_id: timer.loadshedding_slot
-                state: 'idle'
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
               - condition: template
-                value_template: "{{ ('12:00' <= states('sensor.time') <= '14:00') }}"
+                value_template: "{{ ('11:00' <= states('sensor.time') <= '14:00') }}"
             sequence:
               - service: script.geyser_on_front
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
           # Also, if average temp below 21degree
           - conditions:
-              - condition: state
-                entity_id: timer.loadshedding_slot
-                state: 'idle'
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
               - condition: state
                 entity_id: timer.front_geyser
                 state: 'idle'
