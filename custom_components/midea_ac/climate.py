@@ -63,7 +63,7 @@ async def async_setup_platform(hass, config, async_add_entities,
                                discovery_info=None):
     """Set up the Midea lan service and query appliances."""
 
-    from msmart.device import air_conditioning_device as ac
+    from msmart.device import air_conditioning as ac
 
     device_ip = config.get(CONF_HOST)
     device_id = config.get(CONF_ID)
@@ -103,7 +103,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     def __init__(self, hass, device, temp_step: float,
                  include_off_as_state: bool, use_fan_only_workaround: bool):
         """Initialize the climate device."""
-        from msmart.device import air_conditioning_device as ac
+        from msmart.device import air_conditioning as ac
 
         self._operation_list = ac.operational_mode_enum.list()
         self._fan_list = ac.fan_speed_enum.list()
@@ -228,7 +228,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     def hvac_mode(self):
         """Return current operation ie. heat, cool, idle."""
         if self._old_state is not None:
-            from msmart.device import air_conditioning_device as ac
+            from msmart.device import air_conditioning as ac
             self._device.power_state = self._include_off_as_state and self._old_state.state != 'off'
             if self._old_state.state in ac.operational_mode_enum.list():
                 self._device.operational_mode = ac.operational_mode_enum[self._old_state.state]
@@ -242,7 +242,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     def fan_mode(self):
         """Return the fan setting."""
         if self._old_state is not None and 'fan_mode' in self._old_state.attributes:
-            from msmart.device import air_conditioning_device as ac
+            from msmart.device import air_conditioning as ac
             self._device.fan_speed = ac.fan_speed_enum[self._old_state.attributes['fan_mode']]
             return self._old_state.attributes['fan_mode']
 
@@ -252,7 +252,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
     def swing_mode(self):
         """Return the swing setting."""
         if self._old_state is not None and 'swing_mode' in self._old_state.attributes:
-            from msmart.device import air_conditioning_device as ac
+            from msmart.device import air_conditioning as ac
             self._device.swing_mode = ac.swing_mode_enum[self._old_state.attributes['swing_mode']]
             return self._old_state.attributes['swing_mode']
 
@@ -279,21 +279,21 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
 
     async def async_set_swing_mode(self, swing_mode):
         """Set swing mode."""
-        from msmart.device import air_conditioning_device as ac
+        from msmart.device import air_conditioning as ac
         self._device.swing_mode = ac.swing_mode_enum[swing_mode]
         self._changed = True
         await self.apply_changes()
 
     async def async_set_fan_mode(self, fan_mode):
         """Set fan mode."""
-        from msmart.device import air_conditioning_device as ac
+        from msmart.device import air_conditioning as ac
         self._device.fan_speed = ac.fan_speed_enum[fan_mode]
         self._changed = True
         await self.apply_changes()
 
     async def async_set_hvac_mode(self, hvac_mode):
         """Set hvac mode."""
-        from msmart.device import air_conditioning_device as ac
+        from msmart.device import air_conditioning as ac
         if self._include_off_as_state and hvac_mode == "off":
             self._device.power_state = False
         else:
