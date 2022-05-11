@@ -76,7 +76,7 @@ script:
           - conditions:
               - condition: template
                 value_template: >
-                  {{ (cam != false) }}
+                  {{ (cam != 'false') }}
             sequence:
               - service: camera.snapshot
                 data:
