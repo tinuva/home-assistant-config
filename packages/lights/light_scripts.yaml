@@ -17,26 +17,75 @@ script:
     sequence:
       - variables:
           light_entity: light.{{ light }}
+          start: >
+            {% if start is defined %}
+              start
+            {% else %}
+              0
+            {% endif %}
+          end: >
+            {% if end is defined %}
+              end
+            {% else %}
+              100
+            {% endif %}
+          method: >
+            {% if method is defined %}
+              method
+            {% else %}
+              decrement
+            {% endif %}
       # setting our input number to 255
       - service: input_number.set_value
         entity_id: input_number.brightness_level
         data:
-          value: 255
-      - repeat:
-          while:
-            - condition: numeric_state
-              entity_id: input_number.brightness_level
-              above: 0
-          sequence:
-            - service: light.turn_on
-              target:
-                entity_id: "{{ light_entity }}"
-              data:
-                brightness: "{{ states('input_number.brightness_level')|int }}"
-            - delay:
-                hours: 0
-                minutes: 0
-                seconds: 1
-                milliseconds: 0
-            - service: input_number.decrement
-              entity_id: input_number.brightness_level
+          value: "{{ start|int }}"
+      - choose:
+          # decrement
+          - conditions:
+              - condition: template
+                value_template: >-
+                  {{ method == 'decrement' }}
+            sequence:
+              - repeat:
+                  while:
+                    - condition: numeric_state
+                      entity_id: input_number.brightness_level
+                      above: 0
+                  sequence:
+                    - service: light.turn_on
+                      target:
+                        entity_id: "{{ light_entity }}"
+                      data:
+                        brightness: "{{ states('input_number.brightness_level')|int }}"
+                    - delay:
+                        hours: 0
+                        minutes: 0
+                        seconds: 1
+                        milliseconds: 0
+              - service: input_number.decrement
+                entity_id: input_number.brightness_level
+          # increment
+          - conditions:
+              - condition: template
+                value_template: >-
+                  {{ method == 'increment' }}
+            sequence:
+              - repeat:
+                  while:
+                    - condition: numeric_state
+                      entity_id: input_number.brightness_level
+                      below: 60
+                  sequence:
+                    - service: light.turn_on
+                      target:
+                        entity_id: "{{ light_entity }}"
+                      data:
+                        brightness: "{{ states('input_number.brightness_level')|int }}"
+                    - delay:
+                        hours: 0
+                        minutes: 0
+                        seconds: 1
+                        milliseconds: 0
+              - service: input_number.increment
+                entity_id: input_number.brightness_level
