@@ -1,12 +1,11 @@
-from email.policy import default
-from homeassistant import config_entries
+"""Config flow for cryptotracker"""
 from homeassistant.core import callback
-import voluptuous as vol
-
+from homeassistant import config_entries
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from .const import DOMAIN, CONF_BASE, CONF_CRYPTO, DEFAULT_NAME
+from .const import DOMAIN, CONF_BASE, CONF_CRYPTO
 from homeassistant.const import CONF_NAME
 from .api import CryptoTrackerApiClient
+import voluptuous as vol
 
 
 class CryptoTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -68,6 +67,6 @@ class CryptoTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             else:
                 self._errors[CONF_CRYPTO] = "invalid_crypto"
                 return False
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             pass
         return False

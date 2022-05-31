@@ -71,9 +71,7 @@ class CryptoTrackerUpdateCoordinator(DataUpdateCoordinator):
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     # coordinator = hass.data[DOMAIN][entry.entry_id]
-    unloaded = await asyncio.gather(
-        [hass.config_entries.async_forward_entry_unload(entry, "sensor")]
-    )
+    unloaded = await hass.config_entries.async_unload_platforms(entry, "sensor")
     if unloaded:
         hass.data[DOMAIN].pop(entry.entry_id)
 

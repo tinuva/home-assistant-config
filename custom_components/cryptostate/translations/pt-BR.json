@@ -1,0 +1,21 @@
+{
+    "config": {
+        "title": "Cryptotracker",
+        "step": {
+            "user": {
+                "title": "CryptoTracker",
+                "description": "Se precisar de ajuda, vá na página do componente: https://github.com/BigNocciolino/CryptoTracker",
+                "data": {
+                    "name": "Nome",
+                    "crypto": "Crypto moeda",
+                    "base": "Base"
+                }
+            }
+        },
+        "error": {
+            "invalid_crypto": "Formato de Crypto moeda inválido, para obter uma lista de moedas suportadas, consulte: https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json",
+            "invalid_base": "Formato base inválido, para obter uma lista de moedas suportadas, consulte: https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json"
+ 
+        }
+    }
+}
