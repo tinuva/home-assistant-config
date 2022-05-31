@@ -1,0 +1,127 @@
+---
+
+input_boolean:
+  presence_automation:
+    name: Presence Automation
+
+automation:
+  # Dave arrived home
+  - alias: Dave arrived home
+    trigger:
+      - entity_id: person.david
+        platform: state
+        to: 'home'
+        not_from:
+          - 'home'
+    condition:
+      - condition: state
+        entity_id: input_boolean.presence_automation
+        state: 'on'
+    action:
+      - service: script.arrivehome
+        data:
+          gate: 'cover.front_gate'
+          garagedoor: 'cover.garage_door_back'
+          alarm: 'alarm_control_panel.home_alarm'
+          close_gate: 'on'
+          close_garagedor: 'off'
+
+script:
+  ##########################################################################################################
+  # Re-usable script when returning home
+  ##########################################################################################################
+  # Example:
+  ##########################################################################################################
+  # - service: script.arrivehome
+  #   data:
+  #     gate: 'cover.front_gate'                  # optional - provide entity to turn off
+  #     garagedoor: 'cover.garage_door_back'      # optional - provide entity to turn off
+  #     alarm: 'alarm_control_panel.home_alarm'   # optional - provide entity to turn off
+  #     close_gate: 'on'                          # optional - default off (can also point to input_bool)
+  #     close_garagedor: 'on'                     # optional - default off (can also point to input_bool)
+  ##########################################################################################################
+  ##########################################################################################################
+  arrivehome:
+    sequence:
+      - variables:
+          var_close_gate: >
+            {% if close_gate is defined and (close_gate == 'on' or close_gate == 'off') %}
+              {{ close_gate }}
+            {% elif close_gate is defined %}
+              {{ states(close_gate) }}
+            {% else %}
+              off
+            {% endif %}
+          var_close_garagedoor: >
+            {% if close_garagedor is defined and (close_garagedor == 'on' or close_garagedor == 'off') %}
+              {{ close_garagedor }}
+            {% elif close_garagedor is defined %}
+              {{ states(close_garagedor) }}
+            {% else %}
+              off
+            {% endif %}
+      # Sending notification here (using slack so it goes to both person in #log)
+      - service: script.log
+        data:
+          object: 'flows'
+          message: >
+            Flow started: arrivehome
+            close_gate: {{ var_close_gate }}
+            close_garagedor: {{ var_close_garagedoor }}
+          target: 'logs'
+      # If alarm option and alarm armed then disarm alarm
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ alarm is defined and (states(alarm) == 'armed_away' or states(alarm) == 'armed_home') }}
+            sequence:
+              - service: alarm_control_panel.alarm_disarm
+                data:
+                  entity_id: "{{ alarm }}"
+      # wait a few seconds in case alarm was disarmed to allow gates not to trigger alarm before disarmed
+      - delay:
+          seconds: 1
+      # open gate if specified
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ gate is defined and states(gate) == 'closed' }}
+            sequence:
+              - service: cover.open_cover
+                data:
+                  entity_id: "{{ gate }}"
+      # open garagedoor if specified
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ garagedoor is defined and states(garagedoor) == 'closed' }}
+            sequence:
+              - service: cover.open_cover
+                data:
+                  entity_id: "{{ garagedoor }}"
+      # wait 40 seconds before trying to close anything
+      - delay:
+          seconds: 40
+      # close gate if specified
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ var_close_gate == 'on' and gate is defined and states(gate) == 'open' }}
+            sequence:
+              - service: cover.close_cover
+                data:
+                  entity_id: "{{ gate }}"
+      # close garagedoor if specified
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ var_close_garagedoor == 'on' and garagedoor is defined and states(garagedoor) == 'open' }}
+            sequence:
+              - service: cover.close_cover
+                data:
+                  entity_id: "{{ garagedoor }}"
