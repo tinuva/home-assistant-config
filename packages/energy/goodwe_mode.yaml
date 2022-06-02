@@ -1,3 +1,4 @@
+---
 automation:
   - alias: Inverter set general mode
     description: Inverter set general mode after reaching 100% in backup mode
@@ -54,10 +55,10 @@ automation:
       - condition: state
         entity_id: sensor.goodwe_inverter_operation_mode
         state: 'General mode'
-      # if current SoC above 64% - else we really top up too much from grid
+      # if current SoC above 89% - else we really top up too much from grid
       - condition: numeric_state
         entity_id: sensor.goodwe_battery_soc
-        above: '64'
+        above: '84'
       # Only if in online/grid mode, else backup might loser power
       - condition: state
         entity_id: sensor.goodwe_work_mode_label
@@ -65,7 +66,7 @@ automation:
       # Don't run if tomorrow not going lower than 16% dod eg. over 10kWh
       - condition: numeric_state
         entity_id: sensor.solcast_forecast_energy_tomorrow
-        above: '10'
+        above: '20'
     action:
       - service: select.select_option
         target:
