@@ -69,6 +69,8 @@ automation:
           #   {%- else -%}
           #   {{ ns.level }}
           #   {%- endif -%}
+      - condition: template
+        value_template: "{{ ('07:00' < states('sensor.time') or states('sensor.time') < '05:25') }}"
       - service: timer.start
         data:
           entity_id: timer.mainbedroomlight
