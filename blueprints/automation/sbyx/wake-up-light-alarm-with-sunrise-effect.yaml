@@ -1,3 +1,4 @@
+---
 blueprint:
   name: Wake-up light alarm with sunrise effect
   description: 'A wake-up light alarm with a brightness and color temperature sunrise
@@ -90,7 +91,7 @@ blueprint:
       default: []
       selector:
         action: {}
-  source_url: https://gist.github.com/sbyx/96c43b13b90ae1c35b872313ba1d2d2d/
+  source_url: https://gist.github.com/sbyx/96c43b13b90ae1c35b872313ba1d2d2d
 variables:
   light_entity: !input 'light_entity'
   sensor: !input 'timestamp_sensor'
@@ -102,78 +103,77 @@ variables:
   seconds: '{{float(sunrise_duration) * 60}}'
   min_mired: !input 'min_mired'
   start_mired: '{{state_attr(light_entity, ''max_mireds'')}}'
-  end_mired: '{{[state_attr(light_entity, ''min_mireds'')|int, min_mired|int]|max}}'
+  end_mired: '{{[state_attr(light_entity, ''min_mireds'')|int(0), min_mired|int(0)]|max}}'
   tick_time: '{{float(seconds) / float(range_brightness)}}'
   check_entity: !input 'check_entity'
 trigger:
-- platform: time_pattern
-  minutes: '*'
+  - platform: time_pattern
+    minutes: '*'
 condition: []
 action:
-- wait_template: '{{sensor == ''none'' or as_timestamp(states(sensor)) != None}}'
-- wait_template: '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-    ~ '' '' ~ manual_time) - as_timestamp(states(''sensor.date_time_iso'')) <= float(seconds)
-    and states(check_entity) in [''unknown'', ''on'', ''home'']}}'
-- choose: []
-  default: !input 'pre_sunrise_actions'
-- condition: template
-  value_template: '{{sensor == ''none'' or as_timestamp(states(sensor)) != None}}'
-- condition: template
-  value_template: '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-    ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds) and states(check_entity)
-    in [''unknown'', ''on'', ''home'']}}'
-- choose:
-  - conditions:
-    - '{{state_attr(light_entity, ''min_mireds'') != None}}'
-    sequence:
-    - service: light.turn_on
-      data:
-        brightness: '{{start_brightness}}'
-        color_temp: '{{start_mired}}'
-      entity_id: !input 'light_entity'
-  default:
-  - service: light.turn_on
-    data:
-      brightness: '{{start_brightness}}'
-    entity_id: !input 'light_entity'
-- repeat:
-    while:
-    - '{{sensor == ''none'' or as_timestamp(states(sensor)) != None}}'
-    - '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-      ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds)}}'
-    sequence:
-    - delay: '{{tick_time}}'
-    - choose:
+  - wait_template: '{{sensor == ''none'' or as_timestamp(states(sensor), None) != None}}'
+  - wait_template: '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+      ~ '' '' ~ manual_time) - as_timestamp(states(''sensor.date_time_iso'')) <= float(seconds)
+      and states(check_entity) in [''unknown'', ''on'', ''home'']}}'
+  - choose: []
+    default: !input 'pre_sunrise_actions'
+  - condition: template
+    value_template: '{{sensor == ''none'' or as_timestamp(states(sensor), None) != None}}'
+  - condition: template
+    value_template: '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+      ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds) and states(check_entity)
+      in [''unknown'', ''on'', ''home'']}}'
+  - choose:
       - conditions:
-        - '{{0 < state_attr(light_entity, ''brightness'') | int < end_brightness |
-          int}}'
-        - '{{sensor == ''none'' or as_timestamp(states(sensor)) != None}}'
-        - '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-          ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds)}}'
+          - '{{state_attr(light_entity, ''min_mireds'') != None}}'
         sequence:
-        - choose:
-          - conditions:
-            - '{{state_attr(light_entity, ''min_mireds'') != None}}'
-            sequence:
-            - service: light.turn_on
-              data:
-                brightness: '{{(float(end_brightness) - (float(range_brightness) *
-                  (as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-                  ~ '' '' ~ manual_time) - as_timestamp(now())) / float(seconds)))
-                  | int}}'
-                color_temp: '{{(float(end_mired) + (float(start_mired) - float(end_mired))
-                  * ((as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
-                  ~ '' '' ~ manual_time) - as_timestamp(now())) / float(seconds)))
-                  | int}}'
-              entity_id: !input 'light_entity'
-          default:
           - service: light.turn_on
             data:
-              brightness: '{{(float(end_brightness) - (float(range_brightness) * (as_timestamp(states(sensor)
-                if sensor != ''none'' else states(''sensor.date'') ~ '' '' ~ manual_time)
-                - as_timestamp(now())) / float(seconds))) | int}}'
+              brightness: '{{start_brightness}}'
+              color_temp: '{{start_mired}}'
             entity_id: !input 'light_entity'
-- choose: []
-  default: !input 'post_sunrise_actions'
+        default:
+          - service: light.turn_on
+            data:
+              brightness: '{{start_brightness}}'
+            entity_id: !input 'light_entity'
+  - repeat:
+      while:
+        - '{{sensor == ''none'' or as_timestamp(states(sensor), None) != None}}'
+        - '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+          ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds)}}'
+      sequence:
+        - delay: '{{tick_time}}'
+        - choose:
+            - conditions:
+                - '{{0 < state_attr(light_entity, ''brightness'') | int(0) < end_brightness | int}}'
+                - '{{sensor == ''none'' or as_timestamp(states(sensor), None) != None}}'
+                - '{{0 < as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+                  ~ '' '' ~ manual_time) - as_timestamp(now()) <= float(seconds)}}'
+              sequence:
+                - choose:
+                    - conditions:
+                        - '{{state_attr(light_entity, ''min_mireds'') != None}}'
+                  sequence:
+                    - service: light.turn_on
+                      data:
+                        brightness: '{{(float(end_brightness) - (float(range_brightness) *
+                          (as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+                          ~ '' '' ~ manual_time) - as_timestamp(now())) / float(seconds)))
+                          | int(0)}}'
+                        color_temp: '{{(float(end_mired) + (float(start_mired) - float(end_mired))
+                          * ((as_timestamp(states(sensor) if sensor != ''none'' else states(''sensor.date'')
+                          ~ '' '' ~ manual_time) - as_timestamp(now())) / float(seconds)))
+                          | int(0)}}'
+                      entity_id: !input 'light_entity'
+              default:
+                - service: light.turn_on
+                  data:
+                    brightness: '{{(float(end_brightness) - (float(range_brightness) * (as_timestamp(states(sensor)
+                      if sensor != ''none'' else states(''sensor.date'') ~ '' '' ~ manual_time)
+                      - as_timestamp(now())) / float(seconds))) | int(0)}}'
+                    entity_id: !input 'light_entity'
+  - choose: []
+    default: !input 'post_sunrise_actions'
 mode: single
 max_exceeded: silent
