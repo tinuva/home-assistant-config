@@ -153,25 +153,23 @@ template:
         unit_of_measurement: 'kWh'
         device_class: energy
 
-sensor:
-  - platform: mqtt
-    name: "Solcast Forecast Energy Today Predicted"
-    state_topic: "home/solcast/energy_today_predicted"
-    unit_of_measurement: 'kWh'
-    device_class: energy
-    unique_id: sensor.solcast_forecast_energy_today_predicted
-  - platform: mqtt
-    name: "Solcast Forecast Peak Time Today Predicted"
-    state_topic: "home/solcast/peak_time_today_predicted"
-    icon: mdi:clock
-    unique_id: sensor.solcast_forecast_peak_time_today_predicted
-  - platform: mqtt
-    name: "Solcast Forecast Peak Power Today Predicted"
-    state_topic: "home/solcast/peak_power_today_predicted"
-    unit_of_measurement: "kW"
-    device_class: power
-    state_class: measurement
-    unique_id: sensor.solcast_forecast_peak_power_today_predicted
+mqtt:
+  sensor:
+    - name: "Solcast Forecast Energy Today Predicted"
+      state_topic: "home/solcast/energy_today_predicted"
+      unit_of_measurement: 'kWh'
+      device_class: energy
+      unique_id: sensor.solcast_forecast_energy_today_predicted
+    - name: "Solcast Forecast Peak Time Today Predicted"
+      state_topic: "home/solcast/peak_time_today_predicted"
+      icon: mdi:clock
+      unique_id: sensor.solcast_forecast_peak_time_today_predicted
+    - name: "Solcast Forecast Peak Power Today Predicted"
+      state_topic: "home/solcast/peak_power_today_predicted"
+      unit_of_measurement: "kW"
+      device_class: power
+      state_class: measurement
+      unique_id: sensor.solcast_forecast_peak_power_today_predicted
 
 automation:
   - alias: Solcast Forecast to MQTT

@@ -1,16 +1,16 @@
-sensor:
-  - platform: mqtt
-    name: "Weather today max"
-    state_topic: "home/weather/today/max"
-    unit_of_measurement: '°C'
-    device_class: temperature
-    unique_id: sensor.weather_today_max
-  - platform: mqtt
-    name: "Weather today min"
-    state_topic: "home/weather/today/min"
-    unit_of_measurement: '°C'
-    device_class: temperature
-    unique_id: sensor.weather_today_min
+---
+mqtt:
+  sensor:
+    - name: "Weather today max"
+      state_topic: "home/weather/today/max"
+      unit_of_measurement: '°C'
+      device_class: temperature
+      unique_id: sensor.weather_today_max
+    - name: "Weather today min"
+      state_topic: "home/weather/today/min"
+      unit_of_measurement: '°C'
+      device_class: temperature
+      unique_id: sensor.weather_today_min
 
 automation:
   - alias: Weather Forecast to MQTT
