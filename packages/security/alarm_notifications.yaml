@@ -42,6 +42,9 @@ automation:
                   - condition: template
                     value_template: >
                       {{ trigger.from_state.state == 'armed_home' }}
+                  - condition: template
+                    value_template: >
+                      {{ trigger.from_state.state == 'exit_delay_in_progress' }}
             sequence:
               - service: script.log
                 data:
