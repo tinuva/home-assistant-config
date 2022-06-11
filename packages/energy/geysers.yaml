@@ -293,7 +293,7 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '11:15:00'
+        at: '11:05:00'
     action:
       - choose:
           # Turn on between 11am and 2pm for sun times

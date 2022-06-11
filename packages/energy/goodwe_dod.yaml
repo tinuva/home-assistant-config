@@ -23,13 +23,13 @@ script:
         variables:
           dod: >
             {% set forecast_int = forecast|int %}
-            {% if forecast_int >= 28 %}70
-            {% elif forecast_int >= 23 and forecast_int < 28 %}65
-            {% elif forecast_int >= 20 and forecast_int < 23 %}60
-            {% elif forecast_int >= 18 and forecast_int < 20 %}55
-            {% elif forecast_int >= 16 and forecast_int < 18 %}50
-            {% elif forecast_int >= 12 and forecast_int < 16 %}40
-            {% elif forecast_int >= 10 and forecast_int < 12 %}30
+            {% if forecast_int >= 28 %}75
+            {% elif forecast_int >= 23 and forecast_int < 28 %}70
+            {% elif forecast_int >= 20 and forecast_int < 23 %}65
+            {% elif forecast_int >= 18 and forecast_int < 20 %}60
+            {% elif forecast_int >= 16 and forecast_int < 18 %}55
+            {% elif forecast_int >= 12 and forecast_int < 16 %}45
+            {% elif forecast_int >= 10 and forecast_int < 12 %}35
             {% elif forecast_int >= 8 and forecast_int < 10 %}20
             {% else %}16{% endif -%}
       - condition: template

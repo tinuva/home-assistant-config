@@ -324,6 +324,11 @@ automation:
     trigger:
       - platform: template
         value_template: "{{ states('sensor.time') == ( '86399' | int | timestamp_custom('%H:%M', False)) }}"
+    # for now we want it monthly to reduce message spam
+    condition:
+      - condition: state
+        entity_id: binary_sensor.last_day_of_the_month
+        state: 'on'
     action:
       - service: notify.slack
         data_template:
