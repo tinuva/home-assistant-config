@@ -38,6 +38,9 @@ automation:
           - binary_sensor.iss
         to: 'on'
         from: 'off'
+    condition:
+      - condition: template
+        value_template: "{{ ('16:00' <= states('sensor.time') <= '21:30') }}"
     action:
       - service: script.voicealert
         data:
