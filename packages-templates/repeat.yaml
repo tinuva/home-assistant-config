@@ -37,3 +37,4 @@ action:
                   #device_id:
                   entity_id: switch.geyser
                   domain: switch
+# https://www.home-assistant.io/docs/scripts/#repeat-until
