@@ -76,7 +76,9 @@ automation:
           entity_id: timer.main_bathroom
           duration: >
             {% set time = states('sensor.time') %}
-            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+            {% if(is_state('timer.morning_wakup_window','active')) %}
+              {{120*60|int}}
+            {% elif(is_state('alarm_control_panel.home_alarm','armed_home')) %}
               {{4*60|int}}
             {% elif '20:00' <= time  <= '23:59' %}
               {{30*60|int}}
