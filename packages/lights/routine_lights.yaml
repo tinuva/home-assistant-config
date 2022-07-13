@@ -1,6 +1,0 @@
----
-
-timer:
-  morning_wakup_window:
-    name: Morning Wake Up Window
-    duration: '00:45:00'

@@ -1,0 +1,6 @@
+---
+
+timer:
+  morning_routine:
+    name: Morning Routine
+    duration: '02:00:00'
