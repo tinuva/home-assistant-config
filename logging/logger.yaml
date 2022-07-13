@@ -20,6 +20,11 @@ logs:
 
   custom_components.localtuya: fatal
 
+  #custom_components.goodwe: debug
+  #goodwe: debug
+
+  #custom_components.coct_loadshedding: debug
+
   #homeassistant.component.opentherm_gw: debug
   #homeassistant.components.shell_command: debug
   #homeassistant.components.python_script: warning
