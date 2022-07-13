@@ -119,6 +119,7 @@ action:
       and states(check_entity) in [''unknown'', ''on'', ''home'']}}'
   - choose: []
     default: !input 'pre_sunrise_actions'
+  - delay: '{{tick_time}}'
   - condition: template
     value_template: '{{sensor == ''none'' or as_timestamp(states(sensor), None) != None}}'
   - condition: template
