@@ -55,19 +55,19 @@ class CrossfadeDurationEntity(MassBaseEntity, NumberEntity):
         key="crossfade_duration",
         icon="mdi:camera-timer",
         entity_category=EntityCategory.CONFIG,
-        unit_of_measurement=TIME_SECONDS,
+        native_unit_of_measurement=TIME_SECONDS,
         name="Crossfade duration",
-        max_value=10,
-        min_value=0,
-        step=1,
+        native_max_value=10,
+        native_min_value=0,
+        native_step=1,
     )
 
     @property
-    def value(self) -> bool:
+    def native_value(self) -> int:
         """Return current value."""
         return self.queue.settings.crossfade_duration
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         self.queue.settings.crossfade_duration = int(value)
 
@@ -79,18 +79,18 @@ class VolumeNormalizationTargetEntity(MassBaseEntity, NumberEntity):
         key="volume_normalization_target",
         icon="mdi:chart-bar",
         entity_category=EntityCategory.CONFIG,
-        unit_of_measurement=TIME_SECONDS,
+        native_unit_of_measurement=TIME_SECONDS,
         name="Volume normalization target",
-        max_value=0,
-        min_value=-40,
-        step=1,
+        native_max_value=0,
+        native_min_value=-40,
+        native_step=1,
     )
 
     @property
-    def value(self) -> bool:
+    def native_value(self) -> float:
         """Return current value."""
         return self.queue.settings.volume_normalization_target
 
-    async def async_set_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         self.queue.settings.volume_normalization_target = value

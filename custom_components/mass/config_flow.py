@@ -18,6 +18,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers.entity_component import DATA_INSTANCES
 
 from .const import (
+    BLACKLIST_DOMAINS,
     CONF_CREATE_MASS_PLAYERS,
     CONF_FILE_DIRECTORY,
     CONF_FILE_ENABLED,
@@ -31,6 +32,9 @@ from .const import (
     CONF_SPOTIFY_USERNAME,
     CONF_TUNEIN_ENABLED,
     CONF_TUNEIN_USERNAME,
+    CONF_YTMUSIC_ENABLED,
+    CONF_YTMUSIC_PASSWORD,
+    CONF_YTMUSIC_USERNAME,
     DEFAULT_NAME,
     DOMAIN,
 )
@@ -53,6 +57,9 @@ DEFAULT_CONFIG = {
     CONF_QOBUZ_PASSWORD: "",
     CONF_TUNEIN_ENABLED: False,
     CONF_TUNEIN_USERNAME: "",
+    CONF_YTMUSIC_ENABLED: False,
+    CONF_YTMUSIC_USERNAME: "",
+    CONF_YTMUSIC_PASSWORD: "",
     CONF_FILE_ENABLED: False,
     CONF_FILE_DIRECTORY: "",
 }
@@ -80,17 +87,23 @@ def hide_player_entities(
 @callback
 def get_players_schema(hass: HomeAssistant, cur_conf: dict) -> vol.Schema:
     """Return player config schema."""
+    control_entities = hass.states.async_entity_ids(MP_DOMAIN)
     # filter any non existing device id's from the list to prevent errors
-    control_entities = hass.states.async_entity_ids("media_player")
     cur_ids = [
         item for item in cur_conf[CONF_PLAYER_ENTITIES] if item in control_entities
     ]
     # blacklist unsupported and mass entities
     exclude_entities = []
-    for entity_id in hass.states.async_entity_ids(MP_DOMAIN):
+    for entity_id in control_entities:
+        if entity_id in cur_ids:
+            continue
         entity_comp = hass.data.get(DATA_INSTANCES, {}).get(MP_DOMAIN)
         entity: MediaPlayerEntity = entity_comp.get_entity(entity_id)
-        if not entity or entity.platform.domain == DOMAIN:
+        if (
+            not entity
+            or entity.platform.platform_name == DOMAIN
+            or entity.platform.platform_name in BLACKLIST_DOMAINS
+        ):
             exclude_entities.append(entity_id)
             continue
         # require some basic features, most important `play_media`
@@ -100,13 +113,6 @@ def get_players_schema(hass: HomeAssistant, cur_conf: dict) -> vol.Schema:
             and entity.support_volume_set
         ):
             exclude_entities.append(entity_id)
-
-    ent_reg = er.async_get(hass)
-    exclude_entities = [
-        x.entity_id
-        for x in ent_reg.entities.values()
-        if x.domain == MP_DOMAIN and x.platform == DOMAIN
-    ]
 
     return vol.Schema(
         {
@@ -150,6 +156,15 @@ def get_music_schema(cur_conf: dict):
                 CONF_QOBUZ_PASSWORD, default=cur_conf[CONF_QOBUZ_PASSWORD]
             ): str,
             vol.Required(
+                CONF_YTMUSIC_ENABLED, default=cur_conf.get(CONF_YTMUSIC_ENABLED, False)
+            ): bool,
+            vol.Optional(
+                CONF_YTMUSIC_USERNAME, default=cur_conf.get(CONF_YTMUSIC_USERNAME, "")
+            ): str,
+            vol.Optional(
+                CONF_YTMUSIC_PASSWORD, default=cur_conf.get(CONF_YTMUSIC_PASSWORD, "")
+            ): str,
+            vol.Required(
                 CONF_TUNEIN_ENABLED,
                 default=cur_conf[CONF_TUNEIN_ENABLED],
             ): bool,
@@ -177,6 +192,11 @@ def validate_config(user_input: dict) -> dict:
         music_dir = user_input.get(CONF_FILE_DIRECTORY)
         if music_dir and not os.path.isdir(music_dir):
             errors[CONF_FILE_DIRECTORY] = "directory_not_exists"
+    if user_input.get(CONF_YTMUSIC_ENABLED):
+        # check if user has cookie in password
+        yt_pass = user_input.get(CONF_YTMUSIC_PASSWORD)
+        if not CONF_YTMUSIC_PASSWORD or len(yt_pass) < 50:
+            errors[CONF_YTMUSIC_PASSWORD] = "yt_no_cookie"
     return errors
 
 
@@ -291,6 +311,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             last_step=False,
             errors=errors,
         )
+
+        # return self.async_show_menu(
+        #     step_id="user",
+        #     menu_options=["add_new", "spotify_1", "spotify_2"],
+        #     description_placeholders={
+        #         "add_new": "Add new music provider",
+        #     }
+        # )
 
     async def async_step_adv(self, user_input=None):
         """Handle getting advanced config options from the user."""

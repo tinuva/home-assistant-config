@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import logging
 import os
+import socket
+from urllib.parse import urlparse
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
@@ -10,6 +12,7 @@ from homeassistant.core import Event, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 from homeassistant.helpers.start import async_at_start
 from music_assistant import MusicAssistant
 from music_assistant.models.config import MassConfig, MusicProviderConfig
@@ -31,6 +34,9 @@ from .const import (
     CONF_SPOTIFY_USERNAME,
     CONF_TUNEIN_ENABLED,
     CONF_TUNEIN_USERNAME,
+    CONF_YTMUSIC_ENABLED,
+    CONF_YTMUSIC_PASSWORD,
+    CONF_YTMUSIC_USERNAME,
     DOMAIN,
     DOMAIN_EVENT,
 )
@@ -48,6 +54,35 @@ FORWARD_EVENTS = (
     EventType.QUEUE_ITEMS_UPDATED,
     EventType.QUEUE_TIME_UPDATED,
 )
+
+
+def get_local_ip_from_internal_url(hass: HomeAssistant):
+    """Get the stream ip address from the internal_url."""
+    try:
+        url = get_url(
+            hass,
+            allow_internal=True,
+            allow_external=False,
+            allow_cloud=False,
+            allow_ip=True,
+        )
+    except NoURLAvailableError:
+        LOGGER.warning(
+            "Unable to retrieve the internal URL from Home Assistant, "
+            "this may cause issues resolving the correct internal stream ip. "
+            "Please set a valid internal url in the Home Assistant configuration"
+        )
+        return hass.config.api.local_ip
+    parsed_uri = urlparse(url)
+
+    if parsed_uri.netloc == "":
+        return hass.config.api.local_ip
+
+    try:
+        return socket.gethostbyname(parsed_uri.netloc)
+    except socket.gaierror:
+        # url is set as ip instead of hostname
+        return hass.config.api.local_ip
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -95,7 +130,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                 path=conf.get(CONF_FILE_DIRECTORY),
             )
         )
-    stream_ip = hass.config.api.local_ip
+    if conf.get(CONF_YTMUSIC_ENABLED):
+        providers.append(
+            MusicProviderConfig(
+                ProviderType.YTMUSIC,
+                username=conf.get(CONF_YTMUSIC_USERNAME),
+                password=conf.get(CONF_YTMUSIC_PASSWORD),
+            )
+        )
+    stream_ip = get_local_ip_from_internal_url(hass)
     mass_conf = MassConfig(
         database_url=f"sqlite:///{db_file}", providers=providers, stream_ip=stream_ip
     )

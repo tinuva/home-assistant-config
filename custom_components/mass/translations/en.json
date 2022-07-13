@@ -18,6 +18,9 @@
           "qobuz_enabled": "Enable Qobuz music provider",
           "qobuz_username": "Username for Qobuz",
           "qobuz_password": "Password for Qobuz",
+          "ytmusic_enabled": "Enable Youtube Music provider",
+          "ytmusic_username": "Username for Youtube Music",
+          "ytmusic_password": "Log-in Cookie for Youtube Music",
           "tunein_enabled": "Enable Tune-In Radio music provider",
           "tunein_username": "Username for Tune-In Radio",
           "filesystem_enabled": "Enable filesystem provider",
@@ -29,7 +32,8 @@
       }
     },
     "error": {
-      "directory_not_exists": "Directory does not exist or not accessible"
+      "directory_not_exists": "Directory does not exist or not accessible",
+      "yt_no_cookie": "Youtube Music requires a cookie in the password field, see here: https://github.com/music-assistant/hass-music-assistant/discussions/606"
     }
   },
   "options": {
@@ -51,6 +55,9 @@
           "qobuz_enabled": "Enable Qobuz music provider",
           "qobuz_username": "Username for Qobuz",
           "qobuz_password": "Password for Qobuz",
+          "ytmusic_enabled": "Enable Youtube Music provider",
+          "ytmusic_username": "Username for Youtube Music",
+          "ytmusic_password": "Log-in Cookie for Youtube Music",
           "tunein_enabled": "Enable Tune-In Radio music provider",
           "tunein_username": "Username for Tune-In Radio",
           "filesystem_enabled": "Enable filesystem provider",
@@ -70,7 +77,8 @@
       }
     },
     "error": {
-      "directory_not_exists": "Directory does not exist or not accessible"
+      "directory_not_exists": "Directory does not exist or not accessible",
+      "yt_no_cookie": "Youtube Music requires a cookie in the password field, see here: https://github.com/music-assistant/hass-music-assistant/discussions/606"
     }
   }
 }

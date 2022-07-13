@@ -18,6 +18,9 @@
           "qobuz_enabled": "Qobuz muziekprovider inschakelen",
           "qobuz_username": "Gebruikersnaam voor Qobuz",
           "qobuz_password": "Wachtwoord voor Qobuz",
+          "ytmusic_enabled": "Youtube Music muziekprovider inschakelen",
+          "ytmusic_username": "Gebruikersnaam voor Youtube Music",
+          "ytmusic_password": "Wachtwoord voor Youtube Music",
           "tunein_enabled": "Tune-In Radio muziekprovider inschakelen",
           "tunein_username": "Gebruikersnaam voor Tune-In Radio",
           "filesystem_enabled": "Bestandssysteem provider inschakelen",
@@ -29,7 +32,8 @@
       }
     },
     "error": {
-      "directory_not_exists": "Directory does not exist or not accessible"
+      "directory_not_exists": "Directory does not exist or not accessible",
+      "yt_no_cookie": "Youtube Music vereist een cookie als wachtwoord, see here: https://github.com/music-assistant/hass-music-assistant/discussions/606"
     }
   },
   "options": {
@@ -51,6 +55,9 @@
           "qobuz_enabled": "Qobuz muziekprovider inschakelen",
           "qobuz_username": "Gebruikersnaam voor Qobuz",
           "qobuz_password": "Wachtwoord voor Qobuz",
+          "ytmusic_enabled": "Youtube Music muziekprovider inschakelen",
+          "ytmusic_username": "Gebruikersnaam voor Youtube Music",
+          "ytmusic_password": "Wachtwoord voor Youtube Music",
           "tunein_enabled": "Tune-In Radio muziekprovider inschakelen",
           "tunein_username": "Gebruikersnaam voor Tune-In Radio",
           "filesystem_enabled": "Bestandssysteem provider inschakelen",
@@ -70,7 +77,8 @@
       }
     },
     "error": {
-      "directory_not_exists": "Bestandslocatie bestaat niet of niet toegankelijk"
+      "directory_not_exists": "Bestandslocatie bestaat niet of niet toegankelijk",
+      "yt_no_cookie": "Youtube Music vereist een cookie als wachtwoord, see here: https://github.com/music-assistant/hass-music-assistant/discussions/606"
     }
   }
 }
