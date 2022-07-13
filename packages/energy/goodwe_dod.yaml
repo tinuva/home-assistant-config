@@ -200,3 +200,25 @@ automation:
         target:
           entity_id: number.depth_of_discharge_on_grid
     mode: single
+
+  ## When loadshedding and there a chance geyser needs to run after 4pm
+  - alias: Goodwe DoD 1%
+    description: Goodwe 1% when geysers run under conditions
+    trigger:
+      - platform: state
+        entity_id: switch.front_bathroom_geyser
+        to: 'on'
+      - platform: state
+        entity_id: switch.main_bathroom_geyser
+        to: 'on'
+    condition:
+      - condition: template
+        value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
+    action:
+      - alias: "Set DoD on inverter"
+        service: number.set_value
+        data:
+          value: 1
+        target:
+          entity_id: number.depth_of_discharge_on_grid
+    mode: single

@@ -315,7 +315,7 @@ automation:
                   text: >
                     Eskom/Grid stability check
           title: 'Power'
-          target: ["#power-alerts"]
+          target: ["#logs"]
           message: >
             Eskom/Grid stability check
 
