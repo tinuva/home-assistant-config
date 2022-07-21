@@ -21,7 +21,7 @@ CONF_AREA = "coct_area"
 
 # Defaults
 DEFAULT_SCAN_PERIOD = 900
-MIN_SCAN_PERIOD = 300
+MIN_SCAN_PERIOD = 30
 DEFAULT_AREA = 0
 
 # Defaults

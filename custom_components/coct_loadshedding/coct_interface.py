@@ -96,6 +96,7 @@ class coct_interface:
 
         # Placeholder for returned loadshedding stage
         api_result = None
+        stage_res = -1
 
         # Query the API until a sensible (> 0) value is received, or the number of attempts is exceeded
         for attempt in range(attempts):
@@ -104,17 +105,18 @@ class coct_interface:
             # Check if the API returned a valid response
             if res:
                 stage_res = res[0]['currentStage']
+                
                 # Store the response
-                api_result = stage_res
+                api_result = res
 
                 # Only return the result if the API returned a non-negative stage, otherwise retry
                 if int(stage_res) > -1:
                     # Return the current loadshedding stage by subtracting 1 from the query result
                     return res
 
-        if api_result:
+        if stage_res:
             # If the API is up but returning "invalid" stages (< 0), simply return 0
-            return 0
+            return [{'currentStage': 0, 'startTime': None, 'nextStage': 0, 'nextStageStartTime': None, 'lastUpdated': None}]
         else:
             # If the API the query did not succeed after the number of attempts has been exceeded, raise an exception
             raise Exception(
@@ -124,22 +126,33 @@ class coct_interface:
     async def async_get_data(self, coct_area):
         """Fetches data from the loadshedding API"""
         d = datetime.datetime.now()
-        #d = datetime.datetime.strptime("2022-07-10T16:20", '%Y-%m-%dT%H:%M')
+
+        # Set empty defaults
+        stage = None
+        stage_eskom = None
         load_shedding_active = False
         next_load_shedding_slot = "N/A"
+        next_stage = None
+        next_stage_start_time = None
+        last_updated = None
+        today_slots_hours = None
+        tomorrow_slots_hours = None
 
         # grab json and stage
         json = await self.async_get_stage_coct()
+        _LOGGER.debug("json: " + str(json))
         stage_eskom = await self.async_get_stage_eskom()
         stage = json[0]['currentStage']
         next_stage = json[0]['nextStage']
-        next_stage_start_time = datetime.datetime.strptime(json[0]['nextStageStartTime'], '%Y-%m-%dT%H:%M')
-        last_updated = datetime.datetime.strptime(json[0]['lastUpdated'], '%Y-%m-%dT%H:%M:%S.000Z')
+        if next_stage_start_time is not None:
+            next_stage_start_time = datetime.datetime.strptime(json[0]['nextStageStartTime'], '%Y-%m-%dT%H:%M')
+            # CoCT app works out different 'stage' if after 'next_stage_start_time'
+            if next_stage_start_time < d:
+                stage = next_stage
+                next_stage_start_time = None
+        if last_updated is not None:
+            last_updated = datetime.datetime.strptime(json[0]['lastUpdated'], '%Y-%m-%dT%H:%M:%S.000Z')
 
-        # CoCT app works out different 'stage' if after 'next_stage_start_time'
-        if next_stage_start_time < d:
-            stage = next_stage
-            next_stage_start_time = None
         # Just in case, check eskom stage, if it is lower than stage use that
         if stage_eskom < stage:
             stage = stage_eskom
@@ -150,24 +163,25 @@ class coct_interface:
             try:
                 next_load_shedding_slot = getNextTimeSlot(stage, coct_area)["date"]
                 load_shedding_active = isLoadSheddingNow(stage, coct_area)["status"]
+
+                # Grab today's times
+                ## First slots
+                today_slots = getTimeSlotsByAreaCode(stage, datetime.datetime.now().day, coct_area)
+                ## convert to hours
+                today_slots_hours = []
+                for s in today_slots:
+                    today_slots_hours.append(getTimeSlotHour(s))
+                # Grab tomorrow's times
+                tomorrow_date = datetime.datetime.now() + datetime.timedelta(1) # +1 day
+                ## First slots
+                tomorrow_slots = getTimeSlotsByAreaCode(stage, tomorrow_date.day, coct_area)
+                ## convert to hours
+                tomorrow_slots_hours = []
+                for s in tomorrow_slots:
+                    tomorrow_slots_hours.append(getTimeSlotHour(s))
+
             except Exception as e:
                 _LOGGER.error(e, exc_info=True) # log exception info at ERROR log level
-
-        # Grab today's times
-        ## First slots
-        today_slots = getTimeSlotsByAreaCode(stage, datetime.datetime.now().day, coct_area)
-        ## convert to hours
-        today_slots_hours = []
-        for s in today_slots:
-            today_slots_hours.append(getTimeSlotHour(s))
-        # Grab tomorrow's times
-        tomorrow_date = datetime.datetime.now() + datetime.timedelta(1) # +1 day
-        ## First slots
-        tomorrow_slots = getTimeSlotsByAreaCode(stage, tomorrow_date.day, coct_area)
-        ## convert to hours
-        tomorrow_slots_hours = []
-        for s in tomorrow_slots:
-            tomorrow_slots_hours.append(getTimeSlotHour(s))
 
         data = {
             "data": {
