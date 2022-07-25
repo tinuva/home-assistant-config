@@ -3,7 +3,7 @@
 timer:
   morning_routine:
     name: Morning Routine
-    duration: '02:00:00'
+    duration: '02:45:00'
 
 automation:
   - alias: Turn off main_bathroom lights after timer finish
@@ -13,11 +13,26 @@ automation:
       event_data:
         entity_id: timer.morning_routine
     action:
+      # Turn back on adaptive lightning
       - service: switch.turn_on
         target:
           entity_id:
             - switch.adaptive_lighting_main_bedroom
             - switch.adaptive_lighting_small_bedroom
+      # Turn off all lights
+      - service: light.turn_off
+        data_template:
+          entity_id: >
+            {%- set data = namespace(lights_todo=[]) -%}
+            {%- set domains = ['light'] -%}
+            {%- for domain in domains -%}
+              {%- for item in states[domain]  -%}
+                {%- if item.entity_id not in ['light.main_bathroom'] and state_attr(item.entity_id, 'icon') == none %}
+                  {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
+                {%- endif -%}
+              {%- endfor -%}
+            {%- endfor -%}
+            {{ data.lights_todo | join(",") }}
 
   - id: '1654001290028'
     alias: Wake-up light alarm main-bedroom

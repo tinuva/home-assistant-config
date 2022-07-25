@@ -33,9 +33,12 @@ automation:
       event_data:
         entity_id: timer.main_bathroom
     action:
-      service: light.turn_off
-      data:
-        entity_id: light.main_bathroom
+      - condition: state
+        entity_id: timer.morning_routine
+        state: 'idle'
+      - service: light.turn_off
+        data:
+          entity_id: light.main_bathroom
 
   # manual turn on
   - alias: 'main bathroom manual turn on start timer'

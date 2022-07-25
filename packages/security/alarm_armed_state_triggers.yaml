@@ -19,7 +19,7 @@ automation:
             {%- set domains = ['light'] -%}
             {%- for domain in domains -%}
               {%- for item in states[domain]  -%}
-                {%- if item.entity_id not in states.light.lights_whole_night.attributes.entity_id and item.attributes.icon != 'mdi:lightbulb-group' %}
+                {%- if item.entity_id not in states.light.lights_whole_night.attributes.entity_id and state_attr(item.entity_id, 'icon') == none %}
                   {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
                 {%- endif -%}
               {%- endfor -%}
