@@ -35,14 +35,6 @@ script:
       - condition: template
         value_template: >-
           {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
-      - alias: "Log action taken"
-        service: script.log
-        data:
-          icon: ':zap:'
-          object: 'GoodWe'
-          message: >
-            Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
-      - delay: '00:00:02' # Waits 2 seconds
       - alias: "Set DoD on inverter"
         service: number.set_value
         data:
@@ -50,6 +42,13 @@ script:
             {{ dod }}
         target:
           entity_id: number.depth_of_discharge_on_grid
+      - alias: "Log action taken"
+        service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
 
 automation:
   # Input that sets DoD on GoodWe Inverter
@@ -94,7 +93,7 @@ automation:
               - condition: template
                 value_template: >-
                   {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-                  {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 1) or (states('sensor.time') == '06:00') }}
+                  {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 16) or (states('sensor.time') == '06:00') }}
           - condition: and
             conditions:
               - condition: template
@@ -117,9 +116,9 @@ automation:
       - platform: time
         at: '10:00:00'
       # If office AC is on turn at turn off pool
-      - platform: template
-        value_template: >
-          {{ ('07:00' <= now().time().strftime("%R") <= '15:00') and (states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none']) }}
+      # - platform: template
+      #   value_template: >
+      #     {{ ('07:00' <= now().time().strftime("%R") <= '15:00') and (states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none']) }}
     condition:
       - condition: or
         conditions:
@@ -137,7 +136,7 @@ automation:
         data:
           value: >
             {% set soc_today = states('sensor.solcast_forecast_energy_today_predicted')|int %}
-            {% if soc_today <= 10 %}1
+            {% if soc_today <= 10 %}16
             {% else %}16{% endif -%}
     mode: single
 
@@ -202,8 +201,8 @@ automation:
     mode: single
 
   ## When loadshedding and there a chance geyser needs to run after 4pm
-  - alias: Goodwe DoD 1%
-    description: Goodwe 1% when geysers run under conditions
+  - alias: Goodwe DoD 16%
+    description: Goodwe 16% when geysers run under conditions
     trigger:
       - platform: state
         entity_id: switch.front_bathroom_geyser
@@ -218,7 +217,7 @@ automation:
       - alias: "Set DoD on inverter"
         service: number.set_value
         data:
-          value: 1
+          value: 16
         target:
           entity_id: number.depth_of_discharge_on_grid
     mode: single
