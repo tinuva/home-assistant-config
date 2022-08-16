@@ -172,6 +172,9 @@ automation:
     trigger:
       - platform: time
         at: '20:00:00'
+      - platform: state
+        entity_id: binary_sensor.front_garage_door_window
+        to: 'on'
     condition:
       - condition: state
         entity_id: binary_sensor.front_garage_door_window
@@ -202,6 +205,9 @@ automation:
     trigger:
       - platform: time
         at: '20:00:00'
+      - platform: state
+        entity_id: binary_sensor.back_garage_door
+        to: 'on'
     condition:
       - condition: state
         entity_id: binary_sensor.back_garage_door
