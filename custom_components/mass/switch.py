@@ -87,6 +87,7 @@ class NormalizeEnabledEntity(MassBaseEntity, SwitchEntity):
         icon="mdi:chart-bar",
         entity_category=EntityCategory.CONFIG,
         name="Volume normalization enabled",
+        entity_registry_enabled_default=False,
     )
 
     @property

@@ -257,6 +257,8 @@ class MassPlayer(MassBaseEntity, MediaPlayerEntity):
 
     async def async_on_update(self) -> None:
         """Handle player updates."""
+        if not self.available:
+            return
         self._attr_media_position = self.player.active_queue.elapsed_time
         self._attr_media_position_updated_at = utcnow()
         self._prev_time = self.player.active_queue.elapsed_time
@@ -275,14 +277,14 @@ class MassPlayer(MassBaseEntity, MediaPlayerEntity):
             media_title = media_item.name
             media_content_id = current_item.uri
             media_duration = current_item.duration
-            media_image_url = current_item.image
+            media_image_url = current_item.image.url
             if media_item.media_type == MediaType.TRACK:
                 media_artist = ", ".join([x.name for x in media_item.artists])
                 if media_item.version:
                     media_title += f" ({media_item.version})"
                 if media_item.album:
                     media_album_name = media_item.album.name
-                    if media_item.album.artist:
+                    if getattr(media_item.album, "artist", None):
                         media_album_artist = media_item.album.artist.name
         # Music Assistant is NOT the active source
         elif not self.player.active_queue.active:
@@ -416,13 +418,12 @@ class MassPlayer(MassBaseEntity, MediaPlayerEntity):
         media_id = async_process_play_media_url(self.hass, media_id)
 
         queue_opt = QUEUE_OPTION_MAP.get(enqueue, QueueOption.PLAY)
-        if announce is None:
-            announce = "/api/tts_proxy" in media_id
 
-        if announce:
-            announce_sound = "/api/tts_proxy" in media_id
+        # announce/alert support
+        is_tts = "/api/tts_proxy" in media_id
+        if announce or is_tts:
             self.hass.create_task(
-                self.player.active_queue.play_alert(media_id, announce_sound)
+                self.player.active_queue.play_announcement(media_id, is_tts)
             )
         else:
             await self.player.active_queue.play_media(media_id, queue_opt)
