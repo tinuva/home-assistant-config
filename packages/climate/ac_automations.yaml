@@ -55,6 +55,10 @@ automation:
       - platform: template
         value_template: >
           {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_32985348871179') != "off") }}
+      # If office heating at 4pm
+      - platform: template
+        value_template: >
+           {{ (now().time().strftime("%R") == "15:50" and states('climate.midea_ac_32985348871179') == "heat") }}
     action:
       # Only run script if AC is ON
       - condition: template
