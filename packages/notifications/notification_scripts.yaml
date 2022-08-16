@@ -14,7 +14,7 @@ script:
   ######################################################################
   log:
     sequence:
-      - service: notify.slack
+      - service: notify.bezuidenhouts
         data_template:
           target: >
             {% if target is defined %}
@@ -85,14 +85,14 @@ script:
                   entity_id: "{{ cam }}"
               - delay:
                   seconds: 7
-              - service: notify.slack
+              - service: notify.bezuidenhouts
                 data:
                   message: '{{ message }}'
                   target: '{{ target }}'
                   data:
                     icon: "{{ icon }}"
                     username: '{{ object }}'
-              - service: notify.slack
+              - service: notify.bezuidenhouts
                 data:
                   message: ''
                   target: '{{ target }}'
@@ -103,7 +103,7 @@ script:
                       path: "/config/www/cam_captures/script_log.jpg"
                       ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
         default:
-          - service: notify.slack
+          - service: notify.bezuidenhouts
             data_template:
               target: "{{ target }}"
               message: '{{ message }}'
