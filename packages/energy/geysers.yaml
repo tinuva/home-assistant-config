@@ -44,7 +44,7 @@ script:
             {% set today_name = sensor_names[now().weekday()] %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
             {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
-            {% elif '00:00' <= states('sensor.time') <= '6:00' %}{{ 59 | int * 60 }}
+            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 59 | int * 60 }}
             {% else %}{{ 180 | int * 60 }}{% endif -%}
       # If device is unavailable, need a retry loop here
       - alias: "Repeat the sequence UNTIL the conditions are true"
@@ -71,24 +71,21 @@ script:
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
-      - choose:
-          # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
-          - conditions:
-              - condition: or
-                conditions:
-                  - condition: template
-                    value_template: >-
-                      {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
-                  - condition: template
-                    value_template: >-
-                      {{ ((states('sensor.time') >= '16:00') and (states('sensor.solcast_forecast')|float < 25)) }}
-            sequence:
-              - alias: "Set DoD on inverter"
-                service: number.set_value
-                data:
-                  value: 1
-                target:
-                  entity_id: number.depth_of_discharge_on_grid
+      # - choose:
+      #     # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
+      #     - conditions:
+      #         - condition: or
+      #           conditions:
+      #             - condition: template
+      #               value_template: >-
+      #                 {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
+      #       sequence:
+      #         - alias: "Set DoD on inverter"
+      #           service: number.set_value
+      #           data:
+      #             value: 16
+      #           target:
+      #             entity_id: number.depth_of_discharge_on_grid
       # Turn off front geyser
       - service: script.geyser_off_front
 
@@ -130,14 +127,14 @@ script:
       # Turn off front geyser
       - service: script.geyser_off_main
       # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
-      - condition: template
-        value_template: >-
-          {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
-      - service: input_number.set_value
-        target:
-          entity_id: input_number.set_goodwe_dod
-        data:
-          value: 1
+      # - condition: template
+      #   value_template: >-
+      #     {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
+      # - service: input_number.set_value
+      #   target:
+      #     entity_id: input_number.set_goodwe_dod
+      #   data:
+      #     value: 16
 
   geyser_off_front:
     sequence:
@@ -187,13 +184,26 @@ automation:
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
-              - condition: template
-                value_template: "{{ ('11:00' <= states('sensor.time') <= '15:00') }}"
-              - condition: state
-                entity_id: timer.main_geyser
-                state: 'idle'
-                for:
-                  minutes: 90
+              - condition: or
+                conditions:
+                  - condition: and
+                    conditions:
+                      - condition: template
+                        value_template: "{{ ('11:00' <= states('sensor.time') < '13:30') }}"
+                      - condition: state
+                        entity_id: timer.main_geyser
+                        state: 'idle'
+                        for:
+                          minutes: 90
+                  - condition: and
+                    conditions:
+                      - condition: template
+                        value_template: "{{ ('13:30' <= states('sensor.time') <= '15:00') }}"
+                      - condition: state
+                        entity_id: timer.main_geyser
+                        state: 'idle'
+                        for:
+                          minutes: 120
             sequence:
               - service: script.geyser_on_mainbedroom
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
@@ -405,6 +415,21 @@ automation:
         to: 'on'
         for: '04:00:00'
     action:
+      - alias: "Repeat the sequence UNTIL the conditions are true"
+        repeat:
+          sequence:
+            # wait time
+            - delay:
+                milliseconds: 200
+          until:
+            - condition: state
+              entity_id: switch.front_bathroom_geyser
+              state: "on"
+            - condition: not
+              conditions:
+                - condition: state
+                  entity_id: switch.main_bathroom_geyser
+                  state: "unavailable"
       - service: switch.turn_off
         data:
           entity_id: switch.front_bathroom_geyser
