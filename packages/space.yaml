@@ -20,9 +20,10 @@ homeassistant:
       icon: mdi:rocket
       friendly_name: Rocket Launch Window
 
-binary_sensor:
-  - platform: iss
-    show_on_map: false
+# Moved to config flow?
+# binary_sensor:
+#   - platform: iss
+#     show_on_map: false
 
 sensor:
   - platform: moon
