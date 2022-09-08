@@ -132,6 +132,7 @@ class coct_interface:
         d = datetime.datetime.now()
 
         # Set empty defaults
+        start_time = None
         stage = None
         stage_eskom = None
         load_shedding_active = False
@@ -151,6 +152,13 @@ class coct_interface:
             _LOGGER.error(e, exc_info=True) # log exception info at ERROR log level
         stage = json[0]['currentStage']
         next_stage = json[0]['nextStage']
+        try:
+            start_time = datetime.datetime.strptime(json[0]['startTime'], '%Y-%m-%dT%H:%M')
+            # CoCT app works out different 'stage' if after 'next_stage_start_time'
+            if start_time > d:
+                stage = 0
+        except Exception as e:
+            _LOGGER.error(e, exc_info=True) # log exception info at ERROR log level
         try:
             next_stage_start_time = datetime.datetime.strptime(json[0]['nextStageStartTime'], '%Y-%m-%dT%H:%M')
             # CoCT app works out different 'stage' if after 'next_stage_start_time'

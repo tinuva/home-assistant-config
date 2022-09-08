@@ -54,6 +54,9 @@ LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ("media_player", "switch", "number", "select")
 
+MIN_HA_VERSION = "2022.8.0"
+MAX_HA_VERSION = "2022.8.999"
+
 
 async def read_manifest() -> dict:
     """Read manifest file."""
@@ -101,27 +104,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up from a config entry."""
     http_session = async_get_clientsession(hass, verify_ssl=False)
 
-    # compare version in manifest with HA version
+    # compare HA version
+    # raise (and halt) if the ha version is too low
+    # log (and continue) if the ha version is too high
+    # we do this because every HA release has breaking changes
+    # so a MA release needs to be compatible with HA
     manifest = await read_manifest()
     ha_vers = AwesomeVersion(HA_VERSION, AwesomeVersionStrategy.SEMVER, True)
-    vers_parts = manifest["version"].split(".")
-    req_ha_vers = AwesomeVersion(
-        f"{vers_parts[0]}.{vers_parts[1]}.0", AwesomeVersionStrategy.SEMVER, True
-    )
-    # for now, just raise at mismatch of major/minor because in 99% of the cases
-    # there are breaking changes between HA releases
-    if ha_vers < req_ha_vers:
+    min_ha_vers = AwesomeVersion(MIN_HA_VERSION, AwesomeVersionStrategy.SEMVER, True)
+    max_ha_vers = AwesomeVersion(MAX_HA_VERSION, AwesomeVersionStrategy.SEMVER, True)
+    if ha_vers < min_ha_vers:
         raise ConfigEntryAuthFailed(
             "This version of Music Assistant is only compatible "
             f"with Home Assistant version {manifest['ha_version']} (or higher)."
         )
-    if ha_vers > req_ha_vers:
+    if ha_vers > max_ha_vers:
         LOGGER.warning(
             "This version of Music Assistant is compatible "
             "with Home Assistant version %s, "
             "and you are running %s. You may run into compatibility issues. "
             "Please check if there's a newer (beta) version available of Music Assistant.",
-            manifest["ha_version"],
+            f"{min_ha_vers.major}.{min_ha_vers.minor}",
             HA_VERSION,
         )
 
@@ -224,15 +227,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         )
 
     # setup event listeners, register their unsubscribe in the unload
-    entry.async_on_unload(
-        hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, on_hass_stop)
-    )
     entry.async_on_unload(async_at_start(hass, on_hass_start))
     entry.async_on_unload(entry.add_update_listener(_update_listener))
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, on_hass_stop)
     )
-    entry.async_on_unload(entry.add_update_listener(_update_listener))
     entry.async_on_unload(mass.subscribe(on_mass_event))
 
     # Websocket support and frontend (panel)

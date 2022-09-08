@@ -571,13 +571,12 @@ class CastPlayer(HassPlayer):
         if not self.is_group:
             await self.volume_mute(False)
 
-        # create (fake) CC queue wih repeat enabled to allow on-player control of next
+        # create (fake) CC queue to allow on-player control of next
         # (or shout next track from google assistant)
         cast = self.entity._chromecast
         fmt = url.rsplit(".", 1)[-1]
         queuedata = {
             "type": "QUEUE_LOAD",
-            "repeatMode": "REPEAT_ALL",
             "shuffle": False,  # handled by our queue controller
             "queueType": "PLAYLIST",
             "startIndex": 0,
@@ -599,7 +598,7 @@ class CastPlayer(HassPlayer):
                 },
                 {
                     "opt_itemId": "control/next",
-                    "autoplay": False,
+                    "autoplay": True,
                     "media": {
                         "contentId": self.mass.streams.get_control_url(
                             self.player_id, "next"
