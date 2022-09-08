@@ -1,159 +1,130 @@
+---
+sensor:
+  - platform: template
+    sensors:
+      # Template sensor to display input value only
+      ac_central_mode:
+        friendly_name: "AC Central Mode"
+        value_template: >-
+          {% set temp_comfort = 24 %}
+          {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
+          {% if temp_avg >= (temp_comfort + 4) %}cool
+          {% elif temp_avg >= (temp_comfort) and temp_avg < (temp_comfort + 4) %}auto
+          {% elif temp_avg >= (temp_comfort - 4) and temp_avg < (temp_comfort) %}auto
+          {% elif temp_avg < (temp_comfort) %}heat
+          {% else %}auto{% endif -%}
+
 automation:
-  # AC-Office AM
-  - alias: Set office AC start of work day
+  # Start ACs if enough power
+  - alias: Start ACs if enough power
     trigger:
       - platform: time
-        at: '7:30:00'
+        at: '7:50:00'
+      - platform: time
+        at: '11:00:00'
+      - platform: time
+        at: '12:00:00'
     condition:
-      - condition: state
-        entity_id: binary_sensor.workday_sensor
-        state: "on"
-      - condition: state
-        entity_id: input_boolean.holiday
-        state: "off"
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast_energy_today_predicted
+        above: '25'
     action:
-      # Only run script if AC is OFF
-      - condition: template
-        value_template: >
-          {{ (states("climate.midea_ac_32985348871179") == "off") }}
+      # Office
       - choose:
-          - conditions:
-              - condition: or
-                conditions:
-                  - condition: numeric_state
-                    entity_id: sensor.weather_today_max
-                    below: '30'
-                  # office/study window is open, do fan instead of cooling
-                  - condition: state
-                    entity_id: binary_sensor.study_window
-                    state: "on"
-            sequence:
-              - service: script.ac
-                data:
-                  ac: "climate.midea_ac_32985348871179"
-                  speed: "Auto"
-                  mode: "fan_only"
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.weather_today_max
-                above: '29'
-              # office/study window to be closed
-              - condition: state
-                entity_id: binary_sensor.study_window
-                state: "off"
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
             sequence:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_32985348871179"
                   speed: "Auto"
-                  mode: "cool"
-
-  # AC-Office PM
-  - alias: Set office AC end of work day
-    trigger:
-      # If office AC is on at 5:30
-      - platform: template
-        value_template: >
-          {{ (now().time().strftime("%R") == "17:30" and states('climate.midea_ac_32985348871179') != "off") }}
-      # If office heating at 4pm
-      - platform: template
-        value_template: >
-           {{ (now().time().strftime("%R") == "15:50" and states('climate.midea_ac_32985348871179') == "heat") }}
-    action:
-      # Only run script if AC is ON
-      - condition: template
-        value_template: >
-          {{ (states("climate.midea_ac_32985348871179") != "off") }}
-      - service: script.ac
-        data:
-          ac: "climate.midea_ac_32985348871179"
-          speed: "Auto"
-          mode: "fan_only"
-
-  # AC-Bedrooms AM
-  - alias: Turn off bedroom ACs in the AM
-    trigger:
-      - platform: time
-        at: '5:00:00'
-    action:
-      # Main Bedroom
+                  mode: >
+                    {{ states('sensor.ac_central_mode') }}
+      # MainBed
       - choose:
           - conditions:
-              # Only run script if AC is ON
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
               - condition: template
-                value_template: >
-                  {{ (states("climate.midea_ac_30786325862093") != "off") }}
+                value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
             sequence:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862093"
-                  speed: "Silent"
-                  mode: "fan_only"
-      # Childroom
+                  speed: "Auto"
+                  mode: >
+                    {{ states('sensor.ac_central_mode') }}
+      # ChildBed
       - choose:
           - conditions:
-              # Only run script if AC is ON
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
               - condition: template
-                value_template: >
-                  {{ (states("climate.midea_ac_30786325862153") != "off") }}
+                value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
             sequence:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862153"
-                  speed: "Silent"
-                  mode: "fan_only"
+                  speed: "Auto"
+                  mode: >
+                    {{ states('sensor.ac_central_mode') }}
 
-  # AC-Bedrooms PM
-  - alias: Turn on bedroom ACs in the PM
+  # Stops ACs
+  - alias: Stop ACs if started with enough power
     trigger:
       - platform: time
-        at: '20:00:00'
-      - platform: numeric_state
-        entity_id: sensor.outside_temperature
-        below: '22'
-      - platform: numeric_state
-        entity_id: sensor.outside_temperature
-        below: '20'
+        at: '15:50:00'
+      - platform: time
+        at: '15:30:00'
+      - platform: time
+        at: '15:00:00'
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast_energy_today_predicted
+        above: '25'
     action:
-      # Main Bedroom
+      # Office
       - choose:
           - conditions:
-              - condition: or
-                conditions:
-                  - condition: numeric_state
-                    entity_id: sensor.main_bedroom_temperature
-                    below: '23'
-                  - condition: numeric_state
-                    entity_id: sensor.outside_temperature
-                    below: '22'
-                    above: '19.9'
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
+              - condition: template
+                value_template: "{{ ('15:50' <= states('sensor.time') <= '18:00')  }}"
             sequence:
               - service: script.ac
                 data:
-                  ac: "climate.midea_ac_30786325862093"
-                  speed: "Medium"
-                  mode: "fan_only"
+                  ac: "climate.midea_ac_32985348871179"
+                  mode: "off"
+      # MainBed
+      - choose:
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.main_bedroom_temperature
-                above: '22'
-              - condition: numeric_state
-                entity_id: sensor.outside_temperature
-                above: '19.9'
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
+              - condition: template
+                value_template: "{{ ('15:30' <= states('sensor.time') <= '18:00')  }}"
             sequence:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862093"
-                  speed: "Full"
-                  mode: "fan_only"
+                  mode: "off"
+      # ChildBed
+      - choose:
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.outside_temperature
-                below: '20'
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '25'
+              - condition: template
+                value_template: "{{ ('15:00' <= states('sensor.time') <= '18:00')  }}"
             sequence:
               - service: script.ac
                 data:
-                  ac: "climate.midea_ac_30786325862093"
+                  ac: "climate.midea_ac_30786325862153"
                   mode: "off"
 
 script:
@@ -179,7 +150,7 @@ script:
               Auto
             {% endif %}
           ac_mode: >
-            {% if speed is defined %}
+            {% if mode is defined %}
               {{ mode }}
             {% else %}
               fan_only

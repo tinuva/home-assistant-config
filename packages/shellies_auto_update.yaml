@@ -25,21 +25,11 @@ automation:
             {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/
             {{- '\n' -}}Update link: http://{{ trigger.payload_json['ip'] }}/ota?update=true
           notification_id: "{{ trigger.payload_json['id'] }}"
-      - service: notify.slack
-        data_template:
-          data:
-            icon: ":electric_plug:"
-            username: "Shelly"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Update will be attempted
-                    {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/
-                    {{- '\n' -}}Update link: http://{{ trigger.payload_json['ip'] }}/ota?update=true
-          title: 'Shelly'
-          target: ["#alerts-david"]
+      - service: script.alert
+        data:
+          target: 'logs'
+          icon: ':link:'
+          object: 'Shelly'
           message: >
             Update will be attempted
             {{- '\n' -}}Shelly link: http://{{ trigger.payload_json['ip'] }}/

@@ -93,7 +93,7 @@ automation:
               - condition: template
                 value_template: >-
                   {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-                  {{ (start_time < states('sensor.time') <= '06:00' and states('input_number.set_goodwe_dod')|int == 16) or (states('sensor.time') == '06:00') }}
+                  {{ (start_time < states('sensor.time') <= '06:00' and states('number.depth_of_discharge_on_grid')|int <= 16) or (states('sensor.time') == '06:00') }}
           - condition: and
             conditions:
               - condition: template
@@ -213,6 +213,9 @@ automation:
     condition:
       - condition: template
         value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast_energy_today_predicted
+        below: '29.1'
     action:
       - alias: "Set DoD on inverter"
         service: number.set_value

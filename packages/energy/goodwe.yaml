@@ -1,3 +1,4 @@
+---
 sensor:
   #- platform: goodwe
     #scan_interval: 10
@@ -251,21 +252,13 @@ automation:
         {{ trigger.from_state is not none and
           trigger.from_state.state not in ['unknown','unavailable'] }}
     action:
-      - service: notify.slack
-        data_template:
-          data:
-            icon: ":zap:"
-            username: "GoodWe"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Eskom/Grid power lost
-          title: 'Power'
-          target: ["#power-alerts"]
-          message: >
-            Eskom/Grid power lost
+      - service: script.alert
+        data:
+          target: 'logs'
+          icon: ':zap: '
+          object: 'GoodWe'
+          message: "Eskom/Grid power lost"
+
   # Notification - grid power returned
   - alias: notification - grid power returned
     trigger:
@@ -278,21 +271,13 @@ automation:
         {{ trigger.from_state is not none and
           trigger.from_state.state not in ['unknown','unavailable'] }}
     action:
-      - service: notify.slack
-        data_template:
-          data:
-            icon: ":zap:"
-            username: "GoodWe Robot"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Eskom/Grid power returned
-          title: 'Power'
-          target: ["#power-alerts"]
-          message: >
-            Eskom/Grid power returned
+      - service: script.alert
+        data:
+          target: 'logs'
+          icon: ':zap: '
+          object: 'GoodWe'
+          message: "Eskom/Grid power returned"
+
   - alias: notification - grid power check
     trigger:
       - platform: state
@@ -303,21 +288,12 @@ automation:
         {{ trigger.from_state is not none and
           trigger.from_state.state not in ['unknown','unavailable'] }}
     action:
-      - service: notify.slack
-        data_template:
-          data:
-            icon: ":zap:"
-            username: "GoodWe Robot"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Eskom/Grid stability check
-          title: 'Power'
-          target: ["#logs"]
-          message: >
-            Eskom/Grid stability check
+      - service: script.alert
+        data:
+          target: 'logs'
+          icon: ':zap: '
+          object: 'GoodWe'
+          message: "Eskom/Grid stability check"
 
   # notification daily kWh usage
   - alias: notification daily kWh usage
@@ -330,7 +306,7 @@ automation:
         entity_id: binary_sensor.last_day_of_the_month
         state: 'on'
     action:
-      - service: notify.slack
+      - service: notify.bezuidenhouts
         data_template:
           data:
             icon: ":zap:"
@@ -383,20 +359,11 @@ automation:
         below: '50'
     condition: []
     action:
-      - service: notify.slack
-        data_template:
-          data:
-            icon: ":zap:"
-            username: "GoodWe Robot"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    GoodWe Battery State of Health LOW
-                    Current SoH: {{ states('sensor.goodwe_battery_soh') }}
-          title: 'Power'
-          target: ["#alerts"]
+      - service: script.alert
+        data:
+          target: 'alerts'
+          icon: ':zap: '
+          object: 'GoodWe'
           message: >
             GoodWe Battery State of Health LOW
             Current SoH: {{ states('sensor.goodwe_battery_soh') }}

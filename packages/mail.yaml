@@ -38,9 +38,11 @@ automation:
           #  - condition: template
           #    value_template: "{{ 'onboard' in trigger.event.data.new_state.attributes.info_text|lower }}"
     action:
-      - service: notify.slack
-        data_template:
-          target: ["#alerts-david"]
+      - service: script.alert
+        data:
+          target: 'alerts-david'
+          icon: ':envelope:'
+          object: '17track mail'
           message: >
             Name: {{ trigger.event.data.new_state.attributes.tracking_number}} {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}
             {% if trigger.event.data.new_state.attributes.location != None %}
@@ -53,25 +55,5 @@ automation:
             {{- '\n' -}}Event: {{ trigger.event.data.new_state.attributes.info_text }}
             {% endif %}
             {% endif %}
-          data:
-            icon: ":envelope:"
-            username: "17track mail"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Name: {{ trigger.event.data.new_state.attributes.tracking_number}} {{ trigger.event.data.new_state.attributes.friendly_name | replace("Seventeentrack Package: ","") }}
-                    {% if trigger.event.data.new_state.attributes.location != None %}
-                    {% if trigger.event.data.new_state.attributes.location|trim != '' %}
-                    {{- '\n' -}}Location: {{ trigger.event.data.new_state.attributes.location }}
-                    {% endif %}
-                    {% endif %}
-                    {% if trigger.event.data.new_state.attributes.info_text != None %}
-                    {% if trigger.event.data.new_state.attributes.info_text|trim != '' %}
-                    {{- '\n' -}}Event: {{ trigger.event.data.new_state.attributes.info_text }}
-                    {% endif %}
-                    {% endif %}
-
 
 # TTS https://community.home-assistant.io/t/17track-integration/167602

@@ -1,3 +1,4 @@
+---
 binary_sensor:
   - platform: template
     sensors:
@@ -41,17 +42,9 @@ automation:
           - condition: template
             value_template: "{{ ('20:00' < states('sensor.time') < '6:00') }}"
     action:
-      - service: notify.slack
+      - service: script.alert
         data:
-          data:
-            icon: ":rotating_light:"
-            username: "Home Alarm"
-            blocks_template:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >
-                    Baby room door opened!
-          target: ["#alerts"]
-          message: >
-            Baby room door opened!
+          target: 'alerts'
+          icon: ':rotating_light: '
+          object: 'Home Alarm'
+          message: "Baby room door opened!"

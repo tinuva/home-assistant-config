@@ -54,6 +54,8 @@ automation:
           - service: timer.start
             target:
               entity_id: timer.morning_routine
+            data:
+              duration: '02:45:00'
 
   - id: '1658380697189'
     alias: Wake-up light alarm main-bedroom

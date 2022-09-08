@@ -87,7 +87,9 @@ script:
       #           target:
       #             entity_id: number.depth_of_discharge_on_grid
       # Turn off front geyser
-      - service: script.geyser_off_front
+      - service: script.switch_retry_off
+        data:
+          target: switch.front_bathroom_geyser
 
   ######################################################################
   # Re-usable script to start main bedroom geyser
@@ -124,8 +126,11 @@ script:
       - service: switch.turn_on
         data:
           entity_id: switch.front_bathroom_geyser
-      # Turn off front geyser
-      - service: script.geyser_off_main
+      # Turn off main geyser
+      - delay: '00:00:01' # Waits 1 seconds
+      - service: script.switch_retry_off
+        data:
+          target: switch.main_bathroom_geyser
       # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
       # - condition: template
       #   value_template: >-
@@ -135,26 +140,6 @@ script:
       #     entity_id: input_number.set_goodwe_dod
       #   data:
       #     value: 16
-
-  geyser_off_front:
-    sequence:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.front_bathroom_geyser
-      - delay: '00:00:01' # Waits 1 seconds
-      - service: timer.finish
-        data_template:
-          entity_id: timer.front_geyser
-
-  geyser_off_main:
-    sequence:
-      - service: switch.turn_off
-        data:
-          entity_id: switch.main_bathroom_geyser
-      - delay: '00:00:01' # Waits 1 seconds
-      - service: timer.finish
-        data_template:
-          entity_id: timer.main_geyser
 
 automation:
   ### Main Geyser ###
@@ -170,16 +155,16 @@ automation:
       - platform: numeric_state
         entity_id: sensor.front_bathroom_geyser_power
         below: '50'
-    condition:
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
-          - condition: template
-            value_template: "{{ not trigger.from_state }}"
-      - condition: numeric_state
-        entity_id: sensor.front_bathroom_geyser_power
-        below: '50'
+    # condition:
+    #   - condition: or
+    #     conditions:
+    #       - condition: template
+    #         value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
+    #       - condition: template
+    #         value_template: "{{ not trigger.from_state }}"
+    #   - condition: numeric_state
+    #     entity_id: sensor.front_bathroom_geyser_power
+    #     below: '50'
     action:
       - choose:
           # Turn on between 11am and 2pm for sun times
@@ -234,20 +219,20 @@ automation:
             sequence:
               - service: script.geyser_on_mainbedroom
         # No conditions met so log and do nothing (exceptions to logging apply)
-        default:
-          - condition: template
-            value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
-          - condition: template
-            value_template: "{{ not (trigger.platform == 'time') }}"
-          - alias: "Log action taken"
-            service: script.log
-            data:
-              icon: ':zap:'
-              object: 'Geyser - main bedroom'
-              message: >
-                Not turning on main bedroom geyser because no conditions met
-                Trigger:
-                {{ trigger }}
+        # default:
+        #   - condition: template
+        #     value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+        #   - condition: template
+        #     value_template: "{{ not (trigger.platform == 'time') }}"
+        #   - alias: "Log action taken"
+        #     service: script.log
+        #     data:
+        #       icon: ':zap:'
+        #       object: 'Geyser - main bedroom'
+        #       message: >
+        #         Not turning on main bedroom geyser because no conditions met
+        #         Trigger:
+        #         {{ trigger }}
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
@@ -415,21 +400,6 @@ automation:
         to: 'on'
         for: '04:00:00'
     action:
-      - alias: "Repeat the sequence UNTIL the conditions are true"
-        repeat:
-          sequence:
-            # wait time
-            - delay:
-                milliseconds: 200
-          until:
-            - condition: state
-              entity_id: switch.front_bathroom_geyser
-              state: "on"
-            - condition: not
-              conditions:
-                - condition: state
-                  entity_id: switch.main_bathroom_geyser
-                  state: "unavailable"
-      - service: switch.turn_off
+      - service: script.switch_retry_off
         data:
-          entity_id: switch.front_bathroom_geyser
+          target: switch.front_bathroom_geyser

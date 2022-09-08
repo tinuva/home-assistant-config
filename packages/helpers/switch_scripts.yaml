@@ -1,0 +1,59 @@
+---
+script:
+  ######################################################################
+  # Re-usable script to turn off switch with bad wifi connectivity
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.switch_retry_off
+  #   data:
+  #     target: 'switch.my_switch'                  # switch entity
+  ######################################################################
+  switch_retry_off:
+    sequence:
+      - variables:
+          target_entity: "{{ target }}"
+      - alias: "Repeat the sequence UNTIL the conditions are true"
+        repeat:
+          sequence:
+            # wait time
+            - delay:
+                milliseconds: 200
+          until:
+            - condition: template
+              value_template: '{{ states(target_entity) == "on" or states(target_entity) == "off" }}'
+            - condition: template
+              value_template: '{{ states(target_entity) != "unavailable" }}'
+      - service: switch.turn_off
+        data:
+          entity_id: >
+                {{ target_entity }}
+
+  ######################################################################
+  # Re-usable script to turn on switch with bad wifi connectivity
+  ######################################################################
+  # Example:
+  ######################################################################
+  # - service: script.switch_retry_on
+  #   data:
+  #     target: 'switch.my_switch'                  # switch entity
+  ######################################################################
+  switch_retry_on:
+    sequence:
+      - variables:
+          target_entity: "{{ target }}"
+      - alias: "Repeat the sequence UNTIL the conditions are true"
+        repeat:
+          sequence:
+            # wait time
+            - delay:
+                milliseconds: 200
+          until:
+            - condition: template
+              value_template: '{{ states(target_entity) == "on" or states(target_entity) == "off" }}'
+            - condition: template
+              value_template: '{{ states(target_entity) != "unavailable" }}'
+      - service: switch.turn_on
+        data:
+          entity_id: >
+                {{ target_entity }}
