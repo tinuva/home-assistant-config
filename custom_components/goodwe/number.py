@@ -14,13 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import (
-    DOMAIN,
-    KEY_DEVICE_INFO,
-    KEY_ECO_MODE_POWER,
-    KEY_INVERTER,
-    KEY_OPERATION_MODE,
-)
+from .const import DOMAIN, KEY_DEVICE_INFO, KEY_INVERTER
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,7 +24,8 @@ class GoodweNumberEntityDescriptionBase:
     """Required values when describing Goodwe number entities."""
 
     getter: Callable[[Inverter], Awaitable[int]]
-    setter: Callable[[InverterNumberEntity, int], Awaitable[None]]
+    setter: Callable[[Inverter, int], Awaitable[None]]
+    filter: Callable[[Inverter], bool]
 
 
 @dataclass
@@ -40,24 +35,34 @@ class GoodweNumberEntityDescription(
     """Class describing Goodwe number entities."""
 
 
-async def _set_eco_mode_power(entity: InverterNumberEntity, value: int) -> None:
-    operation_mode_entity = entity.config[KEY_OPERATION_MODE]
-    if operation_mode_entity:
-        await operation_mode_entity.update_eco_mode_power(value)
-
-
 NUMBERS = (
+    # non DT inverters (limit in W)
     GoodweNumberEntityDescription(
         key="grid_export_limit",
         name="Grid export limit",
         icon="mdi:transmission-tower",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=POWER_WATT,
-        getter=lambda inv: inv.get_grid_export_limit(),
-        setter=lambda inv, val: inv.inverter.set_grid_export_limit(val),
         native_step=100,
         native_min_value=0,
         native_max_value=10000,
+        getter=lambda inv: inv.get_grid_export_limit(),
+        setter=lambda inv, val: inv.set_grid_export_limit(val),
+        filter=lambda inv: type(inv).__name__ != "DT",
+    ),
+    # DT inverters (limit is in %)
+    GoodweNumberEntityDescription(
+        key="grid_export_limit",
+        name="Grid export limit",
+        icon="mdi:transmission-tower",
+        entity_category=EntityCategory.CONFIG,
+        native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+        native_min_value=0,
+        native_max_value=100,
+        getter=lambda inv: inv.get_grid_export_limit(),
+        setter=lambda inv, val: inv.set_grid_export_limit(val),
+        filter=lambda inv: type(inv).__name__ == "DT",
     ),
     GoodweNumberEntityDescription(
         key="battery_discharge_depth",
@@ -65,11 +70,12 @@ NUMBERS = (
         icon="mdi:battery-arrow-down",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
-        getter=lambda inv: inv.get_ongrid_battery_dod(),
-        setter=lambda inv, val: inv.inverter.set_ongrid_battery_dod(val),
         native_step=1,
         native_min_value=0,
         native_max_value=99,
+        getter=lambda inv: inv.get_ongrid_battery_dod(),
+        setter=lambda inv, val: inv.set_ongrid_battery_dod(val),
+        filter=lambda inv: True,
     ),
     GoodweNumberEntityDescription(
         key="eco_mode_power",
@@ -77,11 +83,12 @@ NUMBERS = (
         icon="mdi:battery-charging-low",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
-        getter=lambda inv: inv.get_operation_mode(),
-        setter=_set_eco_mode_power,
         native_step=1,
         native_min_value=0,
         native_max_value=100,
+        getter=lambda inv: inv.get_operation_mode(),
+        setter=None,
+        filter=lambda inv: True,
     ),
 )
 
@@ -92,13 +99,12 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the inverter select entities from a config entry."""
-    domain_data = hass.data[DOMAIN][config_entry.entry_id]
-    inverter = domain_data[KEY_INVERTER]
-    device_info = domain_data[KEY_DEVICE_INFO]
+    inverter = hass.data[DOMAIN][config_entry.entry_id][KEY_INVERTER]
+    device_info = hass.data[DOMAIN][config_entry.entry_id][KEY_DEVICE_INFO]
 
     entities = []
 
-    for description in NUMBERS:
+    for description in filter(lambda dsc: dsc.filter(inverter), NUMBERS):
         try:
             current_value = await description.getter(inverter)
         except (InverterError, ValueError):
@@ -106,19 +112,9 @@ async def async_setup_entry(
             _LOGGER.debug("Could not read inverter setting %s", description.key)
             continue
 
-        entity = InverterNumberEntity(
-            device_info, description, inverter, current_value, domain_data
+        entities.append(
+            InverterNumberEntity(device_info, description, inverter, current_value)
         )
-        if description.key == "eco_mode_power":
-            domain_data[KEY_ECO_MODE_POWER] = entity
-
-        # DT family of inverter uses % instead of W in grid export limit
-        if type(inverter).__name__ == "DT" and description.key == "grid_export_limit":
-            description.unit_of_measurement = PERCENTAGE
-            description.step = 1
-            description.max_value = 100
-
-        entities.append(entity)
 
     async_add_entities(entities)
 
@@ -135,19 +131,17 @@ class InverterNumberEntity(NumberEntity):
         description: GoodweNumberEntityDescription,
         inverter: Inverter,
         current_value: int,
-        config: dict,
     ) -> None:
         """Initialize the number inverter setting entity."""
         self.entity_description = description
         self._attr_unique_id = f"{DOMAIN}-{description.key}-{inverter.serial_number}"
         self._attr_device_info = device_info
         self._attr_native_value = float(current_value)
-        self.inverter: Inverter = inverter
-        self.config: dict = config
+        self._inverter: Inverter = inverter
 
     async def async_set_native_value(self, value: float) -> None:
         """Set new value."""
         if self.entity_description.setter:
-            await self.entity_description.setter(self, int(value))
+            await self.entity_description.setter(self._inverter, int(value))
         self._attr_native_value = value
         self.async_write_ha_state()
