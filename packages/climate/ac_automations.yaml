@@ -8,10 +8,10 @@ sensor:
         value_template: >-
           {% set temp_comfort = 24 %}
           {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
-          {% if temp_avg >= (temp_comfort + 4) %}cool
-          {% elif temp_avg >= (temp_comfort) and temp_avg < (temp_comfort + 4) %}auto
-          {% elif temp_avg >= (temp_comfort - 4) and temp_avg < (temp_comfort) %}auto
-          {% elif temp_avg < (temp_comfort) %}heat
+          {% if temp_avg >= (temp_comfort + 1) %}cool
+          {% elif temp_avg >= (temp_comfort) and temp_avg < (temp_comfort + 1) %}auto
+          {% elif temp_avg >= (temp_comfort - 7) and temp_avg < (temp_comfort) %}auto
+          {% elif temp_avg < (temp_comfort - 7) %}heat
           {% else %}auto{% endif -%}
 
 automation:
@@ -47,7 +47,7 @@ automation:
           - conditions:
               - condition: numeric_state
                 entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '25'
+                above: '27'
               - condition: template
                 value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
             sequence:
@@ -62,7 +62,7 @@ automation:
           - conditions:
               - condition: numeric_state
                 entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '25'
+                above: '29'
               - condition: template
                 value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
             sequence:

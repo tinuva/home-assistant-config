@@ -1,3 +1,4 @@
+---
 rest:
   - resource: !secret solcast_forecast_resource
     #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
@@ -180,8 +181,10 @@ automation:
       - platform: sun
         event: sunrise
         offset: '-00:15:00'
-      #- platform: time
-      #  at: '06:52:00'
+      - platform: time
+        at: '01:59:00'
+      - platform: time
+        at: '02:59:00'
     condition: []
     action:
       - choose:

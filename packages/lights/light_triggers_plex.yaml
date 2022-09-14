@@ -1,70 +1,68 @@
+---
 automation:
-  - alias: Set lights when Plex(kodi) is playing
+  - alias: TV Lounge playing
     trigger:
-      #- platform: state
-      #  entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
-      #  to: 'playing'
       - platform: state
-        entity_id: media_player.plex_plex_for_kodi_sonytv
+        entity_id: media_player.mass_shield
         to: 'playing'
       - platform: state
-        entity_id: media_player.plex_plex_for_android_tv_bravia_vu1
-        to: 'playing'
-      - platform: state
-        entity_id: media_player.plex_plex_for_android_tv_shield_android_tv
+        entity_id: media_player.shield
         to: 'playing'
     condition:
-      condition: and
-      conditions:
-        - condition: template
-          value_template: "{{ 'playing' in trigger.to_state.state }}"
-        - condition: state  # 'night' condition: from sunset until sunrise
-          entity_id: sun.sun
-          state: 'below_horizon'
-        #- condition: numeric_state
-        #  entity_id: sensor.illumination_7811dcb90d53
-        #  below: 200
+      - condition: template
+        value_template: "{{ 'playing' in trigger.to_state.state }}"
+      - condition: state  # 'night' condition: from sunset until sunrise
+        entity_id: sun.sun
+        state: 'below_horizon'
     action:
-      #- service: timer.finish
-      #  data:
-      #    entity_id:
-      #      - timer.kitchenlight
-      #- service: timer.cancel
-      #  data:
-      #    entity_id:
-      #      - timer.loungelight
-      - service: light.turn_on
-        data:
-          entity_id: light.lounge
-          #brightness: '30'
-          #transition: 20
-      - condition: time
-        after: "20:15:00"
-      - service: automation.trigger
-        data:
+      - choose:
+          # IF lots of sun and high battery skip
+          - conditions:
+              - condition: state
+                entity_id: light.lounge
+                state: 'off'
+            sequence:
+              - service: light.turn_on
+                data:
+                  entity_id: light.lounge
+              - delay:
+                  seconds: "2"
+      - service: switch.turn_on
+        target:
           entity_id:
-            - automation.set_kitchen_lights_when_plex_kodi_is_playing
-          skip_condition: false
-
-  - alias: Set kitchen lights when Plex(kodi) is playing
-    trigger:
-      - platform: state
-        entity_id: media_player.plex_plex_for_kodi_kodi_add_on_localhost
-        to: 'playing-disabled'
-    condition:
-      condition: and
-      conditions:
-        #- condition: template
-        #  value_template: "{{ 'playing' in trigger.to_state.state }}"
-        - condition: state  # 'night' condition: from sunset until sunrise
-          entity_id: sun.sun
-          state: 'below_horizon'
-        - condition: state
-          entity_id: input_boolean.kitchenwork
-          state: 'off'
-    action:
+            - switch.adaptive_lighting_sleep_mode_lounge
+            #- switch.adaptive_lighting_sleep_mode_kitchen
+      - condition: time
+        after: "19:45:00"
       - service: light.turn_off
         data:
           entity_id:
             - light.kitchen
-          transition: 10
+          transition: 25
+
+  - alias: TV Lounge idle
+    trigger:
+      - platform: state
+        entity_id: media_player.mass_shield
+        to: 'idle'
+      - platform: state
+        entity_id: media_player.shield
+        to: 'idle'
+      - platform: state
+        entity_id: media_player.mass_shield
+        to: 'paused'
+      - platform: state
+        entity_id: media_player.shield
+        to: 'paused'
+    condition:
+      # - condition: template
+      #   value_template: "{{ 'idle' in trigger.to_state.state }}"
+      - condition: state  # 'night' condition: from sunset until sunrise
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.adaptive_lighting_sleep_mode_lounge
+            - switch.adaptive_lighting_sleep_mode_kitchen

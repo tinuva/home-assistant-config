@@ -40,6 +40,9 @@ automation:
       - condition: state
         entity_id: binary_sensor.front_beam
         state: 'off'
+      - condition: state
+        entity_id: timer.morning_routine
+        state: 'idle'
     action:
       - service: alarm_control_panel.alarm_arm_home
         data:

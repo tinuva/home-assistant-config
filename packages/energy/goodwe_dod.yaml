@@ -203,6 +203,7 @@ automation:
   ## When loadshedding and there a chance geyser needs to run after 4pm
   - alias: Goodwe DoD 16%
     description: Goodwe 16% when geysers run under conditions
+    mode: single
     trigger:
       - platform: state
         entity_id: switch.front_bathroom_geyser
@@ -213,9 +214,6 @@ automation:
     condition:
       - condition: template
         value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
-        below: '29.1'
     action:
       - alias: "Set DoD on inverter"
         service: number.set_value
@@ -223,4 +221,23 @@ automation:
           value: 16
         target:
           entity_id: number.depth_of_discharge_on_grid
-    mode: single
+      - choose:
+          # IF lots of sun and high battery skip
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '29.1'
+              - condition: numeric_state
+                entity_id: sensor.goodwe_battery_soc
+                above: '60'
+            sequence:
+              - delay:
+                  minutes: "{{ range(1, 11)|random }}"
+        # ELSE go 16
+        default:
+          - alias: "Set DoD on inverter"
+            service: number.set_value
+            data:
+              value: 16
+            target:
+              entity_id: number.depth_of_discharge_on_grid

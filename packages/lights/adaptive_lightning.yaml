@@ -3,12 +3,12 @@
 adaptive_lighting:
   - prefer_rgb_color: false
     transition: 45
-    initial_transition: 1
-    sleep_transition: 10
+    initial_transition: 45
+    sleep_transition: 45
     interval: 90
-    min_brightness: 1
-    max_brightness: 40
-    sleep_brightness: 1
+    min_brightness: 12
+    max_brightness: 35
+    sleep_brightness: 11
     sunrise_offset: 1800
     sunset_offset: -1800
     take_over_control: true
@@ -20,12 +20,12 @@ adaptive_lighting:
 
   - prefer_rgb_color: false
     transition: 45
-    initial_transition: 1
-    sleep_transition: 10
+    initial_transition: 45
+    sleep_transition: 45
     interval: 90
     min_brightness: 10
     max_brightness: 60
-    sleep_brightness: 10
+    sleep_brightness: 11
     sunrise_offset: 1800
     sunset_offset: -1800
     take_over_control: true
@@ -37,8 +37,8 @@ adaptive_lighting:
 
   - prefer_rgb_color: false
     transition: 45
-    initial_transition: 1
-    sleep_transition: 10
+    initial_transition: 45
+    sleep_transition: 45
     interval: 90
     min_brightness: 15
     max_brightness: 30
@@ -54,8 +54,8 @@ adaptive_lighting:
 
   - prefer_rgb_color: false
     transition: 45
-    initial_transition: 1
-    sleep_transition: 10
+    initial_transition: 45
+    sleep_transition: 45
     interval: 90
     min_brightness: 15
     max_brightness: 30

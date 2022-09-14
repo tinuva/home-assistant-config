@@ -26,6 +26,27 @@ automation:
           close_gate: 'on'
           close_garagedor: 'off'
 
+  # Karen arrived home
+  - alias: Karen arrived home
+    trigger:
+      - entity_id: person.karen
+        platform: state
+        to: 'home'
+        not_from:
+          - 'home'
+    condition:
+      - condition: state
+        entity_id: input_boolean.presence_automation
+        state: 'on'
+    action:
+      - service: script.arrivehome
+        data:
+          gate: 'cover.front_gate'
+          garagedoor: 'cover.garage_door_front'
+          alarm: 'alarm_control_panel.home_alarm'
+          close_gate: 'on'
+          close_garagedor: 'on'
+
 script:
   ##########################################################################################################
   # Re-usable script when returning home

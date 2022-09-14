@@ -1,0 +1,48 @@
+---
+
+timer:
+  motion_mbr_to_ens:
+    name: Motion MBR to ENS
+    duration: '00:00:10'
+
+automation:
+  # Motion = Turn on
+  - alias: MBR to ENS motion
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.main_bedroom_pir
+        to: 'on'
+    condition:
+      - condition: state  # 'night' condition: from sunset until sunrise
+        entity_id: sun.sun
+        state: 'below_horizon'
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: timer.morning_routine
+            state: 'active'
+          - condition: state
+            entity_id: alarm_control_panel.home_alarm
+            state: 'disarmed'
+    action:
+      - service: timer.start
+        data:
+          entity_id: timer.motion_mbr_to_ens
+
+  - alias: Turn on MainBathroom light with motion_mbr_to_ens timer
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.ensuite_pir
+        to: 'on'
+    condition:
+      - condition: state  # Alarm armed home only
+        entity_id: timer.motion_mbr_to_ens
+        state: 'active'
+    action:
+      - service: timer.cancel
+        data:
+          entity_id: timer.motion_mbr_to_ens
+      - service: automation.trigger
+        data:
+          skip_condition: true
+          entity_id: automation.turn_on_main_bathroom_lights_fan
