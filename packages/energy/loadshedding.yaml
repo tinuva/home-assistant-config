@@ -46,3 +46,23 @@ automation:
         data:
           entity_id: timer.loadshedding_slot
           duration: '02:30:00'
+
+  - alias: stop_loadshedding_slot_timer_grid_power_returned
+    trigger:
+      - platform: state
+        entity_id: sensor.grid_mode
+        to: '1' #stable after checking power
+        for:
+          seconds: 30
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state is not none and
+            trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: state
+        entity_id: timer.loadshedding_slot
+        state: 'active'
+    action:
+      - service: timer.finish
+        data:
+          entity_id: timer.loadshedding_slot

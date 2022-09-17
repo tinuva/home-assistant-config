@@ -248,11 +248,27 @@ automation:
         entity_id: timer.main_geyser
         state: 'idle'
     action:
-      - service: timer.start
-        data_template:
-          entity_id: timer.main_geyser
-          duration: >
-            {{ 180 | int * 60 }}
+      - choose:
+          # Turn on only 1 hour if before 6am
+          - conditions:
+              # - condition: state
+              #   entity_id: timer.loadshedding_slot
+              #   state: 'idle'
+              - condition: template
+                value_template: "{{ ('00:00' <= states('sensor.time') < '06:00') }}"
+            sequence:
+              - service: timer.start
+                data_template:
+                  entity_id: timer.main_geyser
+                  duration: >
+                    {{ 59 | int * 60 }}
+        # No conditions met so default time
+        default:
+          - service: timer.start
+            data_template:
+              entity_id: timer.main_geyser
+              duration: >
+                {{ 180 | int * 60 }}
 
   # Main geyser off when timer finish
   - alias: Turn off main geyser

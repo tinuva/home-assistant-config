@@ -1,0 +1,78 @@
+---
+rest:
+  - resource: "https://developer.sepush.co.za/business/2.0/area"
+    scan_interval: '02:30:00' # RATE LIMIT!
+    headers:
+      Token: !secret EskomSePush
+    params:
+      id: "capetown-6-durbanville"
+      #id: "<your area id here>"
+    sensor:
+      - name: EskomSePush
+        force_update: true
+        value_template: "OK"
+        json_attributes:
+          - events
+          - info
+          - schedule
+
+sensor:
+#Eskom se push sensor
+  # - platform: rest
+  #   name: EskomSePush
+  #   resource: "https://developer.sepush.co.za/business/2.0/area"
+  #   headers:
+  #     Token: !secret EskomSePush
+  #   params:
+  #     id: "capetown-6-durbanville"
+  #     #id: "<your area id here>"
+  #   json_attributes:
+  #     - events
+  #     - info
+  #     - schedule
+  #   value_template: "OK"
+  #   scan_interval: 3600
+
+  - platform: rest
+    name: EskomSePushAllowance
+    resource: "https://developer.sepush.co.za/business/2.0/api_allowance"
+    headers:
+      Token: !secret EskomSePush
+    json_attributes_path: "$.allowance"
+    json_attributes:
+      - count
+      - limit
+      - type
+    value_template: "OK"
+    scan_interval: 3600
+
+  - platform: template
+    sensors:
+      next_loadshedding_time:
+        friendly_name: Next loadshedding time
+        device_class: timestamp
+        unique_id: Next_Loadshedding_Time
+        value_template: "{{ state_attr('sensor.eskomsepush','events')[0].start }}"
+      next_loadshedding_event:
+        friendly_name: Next loadshedding event
+        unique_id: Next_Loadshedding_Event
+        value_template: "{{ state_attr('sensor.eskomsepush','events')[0].note }}"
+      next_loadshedding_time_end:
+        friendly_name: Next loadshedding end time
+        unique_id: Next_Loadshedding_End_Time
+        value_template: "{{ state_attr('sensor.eskomsepush','events')[0].end }}"
+      time_till_loadshedding:
+        friendly_name: Time until next loadshedding
+        unique_id: Time_Until_Next_Loadshedding
+        unit_of_measurement: mins
+        value_template: '{{ [( as_timestamp(states.sensor.next_loadshedding_time.state) | int - as_timestamp(now()) | int ) / 60,-1] | max }}'
+      time_till_loadshedding_ends:
+        friendly_name: Time until next loadshedding ends
+        unique_id: Time_Until_Next_Loadshedding_ends
+        unit_of_measurement: mins
+        value_template: '{{ [( as_timestamp(states.sensor.next_loadshedding_time_end.state) | int - as_timestamp(now()) | int ) / 60,-1] | max }}'
+
+      eskomsepush_calls_remaining:
+        friendly_name: EskomSePush API Calls remaining
+        unique_id: EskomSePush_calls_remaining
+        value_template: '{{ int(state_attr("sensor.eskomsepushallowance","limit")) - int(state_attr("sensor.eskomsepushallowance","count")) }}'
