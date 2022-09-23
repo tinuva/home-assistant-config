@@ -1,7 +1,7 @@
 ---
 rest:
   - resource: "https://developer.sepush.co.za/business/2.0/area"
-    scan_interval: '02:30:00' # RATE LIMIT!
+    scan_interval: '01:00:00' # RATE LIMIT!
     headers:
       Token: !secret EskomSePush
     params:

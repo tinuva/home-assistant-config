@@ -166,6 +166,15 @@ automation:
     #     entity_id: sensor.front_bathroom_geyser_power
     #     below: '50'
     action:
+      - delay: '00:00:10' # Waits 10 seconds
+      - condition: or
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.front_bathroom_geyser_power
+            below: '50'
+          - condition: state
+            entity_id: switch.front_bathroom_geyser_power
+            state: 'unavailable'
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:

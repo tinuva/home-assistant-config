@@ -2,32 +2,32 @@
 
 localtuya:
   ## CBI Astute Smart Switch
-  - host: 10.0.0.55 #68:57:2D:D2:FE:D2
-    device_id: !secret geyser_mainbathroom_device_id
-    local_key: !secret geyser_mainbathroom_local_key
-    friendly_name: Main Bathroom Geyser
-    protocol_version: "3.3"
-    entities:
-      - platform: switch
-        friendly_name: Main Bathroom Geyser
-        id: 1
-      - platform: sensor
-        friendly_name: Main Bathroom Geyser Current
-        id: 21
-        device_class: current
-        unit_of_measurement: "mA"
-      - platform: sensor
-        friendly_name: Main Bathroom Geyser Power
-        id: 23
-        scaling: 0.1
-        device_class: power
-        unit_of_measurement: "W"
-      - platform: sensor
-        id: 22
-        scaling: 0.1
-        friendly_name: Main Bathroom Geyser Voltage
-        device_class: voltage
-        unit_of_measurement: "V"
+  # - host: 10.0.0.55 #68:57:2D:D2:FE:D2
+  #   device_id: !secret geyser_mainbathroom_device_id
+  #   local_key: !secret geyser_mainbathroom_local_key
+  #   friendly_name: Main Bathroom Geyser
+  #   protocol_version: "3.3"
+  #   entities:
+  #     - platform: switch
+  #       friendly_name: Main Bathroom Geyser
+  #       id: 1
+  #     - platform: sensor
+  #       friendly_name: Main Bathroom Geyser Current
+  #       id: 21
+  #       device_class: current
+  #       unit_of_measurement: "mA"
+  #     - platform: sensor
+  #       friendly_name: Main Bathroom Geyser Power
+  #       id: 23
+  #       scaling: 0.1
+  #       device_class: power
+  #       unit_of_measurement: "W"
+  #     - platform: sensor
+  #       id: 22
+  #       scaling: 0.1
+  #       friendly_name: Main Bathroom Geyser Voltage
+  #       device_class: voltage
+  #       unit_of_measurement: "V"
   ## CBI Astute Smart Switch
   - host: 10.0.0.56 #68:57:2D:D2:F5:C7
     device_id: !secret geyser_frontbathroom_device_id
