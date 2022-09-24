@@ -153,7 +153,7 @@ automation:
       - platform: time
         at: '15:00:00'
       - platform: numeric_state
-        entity_id: sensor.front_bathroom_geyser_power
+        entity_id: sensor.front_bathroom_geyser_energy_power
         below: '50'
     # condition:
     #   - condition: or
@@ -163,14 +163,14 @@ automation:
     #       - condition: template
     #         value_template: "{{ not trigger.from_state }}"
     #   - condition: numeric_state
-    #     entity_id: sensor.front_bathroom_geyser_power
+    #     entity_id: sensor.front_bathroom_geyser_energy_power
     #     below: '50'
     action:
       - delay: '00:00:10' # Waits 10 seconds
       - condition: or
         conditions:
           - condition: numeric_state
-            entity_id: sensor.front_bathroom_geyser_power
+            entity_id: sensor.front_bathroom_geyser_energy_power
             below: '50'
           - condition: state
             entity_id: switch.front_bathroom_geyser_power
@@ -310,7 +310,7 @@ automation:
   - alias: Turn off main geyser after load drop
     trigger:
       - platform: numeric_state
-        entity_id: sensor.main_bathroom_geyser_power
+        entity_id: sensor.main_bathroom_geyser_energy_power
         below: '50'
     condition:
       - condition: or

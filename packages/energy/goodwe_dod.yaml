@@ -104,6 +104,11 @@ automation:
                 entity_id: timer.main_geyser
                 state: 'idle'
     action:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: ssensor.solcast_forecast
+            state: "unavailable"
       - service: script.goodwe_set_dod
         data:
           forecast: "{{ states('sensor.solcast_forecast') }}"
@@ -177,28 +182,28 @@ automation:
     mode: single
 
   ## When Eskom turns on LoadShedding set 16%
-  - alias: Goodwe 16% when LoadShedding start above stage 4
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.eskom_loadshedding_stage
-        above: 4
-        for:
-          minutes: 1
-    condition:
-      - condition: numeric_state
-        entity_id: sensor.eskom_loadshedding_stage
-        above: 4
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
-        below: 26
-    action:
-      - alias: "Set DoD on inverter"
-        service: number.set_value
-        data:
-          value: 16
-        target:
-          entity_id: number.depth_of_discharge_on_grid
-    mode: single
+  # - alias: Goodwe 16% when LoadShedding start above stage 4
+  #   trigger:
+  #     - platform: numeric_state
+  #       entity_id: sensor.eskom_loadshedding_stage
+  #       above: 4
+  #       for:
+  #         minutes: 1
+  #   condition:
+  #     - condition: numeric_state
+  #       entity_id: sensor.eskom_loadshedding_stage
+  #       above: 4
+  #     - condition: numeric_state
+  #       entity_id: sensor.solcast_forecast_energy_today_predicted
+  #       below: 26
+  #   action:
+  #     - alias: "Set DoD on inverter"
+  #       service: number.set_value
+  #       data:
+  #         value: 16
+  #       target:
+  #         entity_id: number.depth_of_discharge_on_grid
+  #   mode: single
 
   ## When loadshedding and there a chance geyser needs to run after 4pm
   - alias: Goodwe DoD 16%
