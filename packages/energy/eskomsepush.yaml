@@ -1,4 +1,8 @@
 ---
+### EskomSePush API Docs: https://documenter.getpostman.com/view/1296288/UzQuNk3E
+### To sign up for a key, scroll down on their page for the API Request link: https://sepush.co.za/
+### Direct link to sign-up form: https://docs.google.com/forms/d/e/1FAIpQLSeZhAkhDaQX_mLT2xn41TkVjLkOH3Py3YWHi_UqQP4niOY01g/viewform
+
 rest:
   - resource: "https://developer.sepush.co.za/business/2.0/area"
     scan_interval: '01:00:00' # RATE LIMIT!
