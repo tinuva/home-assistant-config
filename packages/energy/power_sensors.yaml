@@ -37,7 +37,6 @@ sensor:
     method: left
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
-    #source: sensor.main_bathroom_geyser_power
     source: sensor.main_bathroom_geyser_energy_power
     name: main_bathroom_geyser_usage
     unit_prefix: k

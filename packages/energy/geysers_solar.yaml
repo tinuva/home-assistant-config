@@ -36,7 +36,7 @@
 #       #  entity_id: sensor.goodwe_battery_charge_limit
 #       #  below: '74'
 #       - platform: numeric_state
-#         entity_id: sensor.main_bathroom_geyser_power
+#         entity_id: sensor.main_bathroom_geyser_energy_power
 #         below: '50'
 #       - platform: time
 #         at: '13:30:00'
@@ -60,7 +60,7 @@
 #             after: '11:00:00'
 #             before: '16:30:00'
 #       - condition: numeric_state
-#         entity_id: sensor.main_bathroom_geyser_power
+#         entity_id: sensor.main_bathroom_geyser_energy_power
 #         below: '50'
 #       # Since we have solar, check forecast then continue
 #       #- condition: numeric_state
@@ -138,7 +138,7 @@
 #             after: '11:00:00'
 #             before: '16:30:00'
 #       #- condition: numeric_state
-#       #  entity_id: sensor.front_bathroom_geyser_power
+#       #  entity_id: sensor.front_bathroom_geyser_energy_power
 #       #  below: '50'
 #       # Since we have solar, check forecast then continue
 #       - condition: numeric_state
