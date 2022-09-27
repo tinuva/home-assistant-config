@@ -1,3 +1,4 @@
+---
 logger:
   logs:
     msmart: warn
@@ -11,27 +12,27 @@ homeassistant:
     climate.midea_ac_32985348871179:
       friendly_name: 'AC Office'
 
-climate:
-  - platform: midea_ac
-    host: !secret midea_ac1_ip
-    id: !secret midea_ac1_id
-    # v3 need token and k1(key)
-    token: !secret midea_ac1_token
-    k1: !secret midea_ac1_k1
-    prompt_tone: false
+# climate:
+#   - platform: midea_ac
+#     host: !secret midea_ac1_ip
+#     id: !secret midea_ac1_id
+#     # v3 need token and k1(key)
+#     token: !secret midea_ac1_token
+#     k1: !secret midea_ac1_k1
+#     prompt_tone: false
 
-  - platform: midea_ac
-    host: !secret midea_ac2_ip
-    id: !secret midea_ac2_id
-    # v3 need token and k1(key)
-    token: !secret midea_ac2_token
-    k1: !secret midea_ac2_k1
-    prompt_tone: false
+#   - platform: midea_ac
+#     host: !secret midea_ac2_ip
+#     id: !secret midea_ac2_id
+#     # v3 need token and k1(key)
+#     token: !secret midea_ac2_token
+#     k1: !secret midea_ac2_k1
+#     prompt_tone: false
 
-  - platform: midea_ac
-    host: !secret midea_ac3_ip
-    id: !secret midea_ac3_id
-    # v3 need token and k1(key)
-    token: !secret midea_ac3_token
-    k1: !secret midea_ac3_k1
-    prompt_tone: false
+#   - platform: midea_ac
+#     host: !secret midea_ac3_ip
+#     id: !secret midea_ac3_id
+#     # v3 need token and k1(key)
+#     token: !secret midea_ac3_token
+#     k1: !secret midea_ac3_k1
+#     prompt_tone: false

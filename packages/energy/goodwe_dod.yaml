@@ -107,7 +107,7 @@ automation:
       - condition: not
         conditions:
           - condition: state
-            entity_id: ssensor.solcast_forecast
+            entity_id: sensor.solcast_forecast
             state: "unavailable"
       - service: script.goodwe_set_dod
         data:
@@ -234,7 +234,7 @@ automation:
                 above: '29.1'
               - condition: numeric_state
                 entity_id: sensor.goodwe_battery_soc
-                above: '60'
+                above: '55'
             sequence:
               - delay:
                   minutes: "{{ range(1, 11)|random }}"

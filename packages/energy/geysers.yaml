@@ -71,25 +71,10 @@ script:
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
-      # - choose:
-      #     # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
-      #     - conditions:
-      #         - condition: or
-      #           conditions:
-      #             - condition: template
-      #               value_template: >-
-      #                 {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
-      #       sequence:
-      #         - alias: "Set DoD on inverter"
-      #           service: number.set_value
-      #           data:
-      #             value: 16
-      #           target:
-      #             entity_id: number.depth_of_discharge_on_grid
       # Turn off front geyser
-      - service: script.switch_retry_off
-        data:
-          target: switch.front_bathroom_geyser
+      - service: timer.finish
+        target:
+          entity_id: timer.front_geyser
 
   ######################################################################
   # Re-usable script to start main bedroom geyser
@@ -128,18 +113,9 @@ script:
           entity_id: switch.front_bathroom_geyser
       # Turn off main geyser
       - delay: '00:00:01' # Waits 1 seconds
-      - service: script.switch_retry_off
-        data:
-          target: switch.main_bathroom_geyser
-      # if before 6am in the morning then also set goodwe dod to 1% if forecast less than 30kWh
-      # - condition: template
-      #   value_template: >-
-      #     {{ ((states('sensor.time') <= '06:00') and (states('sensor.solcast_forecast')|float < 25)) }}
-      # - service: input_number.set_value
-      #   target:
-      #     entity_id: input_number.set_goodwe_dod
-      #   data:
-      #     value: 16
+      - service: timer.finish
+        target:
+          entity_id: timer.main_geyser
 
 automation:
   ### Main Geyser ###
@@ -311,7 +287,9 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.main_bathroom_geyser_energy_power
-        below: '50'
+        below: '100'
+        for:
+          seconds: 60
     condition:
       - condition: or
         conditions:
