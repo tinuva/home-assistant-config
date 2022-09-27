@@ -6,13 +6,13 @@ https://github.com/mac-zhou/midea-ac-py
 
 This is still early work in progress
 """
+from __future__ import annotations
+
+import datetime
 import logging
 
-import voluptuous as vol
-from datetime import timedelta
-
-import homeassistant.helpers.config_validation as cv
-from homeassistant.components.climate import PLATFORM_SCHEMA
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import TEMP_CELSIUS, TEMP_CELSIUS, TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_ID
 try:
     from homeassistant.components.climate import ClimateEntity
 except ImportError:
@@ -20,250 +20,204 @@ except ImportError:
 from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE,
     SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST)
-from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, TEMP_CELSIUS, TEMP_FAHRENHEIT, \
-    ATTR_TEMPERATURE
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from msmart.device import air_conditioning as ac
 
-from homeassistant.helpers.restore_state import RestoreEntity
+# Local constants
+from .const import (
+    DOMAIN,
+    CONF_PROMPT_TONE,
+    CONF_TEMP_STEP,
+    CONF_INCLUDE_OFF_AS_STATE,
+    CONF_USE_FAN_ONLY_WORKAROUND,
+    CONF_KEEP_LAST_KNOWN_ONLINE_STATE
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_TYPE = 'type'
-CONF_HOST = 'host'
-CONF_ID = 'id'
-CONF_TOKEN = 'token'
-CONF_K1 = 'k1'
-CONF_PORT = 'port'
-CONF_PROMPT_TONE = 'prompt_tone'
-CONF_TEMP_STEP = 'temp_step'
-CONF_INCLUDE_OFF_AS_STATE = 'include_off_as_state'
-CONF_USE_FAN_ONLY_WORKAROUND = 'use_fan_only_workaround'
-CONF_KEEP_LAST_KNOWN_ONLINE_STATE = 'keep_last_known_online_state'
-
-SCAN_INTERVAL = timedelta(seconds=15)
-
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_HOST): cv.string,
-    vol.Required(CONF_ID): cv.string,
-    vol.Optional(CONF_TOKEN, default=""): cv.string,
-    vol.Optional(CONF_K1, default=""): cv.string,
-    vol.Optional(CONF_PORT, default=6444): vol.Coerce(int),
-    vol.Optional(CONF_TYPE, default=0xac): vol.Coerce(int),
-    vol.Optional(CONF_PROMPT_TONE, default=True): vol.Coerce(bool),
-    vol.Optional(CONF_TEMP_STEP, default=1.0): vol.Coerce(float),
-    vol.Optional(CONF_INCLUDE_OFF_AS_STATE, default=True): vol.Coerce(bool),
-    vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND, default=False): vol.Coerce(bool),
-    vol.Optional(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, default=False): vol.Coerce(bool)
-})
-
-SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE \
-                | SUPPORT_SWING_MODE | SUPPORT_PRESET_MODE
+# Override default scan interval?
+SCAN_INTERVAL = datetime.timedelta(seconds=15)
 
 
-async def async_setup_platform(hass, config, async_add_entities,
-                               discovery_info=None):
-    """Set up the Midea lan service and query appliances."""
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    add_entities: AddEntitiesCallback,
+) -> None:
+    """Setup the climate platform for Midea Smart AC."""
 
-    from msmart.device import air_conditioning as ac
+    _LOGGER.info("Setting up climate platform.")
 
-    device_ip = config.get(CONF_HOST)
-    device_id = config.get(CONF_ID)
-    device_token = config.get(CONF_TOKEN)
-    device_k1 = config.get(CONF_K1)
-    device_port = config.get(CONF_PORT)
-    prompt_tone = config.get(CONF_PROMPT_TONE)
-    temp_step = config.get(CONF_TEMP_STEP)
-    include_off_as_state = config.get(CONF_INCLUDE_OFF_AS_STATE)
-    use_fan_only_workaround = config.get(CONF_USE_FAN_ONLY_WORKAROUND)
-    keep_last_known_online_state = config.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE)
+    # Get config and options data from entry
+    config = config_entry.data
+    options = config_entry.options
 
-    device = ac(device_ip, int(device_id), device_port)
-    device._type = config.get(CONF_TYPE)
-    if device_token and device_k1:
-        # device.authenticate(device_k1, device_token)
-        device._protocol_version = 3
-        device._token = bytearray.fromhex(device_token)
-        device._key = bytearray.fromhex(device_k1)
-        device._lan_service._token = device._token
-        device._lan_service._key = device._key
-        
-    # device = client.setup()
-    device.prompt_tone = prompt_tone
-    device.keep_last_known_online_state = keep_last_known_online_state
-    entities = []
-    entities.append(MideaClimateACDevice(
-            hass, device, temp_step, include_off_as_state,
-            use_fan_only_workaround))
+    # Fetch device from global data
+    id = config.get(CONF_ID)
+    device = hass.data[DOMAIN][id]
 
-    async_add_entities(entities)
+    # Query device capabilities
+    _LOGGER.info("Querying device capabilities.")
+    await hass.async_add_executor_job(device.get_capabilities)
+
+    add_entities([
+        MideaClimateACDevice(hass, device, options)
+    ])
 
 
-class MideaClimateACDevice(ClimateEntity, RestoreEntity):
+class MideaClimateACDevice(ClimateEntity):
     """Representation of a Midea climate AC device."""
 
-    def __init__(self, hass, device, temp_step: float,
-                 include_off_as_state: bool, use_fan_only_workaround: bool):
+    def __init__(self, hass, device, options: dict):
         """Initialize the climate device."""
-        from msmart.device import air_conditioning as ac
-
-        self._operation_list = ac.operational_mode_enum.list()
-        self._fan_list = ac.fan_speed_enum.list()
-        self._swing_list = ac.swing_mode_enum.list()
-        if include_off_as_state:
-            self._operation_list.append("off")
-        self._support_flags = SUPPORT_FLAGS
-        # the LED display on the AC should use the same unit as that in homeassistant
-        device.fahrenheit_unit = (hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
-        self._device = device
-        self._unit_of_measurement = TEMP_CELSIUS
-        self._target_temperature_step = temp_step
-        self._include_off_as_state = include_off_as_state
-        self._use_fan_only_workaround = use_fan_only_workaround
 
         self.hass = hass
-        self._old_state = None
+        self._device = device
+
+        # Apply options
+        self._device.prompt_tone = options.get(CONF_PROMPT_TONE)
+        self._device.keep_last_known_online_state = options.get(
+            CONF_KEEP_LAST_KNOWN_ONLINE_STATE)
+
+        # Display on the AC should use the same unit as homeassistant
+        self._device.fahrenheit = (
+            hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
+
+        self._target_temperature_step = options.get(CONF_TEMP_STEP)
+        self._include_off_as_state = options.get(CONF_INCLUDE_OFF_AS_STATE)
+        self._use_fan_only_workaround = options.get(
+            CONF_USE_FAN_ONLY_WORKAROUND)
+
+        self._operation_list = device.supported_operation_modes
+        if self._include_off_as_state:
+            self._operation_list.append("off")
+
+        self._fan_list = ac.fan_speed_enum.list()
+        self._swing_list = device.supported_swing_modes
+
         self._changed = False
 
-    async def apply_changes(self):
+    async def apply_changes(self) -> None:
         if not self._changed:
             return
         await self.hass.async_add_executor_job(self._device.apply)
-        self._old_state = None
         await self.async_update_ha_state()
         self._changed = False
 
-    async def async_update(self):
+    async def async_update(self) -> None:
         """Retrieve latest state from the appliance if no changes made,
         otherwise update the remote device state."""
         if self._changed:
             await self.hass.async_add_executor_job(self._device.apply)
             self._changed = False
         elif not self._use_fan_only_workaround:
-            self._old_state = None
             await self.hass.async_add_executor_job(self._device.refresh)
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Run when entity about to be added."""
         await super().async_added_to_hass()
-        self._old_state = await self.async_get_last_state()
+
+        # Populate data ASAP
+        await self.async_update()
 
     @property
-    def state_attributes(self):
-        attrs = super().state_attributes
-        attrs["outdoor_temperature"] = self._device.outdoor_temperature
-
-        return attrs
+    def device_info(self) -> dict:
+        return {
+            "identifiers": {
+                (DOMAIN, self._device.id)
+            },
+            "name": self.name,
+            "manufacturer": "Midea",
+        }
 
     @property
-    def available(self):
+    def available(self) -> bool:
         """Checks if the appliance is available for commands."""
         return self._device.online
 
     @property
-    def supported_features(self):
+    def supported_features(self) -> int:
         """Return the list of supported features."""
-        return self._support_flags
+        return SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_SWING_MODE | SUPPORT_PRESET_MODE
 
     @property
-    def target_temperature_step(self):
+    def target_temperature_step(self) -> float:
         """Return the supported step of target temperature."""
         return self._target_temperature_step
 
     @property
-    def hvac_modes(self):
+    def hvac_modes(self) -> list:
         """Return the list of available operation modes."""
         return self._operation_list
 
     @property
-    def fan_modes(self):
+    def fan_modes(self) -> list:
         """Return the list of available fan modes."""
         return self._fan_list
 
     @property
-    def swing_modes(self):
+    def swing_modes(self) -> list:
         """List of available swing modes."""
         return self._swing_list
 
     @property
-    def assumed_state(self):
+    def assumed_state(self) -> bool:
         """Assume state rather than refresh to workaround fan_only bug."""
         return self._use_fan_only_workaround
 
     @property
-    def should_poll(self):
+    def should_poll(self) -> bool:
         """Poll the appliance for changes, there is no notification capability in the Midea API"""
         return not self._use_fan_only_workaround
 
     @property
-    def unique_id(self):
-        return self._device.id
+    def unique_id(self) -> str:
+        return f"{self._device.id}"
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return the name of the climate device."""
-        return "midea_{:2x}_{}".format(self._device._type, self._device.id)
+        return f"{DOMAIN}_{self._device.id}"
 
     @property
-    def temperature_unit(self):
+    def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return self._unit_of_measurement
+        return TEMP_CELSIUS
 
     @property
-    def current_temperature(self):
+    def current_temperature(self) -> float:
         """Return the current temperature."""
-        if self._old_state is not None:
-            return self._old_state.attributes.get('current_temperature')
-
         return self._device.indoor_temperature
 
     @property
-    def target_temperature(self):
+    def target_temperature(self) -> float:
         """Return the temperature we try to reach."""
-        if self._old_state is not None and 'temperature' in self._old_state.attributes:
-            self._device.target_temperature = self._old_state.attributes['temperature']
-            return self._old_state.attributes['temperature']
-
         return self._device.target_temperature
 
     @property
-    def hvac_mode(self):
+    def hvac_mode(self) -> str:
         """Return current operation ie. heat, cool, idle."""
-        if self._old_state is not None:
-            from msmart.device import air_conditioning as ac
-            self._device.power_state = self._include_off_as_state and self._old_state.state != 'off'
-            if self._old_state.state in ac.operational_mode_enum.list():
-                self._device.operational_mode = ac.operational_mode_enum[self._old_state.state]
-            return self._old_state.state
-
         if self._include_off_as_state and not self._device.power_state:
             return "off"
         return self._device.operational_mode.name
 
     @property
-    def fan_mode(self):
+    def fan_mode(self) -> str:
         """Return the fan setting."""
-        if self._old_state is not None and 'fan_mode' in self._old_state.attributes:
-            from msmart.device import air_conditioning as ac
-            self._device.fan_speed = ac.fan_speed_enum[self._old_state.attributes['fan_mode']]
-            return self._old_state.attributes['fan_mode']
-
         return self._device.fan_speed.name
 
     @property
-    def swing_mode(self):
+    def swing_mode(self) -> str:
         """Return the swing setting."""
-        if self._old_state is not None and 'swing_mode' in self._old_state.attributes:
-            from msmart.device import air_conditioning as ac
-            self._device.swing_mode = ac.swing_mode_enum[self._old_state.attributes['swing_mode']]
-            return self._old_state.attributes['swing_mode']
-
         return self._device.swing_mode.name
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return true if the device is on."""
         return self._device.power_state
 
-    async def async_set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs) -> None:
         """Set new target temperatures."""
         if kwargs.get(ATTR_TEMPERATURE) is not None:
             # grab temperature from front end UI
@@ -277,23 +231,22 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
             self._changed = True
             await self.apply_changes()
 
-    async def async_set_swing_mode(self, swing_mode):
+    async def async_set_swing_mode(self, swing_mode) -> None:
         """Set swing mode."""
-        from msmart.device import air_conditioning as ac
         self._device.swing_mode = ac.swing_mode_enum[swing_mode]
         self._changed = True
         await self.apply_changes()
 
-    async def async_set_fan_mode(self, fan_mode):
+    async def async_set_fan_mode(self, fan_mode) -> None:
         """Set fan mode."""
-        from msmart.device import air_conditioning as ac
+        """Fix key error when calling from HomeKit"""
+        fan_mode = fan_mode.capitalize()
         self._device.fan_speed = ac.fan_speed_enum[fan_mode]
         self._changed = True
         await self.apply_changes()
 
-    async def async_set_hvac_mode(self, hvac_mode):
+    async def async_set_hvac_mode(self, hvac_mode) -> None:
         """Set hvac mode."""
-        from msmart.device import air_conditioning as ac
         if self._include_off_as_state and hvac_mode == "off":
             self._device.power_state = False
         else:
@@ -303,7 +256,7 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
         self._changed = True
         await self.apply_changes()
 
-    async def async_set_preset_mode(self, preset_mode: str):
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
         if preset_mode == PRESET_NONE:
             self._device.eco_mode = False
             self._device.turbo_mode = False
@@ -318,22 +271,11 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
         await self.apply_changes()
 
     @property
-    def preset_modes(self):
+    def preset_modes(self) -> list:
         return [PRESET_NONE, PRESET_ECO, PRESET_BOOST]
 
     @property
-    def preset_mode(self):
-        if self._old_state is not None and 'preset_mode' in self._old_state.attributes:
-            preset_mode = self._old_state.attributes['preset_mode']
-            if preset_mode == PRESET_ECO:
-                self._device.eco_mode = True
-                self._device.turbo_mode = False
-            elif preset_mode == PRESET_BOOST:
-                self._device.turbo_mode = True
-                self._device.eco_mode = False
-
-            return preset_mode
-
+    def preset_mode(self) -> str:
         if self._device.eco_mode:
             return PRESET_ECO
         elif self._device.turbo_mode:
@@ -341,24 +283,24 @@ class MideaClimateACDevice(ClimateEntity, RestoreEntity):
         else:
             return PRESET_NONE
 
-    async def async_turn_on(self):
+    async def async_turn_on(self) -> None:
         """Turn on."""
         self._device.power_state = True
         self._changed = True
         await self.apply_changes()
 
-    async def async_turn_off(self):
+    async def async_turn_off(self) -> None:
         """Turn off."""
         self._device.power_state = False
         self._changed = True
         await self.apply_changes()
 
     @property
-    def min_temp(self):
+    def min_temp(self) -> float:
         """Return the minimum temperature."""
         return 17
 
     @property
-    def max_temp(self):
+    def max_temp(self) -> float:
         """Return the maximum temperature."""
         return 30

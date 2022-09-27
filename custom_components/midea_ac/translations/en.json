@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Midea Smart AC Device",
+        "description": "Enter information for your device.",
+        "data": {
+          "id": "ID",
+          "host": "Host",
+          "port": "Port",
+          "token": "Token",
+          "k1": "K1",
+          "prompt_tone": "Prompt Tone",
+          "temp_step": "Temperature Step",
+          "include_off_as_state": "Include \"Off\" State",
+          "use_fan_only_workaround": "Use Fan-only Workaround",
+          "keep_last_known_online_state": "Keep Last Known State"
+        },
+        "data_description": {
+          "token": "Token for V3 devices",
+          "k1": "K1 for V3 devices",
+          "prompt_tone": "Enable the beep when sending commands",
+          "temp_step": "Step size for temperature set point"
+        }
+      }
+    },
+    "abort":{
+      "already_configured": "The device ID has already been configured."
+    },
+    "error":{
+      "cannot_connect":"A connection could not be made with these settings."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options for Midea Smart AC Device",
+        "data": {
+          "prompt_tone": "Prompt Tone",
+          "temp_step": "Temperature Step",
+          "include_off_as_state": "Include \"Off\" State",
+          "use_fan_only_workaround": "Use Fan-only Workaround",
+          "keep_last_known_online_state": "Keep Last Known State"
+        },
+        "data_description": {
+          "prompt_tone": "Enable the beep when sending commands",
+          "temp_step": "Step size for temperature set point"
+        }
+      }
+    }
+  }
+}
