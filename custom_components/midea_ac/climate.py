@@ -19,7 +19,7 @@ except ImportError:
     from homeassistant.components.climate import ClimateDevice as ClimateEntity
 from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE,
-    SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST)
+    SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST, PRESET_AWAY)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from msmart.device import air_conditioning as ac
@@ -57,10 +57,6 @@ async def async_setup_entry(
     id = config.get(CONF_ID)
     device = hass.data[DOMAIN][id]
 
-    # Query device capabilities
-    _LOGGER.info("Querying device capabilities.")
-    await hass.async_add_executor_job(device.get_capabilities)
-
     add_entities([
         MideaClimateACDevice(hass, device, options)
     ])
@@ -89,12 +85,23 @@ class MideaClimateACDevice(ClimateEntity):
         self._use_fan_only_workaround = options.get(
             CONF_USE_FAN_ONLY_WORKAROUND)
 
-        self._operation_list = device.supported_operation_modes
+        # Attempt to load supported operation modes
+        self._operation_list = getattr(
+            self._device, "supported_operation_modes", ac.operational_mode_enum.list())
         if self._include_off_as_state:
             self._operation_list.append("off")
 
         self._fan_list = ac.fan_speed_enum.list()
-        self._swing_list = device.supported_swing_modes
+
+        # Attempt to load supported swing modes
+        self._swing_list = getattr(
+            self._device, "supported_swing_modes", ac.swing_mode_enum.list())
+
+        # Attempt to load min/max target temperatures
+        self._min_temperature = getattr(
+            self._device, "min_target_temperature", 16)
+        self._max_temperature = getattr(
+            self._device, "max_target_temperature", 30)
 
         self._changed = False
 
@@ -257,22 +264,32 @@ class MideaClimateACDevice(ClimateEntity):
         await self.apply_changes()
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        if preset_mode == PRESET_NONE:
-            self._device.eco_mode = False
-            self._device.turbo_mode = False
-        elif preset_mode == PRESET_BOOST:
-            self._device.eco_mode = False
+        # TODO Assuming these are all mutually exclusive
+        self._device.eco_mode = False
+        self._device.turbo_mode = False
+        self._device.freeze_protection_mode = False
+
+        # Enable proper mode
+        if preset_mode == PRESET_BOOST:
             self._device.turbo_mode = True
         elif preset_mode == PRESET_ECO:
-            self._device.turbo_mode = False
             self._device.eco_mode = True
+        elif preset_mode == PRESET_AWAY:
+            self._device.freeze_protection_mode = True
 
         self._changed = True
         await self.apply_changes()
 
     @property
     def preset_modes(self) -> list:
-        return [PRESET_NONE, PRESET_ECO, PRESET_BOOST]
+        # TODO could check for supports_eco and supports_turbo
+        modes = [PRESET_NONE, PRESET_ECO, PRESET_BOOST]
+
+        # Add away preset if in heat and supports freeze protection
+        if getattr(self._device, "supports_freeze_protection_mode", False) and self._device.operational_mode == ac.operational_mode_enum.heat:
+            modes.append(PRESET_AWAY)
+
+        return modes
 
     @property
     def preset_mode(self) -> str:
@@ -280,6 +297,8 @@ class MideaClimateACDevice(ClimateEntity):
             return PRESET_ECO
         elif self._device.turbo_mode:
             return PRESET_BOOST
+        elif getattr(self._device, "freeze_protection_mode", False):
+            return PRESET_AWAY
         else:
             return PRESET_NONE
 
@@ -298,9 +317,9 @@ class MideaClimateACDevice(ClimateEntity):
     @property
     def min_temp(self) -> float:
         """Return the minimum temperature."""
-        return 17
+        return self._min_temperature
 
     @property
     def max_temp(self) -> float:
         """Return the maximum temperature."""
-        return 30
+        return self._max_temperature

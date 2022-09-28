@@ -4,7 +4,7 @@
         "version": "0.2.4",
         "documentation": "https://github.com/mac-zhou/midea-ac-py",
         "issue_tracker": "https://github.com/mac-zhou/midea-ac-py/issues",
-        "requirements": ["msmart==0.2.5", "pycryptodome", "pycryptodomex", "click"],
+        "requirements": ["git+https://github.com/mill1000/midea-msmart.git@future#msmart>=0.2.3", "pycryptodome", "pycryptodomex", "click"],
         "dependencies": [],
         "codeowners": ["@mac-zhou"],
         "iot_class": "local_polling",

@@ -1,12 +1,13 @@
-"""Platform for switch integration."""
+"""Platform for binary sensor integration."""
 from __future__ import annotations
 
 import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_ID, STATE_ON, STATE_UNAVAILABLE, STATE_UNKNOWN
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
@@ -22,9 +23,9 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     add_entities: AddEntitiesCallback,
 ) -> None:
-    """Setup the switch platform for Midea Smart AC."""
+    """Setup the binary sensor platform for Midea Smart AC."""
 
-    _LOGGER.info("Setting up switch platform.")
+    _LOGGER.info("Setting up binary sensor platform.")
 
     # Get config data from entry
     config = config_entry.data
@@ -33,22 +34,18 @@ async def async_setup_entry(
     id = config.get(CONF_ID)
     device = hass.data[DOMAIN][id]
 
-    # Add supported switch entities
-    if helpers.method_exists(device, "toggle_display"):
-        add_entities([MideaDisplaySwitch(device), ])
+    # Create sensor entities from device if supported
+    if helpers.property_exists(device, "filter_alert"):
+        add_entities([MideaBinarySensor(device, "filter_alert"), ])
 
 
-class MideaDisplaySwitch(SwitchEntity, RestoreEntity):
-    """Display switch for Midea AC."""
+class MideaBinarySensor(BinarySensorEntity, RestoreEntity):
+    """Binary sensor for Midea AC."""
 
-    def __init__(self, device):
+    def __init__(self, device, prop):
         self._device = device
+        self._prop = prop
         self._on = False
-
-    async def _toggle_display(self) -> None:
-        await self.hass.async_add_executor_job(self._device.toggle_display)
-        await self.async_update_ha_state()
-        self._on = not self._on
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
@@ -61,9 +58,9 @@ class MideaDisplaySwitch(SwitchEntity, RestoreEntity):
             self._on = last_state.state == STATE_ON
 
     async def async_update(self) -> None:
-        # Grab the display on status
+        # Grab the property from the device
         if self.available:
-            self._on = self._device.display_on
+            self._on = getattr(self._device, self._prop)
 
     @property
     def device_info(self) -> dict:
@@ -75,11 +72,11 @@ class MideaDisplaySwitch(SwitchEntity, RestoreEntity):
 
     @property
     def name(self) -> str:
-        return f"{DOMAIN}_display_{self._device.id}"
+        return f"{DOMAIN}_{self._prop}_{self._device.id}"
 
     @property
     def unique_id(self) -> str:
-        return f"{self._device.id}-display"
+        return f"{self._device.id}-{self._prop}"
 
     @property
     def available(self) -> bool:
@@ -89,10 +86,10 @@ class MideaDisplaySwitch(SwitchEntity, RestoreEntity):
     def is_on(self) -> bool:
         return self._on
 
-    async def async_turn_on(self) -> None:
-        if not self.is_on:
-            await self._toggle_display()
+    @property
+    def device_class(self) -> str:
+        return BinarySensorDeviceClass.PROBLEM
 
-    async def async_turn_off(self) -> None:
-        if self.is_on:
-            await self._toggle_display()
+    @property
+    def entity_category(self) -> str:
+        return EntityCategory.DIAGNOSTIC
