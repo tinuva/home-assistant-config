@@ -220,12 +220,6 @@ automation:
       - condition: template
         value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
     action:
-      - alias: "Set DoD on inverter"
-        service: number.set_value
-        data:
-          value: 16
-        target:
-          entity_id: number.depth_of_discharge_on_grid
       - choose:
           # IF lots of sun and high battery skip
           - conditions:
@@ -234,7 +228,7 @@ automation:
                 above: '29.1'
               - condition: numeric_state
                 entity_id: sensor.goodwe_battery_soc
-                above: '55'
+                above: '50'
             sequence:
               - delay:
                   minutes: "{{ range(1, 11)|random }}"

@@ -1,7 +1,8 @@
 ---
 logger:
   logs:
-    msmart: warn
+    custom_components.midea_ac: warn #info
+    msmart: warn #debug
 
 homeassistant:
   customize:
