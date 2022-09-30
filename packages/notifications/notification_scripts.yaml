@@ -1,3 +1,4 @@
+---
 script:
   ######################################################################
   # Re-usable script to send log message
@@ -72,7 +73,7 @@ script:
               false
             {% endif %}
       - choose:
-          # Turn on between 11am and 2pm for sun times
+          # Condition: If also sending an image, needs to be separate else message delivery faill with combination of options
           - conditions:
               - condition: template
                 value_template: >
