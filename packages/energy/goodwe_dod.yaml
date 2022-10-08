@@ -225,7 +225,7 @@ automation:
           - conditions:
               - condition: numeric_state
                 entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '29.1'
+                above: '26.1'
               - condition: numeric_state
                 entity_id: sensor.goodwe_battery_soc
                 above: '50'

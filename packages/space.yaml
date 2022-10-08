@@ -26,7 +26,7 @@ homeassistant:
 #     show_on_map: false
 
 sensor:
-  - platform: moon
+  #- platform: moon
   - platform: launch_library
 
 automation:

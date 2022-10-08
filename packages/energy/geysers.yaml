@@ -130,7 +130,9 @@ automation:
         at: '15:00:00'
       - platform: numeric_state
         entity_id: sensor.front_bathroom_geyser_energy_power
-        below: '50'
+        below: '100'
+        for:
+          seconds: 60
     # condition:
     #   - condition: or
     #     conditions:
@@ -147,7 +149,7 @@ automation:
         conditions:
           - condition: numeric_state
             entity_id: sensor.front_bathroom_geyser_energy_power
-            below: '50'
+            below: '100'
           - condition: state
             entity_id: switch.front_bathroom_geyser_power
             state: 'unavailable'
@@ -194,9 +196,19 @@ automation:
                 state: 'idle'
                 for:
                   hours: 6
-              - condition: numeric_state
-                entity_id: sensor.average_temperature_outside_last_1_day
-                below: '17.4'
+              - condition: or
+                conditions:
+                  - condition: numeric_state
+                    entity_id: sensor.average_temperature_outside_last_1_day
+                    below: '17.4'
+                  - condition: and
+                    conditions:
+                      - condition: numeric_state
+                        entity_id: sensor.average_temperature_outside_last_1_day
+                        below: '22'
+                      - condition: numeric_state
+                        entity_id: sensor.solcast_forecast_energy_today_predicted
+                        above: '26.1'
               - condition: template
                 value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
               - condition: template

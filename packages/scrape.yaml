@@ -3,7 +3,7 @@ sensor:
   - platform: command_line
     name: 'Google Cache Redirector'
     command: "curl -s https://redirector.googlevideo.com/report_mapping?di=no"
-    # value_template: '{{ value | multiply(1000) | round(0) }}' # Not sure if in cm or mm.
+    value_template: '{{ value.split("next_hop_address")[0] }}'
     scan_interval: 300
 
 automation:
@@ -28,4 +28,4 @@ automation:
           object: 'Google Cache'
           target: 'alerts-david'
           message: >
-            Redirect updated From: {{ trigger.from_state }}
+            Redirect updated From: {{ trigger.from_state.state }}

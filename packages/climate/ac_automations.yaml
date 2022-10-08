@@ -35,6 +35,9 @@ automation:
               - condition: numeric_state
                 entity_id: sensor.solcast_forecast_energy_today_predicted
                 above: '25'
+              - condition: state
+                entity_id: binary_sensor.study_window
+                state: 'off'
             sequence:
               - service: script.ac
                 data:
@@ -50,6 +53,9 @@ automation:
                 above: '27'
               - condition: template
                 value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
+              - condition: state
+                entity_id: binary_sensor.main_bedroom_window
+                state: 'off'
             sequence:
               - service: script.ac
                 data:
@@ -65,6 +71,9 @@ automation:
                 above: '29'
               - condition: template
                 value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
+              - condition: state
+                entity_id: binary_sensor.babyroom_window
+                state: 'off'
             sequence:
               - service: script.ac
                 data:

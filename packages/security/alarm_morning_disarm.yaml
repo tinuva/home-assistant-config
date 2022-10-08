@@ -58,7 +58,7 @@ automation:
         conditions:
           - condition: time # between times
             after: "05:00:00"
-            before: "05:45:00"
+            before: "06:00:00"
             weekday:
               - mon
               - tue

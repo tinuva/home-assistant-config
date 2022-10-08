@@ -18,6 +18,10 @@ mqtt:
       payload_available: "Online"
       payload_not_available: "Offline"
 
+input_boolean:
+  worker_working_outside:
+    name: Worker working outside
+
 ## Alert
 alert:
   front_gate:
@@ -41,6 +45,11 @@ notify:
 script:
   notify_front_gate:
     sequence:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_boolean.worker_working_outside
+            state: "on"
       - service: script.notify_slack
         data_template:
           channel: "C012KCJ9YJ0"
@@ -59,3 +68,17 @@ script:
                   value: Leave it
                   name: 'anything_just_not_blank'
                   type: button
+
+automation:
+  - alias: Reset worker outside inpput
+    trigger:
+      - platform: state
+        entity_id: input_boolean.worker_working_outside
+        to: "on"
+        for:
+          hours: 6
+    action:
+      - delay: '00:00:10' # Waits 10 seconds
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.worker_working_outside
