@@ -17,7 +17,8 @@ from .const import (
     CONF_TEMP_STEP,
     CONF_INCLUDE_OFF_AS_STATE,
     CONF_USE_FAN_ONLY_WORKAROUND,
-    CONF_KEEP_LAST_KNOWN_ONLINE_STATE
+    CONF_KEEP_LAST_KNOWN_ONLINE_STATE,
+    CONF_ADDITIONAL_OPERATION_MODES
 )
 
 
@@ -53,6 +54,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_INCLUDE_OFF_AS_STATE: user_input.get(CONF_INCLUDE_OFF_AS_STATE),
                     CONF_USE_FAN_ONLY_WORKAROUND: user_input.get(CONF_USE_FAN_ONLY_WORKAROUND),
                     CONF_KEEP_LAST_KNOWN_ONLINE_STATE: user_input.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE),
+                    CONF_ADDITIONAL_OPERATION_MODES: user_input.get(CONF_ADDITIONAL_OPERATION_MODES),
                 }
 
                 # Create a config entry with the config data and options
@@ -61,9 +63,8 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Indicate a connection could not be made
                 errors["base"] = "cannot_connect"
 
-        
         user_input = user_input or {}
-        
+
         data_schema = vol.Schema({
             vol.Required(CONF_ID,
                          default=user_input.get(CONF_ID)): cv.string,
@@ -82,9 +83,11 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_INCLUDE_OFF_AS_STATE,
                          default=user_input.get(CONF_INCLUDE_OFF_AS_STATE, True)): cv.boolean,
             vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND,
-                         default=user_input.get(CONF_USE_FAN_ONLY_WORKAROUND, False)):  cv.boolean,
+                         default=user_input.get(CONF_USE_FAN_ONLY_WORKAROUND, False)): cv.boolean,
             vol.Optional(CONF_KEEP_LAST_KNOWN_ONLINE_STATE,
-                         default=user_input.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, False)):  cv.boolean
+                         default=user_input.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, False)): cv.boolean,
+            vol.Optional(CONF_ADDITIONAL_OPERATION_MODES,
+                         description={"suggested_value": options.get(CONF_ADDITIONAL_OPERATION_MODES, None)}): cv.string,
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
@@ -133,9 +136,11 @@ class MideaOptionsFlow(OptionsFlow):
             vol.Optional(CONF_INCLUDE_OFF_AS_STATE,
                          default=options.get(CONF_INCLUDE_OFF_AS_STATE, True)): cv.boolean,
             vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND,
-                         default=options.get(CONF_USE_FAN_ONLY_WORKAROUND, False)):  cv.boolean,
+                         default=options.get(CONF_USE_FAN_ONLY_WORKAROUND, False)): cv.boolean,
             vol.Optional(CONF_KEEP_LAST_KNOWN_ONLINE_STATE,
-                         default=options.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, False)):  cv.boolean
+                         default=options.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, False)): cv.boolean,
+            vol.Optional(CONF_ADDITIONAL_OPERATION_MODES,
+                         description={"suggested_value": options.get(CONF_ADDITIONAL_OPERATION_MODES, None)}): cv.string,
         })
 
         return self.async_show_form(step_id="init", data_schema=data_schema)

@@ -14,7 +14,8 @@
           "temp_step": "Temperature Step",
           "include_off_as_state": "Include \"Off\" State",
           "use_fan_only_workaround": "Use Fan-only Workaround",
-          "keep_last_known_online_state": "Keep Last Known State"
+          "keep_last_known_online_state": "Keep Last Known State",
+          "additional_operation_modes": "Additional Operation Modes"
         },
         "data_description": {
           "token": "Token for V3 devices",
@@ -40,7 +41,8 @@
           "temp_step": "Temperature Step",
           "include_off_as_state": "Include \"Off\" State",
           "use_fan_only_workaround": "Use Fan-only Workaround",
-          "keep_last_known_online_state": "Keep Last Known State"
+          "keep_last_known_online_state": "Keep Last Known State",
+          "additional_operation_modes": "Additional Operation Modes"
         },
         "data_description": {
           "prompt_tone": "Enable the beep when sending commands",
