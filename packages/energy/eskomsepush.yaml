@@ -204,13 +204,22 @@ automation:
     trigger:
       - entity_id: sensor.loadshedding_slot_forecast
         platform: state
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.loadshedding_slot_forecast
+            state: "unavailable"
+          - condition: template
+            value_template: >
+              {{ trigger.from_state.state != trigger.to_state.state }}
     action:
       - alias: "Alert change"
         service: script.alert
         data:
           icon: ':zap:'
           object: 'Loadshedding forecast'
-          target: 'alerts-david'
+          target: 'power-alerts'
           message: >
             {{ states.sensor.loadshedding_slot_forecast.state }}
 
@@ -220,12 +229,16 @@ automation:
       - entity_id: sensor.time_till_loadshedding
         platform: state
         to: '15'
+    condition:
+      - condition: time
+        before: '18:00:00'
+        after: '15:45:00'
     action:
       - alias: "Alert change"
         service: script.alert
         data:
           icon: ':zap:'
           object: 'Loadshedding slot'
-          target: 'alerts-david'
+          target: 'power-alerts'
           message: >
             Loadshedding slot in 15 minutes

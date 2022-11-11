@@ -187,30 +187,27 @@ automation:
         at: '02:59:00'
     condition: []
     action:
-      - choose:
-          # Morning
-          - conditions:
-              - condition: template
-                value_template: >-
-                  {{ states('sensor.solcast_forecast') == "unavailable" }}
-            sequence:
-              - delay: '00:00:30' # Waits 30 seconds
-              - service: automation.trigger
-                target:
-                  entity_id: automation.solcast_forecast_to_mqtt
-        default:
-          - service: mqtt.publish
-            data:
-              topic: home/solcast/energy_today_predicted
-              payload_template: "{{ states('sensor.solcast_forecast') }}"
-              retain: true
-          - service: mqtt.publish
-            data:
-              topic: home/solcast/peak_power_today_predicted
-              payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
-              retain: true
-          - service: mqtt.publish
-            data:
-              topic: home/solcast/peak_time_today_predicted
-              payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
-              retain: true
+      - alias: "Repeat the sequence UNTIL the conditions are true"
+        repeat:
+          sequence:
+            # wait time
+            - delay:
+                seconds: 30
+          until:
+            - condition: template
+              value_template: '{{ states(sensor.solcast_forecast) != "unavailable" }}'
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/energy_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_power_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_time_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
+          retain: true

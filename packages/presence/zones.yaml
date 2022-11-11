@@ -27,7 +27,7 @@ zone:
     radius: 125
     icon: mdi:map-marker
 
-# David = device_tracker.mi_9t
+# David = device_tracker.pixel_4
 # Karen = device_tracker.nokia_6_1
 
 binary_sensor:
@@ -37,13 +37,13 @@ binary_sensor:
       friendly_name: "Anyone Home"
       value_template: >-
         {{ is_state('device_tracker.nokia_6_1', 'home')
-           or is_state('device_tracker.mi_9t', 'home') }}
+           or is_state('device_tracker.pixel_4', 'home') }}
 
 automation:
   - alias: Parent arrived at School
     description: Parent arrived at School
     trigger:
-      - entity_id: device_tracker.mi_9t
+      - entity_id: device_tracker.pixel_4
         platform: state
         to: 'Curro Rosen Castle'
       - entity_id: device_tracker.nokia_6_1
@@ -56,14 +56,14 @@ automation:
           icon: ':car: '
           object: 'Tracking'
           message: >
-            {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
+            {% if (states.device_tracker.pixel_4.state == "Curro Rosen Castle") %}David{% endif %}
             {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
             arrived at Curro Rosen Castle
 
   - alias: Parent left School
     description: Parent left School
     trigger:
-      - entity_id: device_tracker.mi_9t
+      - entity_id: device_tracker.pixel_4
         platform: state
         from: 'Curro Rosen Castle'
       - entity_id: device_tracker.nokia_6_1
@@ -76,7 +76,7 @@ automation:
           icon: ':car: '
           object: 'Tracking'
           message: >
-            {% if (states.device_tracker.mi_9t.state == "Curro Rosen Castle") %}David{% endif %}
+            {% if (states.device_tracker.pixel_4.state == "Curro Rosen Castle") %}David{% endif %}
             {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
             left Curro Rosen Castle
 
@@ -84,7 +84,7 @@ automation:
   # - alias: Dave left the house in the morning - start vacuum
   #   description: Dave left the house in the morning - start vacuum
   #   trigger:
-  #     - entity_id: device_tracker.mi_9t
+  #     - entity_id: device_tracker.pixel_4
   #       platform: state
   #       from: 'home'
   #   condition:

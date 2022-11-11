@@ -8,11 +8,22 @@ sensor:
         value_template: >-
           {% set temp_comfort = 24 %}
           {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
-          {% if temp_avg >= (temp_comfort + 1) %}cool
-          {% elif temp_avg >= (temp_comfort) and temp_avg < (temp_comfort + 1) %}auto
+          {% if temp_avg >= (temp_comfort) %}cool
+          {% elif temp_avg > (temp_comfort) %}auto
           {% elif temp_avg >= (temp_comfort - 7) and temp_avg < (temp_comfort) %}auto
           {% elif temp_avg < (temp_comfort - 7) %}heat
           {% else %}auto{% endif -%}
+
+binary_sensor:
+  - platform: template
+    sensors:
+      # Template sensor to display input value only
+      near_sunset:
+        friendly_name: "Near Sunset"
+        value_template: >-
+          {% set next_sunset = (as_timestamp(state_attr('sun.sun', 'next_setting')) + 0)|timestamp_custom('%H:%M') %}
+          {% set next_sunset_m3h = (as_timestamp(state_attr('sun.sun', 'next_setting')) - (4 * 3600))|timestamp_custom('%H:%M') %}
+          {{ (next_sunset_m3h <= states('sensor.time') <= next_sunset) }}
 
 automation:
   # Start ACs if enough power
@@ -85,25 +96,35 @@ automation:
   # Stops ACs
   - alias: Stop ACs if started with enough power
     trigger:
-      - platform: time
-        at: '15:50:00'
-      - platform: time
-        at: '15:30:00'
-      - platform: time
-        at: '15:00:00'
+      - platform: state
+        entity_id: sensor.solcast_forecast_energy_current_hour
+      - platform: time_pattern
+        # You can also match on interval. This will match every x minutes
+        minutes: "/10"
     condition:
-      - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
-        above: '25'
+      - condition: template
+        value_template: "{{ (states('sensor.goodwe_average_house_consumption_30min')|float+300)|float/1000 > states('sensor.solcast_forecast_energy_next_hour')|float }}"
+      - condition: state
+        entity_id: binary_sensor.near_sunset
+        state: 'on'
     action:
+      # - service: script.log
+      #   data:
+      #     icon: ':droplet:'
+      #     object: 'AC Automation'
+      #     message: AC Automation triggered and passed conditions
       # Office
       - choose:
           - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '25'
-              - condition: template
-                value_template: "{{ ('15:50' <= states('sensor.time') <= '18:00')  }}"
+              - condition: state
+                entity_id: climate.midea_ac_30786325862153
+                state: "off"
+              - condition: state
+                entity_id: climate.midea_ac_30786325862093
+                state: "off"
+              - condition: state
+                entity_id: switch.pool_pump
+                state: "off"
             sequence:
               - service: script.ac
                 data:
@@ -112,11 +133,12 @@ automation:
       # MainBed
       - choose:
           - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '25'
-              - condition: template
-                value_template: "{{ ('15:30' <= states('sensor.time') <= '18:00')  }}"
+              - condition: state
+                entity_id: climate.midea_ac_30786325862153
+                state: "off"
+              - condition: state
+                entity_id: switch.pool_pump
+                state: "off"
             sequence:
               - service: script.ac
                 data:
@@ -125,16 +147,36 @@ automation:
       # ChildBed
       - choose:
           - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '25'
-              - condition: template
-                value_template: "{{ ('15:00' <= states('sensor.time') <= '18:00')  }}"
+              - condition: state
+                entity_id: switch.pool_pump
+                state: "off"
             sequence:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862153"
                   mode: "off"
+      # Pool pump
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: switch.pool_pump
+                state: "on"
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':droplet:'
+                  object: 'Pool pump'
+                  message: AC Automation, turning pool pump off
+              - service: switch.turn_off
+                data:
+                  ac: "switch.pool_pump"
+                  mode: "off"
+              - condition: state
+                entity_id: timer.pool_pump
+                state: "active"
+              - service: timer.finish
+                target:
+                  entity_id: timer.pool_pump
 
 script:
   ######################################################################

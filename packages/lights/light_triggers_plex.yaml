@@ -14,6 +14,8 @@ automation:
       - condition: state  # 'night' condition: from sunset until sunrise
         entity_id: sun.sun
         state: 'below_horizon'
+      - condition: time
+        after: '19:45:00'
     action:
       - choose:
           # IF lots of sun and high battery skip

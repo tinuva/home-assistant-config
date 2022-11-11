@@ -53,7 +53,6 @@ ffmpeg:
 sensor: !include includes/sensors.yaml
 
 # Others
-person: !include includes/persons.yaml
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
 proximity: !include includes/proximity.yaml
