@@ -52,7 +52,7 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'general'
+          target: 'logs' #'general'
           icon: ':car: '
           object: 'Tracking'
           message: >
@@ -72,13 +72,20 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'general'
+          target: 'logs' #'general'
           icon: ':car: '
           object: 'Tracking'
           message: >
-            {% if (states.device_tracker.pixel_4.state == "Curro Rosen Castle") %}David{% endif %}
-            {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
+            {% if (trigger.from_state.object_id == 'pixel_4') %}David{% endif %}
+            {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
             left Curro Rosen Castle
+      # - service: script.alert
+      #   data:
+      #     target: 'logs' #'general'
+      #     icon: ':car: '
+      #     object: 'Tracking'
+      #     message: >
+      #       {{ trigger }}
 
   # Start robot vacuum when Dave leave the house in the morning
   # - alias: Dave left the house in the morning - start vacuum
