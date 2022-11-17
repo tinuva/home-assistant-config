@@ -125,7 +125,7 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '13:00:00'
+        at: '11:30:00'
       - platform: time
         at: '15:00:00'
       - platform: numeric_state
@@ -144,6 +144,15 @@ automation:
     #     entity_id: sensor.front_bathroom_geyser_energy_power
     #     below: '50'
     action:
+      # - alias: "Log action taken"
+      #   service: script.log
+      #   data:
+      #     icon: ':zap:'
+      #     object: 'Geyser - main bedroom'
+      #     message: >
+      #       main bedroom geyser trigger - before conditions
+      #       Trigger:
+      #       {{ trigger }}
       - delay: '00:00:10' # Waits 10 seconds
       - condition: or
         conditions:
@@ -151,8 +160,17 @@ automation:
             entity_id: sensor.front_bathroom_geyser_energy_power
             below: '100'
           - condition: state
-            entity_id: switch.front_bathroom_geyser_power
+            entity_id: switch.front_bathroom_geyser
             state: 'unavailable'
+      # - alias: "Log action taken"
+      #   service: script.log
+      #   data:
+      #     icon: ':zap:'
+      #     object: 'Geyser - main bedroom'
+      #     message: >
+      #       main bedroom geyser trigger - after conditions
+      #       Trigger:
+      #       {{ trigger }}
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
@@ -216,20 +234,20 @@ automation:
             sequence:
               - service: script.geyser_on_mainbedroom
         # No conditions met so log and do nothing (exceptions to logging apply)
-        # default:
-        #   - condition: template
-        #     value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
-        #   - condition: template
-        #     value_template: "{{ not (trigger.platform == 'time') }}"
-        #   - alias: "Log action taken"
-        #     service: script.log
-        #     data:
-        #       icon: ':zap:'
-        #       object: 'Geyser - main bedroom'
-        #       message: >
-        #         Not turning on main bedroom geyser because no conditions met
-        #         Trigger:
-        #         {{ trigger }}
+        default:
+          # - condition: template
+          #   value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+          # - condition: template
+          #   value_template: "{{ not (trigger.platform == 'time') }}"
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':zap:'
+              object: 'Geyser - main bedroom'
+              message: >
+                Not turning on main bedroom geyser because no conditions met
+                Trigger:
+                {{ trigger }}
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
