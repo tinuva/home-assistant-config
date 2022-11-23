@@ -191,6 +191,20 @@ sensor:
       - sensor.goodwe_house_consumption
 
   - platform: average
+    name: 'GoodWe Average House Consumption 10min'
+    duration:
+      minutes: 10
+    entities:
+      - sensor.goodwe_house_consumption
+
+  - platform: average
+    name: 'GoodWe Average Solar Generation 10min'
+    duration:
+      minutes: 10
+    entities:
+      - sensor.goodwe_ppv
+
+  - platform: average
     name: 'GoodWe Average Solar Generation 30min'
     duration:
       minutes: 30

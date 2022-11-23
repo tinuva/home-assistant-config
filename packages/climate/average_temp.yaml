@@ -1,3 +1,4 @@
+---
 sensor:
   - platform: average
     name: 'Average Temperature Outside last 1 day'

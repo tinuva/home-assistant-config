@@ -1,25 +1,25 @@
 ---
-sensor:
-  - platform: rest
-    name: power_alert
-    resource: https://www.poweralert.co.za/PowerAlertAPI/api/PowerAlertForecast/CurrentSystemStatus?callback=maintainCurrentStatus
-    value_template: "{{ value | replace('/**/ typeof maintainCurrentStatus === \\'function\\' && maintainCurrentStatus(', '') | replace(');', '') }}"
-  - platform: template
-    sensors:
-      power_alert_color:
-        value_template: '{{ (states.sensor.power_alert.state | from_json)["Color"] }}'
-      power_alert_declaredavailability:
-        value_template: "{{ (states.sensor.power_alert.state | from_json)['DeclaredAvailabilty'] }}"
-        unit_of_measurement: 'MW'
-        device_class: energy
-      power_alert_loadforecast:
-        value_template: "{{ (states.sensor.power_alert.state | from_json)['LoadForecast'] }}"
-        unit_of_measurement: 'MW'
-        device_class: energy
-      power_alert_maxavailability:
-        value_template: "{{ (states.sensor.power_alert.state | from_json)['MaxAvailability'] }}"
-        unit_of_measurement: 'MW'
-        device_class: energy
+# sensor:
+#   - platform: rest
+#     name: power_alert
+#     resource: https://www.poweralert.co.za/PowerAlertAPI/api/PowerAlertForecast/CurrentSystemStatus?callback=maintainCurrentStatus
+#     value_template: "{{ value | replace('/**/ typeof maintainCurrentStatus === \\'function\\' && maintainCurrentStatus(', '') | replace(');', '') }}"
+#   - platform: template
+#     sensors:
+#       power_alert_color:
+#         value_template: '{{ (states.sensor.power_alert.state | from_json)["Color"] }}'
+#       power_alert_declaredavailability:
+#         value_template: "{{ (states.sensor.power_alert.state | from_json)['DeclaredAvailabilty'] }}"
+#         unit_of_measurement: 'MW'
+#         device_class: energy
+#       power_alert_loadforecast:
+#         value_template: "{{ (states.sensor.power_alert.state | from_json)['LoadForecast'] }}"
+#         unit_of_measurement: 'MW'
+#         device_class: energy
+#       power_alert_maxavailability:
+#         value_template: "{{ (states.sensor.power_alert.state | from_json)['MaxAvailability'] }}"
+#         unit_of_measurement: 'MW'
+#         device_class: energy
 
 ### yaml card
 # type: entities

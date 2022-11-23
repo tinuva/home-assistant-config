@@ -234,20 +234,20 @@ automation:
             sequence:
               - service: script.geyser_on_mainbedroom
         # No conditions met so log and do nothing (exceptions to logging apply)
-        default:
-          # - condition: template
-          #   value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
-          # - condition: template
-          #   value_template: "{{ not (trigger.platform == 'time') }}"
-          - alias: "Log action taken"
-            service: script.log
-            data:
-              icon: ':zap:'
-              object: 'Geyser - main bedroom'
-              message: >
-                Not turning on main bedroom geyser because no conditions met
-                Trigger:
-                {{ trigger }}
+        # default:
+        #   # - condition: template
+        #   #   value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+        #   # - condition: template
+        #   #   value_template: "{{ not (trigger.platform == 'time') }}"
+        #   - alias: "Log action taken"
+        #     service: script.log
+        #     data:
+        #       icon: ':zap:'
+        #       object: 'Geyser - main bedroom'
+        #       message: >
+        #         Not turning on main bedroom geyser because no conditions met
+        #         Trigger:
+        #         {{ trigger }}
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser

@@ -103,7 +103,7 @@ automation:
         minutes: "/10"
     condition:
       - condition: template
-        value_template: "{{ (states('sensor.goodwe_average_house_consumption_30min')|float+300)|float/1000 > states('sensor.solcast_forecast_energy_next_hour')|float }}"
+        value_template: "{{ (states('sensor.goodwe_average_house_consumption_10min')|float+300)|float/1000 > states('sensor.solcast_forecast_energy_next_hour')|float }}"
       - condition: state
         entity_id: binary_sensor.near_sunset
         state: 'on'
@@ -169,13 +169,12 @@ automation:
                   message: AC Automation, turning pool pump off
               - service: switch.turn_off
                 data:
-                  ac: "switch.pool_pump"
-                  mode: "off"
+                  entity_id: switch.pool_pump
               - condition: state
                 entity_id: timer.pool_pump
                 state: "active"
               - service: timer.finish
-                target:
+                data:
                   entity_id: timer.pool_pump
 
 script:

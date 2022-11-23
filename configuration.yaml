@@ -13,8 +13,8 @@ homeassistant:
     - /config/
   #customize: !include includes/customize.yaml
 default_config:
-#frontend:
-#  themes: !include_dir_merge_named themes
+frontend:
+  themes: !include_dir_merge_named themes
 http: !include includes/http.yaml
 
 # Logging and history
