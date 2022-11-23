@@ -98,6 +98,9 @@ automation:
       - condition: template
         value_template: >
           {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != "unavailable" }}
     action:
       - service: script.log
         data:

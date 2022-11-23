@@ -34,6 +34,16 @@ sensor:
             {%else%}
             Unknown
             {%endif%}
+      time_till_loadshedding:
+        friendly_name: Time until next loadshedding
+        unique_id: Time_Until_Next_Loadshedding
+        unit_of_measurement: mins
+        value_template: >
+            {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
+            {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int - as_timestamp(now()) | int ) / 60,-1] | max }}
+            {%else%}
+            Unknown
+            {%endif%}
 
 timer:
   loadshedding_slot:
@@ -90,6 +100,9 @@ automation:
       - condition: template
         value_template: >
           {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != "unavailable" }}
     action:
       - alias: "Alert change"
         service: script.alert
@@ -100,22 +113,22 @@ automation:
           message: >
             {{ states.sensor.loadshedding_slot_forecast.state }}
 
-#   - alias: Upcoming slot notification
-#     initial_state: 'on'
-#     trigger:
-#       - entity_id: sensor.time_till_loadshedding
-#         platform: state
-#         to: '15'
-#     condition:
-#       - condition: time
-#         before: '18:00:00'
-#         after: '15:45:00'
-#     action:
-#       - alias: "Alert change"
-#         service: script.alert
-#         data:
-#           icon: ':zap:'
-#           object: 'Loadshedding slot'
-#           target: 'power-alerts'
-#           message: >
-#             Loadshedding slot in 15 minutes
+  - alias: Upcoming slot notification
+    initial_state: 'on'
+    trigger:
+      - entity_id: sensor.time_till_loadshedding
+        platform: state
+        to: '15'
+    condition:
+      - condition: time
+        before: '18:00:00'
+        after: '14:00:00'
+    action:
+      - alias: "Alert change"
+        service: script.alert
+        data:
+          icon: ':zap:'
+          object: 'Loadshedding slot'
+          target: 'power-alerts'
+          message: >
+            Loadshedding slot in 15 minutes
