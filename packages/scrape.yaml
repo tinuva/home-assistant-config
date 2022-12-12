@@ -17,15 +17,8 @@ automation:
         service: script.alert
         data:
           icon: ':earth_africa:'
-          object: 'Google Cache'
-          target: 'logs'
+          object: 'Google Cache Redirect update'
+          target: 'logs-internet'
           message: >
-            Redirect updated To: {{ states.sensor.google_cache_redirector.state }}
-      - alias: "Alert change from"
-        service: script.alert
-        data:
-          icon: ':earth_africa:'
-          object: 'Google Cache'
-          target: 'logs'
-          message: >
-            Redirect updated From: {{ trigger.from_state.state }}
+            From: {{ trigger.from_state.state }} {{- '\n' -}}
+            To:   {{ states.sensor.google_cache_redirector.state }}

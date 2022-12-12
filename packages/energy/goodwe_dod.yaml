@@ -23,32 +23,64 @@ script:
         variables:
           dod: >
             {% set forecast_int = forecast|int %}
-            {% if forecast_int >= 28 %}78
-            {% elif forecast_int >= 23 and forecast_int < 28 %}75
-            {% elif forecast_int >= 20 and forecast_int < 23 %}70
-            {% elif forecast_int >= 18 and forecast_int < 20 %}65
-            {% elif forecast_int >= 16 and forecast_int < 18 %}60
+            {% if forecast_int >= 28 %}75
+            {% elif forecast_int >= 23 and forecast_int < 28 %}70
+            {% elif forecast_int >= 20 and forecast_int < 23 %}65
+            {% elif forecast_int >= 18 and forecast_int < 20 %}60
+            {% elif forecast_int >= 16 and forecast_int < 18 %}55
             {% elif forecast_int >= 12 and forecast_int < 16 %}50
-            {% elif forecast_int >= 10 and forecast_int < 12 %}40
+            {% elif forecast_int >= 10 and forecast_int < 12 %}45
             {% elif forecast_int >= 8 and forecast_int < 10 %}20
             {% else %}16{% endif -%}
-      - condition: template
-        value_template: >-
-          {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
-      - alias: "Set DoD on inverter"
-        service: number.set_value
-        data:
-          value: >
-            {{ dod }}
-        target:
-          entity_id: number.depth_of_discharge_on_grid
-      - alias: "Log action taken"
-        service: script.log
-        data:
-          icon: ':zap:'
-          object: 'GoodWe'
-          message: >
-            Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
+      - choose:
+          # IF lots of sun and high battery skip
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862093') != "off" and (states('climate.midea_ac_30786325862093') not in ['fan_only','off','unavailable','unknown','none']) }}
+              - condition: template
+                value_template: >
+                  {{ dod > 40 }}
+            sequence:
+              - alias: "Set variables"
+                variables:
+                  dod: >
+                    {{ dod - 10 }}
+              - condition: template
+                value_template: >-
+                  {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
+              - alias: "Set DoD on inverter"
+                service: number.set_value
+                data:
+                  value: >
+                    {{ dod }}
+                target:
+                  entity_id: number.depth_of_discharge_on_grid
+              - alias: "Log action taken"
+                service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe'
+                  message: >
+                    Setting lowered DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
+        default:
+          - condition: template
+            value_template: >-
+              {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
+          - alias: "Set DoD on inverter"
+            service: number.set_value
+            data:
+              value: >
+                {{ dod }}
+            target:
+              entity_id: number.depth_of_discharge_on_grid
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':zap:'
+              object: 'GoodWe'
+              message: >
+                Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
 
 automation:
   # Input that sets DoD on GoodWe Inverter

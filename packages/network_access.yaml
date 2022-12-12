@@ -17,7 +17,7 @@ input_number:
     name: 88e9fe88abfe off time duration
     #initial: 4
     min: 5
-    max: 90
+    max: 180
     step: 1
 
 input_datetime:

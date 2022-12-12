@@ -28,7 +28,7 @@ automation:
     condition:
       - condition: numeric_state
         entity_id: sensor.average_temperature_outside_last_1_day
-        above: '19.9'
+        above: '19.5'
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'
@@ -60,7 +60,7 @@ automation:
                     {% set day_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
                     {% set today_name = day_names[now().weekday()] %}
                     {% set duration = 1 %}
-                    {% if 25 <= states('sensor.solcast_forecast')|float %}{% set duration = 8 %}
+                    {% if 25 <= states('sensor.solcast_forecast')|float%}{% set duration = 8 %}
                     {% elif 22 <= states('sensor.solcast_forecast')|float < 25 %}{% set duration = 7 %}
                     {% elif 20 <= states('sensor.solcast_forecast')|float < 22 %}{% set duration = 6 %}
                     {% elif 18 <= states('sensor.solcast_forecast')|float < 20 %}{% set duration = 5 %}
@@ -131,9 +131,9 @@ automation:
         event_data:
           entity_id: timer.pool_pump
       # If office AC is on at 12 turn off pool
-      - platform: template
-        value_template: >
-          {{ (now().time().strftime("%R") == "12:00" and (states('climate.midea_ac_32985348871179') == "cool") or (states('climate.midea_ac_32985348871179') == "heat") or (states('climate.midea_ac_32985348871179') == "dry") or (states('climate.midea_ac_32985348871179') == "auto")) }}
+      # - platform: template
+      #   value_template: >
+      #     {{ (now().time().strftime("%R") == "12:00" and (states('climate.midea_ac_32985348871179') == "cool") or (states('climate.midea_ac_32985348871179') == "heat") or (states('climate.midea_ac_32985348871179') == "dry") or (states('climate.midea_ac_32985348871179') == "auto")) }}
       # At 5pm
       - platform: time
         at: "17:00:00"

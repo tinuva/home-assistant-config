@@ -6,7 +6,7 @@ sensor:
       ac_central_mode:
         friendly_name: "AC Central Mode"
         value_template: >-
-          {% set temp_comfort = 24 %}
+          {% set temp_comfort = 20 %}
           {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
           {% if temp_avg >= (temp_comfort) %}cool
           {% elif temp_avg > (temp_comfort) %}auto
@@ -96,8 +96,8 @@ automation:
   # Stops ACs
   - alias: Stop ACs if started with enough power
     trigger:
-      - platform: state
-        entity_id: sensor.solcast_forecast_energy_current_hour
+      # - platform: state
+      #   entity_id: sensor.solcast_forecast_energy_current_hour
       - platform: time_pattern
         # You can also match on interval. This will match every x minutes
         minutes: "/10"
