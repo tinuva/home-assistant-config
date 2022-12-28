@@ -125,7 +125,7 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '11:30:00'
+        at: '12:45:00'
       - platform: time
         at: '15:00:00'
       - platform: numeric_state

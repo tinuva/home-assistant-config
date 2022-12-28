@@ -91,6 +91,9 @@ envisalink:
     26:
       name: 'Back Beam'
       type: 'motion'
+    42:
+      name: 'Box Tamper'
+      type: 'opening'
 
 group:
   armed_away:

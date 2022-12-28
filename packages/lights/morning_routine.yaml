@@ -58,7 +58,7 @@ automation:
               duration: '02:45:00'
 
   - id: '1658380697189'
-    alias: Wake-up light alarm main-bedroom
+    alias: Wake-up light alarm small-bedroom
     description: ''
     use_blueprint:
       path: sbyx/wake-up-light-alarm-with-sunrise-effect.yaml

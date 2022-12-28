@@ -45,7 +45,7 @@
 #        entity_id: binary_sensor.study_pir
 #        to: 'on'
 #      - platform: state
-#        entity_id: binary_sensor.baby_room_door
+#        entity_id: binary_sensor.baby_room_door_contact
 #        to: 'on'
 #      - platform: state
 #        entity_id: binary_sensor.babyroom_pir

@@ -5,8 +5,8 @@ binary_sensor:
       baby_room_door_closed_long:
         friendly_name: "Baby room door closed long"
         value_template: >-
-          {% if states.binary_sensor.baby_room_door.state == 'off' %}
-          {% if (as_timestamp(now()) - as_timestamp(states.binary_sensor.baby_room_door.last_changed))/60 > 30 %}
+          {% if states.binary_sensor.baby_room_door_contact.state == 'off' %}
+          {% if (as_timestamp(now()) - as_timestamp(states.binary_sensor.baby_room_door_contact.last_changed))/60 > 30 %}
           off
           {% else %}
           on
