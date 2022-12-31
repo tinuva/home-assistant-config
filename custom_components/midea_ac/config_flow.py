@@ -70,12 +70,12 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                          default=user_input.get(CONF_ID)): cv.string,
             vol.Required(CONF_HOST,
                          default=user_input.get(CONF_HOST)): cv.string,
-            vol.Optional(CONF_PORT,
+            vol.Required(CONF_PORT,
                          default=user_input.get(CONF_PORT, 6444)): cv.port,
             vol.Optional(CONF_TOKEN,
-                         default=user_input.get(CONF_TOKEN, "")): cv.string,
+                         description={"suggested_value": user_input.get(CONF_TOKEN, "")}): cv.string,
             vol.Optional(CONF_K1,
-                         default=user_input.get(CONF_K1, "")): cv.string,
+                         description={"suggested_value": user_input.get(CONF_K1, "")}): cv.string,
             vol.Optional(CONF_PROMPT_TONE,
                          default=user_input.get(CONF_PROMPT_TONE, True)): cv.boolean,
             vol.Optional(CONF_TEMP_STEP,
@@ -87,7 +87,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             vol.Optional(CONF_KEEP_LAST_KNOWN_ONLINE_STATE,
                          default=user_input.get(CONF_KEEP_LAST_KNOWN_ONLINE_STATE, False)): cv.boolean,
             vol.Optional(CONF_ADDITIONAL_OPERATION_MODES,
-                         description={"suggested_value": options.get(CONF_ADDITIONAL_OPERATION_MODES, None)}): cv.string,
+                         description={"suggested_value": user_input.get(CONF_ADDITIONAL_OPERATION_MODES, None)}): cv.string,
         })
 
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
