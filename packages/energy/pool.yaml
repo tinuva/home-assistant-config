@@ -1,3 +1,4 @@
+---
 input_boolean:
   pool_cover_on:
     name: Pool Cover On
@@ -20,8 +21,13 @@ automation:
   # Pool pump on based on input time
   - alias: Turn on pool pump
     trigger:
-      - platform: template
-        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      # - platform: template
+      #   value_template: "{{ states('sensor.time') == (state_attr('input_datetime.pool_pump_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      - platform: numeric_state
+        entity_id: sensor.main_bathroom_geyser_energy_power
+        below: '100'
+        for:
+          seconds: 60
       #- platform: numeric_state
       #  entity_id: sensor.main_bathroom_geyser_energy_power
       #  below: '50'
