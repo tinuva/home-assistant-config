@@ -27,7 +27,7 @@ envisalink:
   zones:
     1:
       name: 'Front Door'
-      type: 'opening'
+      type: 'door'
     2:
       name: 'Lounge PIR'
       type: 'motion'
@@ -48,31 +48,31 @@ envisalink:
       type: 'motion'
     8:
       name: 'Front Garage Door/Window'
-      type: 'opening'
+      type: 'garage_door'
     9:
       name: 'Lounge Window'
-      type: 'opening'
+      type: 'window'
     10:
       name: 'Kitchen Window'
-      type: 'opening'
+      type: 'window'
     11:
       name: 'Sculllery Window'
-      type: 'opening'
+      type: 'window'
     12:
       name: 'Scullery Door'
-      type: 'opening'
+      type: 'window'
     13:
       name: 'Study Window'
-      type: 'opening'
+      type: 'window'
     14:
       name: 'Babyroom Window'
-      type: 'opening'
+      type: 'window'
     15:
       name: 'Main Bedroom Window'
-      type: 'opening'
+      type: 'window'
     16:
       name: 'Panic'
-      type: 'opening'
+      type: 'safety'
     17:
       name: 'Spare Bedroom PIR'
       type: 'motion'
@@ -84,7 +84,7 @@ envisalink:
       type: 'motion'
     20:
       name: 'Back Garage Door'
-      type: 'opening'
+      type: 'garage_door'
     25:
       name: 'Front Beam'
       type: 'motion'
@@ -93,7 +93,7 @@ envisalink:
       type: 'motion'
     42:
       name: 'Box Tamper'
-      type: 'opening'
+      type: 'tamper'
 
 group:
   armed_away:

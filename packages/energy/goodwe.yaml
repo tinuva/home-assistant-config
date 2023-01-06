@@ -211,6 +211,20 @@ sensor:
     entities:
       - sensor.goodwe_ppv
 
+  - platform: average
+    name: 'GoodWe Average Back-up use 10min'
+    duration:
+      minutes: 10
+    entities:
+      - sensor.goodwe_pback_up
+
+  - platform: average
+    name: 'GoodWe Average Back-up use 30min'
+    duration:
+      minutes: 30
+    entities:
+      - sensor.goodwe_pback_up
+
 utility_meter:
   # Grid
   energy_buy_daily:

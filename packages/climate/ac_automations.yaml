@@ -82,27 +82,27 @@ automation:
                   speed: "Auto"
                   mode: >
                     {{ states('sensor.ac_central_mode') }}
-      # ChildBed
-      - choose:
-          - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '29'
-              - condition: template
-                value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
-              - condition: state
-                entity_id: binary_sensor.babyroom_window
-                state: 'off'
-              - condition: numeric_state
-                entity_id: sensor.goodwe_battery_soc
-                above: '95'
-            sequence:
-              - service: script.ac
-                data:
-                  ac: "climate.midea_ac_30786325862153"
-                  speed: "Auto"
-                  mode: >
-                    {{ states('sensor.ac_central_mode') }}
+      # # ChildBed
+      # - choose:
+      #     - conditions:
+      #         - condition: numeric_state
+      #           entity_id: sensor.solcast_forecast_energy_today_predicted
+      #           above: '29'
+      #         - condition: template
+      #           value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
+      #         - condition: state
+      #           entity_id: binary_sensor.babyroom_window
+      #           state: 'off'
+      #         - condition: numeric_state
+      #           entity_id: sensor.goodwe_battery_soc
+      #           above: '95'
+      #       sequence:
+      #         - service: script.ac
+      #           data:
+      #             ac: "climate.midea_ac_30786325862153"
+      #             speed: "Auto"
+      #             mode: >
+      #               {{ states('sensor.ac_central_mode') }}
 
   # Stops ACs
   - alias: Stop ACs if started with enough power
