@@ -2,7 +2,7 @@
 import asyncio
 import logging
 
-from pyenvisalink import EnvisalinkAlarmPanel
+from .pyenvisalink import EnvisalinkAlarmPanel
 import voluptuous as vol
 
 from homeassistant.const import (
