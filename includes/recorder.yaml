@@ -16,7 +16,7 @@ exclude:
     #- weather
     - sun
   entities:
-    - sensor.last_boot # Comes from 'systemmonitor' sensor platform
+    #- sensor.last_boot # Comes from 'systemmonitor' sensor platform
     - sensor.date
   event_types:
     - call_service # Don't record service calls

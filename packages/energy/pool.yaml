@@ -32,9 +32,18 @@ automation:
       #  entity_id: sensor.main_bathroom_geyser_energy_power
       #  below: '50'
     condition:
+      - condition: state
+        entity_id: switch.main_bathroom_geyser
+        state: 'unavailable'
       - condition: numeric_state
         entity_id: sensor.average_temperature_outside_last_1_day
         above: '19.5'
+      - condition: or
+        conditions:
+          - condition: template
+            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
+          - condition: template
+            value_template: "{{ not trigger.from_state }}"
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'

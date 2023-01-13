@@ -173,13 +173,13 @@ sensor:
       grid_mode:
         friendly_name_template: "Grid Mode"
         value_template: >
-          {% if states('sensor.goodwe_grid_mode') in ['unavailable','unknown','none'] -%}
+          {% if states('sensor.energy_mode_code') in ['unavailable','unknown','none'] -%}
             {{ states('sensor.grid_mode') }}
           {% else %}
-            {% if 1 <= states('sensor.goodwe_grid_mode')|int <= 2 -%}
+            {% if 1 <= states('sensor.energy_mode_code')|int <= 2 -%}
             1
             {% else %}
-              {{ states('sensor.goodwe_grid_mode')|int }}
+              {{ states('sensor.energy_mode_code')|int }}
             {% endif %}
           {% endif %}
 
@@ -274,7 +274,7 @@ automation:
       - platform: state
         entity_id: sensor.grid_mode
         from: '1'
-        to: '0'
+        to: '4'
     condition:
       >
         {{ trigger.from_state is not none and
@@ -292,7 +292,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.grid_mode
-        from: '0' # only notify this if grid was lost. Sometimes inverter goes into mode 2 - "inverter abnormal stopping power"
+        from: '4' # only notify this if grid was lost. Sometimes inverter goes into mode 2 - "inverter abnormal stopping power"
         to: '1'
     condition:
       >
@@ -309,7 +309,7 @@ automation:
   - alias: notification - grid power check
     trigger:
       - platform: state
-        entity_id: sensor.goodwe_grid_mode
+        entity_id: sensor.energy_mode_code
         to: '2'
     condition:
       >

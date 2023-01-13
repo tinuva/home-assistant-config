@@ -1,0 +1,90 @@
+---
+automation:
+  # Input that sets DoD on GoodWe Inverter
+  # Everything else will set this input. This allows for graphing+tracking.
+  - id: '11111222202145'
+    alias: 'Reduce backup load when over 4.5kW'
+    mode: parallel
+    max: 2
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.goodwe_pback_up
+        above: '4500'
+    action:
+      - service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe Cap Mgmt'
+          message: >
+            Backup above 4500w at {{ states('sensor.goodwe_pback_up')|int }} (from: {{ trigger.from_state.state }} to: {{ trigger.to_state.state }})
+      - choose:
+          # If pool pump on, turn it off first
+          - conditions:
+              - condition: state
+                entity_id: switch.pool_pump
+                state: 'on'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Turning off poolpump
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.pool_pump
+              - repeat:
+                  while:
+                    - condition: state
+                      entity_id: timer.pool_pump
+                      state: 'active'
+                    - condition: numeric_state
+                      entity_id: sensor.goodwe_pback_up
+                      above: '2500'
+                  sequence:
+                    - delay:
+                        seconds: 30
+              - condition: state
+                entity_id: timer.pool_pump
+                state: 'active'
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Turning on poolpump
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.pool_pump
+          # else if not pool check mainbedroom ac
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862093') != "off" and (states('climate.midea_ac_30786325862093') not in ['fan_only','off','unavailable','unknown','none']) }}
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Turning off mainbedroom ac
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.aircon_main_bedroom
+              - repeat:
+                  while:
+                    - condition: numeric_state
+                      entity_id: sensor.goodwe_pback_up
+                      above: '2500'
+                  sequence:
+                    - delay:
+                        seconds: 30
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Turning on mainbedroom ac
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.aircon_main_bedroom

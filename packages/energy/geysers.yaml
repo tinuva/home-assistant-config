@@ -177,7 +177,7 @@ automation:
                   - condition: and
                     conditions:
                       - condition: template
-                        value_template: "{{ ('11:00' <= states('sensor.time') < '13:30') }}"
+                        value_template: "{{ ('11:30' <= states('sensor.time') < '13:30') }}"
                       - condition: state
                         entity_id: timer.main_geyser
                         state: 'idle'

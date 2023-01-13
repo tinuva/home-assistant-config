@@ -37,7 +37,7 @@ automation:
         at: '12:00:00'
       - platform: numeric_state
         entity_id: sensor.goodwe_battery_soc
-        above: '99'
+        above: '94'
         for:
           seconds: 60
     condition:
@@ -74,7 +74,7 @@ automation:
                 state: 'off'
               - condition: numeric_state
                 entity_id: sensor.goodwe_battery_soc
-                above: '95'
+                above: '94'
             sequence:
               - service: script.ac
                 data:

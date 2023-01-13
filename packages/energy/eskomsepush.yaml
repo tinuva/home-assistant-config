@@ -57,6 +57,24 @@ sensor:
             {%else%}
             Unknown
             {%endif%}
+      next_loadshedding_duration:
+        friendly_name: Calculated Next Loadshedding Duration
+        unique_id: actual_next_loadshedding_duration
+        unit_of_measurement: mins
+        value_template: >
+            {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
+            {% set area_schedule = state_attr(area_sensor, "forecast") %}
+            {% set duration = 0 %}
+            {% if area_schedule %}
+              {% set next_slot_end = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+              {% set second_slot_end = as_timestamp(area_schedule[:3][1].end_time) - as_timestamp(area_schedule[:3][1].start_time) %}
+              {% set diff = as_timestamp(area_schedule[:3][1].start_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+              {% set duration = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+              {% if diff == 7200 %}
+                {% set duration = next_slot_end + second_slot_end %}
+              {% endif%}
+              {{ duration // 60 }}
+            {% endif%}
 
 timer:
   loadshedding_slot:

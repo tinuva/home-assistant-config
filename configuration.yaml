@@ -56,7 +56,6 @@ sensor: !include includes/sensors.yaml
 # Others
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
-proximity: !include includes/proximity.yaml
 discovery: !include includes/discovery.yaml
 
 python_script:
