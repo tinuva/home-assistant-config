@@ -1,0 +1,25 @@
+---
+
+sensor:
+  # https://www.home-assistant.io/integrations/alpha_vantage/
+  # Note: AMZN showed an old price, only updated a day+ later
+  - platform: alpha_vantage
+    api_key: !secret AlphaVantage
+    # symbols:
+    #   - symbol: AMZN
+    #     name: AMZN
+    foreign_exchange:
+      - name: USD_ZAR
+        from: USD
+        to: ZAR
+      # - from: BTC
+      #   to: USD
+      #   name: Bitcoin
+
+  # https://github.com/custom-components/sensor.avanza_stock
+  - platform: avanza_stock
+    stock:
+      - id: 3986
+        name: AMZN
+      - id: 1002234
+        name: BTC_USD
