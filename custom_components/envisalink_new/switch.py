@@ -9,13 +9,13 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
+from .config_flow import find_yaml_zone_info, parse_range_string
 from .models import EnvisalinkDevice
 from .const import (
     CONF_CREATE_ZONE_BYPASS_SWITCHES,
-    CONF_NUM_ZONES,
     CONF_ZONENAME,
     CONF_ZONES,
-    DEFAULT_NUM_ZONES,
+    CONF_ZONE_SET,
     DOMAIN,
     LOGGER,
     STATE_UPDATE_TYPE_ZONE_BYPASS,
@@ -31,22 +31,23 @@ async def async_setup_entry(
 
     create_bypass_switches = entry.options.get(CONF_CREATE_ZONE_BYPASS_SWITCHES)
     if create_bypass_switches:
+        zone_spec = entry.options.get(CONF_ZONE_SET)
+        zone_set = parse_range_string(zone_spec, min_val=1, max_val=controller.controller.max_zones)
         zone_info = entry.data.get(CONF_ZONES)
-        entities = []
-        for zone_num in range(1, entry.options.get(CONF_NUM_ZONES, DEFAULT_NUM_ZONES) + 1):
-            zone_entry = None
-            if zone_info and zone_num in zone_info:
-                zone_entry = zone_info[zone_num]
+        if zone_set is not None:
+            entities = []
+            for zone_num in zone_set:
+                zone_entry = find_yaml_zone_info(zone_num, zone_info)
 
-            entity = EnvisalinkSwitch(
-                hass,
-                zone_num,
-                zone_entry,
-                controller,
-            )
-            entities.append(entity)
+                entity = EnvisalinkSwitch(
+                    hass,
+                    zone_num,
+                    zone_entry,
+                    controller,
+                )
+                entities.append(entity)
 
-        async_add_entities(entities)
+            async_add_entities(entities)
 
 
 class EnvisalinkSwitch(EnvisalinkDevice, SwitchEntity):
@@ -55,14 +56,15 @@ class EnvisalinkSwitch(EnvisalinkDevice, SwitchEntity):
     def __init__(self, hass, zone_number, zone_info, controller):
         """Initialize the switch."""
         self._zone_number = zone_number
-        name_suffix = f"zone_{self._zone_number}_bypass"
-        self._attr_unique_id = f"{controller.unique_id}_{name_suffix}"
+        name = f"Zone {self._zone_number} Bypass"
+        self._attr_unique_id = f"{controller.unique_id}_{name}"
 
-        name = f"{controller.alarm_name}_{name_suffix}"
+        self._attr_has_entity_name = True
         if zone_info:
             # Override the name if there is info from the YAML configuration
             if CONF_ZONENAME in zone_info:
                 name = f"{zone_info[CONF_ZONENAME]}_bypass"
+                self._attr_has_entity_name = False
 
         LOGGER.debug("Setting up zone: %s", name)
         super().__init__(name, controller, STATE_UPDATE_TYPE_ZONE_BYPASS, zone_number)

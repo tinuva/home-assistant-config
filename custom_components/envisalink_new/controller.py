@@ -18,23 +18,17 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity import Entity
 
 from .const import (
-    CONF_ALARM_NAME,
-    CONF_CREATE_ZONE_BYPASS_SWITCHES,
     CONF_CREATE_ZONE_BYPASS_SWITCHES,
     CONF_EVL_KEEPALIVE,
     CONF_EVL_PORT,
-    CONF_EVL_VERSION,
-    CONF_PANEL_TYPE,
     CONF_PASS,
     CONF_TIMEOUT,
     CONF_USERNAME,
-    CONF_ZONEDUMP_INTERVAL,
     CONF_ZONEDUMP_INTERVAL,
     DEFAULT_CREATE_ZONE_BYPASS_SWITCHES,
     DEFAULT_KEEPALIVE,
     DEFAULT_TIMEOUT,
     DEFAULT_ZONEDUMP_INTERVAL,
-    DOMAIN,
     LOGGER,
     STATE_UPDATE_TYPE_PARTITION,
     STATE_UPDATE_TYPE_ZONE,
@@ -52,11 +46,11 @@ class EnvisalinkController:
         self._entry_id = entry.entry_id
 
         # Config
-        self.alarm_name = entry.data.get(CONF_ALARM_NAME)
+        self.alarm_name = entry.title
         host = entry.data.get(CONF_HOST)
         port = entry.data.get(CONF_EVL_PORT)
         user = entry.data.get(CONF_USERNAME)
-        password = entry.data.get(CONF_PASS)
+        password = str(entry.data.get(CONF_PASS))
 
         # Options 
         keep_alive = entry.options.get(CONF_EVL_KEEPALIVE, DEFAULT_KEEPALIVE)
@@ -140,7 +134,11 @@ class EnvisalinkController:
 
     async def start(self) -> bool:
         LOGGER.info("Start envisalink")
-        await self.controller.start()
+        if await self.controller.discover() != self.controller.ConnectionResult.SUCCESS:
+            return False
+
+        if await self.controller.start() != self.controller.ConnectionResult.SUCCESS:
+            return False
 
         if not await self.sync_connect:
             return False
@@ -185,7 +183,7 @@ class EnvisalinkController:
     def async_zones_updated_callback(self, data):
         """Handle zone state updates."""
         LOGGER.debug("Envisalink sent a '%s' zone update event. Updating zones: %r", self.alarm_name, data)
-        self._process_state_change(STATE_UPDATE_TYPE_ZONE, [ data ])
+        self._process_state_change(STATE_UPDATE_TYPE_ZONE, data)
 
     @callback
     def async_alarm_data_updated_callback(self, data):
@@ -197,7 +195,7 @@ class EnvisalinkController:
     def async_partition_updated_callback(self, data):
         """Handle partition changes thrown by evl (including alarms)."""
         LOGGER.debug("The envisalink '%s' sent a partition update event: %r", self.alarm_name, data)
-        self._process_state_change(STATE_UPDATE_TYPE_PARTITION, [ data ])
+        self._process_state_change(STATE_UPDATE_TYPE_PARTITION, data)
 
     @callback
     def async_zone_bypass_update(self, data):

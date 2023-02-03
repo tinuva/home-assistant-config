@@ -7,30 +7,27 @@ from .controller import EnvisalinkController
 class EnvisalinkDevice(Entity):
     """Representation of an Envisalink device."""
 
+
     def __init__(self, name, controller, state_update_type, state_update_key):
         """Initialize the device."""
         self._controller = controller
-        self._name = name
+        self._attr_should_poll = False
+        self._attr_name = name
         self._state_update_type = state_update_type
         self._state_update_key = state_update_key
 
+    async def async_added_to_hass(self) -> None:
         def state_updated():
-            LOGGER.debug("state_updated for '%s'", self._name)
+            LOGGER.debug("state_updated for '%s'", self._attr_name)
             self.async_write_ha_state()
 
         self.async_on_remove(
-            self._controller.add_state_change_listener(state_update_type, state_update_key, state_updated)
+            self._controller.add_state_change_listener(
+                self._state_update_type,
+                self._state_update_key,
+                state_updated
+            )
         )
-
-    @property
-    def name(self):
-        """Return the name of the device."""
-        return self._name
-
-    @property
-    def should_poll(self):
-        """No polling needed."""
-        return False
 
     @property
     def device_info(self) -> DeviceInfo:

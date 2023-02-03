@@ -26,16 +26,24 @@
     "step": {
       "init": {
         "data": {
-          "num_zones": "Number of zones",
-          "num_partitions": "Number of partitions",
+          "zone_set": "Zone list",
+          "partition_set": "Partition list",
           "code": "Alarm code",
           "panic_type": "Panic type",
           "keepalive_interval": "Keep-alive interval",
           "zonedump_interval": "Zone dump interval",
           "timeout": "Connection timeout",
-          "create_zone_bypass_switches": "Create zone bypass switches"
+          "create_zone_bypass_switches": "Create zone bypass switches",
+          "honeywell_arm_night_mode": "Arm Night Mode"
         }
       }
+    },
+    "error": {
+      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
+      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+      "invalid_zone_spec": "invalid zone specification",
+      "invalid_partition_spec": "invalid partition specification",
+      "unknown": "[%key:common::config_flow::error::unknown%]"
     }
   }
 }

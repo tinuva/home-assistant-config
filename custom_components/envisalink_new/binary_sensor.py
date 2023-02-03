@@ -11,13 +11,13 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
+from .config_flow import find_yaml_zone_info, parse_range_string
 from .models import EnvisalinkDevice
 from .const import (
-    CONF_NUM_ZONES,
     CONF_ZONENAME,
     CONF_ZONES,
     CONF_ZONETYPE,
-    DEFAULT_NUM_ZONES,
+    CONF_ZONE_SET,
     DEFAULT_ZONETYPE,
     DOMAIN,
     LOGGER,
@@ -32,22 +32,24 @@ async def async_setup_entry(
 
     controller = hass.data[DOMAIN][entry.entry_id]
 
+    zone_spec = entry.options.get(CONF_ZONE_SET)
+    zone_set = parse_range_string(zone_spec, min_val=1, max_val=controller.controller.max_zones)
+
     zone_info = entry.data.get(CONF_ZONES)
     entities = []
-    for zone_num in range(1, entry.options.get(CONF_NUM_ZONES, DEFAULT_NUM_ZONES) + 1):
-        zone_entry = None
-        if zone_info and zone_num in zone_info:
-            zone_entry = zone_info[zone_num]
+    if zone_set is not None:
+        for zone_num in zone_set:
+            zone_entry = find_yaml_zone_info(zone_num, zone_info)
 
-        entity = EnvisalinkBinarySensor(
-            hass,
-            zone_num,
-            zone_entry,
-            controller,
-        )
-        entities.append(entity)
+            entity = EnvisalinkBinarySensor(
+                hass,
+                zone_num,
+                zone_entry,
+                controller,
+            )
+            entities.append(entity)
 
-    async_add_entities(entities)
+        async_add_entities(entities)
 
 
 class EnvisalinkBinarySensor(EnvisalinkDevice, BinarySensorEntity):
@@ -56,17 +58,18 @@ class EnvisalinkBinarySensor(EnvisalinkDevice, BinarySensorEntity):
     def __init__(self, hass, zone_number, zone_info, controller):
         """Initialize the binary_sensor."""
         self._zone_number = zone_number
-        name_suffix = f"zone_{self._zone_number}"
-        self._attr_unique_id = f"{controller.unique_id}_{name_suffix}"
+        name = f"Zone {self._zone_number}"
+        self._attr_unique_id = f"{controller.unique_id}_{name}"
 
-        name = f"{controller.alarm_name}_{name_suffix}"
         self._zone_type = DEFAULT_ZONETYPE
 
+        self._attr_has_entity_name = True
         if zone_info:
             # Override the name and type if there is info from the YAML configuration
             self._zone_type = zone_info.get(CONF_ZONETYPE, DEFAULT_ZONETYPE)
             if CONF_ZONENAME in zone_info:
                 name = zone_info[CONF_ZONENAME]
+                self._attr_has_entity_name = False
 
         LOGGER.debug("Setting up zone: %s", name)
         super().__init__(name, controller, STATE_UPDATE_TYPE_ZONE, zone_number)

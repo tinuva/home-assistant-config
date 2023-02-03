@@ -4,6 +4,7 @@ import json
 import re
 import asyncio
 import datetime
+import time
 from .envisalink_base_client import EnvisalinkClient
 from .dsc_envisalinkdefs import *
 
@@ -26,7 +27,7 @@ class DSCClient(EnvisalinkClient):
         """part of each command includes a checksum.  Calculate."""
         return ("%02X" % sum(self.to_chars(code)+self.to_chars(data)))[-2:]
 
-    async def send_command(self, code, data):
+    async def send_command(self, code, data, logData = None):
         """Send a command in the proper honeywell format."""
         to_send = code + data + self.get_checksum(code, data)
         await self.send_data(to_send)
@@ -41,34 +42,21 @@ class DSCClient(EnvisalinkClient):
 
     async def keep_alive(self):
         """Send a keepalive command to reset it's watchdog timer."""
-        while not self._shutdown:
-            if self._loggedin:
-                await self.queue_command(evl_Commands['KeepAlive'], '')
-            await asyncio.sleep(self._alarmPanel.keepalive_interval)
-
-    async def periodic_zone_timer_dump(self):
-        """Used to periodically get the zone timers to make sure our zones are updated."""
-        while not self._shutdown:
-            if self._loggedin:
-                await self.dump_zone_timers()
-            await asyncio.sleep(self._alarmPanel.zone_timer_interval)
+        await self.queue_command(evl_Commands['KeepAlive'], '')
 
     async def arm_stay_partition(self, code, partitionNumber):
         """Public method to arm/stay a partition."""
-        self._cachedCode = code
-        await self.queue_command(evl_Commands['ArmStay'], str(partitionNumber))
+        await self.queue_command(evl_Commands['ArmStay'], str(partitionNumber), code)
 
     async def arm_away_partition(self, code, partitionNumber):
         """Public method to arm/away a partition."""
-        self._cachedCode = code
-        await self.queue_command(evl_Commands['ArmAway'], str(partitionNumber))
+        await self.queue_command(evl_Commands['ArmAway'], str(partitionNumber), code)
 
     async def arm_max_partition(self, code, partitionNumber):
         """Public method to arm/max a partition."""
-        self._cachedCode = code
-        await self.queue_command(evl_Commands['ArmMax'], str(partitionNumber))
+        await self.queue_command(evl_Commands['ArmMax'], str(partitionNumber), code)
 
-    async def arm_night_partition(self, code, partitionNumber):
+    async def arm_night_partition(self, code, partitionNumber, mode=None):
         """Public method to arm/max a partition."""
         await self.arm_max_partition(code, partitionNumber)
 
@@ -90,37 +78,47 @@ class DSCClient(EnvisalinkClient):
 
     def parseHandler(self, rawInput):
         """When the envisalink contacts us- parse out which command and data."""
+
+        end_idx = rawInput.find("\r\n")
+        if end_idx ==-1:
+            # We don't have a full command yet
+            return (None, rawInput)
+
+        remainder = rawInput[end_idx+2:]
+        rawInput = rawInput[:end_idx]
+
         cmd = {}
         dataoffset = 0
-        if rawInput != '':
-            if re.match('\d\d:\d\d:\d\d\s', rawInput):
-                dataoffset = dataoffset + 9
-            code = rawInput[dataoffset:dataoffset+3]
-            cmd['code'] = code
-            cmd['data'] = rawInput[dataoffset+3:][:-2]
-            
-            try:
-                #Interpret the login command further to see what our handler is.
-                if evl_ResponseTypes[code]['handler'] == 'login':
-                    if cmd['data'] == '3':
-                      handler = 'login'
-                    elif cmd['data'] == '2':
-                      handler = 'login_timeout'
-                    elif cmd['data'] == '1':
-                      handler = 'login_success'
-                    elif cmd['data'] == '0':
-                      handler = 'login_failure'
+        if re.match('\d\d:\d\d:\d\d\s', rawInput):
+            dataoffset = dataoffset + 9
+        code = rawInput[dataoffset:dataoffset+3]
+        cmd['code'] = code
+        cmd['data'] = rawInput[dataoffset+3:][:-2]
 
-                    cmd['handler'] = "handle_%s" % handler
-                    cmd['callback'] = "callback_%s" % handler
+        try:
+            #Interpret the login command further to see what our handler is.
+            if evl_ResponseTypes[code]['handler'] == 'login':
+                if cmd['data'] == '3':
+                  handler = 'login'
+                elif cmd['data'] == '2':
+                  handler = 'login_timeout'
+                elif cmd['data'] == '1':
+                  handler = 'login_success'
+                elif cmd['data'] == '0':
+                  handler = 'login_failure'
 
-                else:
-                    cmd['handler'] = "handle_%s" % evl_ResponseTypes[code]['handler']
-                    cmd['callback'] = "callback_%s" % evl_ResponseTypes[code]['handler']
-            except KeyError:
-                _LOGGER.debug(str.format('No handler defined in config for {0}, skipping...', code))
+                cmd['handler'] = "handle_%s" % handler
+                cmd['callback'] = "callback_%s" % handler
+
+            else:
+                cmd['handler'] = "handle_%s" % evl_ResponseTypes[code]['handler']
+                cmd['callback'] = "callback_%s" % evl_ResponseTypes[code]['handler']
+        except KeyError:
+            _LOGGER.debug(str.format('No handler defined in config for {0}, skipping...', code))
                 
-        return cmd
+        if len(remainder) == 0:
+            remainder = None
+        return (cmd, remainder)
 
     def handle_login(self, code, data):
         """When the envisalink asks us for our password- send it."""
@@ -171,12 +169,14 @@ class DSCClient(EnvisalinkClient):
     def handle_zone_state_change(self, code, data):
         """Handle when the envisalink sends us a zone change."""
         """Event 601-610."""
+        now = time.time()
         parse = re.match('^[0-9]{3,4}$', data)
         if parse:
             zoneNumber = int(data[-3:])
             self._alarmPanel.alarm_state['zone'][zoneNumber]['status'].update(evl_ResponseTypes[code]['status'])
+            self._alarmPanel.alarm_state['zone'][zoneNumber]['updated'] = now
             _LOGGER.debug(str.format("(zone {0}) state has updated: {1}", zoneNumber, json.dumps(evl_ResponseTypes[code]['status'])))
-            return zoneNumber
+            return [ zoneNumber ]
         else:
             _LOGGER.error("Invalid data has been passed in the zone update.")
 
@@ -189,7 +189,7 @@ class DSCClient(EnvisalinkClient):
                 partitionNumber = int(data[0])
                 self._alarmPanel.alarm_state['partition'][partitionNumber]['status'].update(evl_ArmModes[data[1]]['status'])
                 _LOGGER.debug(str.format("(partition {0}) state has updated: {1}", partitionNumber, json.dumps(evl_ArmModes[data[1]]['status'])))
-                return partitionNumber
+                return [ partitionNumber ]
             else:
                 _LOGGER.error("Invalid data has been passed when arming the alarm.") 
         else:
@@ -211,7 +211,7 @@ class DSCClient(EnvisalinkClient):
                     """Partition was disarmed which means the bypassed zones have likley been reset so force a zone bypass refresh"""
                     self.create_internal_task(self.dump_zone_bypass_status(), name="dump_zone_bypass_status")
 
-                return partitionNumber
+                return [ partitionNumber ]
             else:
                 _LOGGER.error("Invalid data has been passed in the parition update.")
 
@@ -276,4 +276,7 @@ class DSCClient(EnvisalinkClient):
             to work if the alarm panel is setup to require a code to bypass zones. """
         await self.keypresses_to_partition(1, "*1#")
 
+    def is_zone_open_from_zonedump(self, zone, ticks) -> bool:
+        # DSC seems to report accurately to 0 means open, anything else means closed
+        return ticks == 0
 

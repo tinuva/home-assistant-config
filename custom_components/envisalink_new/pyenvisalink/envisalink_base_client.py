@@ -21,10 +21,11 @@ class EnvisalinkClient(asyncio.Protocol):
             RETRY = "retry"
             FAILED = "failed"
 
-        def __init__(self, cmd, data, code):
+        def __init__(self, cmd, data, code, logData):
             self.cmd = cmd
             self.data = data
             self.code = code
+            self.logData = logData
             self.state = self.State.QUEUED
             self.retryDelay = 0.1 # Start the retry backoff at 100ms
             self.retryTime = 0
@@ -68,10 +69,18 @@ class EnvisalinkClient(asyncio.Protocol):
         self._shutdown = False
         self._commandTask = self.create_internal_task(self.process_command_queue(), name="command_processor")
         self._readLoopTask = self.create_internal_task(self.read_loop(), name="read_loop")
-        self._keepAliveTask = self.create_internal_task(self.keep_alive(), name="keep_alive")
+
+        if self._alarmPanel.keepalive_interval > 0:
+            self.create_internal_task(
+                self.periodic_command(self.keep_alive, self._alarmPanel.keepalive_interval),
+                name="keep_alive"
+            )
 
         if self._alarmPanel.zone_timer_interval > 0:
-            self.create_internal_task(self.periodic_zone_timer_dump(), name="zone_timer_dump")
+            self.create_internal_task(
+                self.periodic_command(self.dump_zone_timers, self._alarmPanel.zone_timer_interval),
+                name="zone_timer_dump"
+            )
 
         if self._ownLoop:
             _LOGGER.info("Starting up our own event loop.")
@@ -112,14 +121,28 @@ class EnvisalinkClient(asyncio.Protocol):
             if self._reader and self._writer:
                 # Connected to EVL; start reading data from the connection
                 try:
+                    unprocessed_data = None
                     while not self._shutdown and self._reader:
                         _LOGGER.debug("Waiting for data from EVL")
-                        data = await self._reader.read(n=256)
+                        try:
+                            data = await asyncio.wait_for(self._reader.read(n=1024), 5)
+                        except asyncio.exceptions.TimeoutError:
+                            continue
+
                         if not data or len(data) == 0 or self._reader.at_eof():
                             _LOGGER.error('The server closed the connection.')
                             await self.disconnect()
                             break
-                        self.process_data(data)
+
+                        data = data.decode('ascii')
+                        _LOGGER.debug('{---------------------------------------')
+                        _LOGGER.debug(str.format('RX < {0}', data))
+
+                        if unprocessed_data:
+                            data = unprocessed_data + data
+
+                        unprocessed_data = self.process_data(data)
+                        _LOGGER.debug('}---------------------------------------')
                 except Exception as ex:
                     _LOGGER.error("Caught unexpected exception: %r", ex)
                     await self.disconnect()
@@ -132,14 +155,16 @@ class EnvisalinkClient(asyncio.Protocol):
 
         await self.disconnect()
 
+    async def periodic_command(self, action, interval):
+        """Used to periodically send a keepalive command to reset the envisalink's watchdog timer."""
+        while not self._shutdown:
+            next_send = time.time() + interval
 
-    async def keep_alive(self):
-        """Used to periodically send a keepalive message to the envisalink."""
-        raise NotImplementedError()
+            if self._loggedin:
+                await action()
 
-    async def periodic_zone_timer_dump(self):
-        """Used to periodically get the zone timers to make sure our zones are updated."""
-        raise NotImplementedError()
+            now = time.time();
+            await asyncio.sleep(next_send - now)
             
     async def connect(self):
         _LOGGER.info(str.format("Started to connect to Envisalink... at {0}:{1}", self._alarmPanel.host, self._alarmPanel.port))
@@ -157,17 +182,31 @@ class EnvisalinkClient(asyncio.Protocol):
     async def disconnect(self):
         """Internal method for forcing connection closure if hung."""
         _LOGGER.debug('Cleaning up from disconnection with server.')
+
         self._loggedin = False
+
+        # Fail all outstanding commands
+        for op in self._commandQueue:
+            op.state = self.Operation.State.FAILED
+
+        # Tear down the connection
         if self._writer:
-            self._writer.close()
-            await self._writer.wait_closed()
-            self._writer = None
-        if self._reader:
-            self._reader = None
+            try:
+                self._writer.close()
+                await self._writer.wait_closed()
+            except Exception as ex:
+                _LOGGER.error("Exception while closing connection: %s", ex)
+
+        self._writer = None
+        self._reader = None
             
-    async def send_data(self, data):
+    async def send_data(self, data, logData = None):
         """Raw data send- just make sure it's encoded properly and logged."""
-        _LOGGER.debug(str.format('TX > {0}', data.encode('ascii')))
+        # Scrub the password and alarm code if necessary
+        if not logData:
+            logData = self.scrub_sensitive_data(data)
+        _LOGGER.debug('TX > %s', logData.encode('ascii'))
+
         try:
             self._writer.write((data + '\r\n').encode('ascii'))
             await self._writer.drain()
@@ -175,12 +214,16 @@ class EnvisalinkClient(asyncio.Protocol):
             _LOGGER.error('Failed to write to the stream: %r', err)
             await self.disconnect()
 
-    async def send_command(self, code, data):
+    async def send_command(self, code, data, logData = None):
         """Used to send a properly formatted command to the envisalink"""
         raise NotImplementedError()
 
     async def dump_zone_timers(self):
         """Public method for dumping zone timers."""
+        raise NotImplementedError()
+
+    async def keep_alive(self):
+        """Send a keepalive command to reset it's watchdog timer."""
         raise NotImplementedError()
 
     async def change_partition(self, partitionNumber):
@@ -207,7 +250,7 @@ class EnvisalinkClient(asyncio.Protocol):
         """Public method to arm/max a partition."""
         raise NotImplementedError()
 
-    async def arm_night_partition(self, code, partitionNumber):
+    async def arm_night_partition(self, code, partitionNumber, mode=None):
         """Public method to arm/max a partition."""
         raise NotImplementedError()
 
@@ -231,41 +274,34 @@ class EnvisalinkClient(asyncio.Protocol):
         """When the envisalink contacts us- parse out which command and data."""
         raise NotImplementedError()
         
-    def process_data(self, data):
-        """asyncio callback for any data recieved from the envisalink."""
-        if data != '':
+    def process_data(self, data) -> str:
+        while data is not None and len(data) > 0:
+            cmd, data = self.parseHandler(data)
+
+            if not cmd:
+                break
+
             try:
-                fullData = data.decode('ascii').strip()
-                cmd = {}
-                result = ''
-                _LOGGER.debug('----------------------------------------')
-                _LOGGER.debug(str.format('RX < {0}', fullData))
-                lines = str.split(fullData, '\r\n')
-            except:
-                _LOGGER.error('Received invalid message. Skipping.')
-                return
+                _LOGGER.debug(str.format('calling handler: {0} for code: {1} with data: {2}', cmd['handler'], cmd['code'], cmd['data']))
+                handlerFunc = getattr(self, cmd['handler'])
+                result = handlerFunc(cmd['code'], cmd['data'])
 
-            for line in lines:
-                cmd = self.parseHandler(line)
-            
-                try:
-                    _LOGGER.debug(str.format('calling handler: {0} for code: {1} with data: {2}', cmd['handler'], cmd['code'], cmd['data']))
-                    handlerFunc = getattr(self, cmd['handler'])
-                    result = handlerFunc(cmd['code'], cmd['data'])
-    
-                except (AttributeError, TypeError, KeyError) as err:
-                    _LOGGER.debug("No handler configured for evl command.")
-                    _LOGGER.debug(str.format("KeyError: {0}", err))
-            
-                try:
-                    _LOGGER.debug(str.format('Invoking callback: {0}', cmd['callback']))
-                    callbackFunc = getattr(self._alarmPanel, cmd['callback'])
-                    callbackFunc(result)
-    
-                except (AttributeError, TypeError, KeyError) as err:
-                    _LOGGER.debug("No callback configured for evl command.")
+            except (AttributeError, TypeError, KeyError) as err:
+                _LOGGER.debug("No handler configured for evl command.")
+                _LOGGER.debug(str.format("KeyError: {0}", err))
 
-                _LOGGER.debug('----------------------------------------')
+            try:
+                _LOGGER.debug(str.format('Invoking callback: {0}', cmd['callback']))
+                callbackFunc = getattr(self._alarmPanel, cmd['callback'])
+                callbackFunc(result)
+
+            except (AttributeError, TypeError, KeyError) as err:
+                _LOGGER.debug("No callback configured for evl command.")
+
+        # Return any unprocessed data (uncomplete command)
+        if not data or len(data) == 0:
+            return None
+        return data
 
     def convertZoneDump(self, theString):
         """Interpret the zone dump result, and convert to readable times."""
@@ -284,15 +320,12 @@ class EnvisalinkClient(asyncio.Protocol):
             itemInt = int(itemHexString, 16)
 
             # each value is a timer for a zone that ticks down every five seconds from maxint
-            MAXINT = 65536
+            MAXINT = 0xffff
             itemTicks = MAXINT - itemInt
             itemSeconds = itemTicks * 5
 
             status = ''
-            #The envisalink never seems to report back exactly 0 seconds for an open zone.
-            #it always seems to be 10-15 seconds.  So anything below 30 seconds will be open.
-            #this will of course be augmented with zone/partition events.
-            if itemSeconds < 30:
+            if self.is_zone_open_from_zonedump(zoneNumber, itemTicks):
                 status = 'open'
             else:
                 status = 'closed'
@@ -314,7 +347,6 @@ class EnvisalinkClient(asyncio.Protocol):
         """Handler for when the envisalink rejects our credentials."""
         self._loggedin = False
         _LOGGER.error('Password is incorrect. Server is closing socket connection.')
-        self.stop()
 
     def handle_keypad_update(self, code, data):
         """Handler for when the envisalink wishes to send us a keypad update."""
@@ -336,6 +368,11 @@ class EnvisalinkClient(asyncio.Protocol):
         """Callback for whenever the envisalink triggers alarm arm/disarm/trigger."""
         raise NotImplementedError()
 
+    def is_zone_open_from_zonedump(self, zone, ticks) -> bool:
+        """Indicate whether or not a zone should be considered open based on the number of
+           ticks in a zone dump timer update"""
+        raise NotImplementedError()
+
     def handle_zone_timer_dump(self, code, data):
         """Handle the zone timer data."""
         results = []
@@ -355,12 +392,30 @@ class EnvisalinkClient(asyncio.Protocol):
 
 
     async def queue_command(self, cmd, data, code = None):
-        _LOGGER.debug("Queueing command '%s' data: '%s' ; calling_task=%s", cmd, data, asyncio.current_task().get_name())
-        op = self.Operation(cmd, data, code)
-        op.expiryTime = time.time() + self._alarmPanel.command_timeout
-        self._commandQueue.append(op)
+        return await self.queue_commands([ { "cmd": cmd, "data": data, "code": code }])
+
+    async def queue_commands(self, command_list : list):
+        operations = []
+        for command in command_list:
+            cmd = command["cmd"]
+            data = command["data"]
+            code = command.get("code")
+            logData = command.get("log")
+
+            # Scrub the password and alarm code if necessary
+            if not logData:
+                logData = self.scrub_sensitive_data(data, code)
+            _LOGGER.debug("Queueing command '%s' data: '%s' ; calling_task=%s", cmd, logData, asyncio.current_task().get_name())
+
+            op = self.Operation(cmd, data, code, logData)
+            op.expiryTime = time.time() + self._alarmPanel.command_timeout
+            operations.append(op)
+            self._commandQueue.append(op)
+
         self._commandEvent.set()
-        await op.responseEvent.wait()
+        for op in operations:
+            await op.responseEvent.wait()
+        return op.state == op.State.SUCCEEDED
 
     async def process_command_queue(self):
         """Manage processing of commands to be issued to the EVL.  Commands are serialized to the EVL to avoid 
@@ -386,15 +441,22 @@ class EnvisalinkClient(asyncio.Protocol):
                     if op.state == self.Operation.State.SENT:
                         # Still waiting on a response from the EVL so break out of loop and wait for the response
                         if now >= op.expiryTime:
-                            # Timeout waiting for response from the EVL so fail the command
+                            # Timeout waiting for response from the EVL so fail the command,
+                            # This is likely due to the EVL becoming unresponsive so tear down the
+                            # connection to start a recovery.
                             _LOGGER.error(f"Command '{op.cmd}' failed due to timeout waiting for response from EVL")
                             op.state = self.Operation.State.FAILED
+                            await self.disconnect()
                         break
                     elif op.state == self.Operation.State.QUEUED:
                         # Send command to the EVL
                         op.state = self.Operation.State.SENT
                         self._cachedCode = op.code
-                        await self.send_command(op.cmd, op.data)
+                        try:
+                            await self.send_command(op.cmd, op.data, op.logData)
+                        except Exception as ex:
+                            _LOGGER.error(f"Unexpected exception trying to send command: {ex}")
+                            op.state = self.Operation.State.FAILED
                     elif op.state == self.Operation.State.SUCCEEDED:
                         # Remove completed command from head of the queue
                         self._commandQueue.pop(0)
@@ -471,4 +533,16 @@ class EnvisalinkClient(asyncio.Protocol):
         # Wake up the command processing task to process this result
         self._commandEvent.set()
 
+    def scrub_sensitive_data(self, data, code = None):
+        if not self._loggedin:
+            # Remove the password from the log entry
+            logData = data.replace(self._alarmPanel.password, "*" * len(self._alarmPanel.password))
+        else:
+            logData = data
+
+        if not code and self._commandQueue and self._commandQueue[0].code:
+            code = str(self._commandQueue[0].code)
+        if code:
+            logData = logData.replace(code, "*" * len(code))
+        return logData
 

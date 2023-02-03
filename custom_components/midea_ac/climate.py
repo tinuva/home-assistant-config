@@ -19,7 +19,7 @@ except ImportError:
     from homeassistant.components.climate import ClimateDevice as ClimateEntity
 from homeassistant.components.climate.const import (
     SUPPORT_TARGET_TEMPERATURE, SUPPORT_FAN_MODE, SUPPORT_SWING_MODE,
-    SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST, PRESET_AWAY)
+    SUPPORT_PRESET_MODE, PRESET_NONE, PRESET_ECO, PRESET_BOOST, PRESET_AWAY, PRESET_SLEEP)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from msmart.device import air_conditioning as ac
@@ -278,6 +278,7 @@ class MideaClimateACDevice(ClimateEntity):
         self._device.eco_mode = False
         self._device.turbo_mode = False
         self._device.freeze_protection_mode = False
+        self._device.sleep_mode = False
 
         # Enable proper mode
         if preset_mode == PRESET_BOOST:
@@ -286,6 +287,8 @@ class MideaClimateACDevice(ClimateEntity):
             self._device.eco_mode = True
         elif preset_mode == PRESET_AWAY:
             self._device.freeze_protection_mode = True
+        elif preset_mode == PRESET_SLEEP:
+            self._device.sleep_mode = True
 
         self._changed = True
         await self.apply_changes()
@@ -293,11 +296,19 @@ class MideaClimateACDevice(ClimateEntity):
     @property
     def preset_modes(self) -> list:
         # TODO could check for supports_eco and supports_turbo
-        modes = [PRESET_NONE, PRESET_ECO, PRESET_BOOST]
+        modes = [PRESET_NONE, PRESET_BOOST]
 
         # Add away preset if in heat and supports freeze protection
         if getattr(self._device, "supports_freeze_protection_mode", False) and self._device.operational_mode == ac.operational_mode_enum.heat:
             modes.append(PRESET_AWAY)
+
+        # Add eco preset in cool, dry and auto
+        if self._device.operational_mode in [ac.operational_mode_enum.dry,  ac.operational_mode_enum.cool,  ac.operational_mode_enum.auto]:
+            modes.append(PRESET_ECO)
+
+        # Add sleep preset in heat, cool or auto
+        if self._device.operational_mode in [ac.operational_mode_enum.heat,  ac.operational_mode_enum.cool,  ac.operational_mode_enum.auto]:
+            modes.append(PRESET_SLEEP)
 
         return modes
 
@@ -309,6 +320,8 @@ class MideaClimateACDevice(ClimateEntity):
             return PRESET_BOOST
         elif getattr(self._device, "freeze_protection_mode", False):
             return PRESET_AWAY
+        elif getattr(self._device, "sleep_mode", False):
+            return PRESET_SLEEP
         else:
             return PRESET_NONE
 
