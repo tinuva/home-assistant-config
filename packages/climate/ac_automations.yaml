@@ -61,20 +61,21 @@ automation:
                   speed: "Auto"
                   mode: >
                     {{ states('sensor.ac_central_mode') }}
+      # Conditions before turning on further ACS
+      - condition: numeric_state
+        entity_id: sensor.goodwe_battery_soc
+        above: '94'
+      - condition: numeric_state
+        entity_id: sensor.solcast_forecast_energy_today_predicted
+        above: '27'
+      - condition: template
+        value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
       # MainBed
       - choose:
           - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
-                above: '27'
-              - condition: template
-                value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
               - condition: state
                 entity_id: binary_sensor.main_bedroom_window
                 state: 'off'
-              - condition: numeric_state
-                entity_id: sensor.goodwe_battery_soc
-                above: '94'
             sequence:
               - service: script.ac
                 data:
@@ -82,27 +83,22 @@ automation:
                   speed: "Auto"
                   mode: >
                     {{ states('sensor.ac_central_mode') }}
-      # # ChildBed
-      # - choose:
-      #     - conditions:
-      #         - condition: numeric_state
-      #           entity_id: sensor.solcast_forecast_energy_today_predicted
-      #           above: '29'
-      #         - condition: template
-      #           value_template: "{{ ('12:00' <= states('sensor.time') < '15:00')  }}"
-      #         - condition: state
-      #           entity_id: binary_sensor.babyroom_window
-      #           state: 'off'
-      #         - condition: numeric_state
-      #           entity_id: sensor.goodwe_battery_soc
-      #           above: '95'
-      #       sequence:
-      #         - service: script.ac
-      #           data:
-      #             ac: "climate.midea_ac_30786325862153"
-      #             speed: "Auto"
-      #             mode: >
-      #               {{ states('sensor.ac_central_mode') }}
+      # ChildBed
+      - choose:
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.solcast_forecast_energy_today_predicted
+                above: '29'
+              - condition: state
+                entity_id: binary_sensor.babyroom_window
+                state: 'off'
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862153"
+                  speed: "Auto"
+                  mode: >
+                    {{ states('sensor.ac_central_mode') }}
 
   # Stops ACs
   - alias: Stop ACs if started with enough power
@@ -127,12 +123,16 @@ automation:
       # Office
       - choose:
           - conditions:
-              - condition: state
-                entity_id: climate.midea_ac_30786325862153
-                state: "off"
-              - condition: state
-                entity_id: climate.midea_ac_30786325862093
-                state: "off"
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862153') in ['fan_only','off','unavailable','unknown','none'] }}
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862093') in ['fan_only','off','unavailable','unknown','none'] }}
+              # office ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none'] }}
               - condition: state
                 entity_id: switch.pool_pump
                 state: "off"
@@ -144,9 +144,13 @@ automation:
       # MainBed
       - choose:
           - conditions:
-              - condition: state
-                entity_id: climate.midea_ac_30786325862153
-                state: "off"
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862153') in ['fan_only','off','unavailable','unknown','none'] }}
+              # mainbed ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862093') not in ['fan_only','off','unavailable','unknown','none'] }}
               - condition: state
                 entity_id: switch.pool_pump
                 state: "off"
@@ -161,6 +165,10 @@ automation:
               - condition: state
                 entity_id: switch.pool_pump
                 state: "off"
+              # childbed ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862153') not in ['fan_only','off','unavailable','unknown','none'] }}
             sequence:
               - service: script.ac
                 data:

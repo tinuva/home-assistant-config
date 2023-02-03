@@ -8,15 +8,15 @@ automation:
     max: 2
     trigger:
       - platform: numeric_state
-        entity_id: sensor.goodwe_pback_up
-        above: '4500'
+        entity_id: sensor.back_up_power
+        above: '4600'
     action:
       - service: script.log
         data:
           icon: ':zap:'
           object: 'GoodWe Cap Mgmt'
           message: >
-            Backup above 4500w at {{ states('sensor.goodwe_pback_up')|int }} (from: {{ trigger.from_state.state }} to: {{ trigger.to_state.state }})
+            Backup above 4600w at {{ states('sensor.back_up_power')|int }} (from: {{ trigger.from_state.state }} to: {{ trigger.to_state.state }})
       - choose:
           # If pool pump on, turn it off first
           - conditions:
@@ -39,14 +39,20 @@ automation:
                       entity_id: timer.pool_pump
                       state: 'active'
                     - condition: numeric_state
-                      entity_id: sensor.goodwe_pback_up
-                      above: '2500'
+                      entity_id: sensor.back_up_power
+                      above: '3600'
                   sequence:
                     - delay:
                         seconds: 30
               - condition: state
                 entity_id: timer.pool_pump
                 state: 'active'
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Power now at {{ states('sensor.back_up_power')|int }}
               - service: script.log
                 data:
                   icon: ':zap:'
@@ -74,11 +80,17 @@ automation:
               - repeat:
                   while:
                     - condition: numeric_state
-                      entity_id: sensor.goodwe_pback_up
-                      above: '2500'
+                      entity_id: sensor.back_up_power
+                      above: '3300'
                   sequence:
                     - delay:
                         seconds: 30
+              - service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe Cap Mgmt'
+                  message: >
+                    Power now at {{ states('sensor.back_up_power')|int }}
               - service: script.log
                 data:
                   icon: ':zap:'

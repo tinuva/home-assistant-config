@@ -32,18 +32,11 @@ automation:
       #  entity_id: sensor.main_bathroom_geyser_energy_power
       #  below: '50'
     condition:
-      - condition: state
-        entity_id: switch.main_bathroom_geyser
-        state: 'unavailable'
       - condition: numeric_state
         entity_id: sensor.average_temperature_outside_last_1_day
         above: '19.5'
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
-          - condition: template
-            value_template: "{{ not trigger.from_state }}"
+      - condition: template
+        value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'
@@ -66,7 +59,7 @@ automation:
                     entity_id: sensor.solcast_forecast
                     above: '19'
                   #- condition: numeric_state
-                  #  entity_id: sensor.goodwe_battery_soc
+                  #  entity_id: sensor.battery_state_of_charge
                   #  above: '43'
             sequence:
               - alias: "Set variables"
@@ -81,7 +74,7 @@ automation:
                     {% elif 18 <= states('sensor.solcast_forecast')|float < 20 %}{% set duration = 5 %}
                     {% elif 17 <= states('sensor.solcast_forecast')|float < 18 %}{% set duration = 4 %}
                     {% else %}{% set duration = 1 %}{% endif -%}
-                    {% if states('sensor.goodwe_battery_soc')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
+                    {% if states('sensor.battery_state_of_charge')|float < 43 and duration > 3 %}{% set duration = 3 %}{% endif -%}
                     {{ duration|int * 60 * 60 }}
               - service: timer.start
                 data_template:
@@ -155,16 +148,16 @@ automation:
       # Additional checks if battery needs lots of charging
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "11:30" and states('sensor.goodwe_battery_soc')|int < 50) }}
+          {{ (now().time().strftime("%R") == "11:30" and states('sensor.battery_state_of_charge')|int < 50) }}
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "14:00" and states('sensor.goodwe_battery_soc')|int < 60) }}
+          {{ (now().time().strftime("%R") == "14:00" and states('sensor.battery_state_of_charge')|int < 60) }}
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "15:00" and states('sensor.goodwe_battery_soc')|int < 75) }}
+          {{ (now().time().strftime("%R") == "15:00" and states('sensor.battery_state_of_charge')|int < 75) }}
       - platform: template
         value_template: >
-          {{ (now().time().strftime("%R") == "16:00" and states('sensor.goodwe_battery_soc')|int < 89) }}
+          {{ (now().time().strftime("%R") == "16:00" and states('sensor.battery_state_of_charge')|int < 89) }}
     action:
       - service: switch.turn_off
         data:

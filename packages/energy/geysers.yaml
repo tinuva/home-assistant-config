@@ -177,21 +177,21 @@ automation:
                   - condition: and
                     conditions:
                       - condition: template
-                        value_template: "{{ ('11:30' <= states('sensor.time') < '13:30') }}"
+                        value_template: "{{ ('11:30' <= states('sensor.time') < '16:00') }}"
                       - condition: state
                         entity_id: timer.main_geyser
                         state: 'idle'
                         for:
-                          minutes: 90
+                          minutes: 75
                   - condition: and
                     conditions:
                       - condition: template
-                        value_template: "{{ ('13:30' <= states('sensor.time') < '15:00') }}"
+                        value_template: "{{ ('13:30' <= states('sensor.time') < '16:30') }}"
                       - condition: state
                         entity_id: timer.main_geyser
                         state: 'idle'
                         for:
-                          minutes: 120
+                          minutes: 85
             sequence:
               - service: script.geyser_on_mainbedroom
               - alias: "Log action taken"

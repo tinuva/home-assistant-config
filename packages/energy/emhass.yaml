@@ -1,0 +1,21 @@
+---
+
+sensor:
+  # template sensors based on ESP above
+  - platform: template
+    sensors:
+      power_load_no_var_loads:
+        friendly_name: Non-deferrable Load
+        unique_id: non-deferrable-loads
+        unit_of_measurement: "W"
+        device_class: power
+        value_template: >
+          {%- set ns = namespace(deferrable_power=states('sensor.house_consumption')|float) -%}
+          {%- set devices = ['sensor.pool_pump_power',
+          'sensor.aircon_main_bedroom_energy_power'] -%}
+          {%- for device in devices -%}
+          {%- if states(device) != 'unavailable' and states(device) != 'unknown' %}
+          {%- set ns.deferrable_power = ns.deferrable_power|float - states(device)|float -%}
+          {%- endif %}
+          {%- endfor -%}
+          {{ ns.deferrable_power }}

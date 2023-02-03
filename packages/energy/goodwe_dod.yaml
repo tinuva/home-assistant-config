@@ -186,11 +186,11 @@ automation:
     condition:
       # if current SoC above 75%
       - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
+        entity_id: sensor.battery_state_of_charge
         above: '70'
       # if battery SoH is above 50 for some safety
       - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soh
+        entity_id: sensor.battery_state_of_health
         above: '50'
     action:
       # cancel timers
@@ -259,7 +259,7 @@ automation:
                 entity_id: sensor.solcast_forecast_energy_today_predicted
                 above: '26.1'
               - condition: numeric_state
-                entity_id: sensor.goodwe_battery_soc
+                entity_id: sensor.battery_state_of_charge
                 above: '50'
             sequence:
               - delay:

@@ -34,8 +34,8 @@ sensor:
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-
-          {% if states('sensor.goodwe_pgrid')|float < 0 %}
-            {{ (states('sensor.goodwe_pgrid')|float * -1)|round(0) }}
+          {% if states('sensor.on_grid_export_power')|float < 0 %}
+            {{ (states('sensor.on_grid_export_power')|float * -1)|round(0) }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -45,8 +45,8 @@ sensor:
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-
-          {% if states('sensor.goodwe_pgrid')|float > 0 %}
-            {{ states('sensor.goodwe_pgrid')|float }}
+          {% if states('sensor.on_grid_export_power')|float > 0 %}
+            {{ states('sensor.on_grid_export_power')|float }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -55,8 +55,8 @@ sensor:
         friendly_name: "Battery Charging Power"
         unit_of_measurement: 'W'
         value_template: >-
-          {% if states('sensor.goodwe_pbattery1')|float < 0 %}
-            {{ states('sensor.goodwe_pbattery1')|float * -1 }}
+          {% if states('sensor.battery_power')|float < 0 %}
+            {{ states('sensor.battery_power')|float * -1 }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -67,8 +67,8 @@ sensor:
         friendly_name: "Battery Discharging Power"
         unit_of_measurement: 'W'
         value_template: >-
-          {% if states('sensor.goodwe_pbattery1')|float > 0 %}
-            {{ states('sensor.goodwe_pbattery1')|float }}
+          {% if states('sensor.battery_power')|float > 0 %}
+            {{ states('sensor.battery_power')|float }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -80,8 +80,8 @@ sensor:
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-
-          {% if (states('sensor.goodwe_house_consumption')|float - states('sensor.goodwe_pback_up')|float) > 0 %}
-            {{ (states('sensor.goodwe_house_consumption')|float - states('sensor.goodwe_pback_up')|float)|round(0) }}
+          {% if (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float) > 0 %}
+            {{ (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float)|round(0) }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -91,8 +91,8 @@ sensor:
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-
-          {% if states('sensor.goodwe_ppv')|float > 0 %}
-            {{ (states('sensor.goodwe_ppv')|float - states('sensor.goodwe_pback_up')|float)|float|round(0)}}
+          {% if states('sensor.pv_power')|float > 0 %}
+            {{ (states('sensor.pv_power')|float - states('sensor.back_up_power')|float)|float|round(0)}}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -128,7 +128,7 @@ sensor:
     method: left
   # Sensor for Riemann sum of solar energy generate (W -> Wh)
   - platform: integration
-    source: sensor.goodwe_ppv
+    source: sensor.pv_power
     name: energy_solar_generate
     unit_prefix: k
     round: 2
@@ -188,42 +188,42 @@ sensor:
     duration:
       minutes: 30
     entities:
-      - sensor.goodwe_house_consumption
+      - sensor.house_consumption
 
   - platform: average
     name: 'GoodWe Average House Consumption 10min'
     duration:
       minutes: 10
     entities:
-      - sensor.goodwe_house_consumption
+      - sensor.house_consumption
 
   - platform: average
     name: 'GoodWe Average Solar Generation 10min'
     duration:
       minutes: 10
     entities:
-      - sensor.goodwe_ppv
+      - sensor.pv_power
 
   - platform: average
     name: 'GoodWe Average Solar Generation 30min'
     duration:
       minutes: 30
     entities:
-      - sensor.goodwe_ppv
+      - sensor.pv_power
 
   - platform: average
     name: 'GoodWe Average Back-up use 10min'
     duration:
       minutes: 10
     entities:
-      - sensor.goodwe_pback_up
+      - sensor.back_up_power
 
   - platform: average
     name: 'GoodWe Average Back-up use 30min'
     duration:
       minutes: 30
     entities:
-      - sensor.goodwe_pback_up
+      - sensor.back_up_power
 
 utility_meter:
   # Grid
@@ -254,10 +254,10 @@ utility_meter:
     cycle: monthly
   # Other
   house_consumption_daily:
-    source: sensor.goodwe_house_consumption
+    source: sensor.house_consumption
     cycle: daily
   house_consumption_monthly:
-    source: sensor.goodwe_house_consumption
+    source: sensor.house_consumption
     cycle: monthly
   # Solar
   solar_generate_daily:
@@ -383,7 +383,7 @@ automation:
     mode: single
     trigger:
       - platform: numeric_state
-        entity_id: sensor.goodwe_battery_soh
+        entity_id: sensor.battery_state_of_health
         below: '50'
     condition: []
     action:
@@ -394,4 +394,4 @@ automation:
           object: 'GoodWe'
           message: >
             GoodWe Battery State of Health LOW
-            Current SoH: {{ states('sensor.goodwe_battery_soh') }}
+            Current SoH: {{ states('sensor.battery_state_of_health') }}

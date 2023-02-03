@@ -16,7 +16,7 @@ sensor:
           {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
           {%- set data = namespace(count=1) -%}
           {%- for event in states['sensor.load_shedding_area_capetown_6_durbanville'].attributes.forecast -%}
-          {% if data.count <= 4 %}
+          {% if data.count <= 1 %}
           {%- set start = as_timestamp(event['start_time']) %}
           {%- set end = as_timestamp(event['end_time']) %}
           {%- set startdelta = as_timestamp(event['start_time'] + timedelta(minutes=30)) %}
@@ -95,7 +95,7 @@ automation:
       - service: timer.start
         data:
           entity_id: timer.loadshedding_slot
-          # duration: "{{ (states('sensor.next_loadshedding_duration')|int + 35) * 60 }}"
+          duration: "{{ (states('sensor.next_loadshedding_duration')|int) * 60 }}"
 
   - alias: stop_loadshedding_slot_timer_grid_power_returned
     trigger:
