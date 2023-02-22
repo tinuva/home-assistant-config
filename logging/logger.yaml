@@ -19,6 +19,7 @@ logs:
   homeassistant.loader: error
 
   custom_components.localtuya: fatal
+  custom_components.load_shedding: error  # ESP integration
 
   #custom_components.goodwe: debug
   #goodwe: debug
