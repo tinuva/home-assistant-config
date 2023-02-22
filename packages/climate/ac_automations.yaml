@@ -196,6 +196,36 @@ automation:
                 data:
                   entity_id: timer.pool_pump
 
+  - alias: Stop ACs morning after
+    trigger:
+      - platform: time
+        at: '5:30:00'
+    action:
+      # MainBed
+      - choose:
+          - conditions:
+              # mainbed ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862093') not in ['off','unavailable','unknown','none'] }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862093"
+                  mode: "off"
+      - choose:
+          - conditions:
+              # ChildBed ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862153') not in ['off','unavailable','unknown','none'] }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_30786325862153"
+                  mode: "off"
+
+
 script:
   ######################################################################
   # Re-usable script to change ac to silent fan in the am

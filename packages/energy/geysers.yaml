@@ -150,7 +150,7 @@ automation:
       #     message: >
       #       main bedroom geyser trigger - before conditions
       #       Trigger:
-      #       {{ trigger }}
+      #       ```{{ trigger }}```
       - delay: '00:00:10' # Waits 10 seconds
       - condition: or
         conditions:
@@ -168,7 +168,7 @@ automation:
       #     message: >
       #       main bedroom geyser trigger - after conditions
       #       Trigger:
-      #       {{ trigger }}
+      #       ```{{ trigger }}```
       - choose:
           # Turn on between 11am and 2pm for sun times
           - conditions:
@@ -183,15 +183,6 @@ automation:
                         state: 'idle'
                         for:
                           minutes: 75
-                  - condition: and
-                    conditions:
-                      - condition: template
-                        value_template: "{{ ('13:30' <= states('sensor.time') < '16:30') }}"
-                      - condition: state
-                        entity_id: timer.main_geyser
-                        state: 'idle'
-                        for:
-                          minutes: 85
             sequence:
               - service: script.geyser_on_mainbedroom
               - alias: "Log action taken"
@@ -203,7 +194,7 @@ automation:
                     Turning on main bedroom geyser
                     (Turn on between 11am and 2pm for sun times)
                     Trigger:
-                    {{ trigger }}
+                    ```{{ trigger }}```
           # Turn on late PM only if haven't been on in previous 6 hours
           - conditions:
               - condition: state
@@ -224,7 +215,7 @@ automation:
                     Turning on main bedroom geyser
                     (Turn on late PM only if haven't been on in previous 6 hours)
                     Trigger:
-                    {{ trigger }}
+                    ```{{ trigger }}```
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
           # Also, if average temp below 21degree
           - conditions:
@@ -265,7 +256,7 @@ automation:
                     Turning on main bedroom geyser
                     (Turn on early AM and late PM)
                     Trigger:
-                    {{ trigger }}
+                    ```{{ trigger }}```
         # No conditions met so log and do nothing (exceptions to logging apply)
         # default:
         #   # - condition: template
@@ -280,7 +271,7 @@ automation:
         #       message: >
         #         Not turning on main bedroom geyser because no conditions met
         #         Trigger:
-        #         {{ trigger }}
+        #         ```{{ trigger }}```
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
