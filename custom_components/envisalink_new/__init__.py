@@ -8,13 +8,13 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 
 from homeassistant.const import (
-    CONF_CODE,
     CONF_HOST,
     CONF_TIMEOUT,
 )
 
 from .const import (
     CONF_ALARM_NAME,
+    CONF_CODE,
     CONF_CREATE_ZONE_BYPASS_SWITCHES,
     CONF_EVL_KEEPALIVE,
     CONF_EVL_PORT,
@@ -36,7 +36,7 @@ from .const import (
 )
 
 from .controller import EnvisalinkController
-from .config_flow import generate_range_string
+from .helpers import generate_range_string
 
 PLATFORMS: list[Platform] = [Platform.ALARM_CONTROL_PANEL, Platform.BINARY_SENSOR, Platform.SENSOR, Platform.SWITCH]
 
@@ -85,8 +85,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: config_entries.ConfigEnt
     _async_import_options_from_data_if_missing(hass, entry)
 
     controller = EnvisalinkController(hass, entry)
-    if not await controller.start():
-        return False
+    await controller.start()
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = controller
 
@@ -119,34 +118,37 @@ def _transform_yaml_to_config_entry(yaml: dict[str, Any]) -> dict[str, Any]:
        before sending it along to the config import flow."""
     config_data = {}
     for key in (
-        CONF_HOST,
+        CONF_CODE,
         CONF_EVL_PORT,
-        CONF_USERNAME,
-        CONF_PASS,
         CONF_EVL_VERSION,
+        CONF_HOST,
         CONF_PANEL_TYPE,
+        CONF_PASS,
+        CONF_USERNAME,
     ):
         if key in yaml:
             config_data[key] = yaml[key]
 
-    zone_spec = None
     zones = yaml.get(CONF_ZONES)
     if zones:
         zone_set = set()
         for zone_num in zones.keys():
             zone_set.add(int(zone_num))
         zone_spec = generate_range_string(zone_set)
+        if zone_spec is not None:
+            config_data[CONF_ZONE_SET] = zone_spec
 
         # Save off the zone names and types so we can update the corresponding entities later
         config_data[CONF_ZONES] = zones
 
-    partition_spec = None
     partitions = yaml.get(CONF_PARTITIONS)
     if partitions:
         partition_set = set()
         for part_num in partitions.keys():
             partition_set.add(int(part_num))
         partition_spec = generate_range_string(partition_set)
+        if partition_spec is not None:
+            config_data[CONF_PARTITION_SET] = partition_spec
 
         # Same off the parittion names so we can update the corresponding entities later
         config_data[CONF_PARTITIONS] = partitions
@@ -158,12 +160,7 @@ def _transform_yaml_to_config_entry(yaml: dict[str, Any]) -> dict[str, Any]:
     # store them temporarily in the config entry so they can later be transfered into options
     # since it is apparently not possible to create options as part of the import flow.
     options = {}
-    if zone_spec is not None:
-        options[CONF_ZONE_SET] = zone_spec
-    if partition_spec is not None:
-        options[CONF_PARTITION_SET] = partition_spec
     for key in (
-        CONF_CODE,
         CONF_PANIC,
         CONF_EVL_KEEPALIVE,
         CONF_ZONEDUMP_INTERVAL,
@@ -181,17 +178,10 @@ def choose_alarm_name(partitions) -> str:
     # If there is only a single partition defined, then use it
     name = DEFAULT_ALARM_NAME
 
-    if not partitions:
-        return DEFAULT_ALARM_NAME
-
     if partitions:
-        if len(partitions) == 1:
-            # Only a single partition defined so use it
-            part_info = next(iter(partitions.values()))
-        else:
-            # Multiple partitions so choose the smallest value
-            part_num = min(partitions, key=int)
-            part_info = partitions[part_num]
+        # Multiple partitions so choose the smallest value
+        part_num = min(partitions, key=int)
+        part_info = partitions[part_num]
 
         name = part_info.get(CONF_PARTITIONNAME, DEFAULT_ALARM_NAME)
 
@@ -209,14 +199,11 @@ def _async_import_options_from_data_if_missing(
 
     modified = False
     for importable_option in (
-        CONF_CODE,
         CONF_PANIC,
         CONF_EVL_KEEPALIVE,
         CONF_ZONEDUMP_INTERVAL,
         CONF_TIMEOUT,
         CONF_CREATE_ZONE_BYPASS_SWITCHES,
-        CONF_ZONE_SET,
-        CONF_PARTITION_SET,
     ):
         if importable_option in yaml_options:
             item = yaml_options[importable_option]

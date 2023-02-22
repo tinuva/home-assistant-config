@@ -1,30 +1,105 @@
 #!/usr/bin/env python3
-import signal
+import asyncio
 import sys
-from pyenvisalink import EnvisalinkAlarmPanel
 
-#This is a test harness for the pyenvisalink library.  It will assist in testing the library against both Honeywell and DSC.
+from pyenvisalink.alarm_panel import EnvisalinkAlarmPanel
 
-def signal_handler(signal, frame):
-        print('You pressed Ctrl+C!')
-        testpanel.stop()
+# This is a test harness for the pyenvisalink library.
+# It will assist in testing the library against both Honeywell and DSC.
+
+
+async def shutdown_handler(testpanel):
+    await testpanel.stop()
+    asyncio.get_running_loop().stop()
+
+
+def async_connection_status_callback(connected):
+    print(f"Callback: connection status: {connected}")
+
+
+def async_login_fail_callback():
+    print("Callback: login failure")
+
+
+def async_login_timeout_callback():
+    print("Callback: connection failure")
+
+
+def async_login_success_callback():
+    print("Callback: login success")
+
+
+def async_keypad_update(data):
+    print("Callback: keypad update")
+
+
+def async_zone_state_change(data):
+    print("Callback: zone state change")
+
+
+def async_zone_bypass_state_change(data):
+    print("Callback: zone bypass state change")
+
+
+def async_partition_state_change(data):
+    print("Callback: partition state change")
+
+
+async def main():
+    global testpanel
+
+    action = sys.argv[1]
+    host = sys.argv[2]
+    port = int(sys.argv[3])
+    user = sys.argv[4]
+    pw = sys.argv[5]
+    httpPort = 8080
+    if len(sys.argv) > 6:
+        httpPort = int(sys.argv[6])
+
+    testpanel = EnvisalinkAlarmPanel(
+        host,
+        port,
+        user,
+        pw,
+        zoneTimerInterval=30,
+        zoneBypassEnabled=True,
+        httpPort=httpPort,
+        keepAliveInterval=60,
+    )
+
+    if action == "discover":
+        await testpanel.discover()
         sys.exit(0)
 
-#Get Details from the user...
-ip = input("Please input the IP address of your envisalink device: ")
-port = input("Please input the port of your envisalink device (4025 is default): ")
-if len(port) == 0:
-    port = "4025"
-version = input("Which envisalink device do you have? Enter 3 for evl3 or 4 for evl4 (4 is default): ")
-if len(version) == 0:
-    version = "4"
-panel = input("Input DSC if you have a DSC panel, or HONEYWELL if you have a honeywell panel (DSC is default): ")
-if len(panel) == 0:
-    panel = "DSC"
-pw = input("Please input your envisalink password: ")
+    if action != "start":
+        print(f"Unrecognized action: {action}")
+        sys.exit(1)
 
-na = input("Config complete. Please press enter now to connect to the envisalink.  When finished, use Ctrl+C to disconnect and exit")
-signal.signal(signal.SIGINT, signal_handler)
-testpanel = EnvisalinkAlarmPanel(ip, int(port), panel, int(version), pw, pw)
-testpanel.start()
+    testpanel.callback_connection_status = async_connection_status_callback
+    testpanel.callback_login_failure = async_login_fail_callback
+    testpanel.callback_login_timeout = async_login_timeout_callback
+    testpanel.callback_login_success = async_login_success_callback
 
+    testpanel.callback_keypad_update = async_keypad_update
+    testpanel.callback_zone_state_change = async_zone_state_change
+    testpanel.callback_zone_bypass_state_change = async_zone_bypass_state_change
+    testpanel.callback_partition_state_change = async_partition_state_change
+
+    result = await testpanel.start()
+    if result == EnvisalinkAlarmPanel.ConnectionResult.SUCCESS:
+        # await asyncio.sleep(5)
+        # loop.create_task(testpanel.arm_stay_partition("12345", 1))
+        # loop.create_task(testpanel.arm_away_partition("12345", 1))
+        # loop.create_task(testpanel.arm_max_partition("12345", 1))
+        # loop.create_task(testpanel.arm_night_partition("12345", 1))
+        # loop.create_task(testpanel.disarm_partition("12345", 1))
+        await asyncio.sleep(3600)
+
+
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    print("You pressed Ctrl+C!")
+
+asyncio.run(shutdown_handler(testpanel))

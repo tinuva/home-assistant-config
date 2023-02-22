@@ -9,7 +9,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-from .config_flow import find_yaml_zone_info, parse_range_string
+from .pyenvisalink.const import STATE_CHANGE_ZONE_BYPASS
+
+from .helpers import find_yaml_info, parse_range_string
 from .models import EnvisalinkDevice
 from .const import (
     CONF_CREATE_ZONE_BYPASS_SWITCHES,
@@ -18,7 +20,6 @@ from .const import (
     CONF_ZONE_SET,
     DOMAIN,
     LOGGER,
-    STATE_UPDATE_TYPE_ZONE_BYPASS,
 )
 
 async def async_setup_entry(
@@ -31,13 +32,13 @@ async def async_setup_entry(
 
     create_bypass_switches = entry.options.get(CONF_CREATE_ZONE_BYPASS_SWITCHES)
     if create_bypass_switches:
-        zone_spec = entry.options.get(CONF_ZONE_SET)
+        zone_spec = entry.data.get(CONF_ZONE_SET)
         zone_set = parse_range_string(zone_spec, min_val=1, max_val=controller.controller.max_zones)
         zone_info = entry.data.get(CONF_ZONES)
         if zone_set is not None:
             entities = []
             for zone_num in zone_set:
-                zone_entry = find_yaml_zone_info(zone_num, zone_info)
+                zone_entry = find_yaml_info(zone_num, zone_info)
 
                 entity = EnvisalinkSwitch(
                     hass,
@@ -67,7 +68,7 @@ class EnvisalinkSwitch(EnvisalinkDevice, SwitchEntity):
                 self._attr_has_entity_name = False
 
         LOGGER.debug("Setting up zone: %s", name)
-        super().__init__(name, controller, STATE_UPDATE_TYPE_ZONE_BYPASS, zone_number)
+        super().__init__(name, controller, STATE_CHANGE_ZONE_BYPASS, zone_number)
 
     @property
     def _info(self):

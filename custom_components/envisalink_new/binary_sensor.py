@@ -11,7 +11,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util import dt as dt_util
 
-from .config_flow import find_yaml_zone_info, parse_range_string
+from .pyenvisalink.const import STATE_CHANGE_ZONE
+
+from .helpers import find_yaml_info, parse_range_string
 from .models import EnvisalinkDevice
 from .const import (
     CONF_ZONENAME,
@@ -21,7 +23,6 @@ from .const import (
     DEFAULT_ZONETYPE,
     DOMAIN,
     LOGGER,
-    STATE_UPDATE_TYPE_ZONE,
 )
 
 async def async_setup_entry(
@@ -32,14 +33,14 @@ async def async_setup_entry(
 
     controller = hass.data[DOMAIN][entry.entry_id]
 
-    zone_spec = entry.options.get(CONF_ZONE_SET)
+    zone_spec = entry.data.get(CONF_ZONE_SET)
     zone_set = parse_range_string(zone_spec, min_val=1, max_val=controller.controller.max_zones)
 
     zone_info = entry.data.get(CONF_ZONES)
     entities = []
     if zone_set is not None:
         for zone_num in zone_set:
-            zone_entry = find_yaml_zone_info(zone_num, zone_info)
+            zone_entry = find_yaml_info(zone_num, zone_info)
 
             entity = EnvisalinkBinarySensor(
                 hass,
@@ -72,7 +73,7 @@ class EnvisalinkBinarySensor(EnvisalinkDevice, BinarySensorEntity):
                 self._attr_has_entity_name = False
 
         LOGGER.debug("Setting up zone: %s", name)
-        super().__init__(name, controller, STATE_UPDATE_TYPE_ZONE, zone_number)
+        super().__init__(name, controller, STATE_CHANGE_ZONE, zone_number)
 
     @property
     def _info(self):
