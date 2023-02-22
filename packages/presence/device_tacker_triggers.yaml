@@ -7,16 +7,19 @@ binary_sensor:
       friendly_name: "Is both parents phones charging"
       value_template: >-
         {{ (is_state('sensor.pixel_4_battery_state', 'charging')
-          or is_state('sensor.pixel_4_battery_state', 'full'))
+          or is_state('sensor.pixel_4_battery_state', 'full')
+          or is_state('sensor.pixel_4_battery_state', 'not_charging'))
           and (is_state('sensor.nokia_6_1_battery_state', 'charging')
-          or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
+          or is_state('sensor.nokia_6_1_battery_state', 'full')
+          or is_state('sensor.nokia_6_1_battery_state', 'not_charging')) }}
       # silly workaround needed - mi9t phone shows not_charging when in fact charging...
 
     either_parent_phones_charging:
       friendly_name: "Is either parents phones charging"
       value_template: >-
         {{ (is_state('sensor.pixel_4_battery_state', 'charging')
-          or is_state('sensor.pixel_4_battery_state', 'full'))
+          or is_state('sensor.pixel_4_battery_state', 'full')
+          or is_state('sensor.pixel_4_battery_state', 'not_charging'))
           or (is_state('sensor.nokia_6_1_battery_state', 'charging')
           or is_state('sensor.nokia_6_1_battery_state', 'full')) }}
 
