@@ -99,7 +99,7 @@ automation:
               icon: ':robot_face:'
               object: 'Vacuum Robot'
               message: >
-                Not cleaning because no conditions met
+                Not cleaning, no conditions met
           - condition: state
             entity_id: input_boolean.floor_disaster_zone
             state: "on"
@@ -108,7 +108,7 @@ automation:
               icon: ':robot_face:'
               object: 'Vacuum Robot'
               message: >
-                Not cleaning because floor is a disaster zone set
+                Floor disaster zone set
 
   ### Notify state change
   - alias: Notify when Robot State Change

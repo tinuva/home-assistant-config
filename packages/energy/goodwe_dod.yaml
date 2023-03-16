@@ -96,7 +96,7 @@ automation:
           icon: ':zap:'
           object: 'GoodWe'
           message: >
-            DoD set to {{ states('number.depth_of_discharge_on_grid')|int }} based on input value updated
+            DoD set to {{ states('number.depth_of_discharge_on_grid')|int }} - input value
     mode: queued
     max: 2
 

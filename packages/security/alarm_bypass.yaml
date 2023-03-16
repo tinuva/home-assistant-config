@@ -27,7 +27,7 @@ automation:
           icon: ':rotating_light:'
           object: 'Home Alarm'
           message: >
-            Setting alarm bypass on main bed room window
+            Main bed room window, bypass on
       - service: switch.turn_on
         data:
           entity_id: switch.main_bedroom_window_bypass

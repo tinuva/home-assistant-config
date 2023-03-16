@@ -27,8 +27,8 @@ logs:
   #custom_components.coct_loadshedding: debug
 
   #homeassistant.component.opentherm_gw: debug
-  #homeassistant.components.shell_command: debug
-  #homeassistant.components.python_script: warning
+  homeassistant.components.python_script: info
+  homeassistant.helpers.script.websocket_api_script: warning
   #homeassistant.helpers.script: debug
   #homeassistant.components.zeroconf: debug
   #homeassistant.components.synology_dsm: debug
@@ -50,7 +50,7 @@ logs:
   # homeassistant.components.python_script: debug
   homeassistant.components.sensor: fatal
   #homeassistant.components.sensor.travisci: debug
-  homeassistant.components.shell_command: debug
+  homeassistant.components.shell_command: warning
   # homeassistant.components.ssdp: debug
   # homeassistant.components.telegram: error
   # homeassistant.components.utility_meter: debug

@@ -8,11 +8,9 @@ automation:
       - platform: mqtt
         topic: 'tele/zigbee/Kitchen Button/Click'
         payload: 'single'
-      - platform: state
-        entity_id: sensor.kitchen_button_action
-    condition:
-      - condition: template
-        value_template: '{{ "single" == trigger.to_state.attributes.click }}'
+      - platform: mqtt
+        topic: 'zigbee2mqtt/Kitchen Button/action'
+        payload: 'single'
     action:
       - service: light.toggle
         data:

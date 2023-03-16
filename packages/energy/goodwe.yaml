@@ -286,6 +286,33 @@ automation:
           icon: ':zap: '
           object: 'GoodWe'
           message: "Eskom/Grid power lost"
+      ## if a geyser timer is on, pause
+      # main_geyser
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'active'
+            sequence:
+              - service: timer.pause
+                data:
+                  entity_id: timer.main_geyser
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.main_bathroom_geyser
+      # front geyser
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: timer.front_geyser
+                state: 'active'
+            sequence:
+              - service: timer.pause
+                data:
+                  entity_id: timer.front_geyser
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.front_bathroom_geyser
 
   # Notification - grid power returned
   - alias: notification - grid power returned

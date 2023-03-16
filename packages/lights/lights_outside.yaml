@@ -26,14 +26,19 @@ automation:
         # You can also match on interval. This will match every x minutes
         minutes: "/1"
     condition:
-      condition: or
-      conditions:
-        - condition: sun
-          after: sunset
-          #after_offset: "00:20:00"
-        - condition: sun
-          before: sunrise
-          #before_offset: "-00:20:00"
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.grid_mode
+            state: '4'
+      - condition: or
+        conditions:
+          - condition: sun
+            after: sunset
+            #after_offset: "00:20:00"
+          - condition: sun
+            before: sunrise
+            #before_offset: "-00:20:00"
     action:
       - service: light.turn_on
         entity_id:
@@ -46,14 +51,19 @@ automation:
         # You can also match on interval. This will match every x minutes
         minutes: "/1"
     condition:
-      condition: and
-      conditions:
-        - condition: sun
-          after: sunrise
-          #after_offset: "-00:20:00"
-        - condition: sun
-          before: sunset
-          #before_offset: "00:20:00"
+      - condition: or
+        conditions:
+          - condition: and
+            conditions:
+              - condition: sun
+                after: sunrise
+                #after_offset: "-00:20:00"
+              - condition: sun
+                before: sunset
+                #before_offset: "00:20:00"
+          - condition: state
+            entity_id: sensor.grid_mode
+            state: '4'
     action:
       - service: light.turn_off
         entity_id:

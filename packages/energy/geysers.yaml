@@ -131,7 +131,12 @@ automation:
         below: '100'
         for:
           seconds: 60
-    # condition:
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: timer.front_geyser
+            state: 'paused'
     #   - condition: or
     #     conditions:
     #       - condition: template
@@ -460,3 +465,57 @@ automation:
       - service: script.switch_retry_off
         data:
           target: switch.front_bathroom_geyser
+
+  - alias: Start geyser when power return on paused timer
+    trigger:
+      - platform: state
+        entity_id: switch.main_bathroom_geyser
+        from: 'unavailable'
+        to: 'off'
+        for:
+          seconds: 30
+      - platform: state
+        entity_id: switch.main_bathroom_geyser
+        from: 'unavailable'
+        to: 'on'
+        for:
+          seconds: 30
+      - platform: state
+        entity_id: switch.front_bathroom_geyser
+        from: 'unavailable'
+        to: 'off'
+        for:
+          seconds: 30
+      - platform: state
+        entity_id: switch.front_bathroom_geyser
+        from: 'unavailable'
+        to: 'on'
+        for:
+          seconds: 30
+    action:
+      # main_geyser
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'paused'
+            sequence:
+              - service: timer.start
+                data:
+                  entity_id: timer.main_geyser
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.main_bathroom_geyser
+      # front geyser
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: timer.front_geyser
+                state: 'paused'
+            sequence:
+              - service: timer.start
+                data:
+                  entity_id: timer.front_geyser
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.front_bathroom_geyser

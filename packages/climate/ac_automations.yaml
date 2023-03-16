@@ -68,8 +68,8 @@ automation:
       - condition: numeric_state
         entity_id: sensor.solcast_forecast_energy_today_predicted
         above: '27'
-      - condition: template
-        value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
+      # - condition: template
+      #   value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
       # MainBed
       - choose:
           - conditions:
@@ -185,7 +185,7 @@ automation:
                 data:
                   icon: ':droplet:'
                   object: 'Pool pump'
-                  message: AC Automation, turning pool pump off
+                  message: 'Energy: turning pool pump off'
               - service: switch.turn_off
                 data:
                   entity_id: switch.pool_pump
@@ -246,13 +246,13 @@ script:
             {% if speed is defined %}
               {{ speed }}
             {% else %}
-              Auto
+              {{ state_attr(ac, 'fan_mode') }}
             {% endif %}
           ac_mode: >
             {% if mode is defined %}
               {{ mode }}
             {% else %}
-              fan_only
+              {{ states(ac) }}
             {% endif %}
       # If AC not in mode - set to mode
       - choose:
@@ -266,7 +266,7 @@ script:
                   icon: ':thermometer:'
                   object: 'Aircon'
                   message: >
-                    {{ state_attr(ac, 'friendly_name') }} ac_mode: {{ ac_mode }}
+                    {{ state_attr(ac, 'friendly_name') }} mode: {{ ac_mode }}
               - service: climate.set_hvac_mode
                 target:
                   entity_id: "{{ ac }}"
@@ -286,7 +286,7 @@ script:
                   icon: ':thermometer:'
                   object: 'Aircon'
                   message: >
-                    {{ state_attr(ac, 'friendly_name') }} fan_speed: {{ fan_speed }}
+                    {{ state_attr(ac, 'friendly_name') }} fan: {{ fan_speed }}
               - service: climate.set_fan_mode
                 data:
                   fan_mode: "{{ fan_speed }}"
