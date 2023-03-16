@@ -6,7 +6,7 @@ https://github.com/zachowj/hass-node-red
 """
 import asyncio
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -32,6 +32,7 @@ from .const import (
     CONF_COMPONENT,
     CONF_CONFIG,
     CONF_DEVICE_INFO,
+    CONF_ENTITY_PICTURE,
     CONF_NAME,
     CONF_NODE_ID,
     CONF_REMOVE,
@@ -119,7 +120,7 @@ class NodeRedEntity(Entity):
         self.update_entity_state_attributes(config)
 
     @property
-    def device_info(self) -> Optional[Dict[str, Any]]:
+    def device_info(self) -> Optional[dict[str, Any]]:
         """Return device specific attributes."""
         info = None
         if self._device_info is not None and "id" in self._device_info:
@@ -204,6 +205,7 @@ class NodeRedEntity(Entity):
         self._attr_entity_category = self.entity_category_mapper(
             self._config.get(CONF_ENTITY_CATEGORY)
         )
+        self._attr_entity_picture = self._config.get(CONF_ENTITY_PICTURE)
         self._attr_unit_of_measurement = self._config.get(CONF_UNIT_OF_MEASUREMENT)
 
     def update_config(self, msg):
@@ -214,6 +216,8 @@ class NodeRedEntity(Entity):
             self._attr_name = config.get(CONF_NAME)
         if config.get(CONF_ICON):
             self._attr_icon = config.get(CONF_ICON)
+        if config.get(CONF_ENTITY_PICTURE):
+            self._attr_entity_picture = config.get(CONF_ENTITY_PICTURE)
 
     def update_discovery_device_info(self, msg):
         """Update entity device info."""

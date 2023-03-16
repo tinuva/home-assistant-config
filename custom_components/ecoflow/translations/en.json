@@ -1,0 +1,18 @@
+{
+  "title": "EcoFlow",
+  "config": {
+    "abort": {
+      "product_unsupported": "Sorry, This product is not supported now."
+    },
+    "error": {
+      "timeout": "Connection timeouted"
+    },
+    "step": {
+      "user": {
+        "data": {
+          "host": "Hostname or IP-address"
+        }
+      }
+    }
+  }
+}
