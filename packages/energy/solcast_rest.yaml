@@ -2,7 +2,7 @@
 rest:
   - resource: !secret solcast_forecast_resource
     #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
-    scan_interval: '00:30:00' # RATE LIMIT!
+    scan_interval: '01:00:00' # RATE LIMIT!
     sensor:
       - name: "Solcast Forecast Data"
         force_update: true
