@@ -127,3 +127,8 @@ automation:
           relay-0-name: "Front Hallway"
           relay-1: "light"
           relay-1-name: "Front Bathroom"
+        shellyswitch25-C45BBE6B0E6B:
+          relay-0: "switch"
+          relay-0-name: "Office Feed 2"
+          relay-1: "switch"
+          relay-1-name: "Aircon Office"
