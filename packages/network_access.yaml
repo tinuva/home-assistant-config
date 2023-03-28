@@ -76,6 +76,18 @@ automation:
           - condition: template
             value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 4 }}"
     action:
+      # turn off feed switch
+      - service: switch.turn_off
+        data:
+          entity_id: switch.office_feed_2
+      - service: switch.turn_off
+        data:
+          entity_id: switch.88e9fe88abfe
+      - service: timer.start
+        data_template:
+          entity_id: timer.88e9fe88abfe
+          duration: >
+            {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
       - choose:
         # If the AC on this plug is on, first turn it off then wait before turning off plug
           - conditions:
@@ -91,28 +103,7 @@ automation:
               - delay: '00:00:30' # Wait
               - service: switch.turn_off
                 data:
-                  entity_id: switch.office_feed_2
-              - service: switch.turn_off
-                data:
-                  entity_id: switch.88e9fe88abfe
-              - service: timer.start
-                data_template:
-                  entity_id: timer.88e9fe88abfe
-                  duration: >
-                    {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
-        # Else just turn off the plug
-        default:
-          - service: switch.turn_off
-            data:
-              entity_id: switch.office_feed_2
-          - service: switch.turn_off
-            data:
-              entity_id: switch.88e9fe88abfe
-          - service: timer.start
-            data_template:
-              entity_id: timer.88e9fe88abfe
-              duration: >
-                {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
+                  entity_id: switch.aircon_office
 
   # start timer when turned off
   - alias: Start timer after Turn off network access
@@ -149,3 +140,6 @@ automation:
       - service: switch.turn_on
         data:
           entity_id: switch.office_feed_2
+      - service: switch.turn_on
+        data:
+          entity_id: switch.aircon_office
