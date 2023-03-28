@@ -333,22 +333,45 @@ automation:
           object: 'GoodWe'
           message: "Eskom/Grid power returned"
 
-  - alias: notification - grid power check
+  - alias: notification - goodwe energy mode
     trigger:
       - platform: state
         entity_id: sensor.energy_mode_code
-        to: '2'
     condition:
-      >
-        {{ trigger.from_state is not none and
-          trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: template
+        value_template: >-
+                        {{ trigger.from_state is not none and
+                          trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: numeric_state
+        entity_id: sensor.energy_mode_code
+        above: '0.0'
     action:
       - service: script.alert
         data:
           target: 'logs'
           icon: ':zap: '
           object: 'GoodWe'
-          message: "Eskom/Grid stability check"
+          message: "Inverter mode: {{ states('sensor.energy_mode_code') }} - {{ states('sensor.energy_mode') }}"
+
+  - alias: notification - goodwe work mode
+    trigger:
+      - platform: state
+        entity_id: sensor.work_mode_code
+    condition:
+      - condition: template
+        value_template: >-
+                        {{ trigger.from_state is not none and
+                          trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: numeric_state
+        entity_id: sensor.work_mode_code
+        above: '1'
+    action:
+      - service: script.alert
+        data:
+          target: 'logs'
+          icon: ':zap: '
+          object: 'GoodWe'
+          message: "Inverter work mode: {{ states('sensor.work_mode_code') }} - {{ states('sensor.work_mode') }}"
 
   # notification daily kWh usage
   - alias: notification daily kWh usage
