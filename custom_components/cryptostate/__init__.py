@@ -10,7 +10,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import CryptoTrackerApiClient
 from .const import DOMAIN, CONF_BASE, CONF_CRYPTO
 
-SCAN_INTERVAL = timedelta(seconds=30)
+SCAN_INTERVAL = timedelta(hours=3)
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 

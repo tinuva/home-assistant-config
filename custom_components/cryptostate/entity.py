@@ -15,6 +15,9 @@ class CryptoTrackerEntity(CoordinatorEntity):
         self.entity_description = SensorEntityDescription(
             key="crypto", state_class=STATE_CLASS_MEASUREMENT
         )
+        self._date = None
+        if (self.coordinator.data is not None):
+            self._date = self.coordinator.data.get("date")
         
     @property
     def unique_id(self):
@@ -35,6 +38,6 @@ class CryptoTrackerEntity(CoordinatorEntity):
         """Return the state attributes."""
         return {
             "attribution": ATTRIBUTION,
-            "date": str(self.coordinator.data.get("date")),
+            "date": str(self._date),
             "integration": DOMAIN,
         }

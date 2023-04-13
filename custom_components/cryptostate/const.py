@@ -17,13 +17,14 @@ CONF_CRYPTO = "crypto"
 
 DEFAULT_NAME = "basecrypto"
 
+SINGLE_CURR_URL = [
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.json",
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.min.json",
+    "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/{crypto}/{base}.min.json",
+    "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/{crypto}/{base}.json"
+]
 # With this url we can get all the currency names that are available
-ALL_CURR_URL = (
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json"
-)
-ALL_CURR_MIN_URL = (
+ALL_CURR_URLS = [
+    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json",
     "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json"
-)
-# We format this url with the vale we want to convert the currency with
-BASED_CURR_VALUE_URL = "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.json"
-BASED_MIN_CURR_VALUE_URL = "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.min.json"
+]

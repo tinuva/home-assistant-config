@@ -28,9 +28,10 @@ class CryptoTrackerSensor(CryptoTrackerEntity, SensorEntity):
         return f"{self._name}"
 
     @property
-    def native_value(self):
-        """Return the native value of the sensor.""",
-        return self.coordinator.data.get(self._base)
+    def state(self):
+        """Return the native value of the sensor."""
+        if self.coordinator.data is not None:
+            return self.coordinator.data.get(self._base)
 
     @property
     def icon(self):
