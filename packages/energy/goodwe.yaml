@@ -269,69 +269,50 @@ utility_meter:
 
 automation:
   # Notification - grid power lost
-  - alias: notification - grid power lost
-    trigger:
-      - platform: state
-        entity_id: sensor.grid_mode
-        from: '1'
-        to: '4'
-    condition:
-      >
-        {{ trigger.from_state is not none and
-          trigger.from_state.state not in ['unknown','unavailable'] }}
-    action:
-      - service: script.alert
-        data:
-          target: 'logs'
-          icon: ':zap: '
-          object: 'GoodWe'
-          message: "Eskom/Grid power lost"
-      ## if a geyser timer is on, pause
-      # main_geyser
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: timer.main_geyser
-                state: 'active'
-            sequence:
-              - service: timer.pause
-                data:
-                  entity_id: timer.main_geyser
-              - service: switch.turn_off
-                data:
-                  entity_id: switch.main_bathroom_geyser
-      # front geyser
-      - choose:
-          - conditions:
-              - condition: state
-                entity_id: timer.front_geyser
-                state: 'active'
-            sequence:
-              - service: timer.pause
-                data:
-                  entity_id: timer.front_geyser
-              - service: switch.turn_off
-                data:
-                  entity_id: switch.front_bathroom_geyser
-
-  # Notification - grid power returned
-  - alias: notification - grid power returned
-    trigger:
-      - platform: state
-        entity_id: sensor.grid_mode
-        from: '4' # only notify this if grid was lost. Sometimes inverter goes into mode 2 - "inverter abnormal stopping power"
-        to: '1'
-    condition:
-      >
-        {{ trigger.from_state is not none and
-          trigger.from_state.state not in ['unknown','unavailable'] }}
-    action:
-      - service: script.alert
-        data:
-          target: 'logs'
-          icon: ':zap: '
-          object: 'GoodWe'
-          message: "Eskom/Grid power returned"
+  # - alias: notification - grid power lost
+  #   trigger:
+  #     - platform: state
+  #       entity_id: sensor.grid_mode
+  #       from: '1'
+  #       to: '4'
+  #   condition:
+  #     >
+  #       {{ trigger.from_state is not none and
+  #         trigger.from_state.state not in ['unknown','unavailable'] }}
+  #   action:
+  #     # - service: script.alert
+  #     #   data:
+  #     #     target: 'logs'
+  #     #     icon: ':zap: '
+  #     #     object: 'GoodWe'
+  #     #     message: "Eskom/Grid power lost"
+  #     ## if a geyser timer is on, pause
+  #     # main_geyser
+  #     - choose:
+  #         - conditions:
+  #             - condition: state
+  #               entity_id: timer.main_geyser
+  #               state: 'active'
+  #           sequence:
+  #             - service: timer.pause
+  #               data:
+  #                 entity_id: timer.main_geyser
+  #             - service: switch.turn_off
+  #               data:
+  #                 entity_id: switch.main_bathroom_geyser
+  #     # front geyser
+  #     - choose:
+  #         - conditions:
+  #             - condition: state
+  #               entity_id: timer.front_geyser
+  #               state: 'active'
+  #           sequence:
+  #             - service: timer.pause
+  #               data:
+  #                 entity_id: timer.front_geyser
+  #             - service: switch.turn_off
+  #               data:
+  #                 entity_id: switch.front_bathroom_geyser
 
   - alias: notification - goodwe energy mode
     trigger:
@@ -344,14 +325,14 @@ automation:
                           trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: numeric_state
         entity_id: sensor.energy_mode_code
-        above: '0.0'
+        above: '-1'
     action:
       - service: script.alert
         data:
           target: 'logs'
           icon: ':zap: '
-          object: 'GoodWe'
-          message: "Inverter mode: {{ states('sensor.energy_mode_code') }} - {{ states('sensor.energy_mode') }}"
+          object: 'GoodWe - Energy mode'
+          message: "{{ states('sensor.energy_mode_code') }} - {{ states('sensor.energy_mode') }}"
 
   - alias: notification - goodwe work mode
     trigger:
@@ -364,14 +345,16 @@ automation:
                           trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: numeric_state
         entity_id: sensor.work_mode_code
-        above: '1'
+        above: '-1'
     action:
+      - delay:
+          seconds: 1
       - service: script.alert
         data:
           target: 'logs'
           icon: ':zap: '
-          object: 'GoodWe'
-          message: "Inverter work mode: {{ states('sensor.work_mode_code') }} - {{ states('sensor.work_mode') }}"
+          object: 'GoodWe - Work mode'
+          message: "{{ states('sensor.work_mode_code') }} - {{ states('sensor.work_mode') }}"
 
   # notification daily kWh usage
   - alias: notification daily kWh usage

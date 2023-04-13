@@ -466,27 +466,32 @@ automation:
         data:
           target: switch.front_bathroom_geyser
 
-  - alias: Start geyser when power return on paused timer
+  # Geyser: Start when power return with paused timer
+  - alias: "Geyser: Start when power return with paused timer"
     trigger:
-      - platform: state
+      - id: main-geyser-un-to-off
+        platform: state
         entity_id: switch.main_bathroom_geyser
         from: 'unavailable'
         to: 'off'
         for:
           seconds: 30
-      - platform: state
+      - id: main-geyser-un-to-on
+        platform: state
         entity_id: switch.main_bathroom_geyser
         from: 'unavailable'
         to: 'on'
         for:
           seconds: 30
-      - platform: state
+      - id: front-geyser-un-to-off
+        platform: state
         entity_id: switch.front_bathroom_geyser
         from: 'unavailable'
         to: 'off'
         for:
           seconds: 30
-      - platform: state
+      - id: front-geyser-un-to-on
+        platform: state
         entity_id: switch.front_bathroom_geyser
         from: 'unavailable'
         to: 'on'
@@ -496,6 +501,12 @@ automation:
       # main_geyser
       - choose:
           - conditions:
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id: main-geyser-un-to-on
+                  - condition: trigger
+                    id: main-geyser-un-to-off
               - condition: state
                 entity_id: timer.main_geyser
                 state: 'paused'
@@ -509,6 +520,12 @@ automation:
       # front geyser
       - choose:
           - conditions:
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id: front-geyser-un-to-on
+                  - condition: trigger
+                    id: front-geyser-un-to-off
               - condition: state
                 entity_id: timer.front_geyser
                 state: 'paused'
@@ -517,5 +534,57 @@ automation:
                 data:
                   entity_id: timer.front_geyser
               - service: switch.turn_on
+                data:
+                  entity_id: switch.front_bathroom_geyser
+
+  # Geyser: Stop when power lost with paused timer
+  - alias: "Geyser: Stop when power lost with paused timer"
+    trigger:
+      - id: main-geyser-un
+        platform: state
+        entity_id: switch.main_bathroom_geyser
+        to: 'unavailable'
+        for:
+          seconds: 10
+      - id: front-geyser-un
+        platform: state
+        entity_id: switch.front_bathroom_geyser
+        to: 'unavailable'
+        for:
+          seconds: 10
+    action:
+      - delay:
+          seconds: 5
+      - condition: state
+        entity_id: sensor.energy_mode_code
+        state: '4'  # inverter in off-grid mode
+      # main_geyser
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: main-geyser-un
+              - condition: state
+                entity_id: timer.main_geyser
+                state: 'active'
+            sequence:
+              - service: timer.pause
+                data:
+                  entity_id: timer.main_geyser
+              - service: switch.turn_off
+                data:
+                  entity_id: switch.main_bathroom_geyser
+      # front geyser
+      - choose:
+          - conditions:
+              - condition: trigger
+                id: front-geyser-un
+              - condition: state
+                entity_id: timer.front_geyser
+                state: 'active'
+            sequence:
+              - service: timer.pause
+                data:
+                  entity_id: timer.front_geyser
+              - service: switch.turn_off
                 data:
                   entity_id: switch.front_bathroom_geyser

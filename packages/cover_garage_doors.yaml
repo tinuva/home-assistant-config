@@ -55,19 +55,19 @@ cover:
 
 ## Alert
 alert:
-  # garage_door_front:
-  #   name: Front Garage Door is open
-  #   #done_message: Front Garage is closed
-  #   #entity_id: binary_sensor.front_garage_door_window
-  #   entity_id: input_boolean.front_garage_after_dark
-  #   state: 'on'   # Optional, 'on' is the default value
-  #   repeat:
-  #     - 15
-  #     - 30
-  #     - 60
-  #   skip_first: true  # Optional, false is the default
-  #   notifiers:
-  #     - notify_garagedoor_front
+  garage_door_front:
+    name: Front Garage Door is open
+    #done_message: Front Garage is closed
+    #entity_id: binary_sensor.front_garage_door_window
+    entity_id: input_boolean.front_garage_after_dark
+    state: 'on'   # Optional, 'on' is the default value
+    repeat:
+      - 15
+      - 30
+      - 60
+    skip_first: true  # Optional, false is the default
+    notifiers:
+      - notify_garagedoor_front
   garage_door_back:
     name: Back Garage Door is open
     #done_message: Back Garage is closed

@@ -20,7 +20,9 @@ automation:
             {%- for domain in domains -%}
               {%- for item in states[domain]  -%}
                 {%- if item.entity_id not in states.light.lights_whole_night.attributes.entity_id and state_attr(item.entity_id, 'icon') == none %}
-                  {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
+                  {%- if states.input_boolean.guest.state == "off" or item.entity_id not in states.light.light.lights_stay_on_with_guest_mode.attributes.entity_id %}
+                    {%- set data.lights_todo = data.lights_todo + [item.entity_id] %}
+                  {%- endif -%}
                 {%- endif -%}
               {%- endfor -%}
             {%- endfor -%}

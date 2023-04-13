@@ -2,6 +2,10 @@
 
 light:
   - platform: group
+    name: Lights stay on with guest mode
+    entities:
+      - light.front_bathroom
+  - platform: group
     name: Lights whole night
     entities:
       - light.outside_kitchen
@@ -17,6 +21,7 @@ light:
       - light.outside_scullery
       - light.outside_main_bathroom
       - light.pool
+
 
 automation:
   ## Whole night
