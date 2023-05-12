@@ -32,6 +32,7 @@ sensor:
       energy_buy:
         friendly_name: "GoodWe Grid Power"
         unit_of_measurement: 'W'
+        device_class: power
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.on_grid_export_power')|float < 0 %}
@@ -43,6 +44,7 @@ sensor:
       energy_sell:
         friendly_name: "Energy Sell"
         unit_of_measurement: 'W'
+        device_class: power
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.on_grid_export_power')|float > 0 %}
