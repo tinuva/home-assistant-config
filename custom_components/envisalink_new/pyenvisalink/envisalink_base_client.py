@@ -421,6 +421,7 @@ class EnvisalinkClient:
     def handle_zone_timer_dump(self, code, data):
         """Handle the zone timer data."""
         results = []
+        now = time.time()
         zoneInfoArray = self.convertZoneDump(data)
         for zoneNumber, zoneInfo in enumerate(zoneInfoArray, start=1):
             currentStatus = self._alarmPanel.alarm_state["zone"][zoneNumber]["status"]
@@ -433,7 +434,9 @@ class EnvisalinkClient:
             self._alarmPanel.alarm_state["zone"][zoneNumber]["status"].update(
                 {"open": newOpen, "fault": newFault}
             )
-            self._alarmPanel.alarm_state["zone"][zoneNumber]["last_fault"] = zoneInfo["seconds"]
+            self._alarmPanel.alarm_state["zone"][zoneNumber]["last_fault"] = (
+                now - zoneInfo["seconds"]
+            )
             _LOGGER.debug("(zone %i) %s", zoneNumber, zoneInfo["status"])
         return {STATE_CHANGE_ZONE: results}
 
@@ -620,3 +623,11 @@ class EnvisalinkClient:
     def is_online(self) -> bool:
         """Indicate whether we are connected and successfully logged into the EVL"""
         return self._loggedin
+
+    def clear_zone_bypass_state(self) -> list:
+        cleared_zones = []
+        for zone_number, zone_info in enumerate(self._alarmPanel.alarm_state["zone"], start=1):
+            if zone_info["bypassed"]:
+                cleared_zones.append(zone_number)
+            zone_info["bypassed"] = False
+        return cleared_zones
