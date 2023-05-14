@@ -44,7 +44,7 @@ script:
             {% set today_name = sensor_names[now().weekday()] %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
             {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
-            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 30 | int * 60 }}
+            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 15 | int * 60 }}
             {% else %}{{ 180 | int * 60 }}{% endif -%}
       # If device is unavailable, need a retry loop here
       - alias: "Repeat the sequence UNTIL the conditions are true"
@@ -102,6 +102,7 @@ script:
             {% set today_name = sensor_names[now().weekday()] %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
             {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
+            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 15 | int * 60 }}
             {% else %}{{ 180 | int * 60 }}{% endif -%}
       - service: timer.start
         data_template:
@@ -545,19 +546,19 @@ automation:
         entity_id: switch.main_bathroom_geyser
         to: 'unavailable'
         for:
-          seconds: 10
+          seconds: 30
       - id: front-geyser-un
         platform: state
         entity_id: switch.front_bathroom_geyser
         to: 'unavailable'
         for:
-          seconds: 10
+          seconds: 30
     action:
       - delay:
           seconds: 5
-      - condition: state
-        entity_id: sensor.energy_mode_code
-        state: '4'  # inverter in off-grid mode
+      # - condition: state
+      #   entity_id: sensor.energy_mode_code
+      #   state: '4'  # inverter in off-grid mode
       # main_geyser
       - choose:
           - conditions:

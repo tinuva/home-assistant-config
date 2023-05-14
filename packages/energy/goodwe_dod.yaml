@@ -56,6 +56,13 @@ script:
                     {{ dod }}
                 target:
                   entity_id: number.depth_of_discharge_on_grid
+              - alias: "Set Eco Charge SoC on inverter"
+                service: number.set_value
+                data:
+                  value: >
+                    {{ 100 - dod }}
+                target:
+                  entity_id: number.eco_mode_soc
               - alias: "Log action taken"
                 service: script.log
                 data:
@@ -63,6 +70,7 @@ script:
                   object: 'GoodWe'
                   message: >
                     Setting lowered DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
+                    Setting Eco Charge SoC to {{ 100 - dod }}
         default:
           - condition: template
             value_template: >-
@@ -74,6 +82,13 @@ script:
                 {{ dod }}
             target:
               entity_id: number.depth_of_discharge_on_grid
+          - alias: "Set Eco Charge SoC on inverter"
+            service: number.set_value
+            data:
+              value: >
+                {{ 100 - dod }}
+            target:
+              entity_id: number.eco_mode_soc
           - alias: "Log action taken"
             service: script.log
             data:
@@ -81,6 +96,7 @@ script:
               object: 'GoodWe'
               message: >
                 Setting DoD to {{ dod }} based on {{ forecast|int }}kWh forecast
+                Setting Eco Charge SoC to {{ 100 - dod }}
 
 automation:
   # Input that sets DoD on GoodWe Inverter
@@ -97,6 +113,21 @@ automation:
           object: 'GoodWe'
           message: >
             DoD set to {{ states('number.depth_of_discharge_on_grid')|int }} - input value
+    mode: queued
+    max: 2
+
+  - id: '1620734902145'
+    alias: 'Set DoD on Goodwe based on input'
+    trigger:
+      - entity_id: number.eco_mode_soc
+        platform: state
+    action:
+      - service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            Eco SoC set to {{ states('number.eco_mode_soc')|int }} - input value
     mode: queued
     max: 2
 
@@ -193,6 +224,10 @@ automation:
         entity_id: sensor.battery_state_of_health
         above: '50'
     action:
+      # set DoD
+      - service: script.goodwe_set_dod
+        data:
+          forecast: "{{ states('sensor.solcast_forecast_energy_tomorrow') }}"
       # cancel timers
       - service: timer.cancel
         data_template:
@@ -207,10 +242,6 @@ automation:
       - service: switch.turn_off
         data:
           entity_id: switch.front_bathroom_geyser
-      # set DoD
-      - service: script.goodwe_set_dod
-        data:
-          forecast: "{{ states('sensor.solcast_forecast_energy_tomorrow') }}"
     mode: single
 
   ## When Eskom turns on LoadShedding set 16%

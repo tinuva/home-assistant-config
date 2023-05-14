@@ -1,12 +1,12 @@
 ---
 
-binary_sensor:
-  - platform: workday
-    country: ZA
-    workdays: [mon, tue, wed, thu, fri]
-    excludes: [sat, sun, holiday]
-    add_holidays:
-      - '2021-12-25'
+# binary_sensor:
+#   - platform: workday
+#     country: ZA
+#     workdays: [mon, tue, wed, thu, fri]
+#     excludes: [sat, sun, holiday]
+#     add_holidays:
+#       - '2021-12-25'
 
 timer:
   88e9fe88abfe:

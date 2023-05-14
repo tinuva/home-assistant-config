@@ -24,6 +24,26 @@ sensor:
           {% else %}
             {{ 0 }}
           {% endif %}
+      goodwe_eco_mode_soc:
+        friendly_name: "Eco mode target SoC"
+        unit_of_measurement: '%'
+        icon_template: "mdi:battery-arrow-up"
+        value_template: >-
+          {% if states('number.eco_mode_soc')|int > 0 %}
+            {{ (states('number.eco_mode_soc')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+      goodwe_eco_mode_power:
+        friendly_name: "Eco mode power"
+        unit_of_measurement: '%'
+        icon_template: "mdi:battery-arrow-up"
+        value_template: >-
+          {% if states('number.eco_mode_power')|int > 0 %}
+            {{ (states('number.eco_mode_power')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
       goodwe_inverter_operation_mode:
         friendly_name: "Inverter operation mode"
         icon_template: "mdi:solar-power"
@@ -428,3 +448,19 @@ automation:
           message: >
             GoodWe Battery State of Health LOW
             Current SoH: {{ states('sensor.battery_state_of_health') }}
+
+  - alias: Notify if Goodwe stops updating
+    description: "Notify if Goodwe stops updating"
+    trigger:
+      - platform: template
+        value_template: >-
+          {{ (as_timestamp(states('sensor.system_date_time'),'%Y-%m-%d, %H:%M') -
+          as_timestamp(states.sensor.back_up_power.last_updated) )  > 600 }}
+    condition: []
+    action:
+      - service: script.alert
+        data:
+          # target: 'logs'
+          icon: ':zap: '
+          object: 'GoodWe - Updates'
+          message: GoodWe integration haven't updated sensors for more than 5 minutes

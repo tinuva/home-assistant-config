@@ -68,19 +68,19 @@ alert:
     skip_first: true  # Optional, false is the default
     notifiers:
       - notify_garagedoor_front
-  garage_door_back:
-    name: Back Garage Door is open
-    #done_message: Back Garage is closed
-    #entity_id: binary_sensor.back_garage_door
-    entity_id: input_boolean.back_garage_after_dark
-    state: 'on'   # Optional, 'on' is the default value
-    repeat:
-      - 15
-      - 30
-      - 60
-    skip_first: true  # Optional, false is the default
-    notifiers:
-      - notify_garagedoor_back
+  # garage_door_back:
+  #   name: Back Garage Door is open
+  #   #done_message: Back Garage is closed
+  #   #entity_id: binary_sensor.back_garage_door
+  #   entity_id: input_boolean.back_garage_after_dark
+  #   state: 'on'   # Optional, 'on' is the default value
+  #   repeat:
+  #     - 15
+  #     - 30
+  #     - 60
+  #   skip_first: true  # Optional, false is the default
+  #   notifiers:
+  #     - notify_garagedoor_back
 
 notify:
   - name: notify_garagedoor_front

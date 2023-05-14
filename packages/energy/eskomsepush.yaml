@@ -177,3 +177,16 @@ automation:
           target: 'power-alerts'
           message: >
             Loadshedding slot in 15 minutes
+
+  - alias: Reload "Load Shedding"
+    description: ""
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    condition: []
+    action:
+      - service: homeassistant.reload_config_entry
+        data: {}
+        target:
+          device_id: 557a41e60d82eecee1b78dda2ca59762
+    mode: single

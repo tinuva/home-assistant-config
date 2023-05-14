@@ -23,7 +23,6 @@ http: !include includes/http.yaml
 # ########################################
 # ###              LOGGING             ###
 # ########################################
-history: !include logging/history.yaml
 logbook: !include logging/logbook.yaml
 logger: !include logging/logger.yaml
 
