@@ -27,7 +27,7 @@ logs:
   #custom_components.coct_loadshedding: debug
 
   #homeassistant.component.opentherm_gw: debug
-  homeassistant.components.python_script: info
+  homeassistant.components.python_script: warning
   homeassistant.helpers.script.websocket_api_script: warning
   #homeassistant.helpers.script: debug
   #homeassistant.components.zeroconf: debug

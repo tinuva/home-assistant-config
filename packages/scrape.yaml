@@ -1,10 +1,10 @@
 ---
-sensor:
-  - platform: command_line
-    name: 'Google Cache Redirector'
-    command: "curl -s https://redirector.googlevideo.com/report_mapping?di=no"
-    value_template: '{{ value.split("next_hop_address")[0] }}'
-    scan_interval: 300
+command_line:
+  - sensor:
+      name: 'Google Cache Redirector'
+      command: "curl -s https://redirector.googlevideo.com/report_mapping?di=no"
+      value_template: '{{ value.split("next_hop_address")[0] }}'
+      scan_interval: 300
 
 automation:
   - alias: "Google Cache Redirector Update"

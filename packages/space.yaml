@@ -25,10 +25,6 @@ homeassistant:
 #   - platform: iss
 #     show_on_map: false
 
-sensor:
-  #- platform: moon
-  - platform: launch_library
-
 automation:
   - id: iss_message
     initial_state: true

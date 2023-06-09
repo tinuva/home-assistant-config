@@ -1,20 +1,26 @@
 ---
+input_boolean:
+  morning_geyser_front:
+    name: Geyser(F) morning slot
+  morning_geyser_main:
+    name: Geyser(M) morning slot
+
 input_datetime:
   main_geyser_on_time:
-    name: Main Geyser on time
+    name: Geyser(M) on time
     has_date: false
     has_time: true
   front_geyser_on_time:
-    name: Front Geyser on time
+    name: Geyser(F) on time
     has_date: false
     has_time: true
 
 timer:
   main_geyser:
-    name: Main Geyser Timer
+    name: Geyser(M) Timer
     duration: '02:00:00'
   front_geyser:
-    name: Front Geyser Timer
+    name: Geyser(F) Timer
     duration: '02:00:00'
 
 script:
@@ -232,9 +238,14 @@ automation:
                   hours: 6
               - condition: or
                 conditions:
-                  - condition: numeric_state
-                    entity_id: sensor.average_temperature_outside_last_1_day
-                    below: '19.4'
+                  - condition: or
+                    conditions:
+                      - condition: numeric_state
+                        entity_id: sensor.average_temperature_outside_last_1_day
+                        below: '19.4'
+                      - condition: state
+                        entity_id: input_boolean.morning_geyser_main
+                        state: 'on'
                   # IF lots of sun and high battery also turn on
                   - condition: and
                     conditions:
@@ -390,19 +401,37 @@ automation:
           # Turn on early AM and late PM only if haven't been on in previous 6 hours
           # Also, if average temp below 21degree
           - conditions:
-              # - condition: state
-              #   entity_id: timer.loadshedding_slot
-              #   state: 'idle'
               - condition: state
                 entity_id: timer.front_geyser
                 state: 'idle'
                 for:
                   hours: 6
-              - condition: numeric_state
-                entity_id: sensor.average_temperature_outside_last_1_day
-                below: '17.4'
+              - condition: or
+                conditions:
+                  - condition: or
+                    conditions:
+                      - condition: numeric_state
+                        entity_id: sensor.average_temperature_outside_last_1_day
+                        below: '19.4'
+                      - condition: state
+                        entity_id: input_boolean.morning_geyser_front
+                        state: 'on'
+                  # IF lots of sun and high battery also turn on
+                  - condition: and
+                    conditions:
+                      - condition: numeric_state
+                        entity_id: sensor.average_temperature_outside_last_1_day
+                        below: '24.5'
+                      - condition: numeric_state
+                        entity_id: sensor.solcast_forecast_energy_today_predicted
+                        above: '26.1'
+                      - condition: numeric_state
+                        entity_id: sensor.goodwe_battery_soc
+                        above: '50'
               - condition: template
-                value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00' and states('input_boolean.guest') == 'on') or ('14:00' <= states('sensor.time') < '18:05') }}"
+                value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
+              - condition: template
+                value_template: "{{ trigger.platform != 'numeric_state' }}"
             sequence:
               - service: script.geyser_on_front
         # No conditions met so log and do nothing

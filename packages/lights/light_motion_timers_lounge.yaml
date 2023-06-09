@@ -1,3 +1,4 @@
+---
 timer:
   # When calling the start service on a timer that is already running, it resets
   # the duration it will need to finish and restart the timer without triggering

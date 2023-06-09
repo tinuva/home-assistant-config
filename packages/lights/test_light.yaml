@@ -1,0 +1,16 @@
+# ---
+# sensor:
+#   - platform: template
+#     sensors:
+#       test_light:
+#         friendly_name: "Test Light"
+#         icon_template: >-
+#           {% if is_state("light.lounge", "on") %}
+#             mdi:door-open
+#           {% elif is_state("light.lounge", "off") %}
+#             mdi:door-closed-lock
+#           {% else %}
+#             mdi:door-closed
+#           {% endif %}
+#         value_template: >-
+#           {{ (states('light.lounge')) }}

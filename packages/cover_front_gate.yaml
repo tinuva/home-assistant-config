@@ -37,10 +37,10 @@ alert:
     notifiers:
       - notify_front_gate
 
-notify:
-  - name: notify_front_gate
-    platform: command_line
-    command: "/config/ha_to_api_notify_cover.sh script.notify_front_gate"
+command_line:
+  - notify:
+      name: notify_front_gate
+      command: "/config/ha_to_api_notify_cover.sh script.notify_front_gate"
 
 script:
   notify_front_gate:
