@@ -1,0 +1,36 @@
+{
+    "config": {
+        "step": {
+        "user": {
+            "description": "Fill in the data for your solar panels.",
+            "data": {
+                "api_key": "Solcast API key",
+                "resource_id": "Solcast rooftop id",
+                "const_disableautopoll": "Disable auto API polling",
+                "name": "[%key:common::config_flow::data::name%]"
+                }
+            }
+        }
+    },
+    "options": {
+        "step": {
+        "init": {
+            "description": "These values allow tweaking the Solcast integration.",
+            "data": {
+                "api_key": "Solcast API key",
+                "resource_id": "Solcast rooftop id",
+                "const_disableautopoll": "Disable auto API polling",
+                "name": "[%key:common::config_flow::data::name%]"
+                }
+            }
+        }
+    },
+    "system_health": {
+        "info": {
+            "can_reach_server": "Solcast server connection",
+            "remaining_requests": "API requests remaining",
+            "rooftop_site_count": "Rooftop site count",
+            "polling_hours": "Polling hours"
+        }
+    }
+}
