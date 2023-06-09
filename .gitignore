@@ -142,3 +142,4 @@ home-assistant.log.*
 # hmm
 alexa_media*.html
 music_assistant.db
+solcast.json
