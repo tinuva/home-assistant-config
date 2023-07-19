@@ -1,0 +1,93 @@
+# ---
+# automation:
+#   - alias: Alarm Arm Request - Everyone out
+#     description: ""
+#     trigger:
+#       - platform: time_pattern
+#         minutes: /1
+#     condition:
+#       - condition: state
+#         state: not_home
+#         entity_id: person.david
+#       - condition: state
+#         state: not_home
+#         entity_id: person.karen
+#       - condition: state
+#         entity_id: alarm_control_panel.home_alarm
+#         state: disarmed
+#         for: "00:05:00"
+#       # - condition: state
+#       #   entity_id: input_boolean.dontasktoarmalarm
+#       #   state: "off"
+#     action:
+#       - choose:
+#           - conditions:
+#               - condition: state
+#                 entity_id: sensor.last_person_to_leave
+#                 state: Duncan
+#             sequence:
+#               - service: notify.mobile_app_duncans_iphone
+#                 data:
+#                   message: Would you like to Arm the Alarm?
+#                   title: Arm Alarm
+#                   data:
+#                     sound:
+#                       name: default
+#                     tag: alarm_arming_all_out
+#                     actions:
+#                       - action: arm_alarm
+#                         title: Arm Alarm
+#                       - action: alarm_dont_ask_again
+#                         title: Not This Time
+#           - conditions:
+#               - condition: state
+#                 entity_id: sensor.last_person_to_leave
+#                 state: Other
+#             sequence:
+#               - service: notify.mobile_app_other_iphone
+#                 data:
+#                   message: Would you like to Arm the Alarm?
+#                   title: Arm Alarm
+#                   data:
+#                     sound:
+#                       name: default
+#                     tag: alarm_arming_all_out
+#                     actions:
+#                       - action: arm_alarm
+#                         title: Arm Alarm
+#                       - action: alarm_dont_ask_again
+#                         title: Not This Time
+#         default: []
+#       - wait_for_trigger:
+#           - platform: event
+#             event_data:
+#               actionName: arm_alarm
+#             event_type: ios.notification_action_fired
+#         timeout: "1000"
+#         continue_on_timeout: false
+#       - choose:
+#           - conditions:
+#               - condition: state
+#                 entity_id: input_boolean.night
+#                 state: "off"
+#             sequence:
+#               - service: switch.turn_on
+#                 data: {}
+#                 target:
+#                   entity_id:
+#                     - switch.front_garden_1_pir_alarm_bypass
+#                     - switch.front_garden_2_pir_alarm_bypass
+#               - delay:
+#                   hours: 0
+#                   minutes: 0
+#                   seconds: 5
+#                   milliseconds: 0
+#       - service: alarm_control_panel.alarm_arm_home
+#         target:
+#           entity_id: alarm_control_panel.partition_area_1
+#         data: {}
+#       - service: alarm_control_panel.alarm_arm_away
+#         target:
+#           entity_id: alarm_control_panel.home
+#         data: {}
+#     mode: single

@@ -73,10 +73,10 @@ automation:
         for:
           minutes: 1
     action:
-      - service: envisalink.alarm_keypress
-        data_template:
-          entity_id: alarm_control_panel.home_alarm
-          keypress: '*125#'
+      # - service: envisalink.alarm_keypress
+      #   data_template:
+      #     entity_id: alarm_control_panel.home_alarm
+      #     keypress: '*125#'
       - service: alarm_control_panel.alarm_arm_home
         data:
           entity_id: alarm_control_panel.home_alarm
