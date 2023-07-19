@@ -1,0 +1,139 @@
+alias: Oggend Geyser
+description: ""
+mode: single
+trigger:
+  - platform: time
+    at: "00:00:00"
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: numeric_state
+                entity_id: sensor.time_until_loadshedding
+                below: 4000
+              - condition: numeric_state
+                entity_id: sensor.time_until_loadshedding
+                below: 0
+        sequence:
+          - wait_for_trigger:
+              - platform: state
+                entity_id:
+                  - sensor.coct_loadshedding_load_shedding_active
+                from: "True"
+                to: "False"
+                for:
+                  hours: 0
+                  minutes: 20
+                  seconds: 0
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_on
+          - service: switch.turn_on
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - delay:
+              hours: 1
+              minutes: 0
+              seconds: 0
+              milliseconds: 0
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.geyser_morning
+          - service: switch.turn_off
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_off
+      - conditions:
+          - condition: numeric_state
+            entity_id: sensor.time_until_loadshedding
+            below: 19000
+            above: 4000
+        sequence:
+          - wait_for_trigger:
+              - platform: numeric_state
+                entity_id: sensor.time_until_loadshedding
+                below: 3700
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_on
+          - service: switch.turn_on
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - wait_for_trigger:
+              - platform: numeric_state
+                entity_id: sensor.time_until_loadshedding
+                below: 200
+            timeout:
+              hours: 1
+              minutes: 0
+              seconds: 0
+              milliseconds: 0
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.geyser_morning
+          - service: switch.turn_off
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_off
+      - conditions:
+          - condition: or
+            conditions:
+              - condition: numeric_state
+                entity_id: sensor.time_until_loadshedding
+                above: 19000
+              - condition: state
+                entity_id: sensor.time_until_loadshedding
+                state: unavailable
+              - condition: state
+                entity_id: sensor.time_until_loadshedding
+                state: unknown
+        sequence:
+          - wait_for_trigger:
+              - platform: time
+                at: "04:00:00"
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_on
+          - service: switch.turn_on
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - delay:
+              hours: 1
+              minutes: 0
+              seconds: 0
+              milliseconds: 0
+          - service: input_boolean.turn_on
+            data: {}
+            target:
+              entity_id: input_boolean.geyser_morning
+          - service: switch.turn_off
+            data: {}
+            target:
+              entity_id: switch.geyser
+          - service: script.toggle
+            data: {}
+            target:
+              entity_id: script.battery_saver_off
+    default:
+      - service: notify.notify
+        data:
+          title: Wildebees Home
+          message: Geyser was nie aan nie. Laat weet vir Dewan, iets is fout.
