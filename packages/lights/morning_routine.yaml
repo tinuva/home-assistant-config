@@ -62,6 +62,13 @@ automation:
               entity_id: timer.morning_routine
             data:
               duration: '02:45:00'
+          - service: automation.turn_off
+            target:
+              entity_id: automation.morning_fix_light_turning_off
+        post_sunrise_actions:
+          - service: automation.turn_on
+            target:
+              entity_id: automation.morning_fix_light_turning_off
 
   - id: '1658380697189'
     alias: Wake-up light alarm small-bedroom
@@ -69,7 +76,7 @@ automation:
     use_blueprint:
       path: sbyx/wake-up-light-alarm-with-sunrise-effect.yaml
       input:
-        manual_time: 07:00:00
+        manual_time: 05:40:00
         light_entity: light.small_bedroom
         check_entity: binary_sensor.workday_sensor
         start_brightness: 30
