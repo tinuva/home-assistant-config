@@ -199,7 +199,7 @@ evl_ResponseTypes = {
         "name": "Alarm",
         "handler": "partition_state_change",
         "state_change": True,
-        "status": {"alarm": True},
+        "status": {"alarm": True, "alpha": "Alarm"},
     },
     "655": {
         "name": "Disarmed",
@@ -296,13 +296,13 @@ evl_ResponseTypes = {
         "name": "FireAlarmButton",
         "handler": "keypad_update",
         "state_change": True,
-        "status": {"fire": True},
+        "status": {"fire": True, "alarm": True, "alpha": "Fire Alarm"},
     },
     "622": {
         "name": "FireAlarmButtonOff",
         "handler": "keypad_update",
-        "state_change": False,
-        "status": None,
+        "state_change": True,
+        "status": {"fire": False, "alarm": False, "alpha": "Fire Alarm Cleared"},
     },
     "623": {
         "name": "AuxAlarmButton",
@@ -320,13 +320,13 @@ evl_ResponseTypes = {
         "name": "PanicAlarmButton",
         "handler": "keypad_update",
         "state_change": True,
-        "status": {"panic": True},
+        "status": {"alarm": True, "alpha": "Panic Alarm"},
     },
     "626": {
         "name": "PanicAlarmButtonOff",
         "handler": "keypad_update",
-        "state_change": False,
-        "status": None,
+        "state_change": True,
+        "status": {"alarm": False, "alpha": "Panic Alarm Cleared"},
     },
     "631": {
         "name": "SmokeAlarmButton",
