@@ -189,7 +189,7 @@ automation:
                   - condition: and
                     conditions:
                       - condition: template
-                        value_template: "{{ ('11:30' <= states('sensor.time') < '16:00') }}"
+                        value_template: "{{ ('10:00' <= states('sensor.time') < '16:00') }}"
                       - condition: state
                         entity_id: timer.main_geyser
                         state: 'idle'
@@ -381,14 +381,35 @@ automation:
   # Front geyser on based on input time (changed to fix 7pm if never on for the day)
   - alias: Turn on front geyser
     trigger:
+      - platform: numeric_state
+        entity_id: sensor.solcast_pv_forecast_forecast_this_hour
+        above: 1800
+        id: pvforecast
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       #- platform: time
       #  at: '10:35:00'
+    condition:
+      - condition: or
+        conditions:
+          - condition: numeric_state
+            entity_id: sensor.main_bathroom_geyser_energy_power
+            below: '100'
+          - condition: state
+            entity_id: switch.main_bathroom_geyser
+            state: 'unavailable'
     action:
       - choose:
+          # Turn on between 9am and 11am for sun times using forecast
+          - conditions:
+              - condition: trigger
+                id: pvforecast
+              - condition: template
+                value_template: "{{ states('sensor.time') <= (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+            sequence:
+              - service: script.geyser_on_front
           # Turn on between 11am and 2pm for sun times
           - conditions:
               # - condition: state

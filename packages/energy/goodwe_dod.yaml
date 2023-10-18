@@ -145,7 +145,7 @@ automation:
         for:
           seconds: 15
       - platform: state
-        entity_id: sensor.forecast_remaining_today
+        entity_id: sensor.solcast_pv_forecast_forecast_remaining_today
     condition:
       - condition: or
         conditions:
@@ -170,11 +170,11 @@ automation:
       - condition: not
         conditions:
           - condition: state
-            entity_id: sensor.forecast_remaining_today
+            entity_id: sensor.solcast_pv_forecast_forecast_remaining_today
             state: "unavailable"
       - service: script.goodwe_set_dod
         data:
-          forecast: "{{ states('sensor.forecast_remaining_today') }}"
+          forecast: "{{ states('sensor.solcast_pv_forecast_forecast_remaining_today') }}"
 
   ## 16% at 10:00am
   - id: '1605879219607'
@@ -191,7 +191,7 @@ automation:
       - condition: or
         conditions:
           - condition: numeric_state
-            entity_id: sensor.forecast_today
+            entity_id: sensor.solcast_pv_forecast_forecast_today
             below: '30'
           - condition: template
             value_template: >
@@ -203,7 +203,7 @@ automation:
           entity_id: number.depth_of_discharge_on_grid
         data:
           value: >
-            {% set soc_today = states('sensor.forecast_today')|int %}
+            {% set soc_today = states('sensor.solcast_pv_forecast_forecast_today')|int %}
             {% if soc_today <= 10 %}16
             {% else %}16{% endif -%}
     mode: single
@@ -227,7 +227,7 @@ automation:
       # set DoD
       - service: script.goodwe_set_dod
         data:
-          forecast: "{{ states('sensor.forecast_tomorrow') }}"
+          forecast: "{{ states('sensor.solcast_pv_forecast_forecast_tomorrow') }}"
       # cancel timers
       - service: timer.cancel
         data_template:
@@ -257,7 +257,7 @@ automation:
   #       entity_id: sensor.eskom_loadshedding_stage
   #       above: 4
   #     - condition: numeric_state
-  #       entity_id: sensor.forecast_today
+  #       entity_id: sensor.solcast_pv_forecast_forecast_today
   #       below: 26
   #   action:
   #     - alias: "Set DoD on inverter"
@@ -287,7 +287,7 @@ automation:
           # IF lots of sun and high battery skip
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.forecast_today
+                entity_id: sensor.solcast_pv_forecast_forecast_today
                 above: '26.1'
               - condition: numeric_state
                 entity_id: sensor.battery_state_of_charge

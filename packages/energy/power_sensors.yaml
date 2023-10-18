@@ -148,3 +148,16 @@ utility_meter:
   aircon_main_bedroom_daily:
     source: sensor.aircon_main_bedroom_usage
     cycle: daily
+
+automation:
+  - alias: "_tmp - Update Integration Sensors"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    action:
+      - service: homeassistant.update_entity
+        data: {}
+        target:
+          entity_id:
+            - sensor.solar_generate_daily
+            - sensor.solar_generate_monthly

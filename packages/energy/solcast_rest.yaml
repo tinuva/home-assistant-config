@@ -1,4 +1,4 @@
-# ---
+---
 # rest:
 #   - resource: !secret solcast_forecast_resource
 #     #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
@@ -172,42 +172,66 @@
 #       state_class: measurement
 #       unique_id: sensor.solcast_forecast_peak_power_today_predicted
 
-# automation:
-#   - alias: Solcast Forecast to MQTT
-#     description: Put Solcast predicted values in MQTT
-#     mode: queued
-#     max: 2
-#     trigger:
-#       - platform: sun
-#         event: sunrise
-#         offset: '-00:15:00'
-#       - platform: time
-#         at: '01:59:00'
-#       - platform: time
-#         at: '02:59:00'
-#     condition: []
-#     action:
-#       - alias: "Repeat the sequence UNTIL the conditions are true"
-#         repeat:
-#           sequence:
-#             # wait time
-#             - delay:
-#                 seconds: 30
-#           until:
-#             - condition: template
-#               value_template: '{{ states(sensor.solcast_forecast) != "unavailable" }}'
-#       - service: mqtt.publish
-#         data:
-#           topic: home/solcast/energy_today_predicted
-#           payload_template: "{{ states('sensor.solcast_forecast') }}"
-#           retain: true
-#       - service: mqtt.publish
-#         data:
-#           topic: home/solcast/peak_power_today_predicted
-#           payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
-#           retain: true
-#       - service: mqtt.publish
-#         data:
-#           topic: home/solcast/peak_time_today_predicted
-#           payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
-#           retain: true
+automation:
+  - alias: Solcast_update
+    description: New API call Solcast
+    mode: single
+    trigger:
+      - platform: time_pattern
+        minutes: '/30'
+        id: pattern
+      - platform: time
+        at: '01:30:00'
+        id: time
+    condition:
+      - condition: or
+        conditions:
+          - condition: trigger
+            id: time
+          - condition: and
+            conditions:
+              - condition: trigger
+                id: pattern
+              - condition: sun
+                before: sunset
+                after: sunrise
+    action:
+      - service: solcast_solar.update_forecasts
+  - alias: Solcast Forecast to MQTT
+    description: Put Solcast predicted values in MQTT
+    mode: queued
+    max: 2
+    trigger:
+      - platform: sun
+        event: sunrise
+        offset: '-00:15:00'
+      - platform: time
+        at: '01:59:00'
+      - platform: time
+        at: '02:59:00'
+    condition: []
+    action:
+      - alias: "Repeat the sequence UNTIL the conditions are true"
+        repeat:
+          sequence:
+            # wait time
+            - delay:
+                seconds: 30
+          until:
+            - condition: template
+              value_template: '{{ states(sensor.solcast_forecast) != "unavailable" }}'
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/energy_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_power_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+          retain: true
+      - service: mqtt.publish
+        data:
+          topic: home/solcast/peak_time_today_predicted
+          payload_template: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
+          retain: true

@@ -7,24 +7,24 @@
 #     mjpeg_url: http://octo.heaven.za.net/webcam/?action=stream
 #     verify_ssl: false
 
-automation:
-  - alias: 3dprint complete
-    trigger:
-      - platform: state
-        entity_id: sensor.3d_printer_state
-        from: 'printing'
-        to: 'complete'
-    action:
-      - service: script.alert
-        data:
-          target: 'alerts-david'
-          icon: ':printer:'
-          object: '3D Printer'
-          camera: 'camera.3d_printer_snapshot'
-          message: >
-            3d print complete {{- '\n' -}}
-            Time: {{ states('sensor.3d_printer_print_time') }} {{- '\n' -}}
-            File: {{ states('sensor.3d_printer_current_print') }}
+# automation:
+#   - alias: 3dprint complete
+#     trigger:
+#       - platform: state
+#         entity_id: sensor.3d_printer_state
+#         from: 'printing'
+#         to: 'complete'
+#     action:
+#       - service: script.alert
+#         data:
+#           target: 'alerts-david'
+#           icon: ':printer:'
+#           object: '3D Printer'
+#           camera: 'camera.3d_printer_snapshot'
+#           message: >
+#             3d print complete {{- '\n' -}}
+#             Time: {{ states('sensor.3d_printer_print_time') }} {{- '\n' -}}
+#             File: {{ states('sensor.3d_printer_current_print') }}
 
   # - alias: 3dprint stopped
   #   trigger:

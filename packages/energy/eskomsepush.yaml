@@ -3,9 +3,81 @@
 ### To sign up for a key, scroll down on their page for the API Request link: https://sepush.co.za/
 ### Direct link to sign-up form: https://docs.google.com/forms/d/e/1FAIpQLSeZhAkhDaQX_mLT2xn41TkVjLkOH3Py3YWHi_UqQP4niOY01g/viewform
 
-### Moved away from 'rest' to integration: https://github.com/wernerhp/ha.integration.load_shedding
+### Using integration: https://github.com/wernerhp/ha.integration.load_shedding
+
+# This rest sensor is to HA directly, to grab calendar.load_shedding_forecast and make a sensor with events
+rest:
+  - resource: http://localhost:8123/api/calendars/calendar.load_shedding_forecast
+    method: GET
+    scan_interval: 900
+    headers:
+      authorization: !secret ha_rest_bearer
+    params:
+      start: >
+        {{ utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+      end: >
+        {{ (utcnow() + timedelta(days=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+    sensor:
+      - name: load_shedding_forecast
+        #value_template: "{{ value_json[0].start.dateTime }}"
+        value_template: >
+          {%- for event in value_json %}
+          {{ event.summary }}
+          {%- if event.start.dateTime %}{{ event.start.dateTime }}{%- endif %}
+          {%- endfor %}
+        # value_template: >
+        #   {{ value_json }}
+        # value_template: >
+        #   {{ value_json[0].summary }}
+        #   # {% for event in value_json %}
+        #   # {{ event.start }}
+        #   # {% endfor %}
+        #     {% if event.start.dateTime %}
+        #       {{ (event.start.dateTime | as_datetime).strftime('%Y-%m-%d %H:%M') }}: {{ event.summary }}
+        #     {% else %}
+        #       {{ event.start.date }}: {{ event.summary }}
+        #     {% endif %}
+        #   {% endfor %}
+
+# rest:
+#   - resource: !secret solcast_forecast_resource
+#     #resource: https://api.solcast.com.au/rooftop_sites/RESOURCE_ID/forecasts?format=json&api_key=API_KEY&hours=72
+#     scan_interval: '01:00:00' # RATE LIMIT!
+#     sensor:
+#       - name: "Solcast Forecast Data"
+#         force_update: true
+#         value_template: "{{ value_json.forecasts[0].pv_estimate|round(2) }}"
+#         json_attributes:
+#           - forecasts
+#       - name: "Solcast Forecast 10"
+#         force_update: true
+#         value_template: "{{ value_json.forecasts[0].pv_estimate10|round(2) }}"
+#       - name: "Solcast Forecast 90"
+#         force_update: true
+#         value_template: "{{ value_json.forecasts[0].pv_estimate90|round(2) }}"
 
 sensor:
+  # - platform: rest
+  #   resource_template: http://localhost:8123/api/calendars/calendar.load_shedding_forecast
+  #   name: Load Shedding Forecast
+  #   headers:
+  #     Authorization: !secret ha_rest_bearer
+  #   params:
+  #     start: >
+  #       {{ utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+  #     end: >
+  #       {{ (utcnow() + timedelta(days=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+  #   # value_template: >
+  #   #   {{ value_json }}
+  #   value_template: >
+  #     {% for event in value_json %}
+  #       {% if event.start.dateTime %}
+  #         {{ (event.start.dateTime | as_datetime).strftime('%Y-%m-%d %H:%M') }}: {{ event.summary }}
+  #       {% else %}
+  #         {{ event.start.date }}: {{ event.summary }}
+  #       {% endif %}
+  #     {% endfor %}
+
   # template sensors based on ESP above
   - platform: template
     sensors:

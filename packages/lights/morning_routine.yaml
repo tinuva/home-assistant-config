@@ -24,7 +24,7 @@ automation:
         target:
           entity_id:
             - switch.adaptive_lighting_main_bedroom
-            - switch.adaptive_lighting_small_bedroom
+            # - switch.adaptive_lighting_small_bedroom
       # Turn off all lights
       - service: light.turn_off
         data_template:

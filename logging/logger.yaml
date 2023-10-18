@@ -48,6 +48,7 @@ logs:
   # homeassistant.components.mqtt: debug
   # homeassistant.components.notify: error
   # homeassistant.components.python_script: debug
+  homeassistant.components.rest: debug
   homeassistant.components.sensor: fatal
   #homeassistant.components.sensor.travisci: debug
   homeassistant.components.shell_command: warning

@@ -44,91 +44,118 @@ automation:
         qos: 2
         # Dimmers
         shellydimmer-D3E771:
+          device_name: "Lounge"
           light-0-name: "Lounge"
         shellydimmer-D42C70:
+          device_name: "Kitchen"
           light-0-name: "Kitchen"
         shellydimmer-D3EAC3:
+          device_name: "Braai Room"
           light-0-name: "Braai Room"
         shellydimmer2-40F52000229E:
+          device_name: "Main Bedroom"
           light-0-name: "Main Bedroom"
         shellydimmer2-40F520016DF0:
+          device_name: "Small Bedroom"
           light-0-name: "Small Bedroom"
         # Shelly1s as switch
         shelly1-98F4ABF32146:
+          device_name: "Water Sprayers"
           relay-0-name: "Water Sprayers"
         # Shelly1s as light
         shelly1-E097ED:
+          device_name: "Back Garage"
           relay-0: "light"
           relay-0-name: "Back Garage"
         shelly1-2472C6:
+          device_name: "Outside Kitchen"
           relay-0: "light"
           relay-0-name: "Outside Kitchen"
         shelly1-E098068CCA22:
+          device_name: "Outside Back"
           relay-0: "light"
           relay-0-name: "Outside Back"
         shelly1-8CAAB5055B7E:
+          device_name: "Front Garage"
           relay-0: "light"
           relay-0-name: Front Garage
         shelly1-E098068CC938:
+          device_name: "Braai"
           relay-0: "light"
           relay-0-name: Braai
         shelly1-8CAAB505C111:
+          device_name: "Braai Bathroom"
           relay-0: "light"
           relay-0-name: Braai Bathroom
         shelly1-8CAAB5056074:
+          device_name: "Pool"
           relay-0: "light"
           relay-0-name: Pool
         shelly1-8CAAB505CAFC:
+          device_name: "Small Bathroom"
           relay-0: "light"
           relay-0-name: Small Bathroom
         # Shelly1pms as switch
         shelly1pm-8CAAB505FD7D:
+          device_name: "Pool pump"
           relay-0-name: Pool pump
           expire_after: 7200
         # Shelly25
         shellyswitch25-40F520009D50:
+          device_name: "Main Bathroom"
           relay-0: "light"
-          relay-0-name: "Outside Main Bathroom"
+          relay-0-name: "Outside"
           relay-1: "light"
-          relay-1-name: "Courtyard Main Bedroom"
+          relay-1-name: "Courtyard"
         shellyswitch25-40F520008DBD:
+          device_name: "Scullery"
           relay-0: "light"
-          relay-0-name: "Outside Scullery"
+          relay-0-name: "Outside"
           relay-1: "light"
           relay-1-name: "Scullery"
         shellyswitch25-40F520014D36:
+          device_name: "Front"
           relay-0: "light"
-          relay-0-name: "Front Door"
+          relay-0-name: "Door"
           relay-1: "light"
-          relay-1-name: "Outside Porch"
+          relay-1-name: "Porch"
         shellyswitch25-40F520007EC0:
+          device_name: "Lounge"
           relay-0: "light"
-          relay-0-name: "Courtyard Lounge"
+          relay-0-name: "Courtyard"
           relay-1: "light"
           relay-1-name: "Dining"
           expire_after: 7200
         shellyswitch25-40F52000F5B7:
+          device_name: "Braai"
           relay-0: "light"
           relay-0-name: "Bar"
           relay-1: "light"
-          relay-1-name: "Courtyard Braai"
+          relay-1-name: "Courtyard"
         shellyswitch25-40F52000E5A4:
+          device_name: "Main"
           relay-0: "light"
-          relay-0-name: "Main Ensuite"
+          relay-0-name: "Ensuite"
           relay-1: "light"
-          relay-1-name: "Main Bathroom"
+          relay-1-name: "Bathroom"
         shellyswitch25-40F520011E45:
+          device_name: "Hallway"
           relay-0: "light"
           relay-0-name: "Hallway entry"
+          light-0-name: "Hallway entry"
           relay-1: "light"
           relay-1-name: "Hallway"
+          light-1-name: "Hallway"
         shellyswitch25-40F5200090ED:
+          device_name: "Front"
           relay-0: "light"
-          relay-0-name: "Front Hallway"
+          relay-0-name: "Hallway"
           relay-1: "light"
-          relay-1-name: "Front Bathroom"
+          relay-1-name: "Bathroom"
+          light-1-name: "Bathroom"
         shellyswitch25-C45BBE6B0E6B:
+          device_name: "Office"
           relay-0: "switch"
-          relay-0-name: "Office Feed 2"
+          relay-0-name: "Feed 2"
           relay-1: "switch"
-          relay-1-name: "Aircon Office"
+          relay-1-name: "Aircon"

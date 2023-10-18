@@ -110,7 +110,7 @@ automation:
         minutes: "/10"
     condition:
       - condition: template
-        value_template: "{{ (states('sensor.goodwe_average_house_consumption_10min')|float+300)|float/1000 > states('sensor.solcast_forecast_energy_next_hour')|float }}"
+        value_template: "{{ (states('sensor.goodwe_average_house_consumption_10min')|float+300)|float/1000 > states('sensor.solcast_pv_forecast_forecast_next_hour')|float/1000 }}"
       - condition: state
         entity_id: binary_sensor.near_sunset
         state: 'on'

@@ -41,6 +41,10 @@ input_datetime:
     name: 88e9fe88abfe off time Friday
     has_date: false
     has_time: true
+  88e9fe88abfe_off_time_night:
+    name: 88e9fe88abfe off time Night
+    has_date: false
+    has_time: true
 
 automation:
   # off based on input time
@@ -56,25 +60,34 @@ automation:
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_thursday', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      - platform: template
+        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_night', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+        id: night
     condition:
-      - condition: state
-        entity_id: binary_sensor.workday_sensor
-        state: "on"
-      - condition: state
-        entity_id: input_boolean.holiday
-        state: "off"
       - condition: or
         conditions:
-          - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 0 }}"
-          - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_tuesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 1 }}"
-          - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_wednesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 2 }}"
-          - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_thursday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 3 }}"
-          - condition: template
-            value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 4 }}"
+          - condition: and
+            conditions:
+              - condition: state
+                entity_id: binary_sensor.workday_sensor
+                state: "on"
+              - condition: state
+                entity_id: input_boolean.holiday
+                state: "off"
+              - condition: or
+                conditions:
+                  - condition: template
+                    value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_monday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 0 }}"
+                  - condition: template
+                    value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_tuesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 1 }}"
+                  - condition: template
+                    value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_wednesday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 2 }}"
+                  - condition: template
+                    value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_thursday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 3 }}"
+                  - condition: template
+                    value_template: "{{ states('sensor.time') == (state_attr('input_datetime.88e9fe88abfe_off_time_friday', 'timestamp') | int | timestamp_custom('%H:%M', False)) and now().weekday() == 4 }}"
+          - condition: trigger
+            id: night
     action:
       # turn off feed switch
       - service: switch.turn_off
@@ -82,12 +95,20 @@ automation:
           entity_id: switch.office_feed_2
       - service: switch.turn_off
         data:
-          entity_id: switch.88e9fe88abfe
-      - service: timer.start
-        data_template:
-          entity_id: timer.88e9fe88abfe
-          duration: >
-            {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
+          entity_id: switch.cpt_5cg2332ssh
+      - choose:
+        # If night trigger, skip timer
+          - conditions:
+              - condition: not
+                conditions:
+                  - condition: trigger
+                    id: night
+            sequence:
+              - service: timer.start
+                data_template:
+                  entity_id: timer.88e9fe88abfe
+                  duration: >
+                    {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
       - choose:
         # If the AC on this plug is on, first turn it off then wait before turning off plug
           - conditions:
@@ -109,7 +130,7 @@ automation:
   - alias: Start timer after Turn off network access
     trigger:
       - platform: state
-        entity_id: switch.88e9fe88abfe
+        entity_id: switch.cpt_5cg2332ssh
         from: 'on'
         to: 'off'
     condition:
@@ -133,10 +154,12 @@ automation:
         event_type: timer.finished
         event_data:
           entity_id: timer.88e9fe88abfe
+      - platform: time
+        at: "6:00:00"
     action:
       - service: switch.turn_on
         data:
-          entity_id: switch.88e9fe88abfe
+          entity_id: switch.cpt_5cg2332ssh
       - service: switch.turn_on
         data:
           entity_id: switch.office_feed_2
