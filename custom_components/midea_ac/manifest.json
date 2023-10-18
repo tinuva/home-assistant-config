@@ -1,13 +1,19 @@
 {
-        "domain": "midea_ac",
-        "name": "Midea Smart AC",
-        "version": "0.2.4",
-        "documentation": "https://github.com/mac-zhou/midea-ac-py",
-        "issue_tracker": "https://github.com/mac-zhou/midea-ac-py/issues",
-        "requirements": ["git+https://github.com/mill1000/midea-msmart.git@future#msmart>=0.2.3", "pycryptodome", "pycryptodomex", "click"],
-        "dependencies": [],
-        "codeowners": ["@mac-zhou"],
-        "iot_class": "local_polling",
-        "config_flow": true,
-        "loggers": ["msmart"]
+  "domain": "midea_ac",
+  "name": "Midea Smart AC",
+  "codeowners": [
+    "@mill1000"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/mill1000/midea-ac-py",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/mill1000/midea-ac-py/issues",
+  "loggers": [
+    "msmart"
+  ],
+  "requirements": [
+    "msmart-ng>=2023.10.0"
+  ],
+  "version": "2023.10.0"
 }

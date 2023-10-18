@@ -1,16 +1,17 @@
-"""Platform for sensor integration."""
+"""Sensor platform for Midea Smart AC."""
 from __future__ import annotations
 
 import logging
 
+from homeassistant.components.sensor import (SensorDeviceClass, SensorEntity,
+                                             SensorStateClass)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import TEMP_CELSIUS, CONF_ID
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass, RestoreSensor
+from homeassistant.const import TEMP_CELSIUS
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-# Local constants
 from .const import DOMAIN
+from .coordinator import MideaCoordinatorEntity, MideaDeviceUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,44 +25,29 @@ async def async_setup_entry(
 
     _LOGGER.info("Setting up sensor platform.")
 
-    # Get config data from entry
-    config = config_entry.data
-
-    # Fetch device from global data
-    id = config.get(CONF_ID)
-    device = hass.data[DOMAIN][id]
+    # Fetch coordinator from global data
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create sensor entities from device
     add_entities([
-        MideaTemperatureSensor(device, "indoor_temperature"),
-        MideaTemperatureSensor(device, "outdoor_temperature"),
+        MideaTemperatureSensor(coordinator, "indoor_temperature"),
+        MideaTemperatureSensor(coordinator, "outdoor_temperature"),
     ])
 
 
-class MideaTemperatureSensor(RestoreSensor):
+class MideaTemperatureSensor(MideaCoordinatorEntity, SensorEntity):
     """Temperature sensor for Midea AC."""
 
-    def __init__(self, device, prop):
-        self._device = device
+    def __init__(self,
+                 coordinator: MideaDeviceUpdateCoordinator,
+                 prop: str) -> None:
+        MideaCoordinatorEntity.__init__(self, coordinator)
+
         self._prop = prop
-        self._native_value = None
-
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-
-        if (last_sensor_data := await self.async_get_last_sensor_data()) is None:
-            return
-
-        # Restore previous native value
-        self._native_value = last_sensor_data.native_value
-
-    async def async_update(self) -> None:
-        # Grab the property from the device
-        if self.available:
-            self._native_value = getattr(self._device, self._prop)
 
     @property
     def device_info(self) -> dict:
+        """Return info for device registry."""
         return {
             "identifiers": {
                 (DOMAIN, self._device.id)
@@ -70,28 +56,40 @@ class MideaTemperatureSensor(RestoreSensor):
 
     @property
     def name(self) -> str:
+        """Return the name of this entity."""
         return f"{DOMAIN}_{self._prop}_{self._device.id}"
 
     @property
     def unique_id(self) -> str:
+        """Return the unique ID of this entity."""
         return f"{self._device.id}-{self._prop}"
 
     @property
     def available(self) -> bool:
-        return self._device.online
+        """Check entity availability."""
+        # Sensor is unavailable if device is offline
+        if not super().available:
+            return False
+
+        # Sensor is unavailable if value is None
+        return self.native_value is not None
 
     @property
     def device_class(self) -> str:
+        """Return the device class of this entity."""
         return SensorDeviceClass.TEMPERATURE
 
     @property
     def state_class(self) -> str:
+        """Return the state class of this entity."""
         return SensorStateClass.MEASUREMENT
 
     @property
     def native_unit_of_measurement(self) -> str:
+        """Return the native units pf this entity."""
         return TEMP_CELSIUS
 
     @property
-    def native_value(self) -> float:
-        return self._native_value
+    def native_value(self) -> float | None:
+        """Return the current native value."""
+        return getattr(self._device, self._prop, None)

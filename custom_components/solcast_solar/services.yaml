@@ -3,10 +3,26 @@ update_forecasts:
   name: Update
   description: Fetches the forecasts from Solcast.
 
-update_actual_forecasts:
-  name: Update Actuals
-  description: Fetches the actual forecast data from Solcast.
-
 clear_all_solcast_data:
   name: Clear saved Solcast site data
   description: Deletes the solcast.json file to remove all current solcast site data
+
+query_forecast_data:
+  name: Query forecasts
+  description: List of forecasts between start datetime and end datetime
+  fields:
+    start_date_time:
+      example: "2023-09-09T00:00:00"
+      selector:
+        datetime:
+    end_date_time:
+      example: "2023-09-10T10:00:00"
+      selector:
+        datetime:
+
+set_dampening:
+  name: Set forecasts dampening
+  description: Set the hourly forecast dampening factor
+  fields:
+    damp_factor:
+      example: "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1"

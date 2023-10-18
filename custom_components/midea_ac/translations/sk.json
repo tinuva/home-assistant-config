@@ -1,0 +1,52 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfigurácia zariadenia Midea Smart AC",
+        "description": "Zadajte informácie o svojom zariadení.",
+        "data": {
+          "id": "ID",
+          "host": "Host",
+          "port": "Port",
+          "token": "Token",
+          "k1": "K1",
+          "prompt_tone": "Tón výzvy",
+          "temp_step": "Teplotný krok",
+          "include_off_as_state": "Zhrnúť \"Off\" stav",
+          "use_fan_only_workaround": "Použite alternatívne riešenie pre ventilátor",
+          "additional_operation_modes": "Ďalšie prevádzkové režimy"
+        },
+        "data_description": {
+          "token": "Token pre V3 zariadenia",
+          "k1": "K1 pre V3 zariadenia",
+          "prompt_tone": "Povoliť pípnutie pri odosielaní príkazov",
+          "temp_step": "Veľkosť kroku pre nastavenú hodnotu teploty"
+        }
+      }
+    },
+    "abort":{
+      "already_configured": "ID zariadenia už bolo nakonfigurované."
+    },
+    "error":{
+      "cannot_connect":"S týmito nastaveniami sa nepodarilo nadviazať spojenie."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti pre zariadenie Midea Smart AC",
+        "data": {
+          "prompt_tone": "Tón výzvy",
+          "temp_step": "Teplotný krok",
+          "include_off_as_state": "Zhrnúť \"Off\" stav",
+          "use_fan_only_workaround": "Použite alternatívne riešenie pre ventilátor",
+          "additional_operation_modes": "Ďalšie prevádzkové režimy"
+        },
+        "data_description": {
+          "prompt_tone": "Povoliť pípnutie pri odosielaní príkazov",
+          "temp_step": "Veľkosť kroku pre nastavenú hodnotu teploty"
+        }
+      }
+    }
+  }
+}

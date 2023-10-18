@@ -40,7 +40,10 @@ from custom_components.avanza_stock.const import (
     MONITORED_CONDITIONS_DEFAULT,
     MONITORED_CONDITIONS_DIVIDENDS,
     MONITORED_CONDITIONS_KEYRATIOS,
+    MONITORED_CONDITIONS_LISTING,
+    MONITORED_CONDITIONS_PRICE,
     MONITORED_CONDITIONS_QUOTE,
+    PRICE_MAPPING,
     TOTAL_CHANGE_PRICE_MAPPING,
 )
 
@@ -205,7 +208,7 @@ class AvanzaStockSensor(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique id."""
-        return f"{self._stock}_stock"
+        return f"{self._stock}_{self._name}_stock"
 
     @property
     def state_class(self):
@@ -219,14 +222,38 @@ class AvanzaStockSensor(SensorEntity):
 
     async def async_update(self):
         """Update state and attributes."""
-        data = await pyavanza.get_stock_async(self._session, self._stock)
-        if data["type"] == pyavanza.InstrumentType.ExchangeTradedFund:
-            data = await pyavanza.get_etf_async(self._session, self._stock)
         data_conversion_currency = None
-        if self._conversion_currency:
-            data_conversion_currency = await pyavanza.get_stock_async(
-                self._session, self._conversion_currency
-            )
+        if self._stock == 0:  # Non trackable, i.e. manual
+            data = {
+                "name": self._name.split(" ", 1)[1],
+                "unit_of_measurement": self._currency,
+                "quote": {
+                    "last": self._purchase_price,
+                    "change": 0,
+                    "changePercent": 0,
+                },
+                "historicalClosingPrices": {
+                    "oneWeek": self._purchase_price,
+                    "oneMonth": self._purchase_price,
+                    "threeMonths": self._purchase_price,
+                    "oneYear": self._purchase_price,
+                    "threeYears": self._purchase_price,
+                    "fiveYears": self._purchase_price,
+                    "tenYears": self._purchase_price,
+                    "startOfYear": self._purchase_price,
+                },
+                "listing": {
+                    "currency": self._currency,
+                },
+            }
+        else:
+            data = await pyavanza.get_stock_async(self._session, self._stock)
+            if data["type"] == pyavanza.InstrumentType.ExchangeTradedFund:
+                data = await pyavanza.get_etf_async(self._session, self._stock)
+            if self._conversion_currency:
+                data_conversion_currency = await pyavanza.get_stock_async(
+                    self._session, self._conversion_currency
+                )
         if data:
             self._update_state(data)
             self._update_unit_of_measurement(data)
@@ -250,8 +277,14 @@ class AvanzaStockSensor(SensorEntity):
                 self._update_company(data, condition)
             elif condition in MONITORED_CONDITIONS_QUOTE:
                 self._update_quote(data, condition)
+            elif condition in MONITORED_CONDITIONS_LISTING:
+                self._update_listing(data, condition)
+            elif condition in MONITORED_CONDITIONS_PRICE:
+                self._update_price(data, condition)
             elif condition == "dividends":
                 self._update_dividends(data)
+            elif condition == "id":
+                self._state_attributes[condition] = data.get("orderbookId", None)
             else:
                 self._state_attributes[condition] = data.get(condition, None)
 
@@ -317,6 +350,19 @@ class AvanzaStockSensor(SensorEntity):
     def _update_quote(self, data, attr):
         quote = data.get("quote", {})
         self._state_attributes[attr] = quote.get(attr, None)
+
+    def _update_listing(self, data, attr):
+        listing = data.get("listing", {})
+        if attr == "marketPlace":
+            self._state_attributes[attr] = listing.get("marketPlaceName", None)
+        elif attr == "flagCode":
+            self._state_attributes[attr] = listing.get("countryCode", None)
+        else:
+            self._state_attributes[attr] = listing.get(attr, None)
+
+    def _update_price(self, data, attr):
+        prices = data.get("historicalClosingPrices", {})
+        self._state_attributes[attr] = prices.get(PRICE_MAPPING[attr], None)
 
     def _update_profit_loss(self, price):
         if self._purchase_date is not None:

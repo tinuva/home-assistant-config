@@ -1,5 +1,5 @@
 """Constants for avanza_stock."""
-__version__ = "1.2.0"
+__version__ = "1.4.0"
 
 DEFAULT_NAME = "Avanza Stock"
 
@@ -11,12 +11,9 @@ CONF_CONVERSION_CURRENCY = "conversion_currency"
 CONF_INVERT_CONVERSION_CURRENCY = "invert_conversion_currency"
 
 MONITORED_CONDITIONS = [
-    "change",
-    "changePercent",
     "country",
     "currency",
     "dividends",
-    "flagCode",
     "hasInvestmentFees",
     "highestPrice",
     "id",
@@ -27,26 +24,15 @@ MONITORED_CONDITIONS = [
     "lowestPrice",
     "marketList",
     "marketMakerExpected",
-    "marketPlace",
     "marketTrades",
     "morningStarFactSheetUrl",
     "name",
     "numberOfOwners",
     "orderDepthReceivedTime",
-    "priceAtStartOfYear",
-    "priceFiveYearsAgo",
-    "priceOneMonthAgo",
-    "priceOneWeekAgo",
-    "priceOneYearAgo",
-    "priceThreeMonthsAgo",
-    "priceThreeYearsAgo",
     "pushPermitted",
     "quoteUpdated",
     "shortSellable",
     "superLoan",
-    "tickerSymbol",
-    "totalValueTraded",
-    "totalVolumeTraded",
     "tradable",
 ]
 
@@ -56,6 +42,13 @@ MONITORED_CONDITIONS_KEYRATIOS = [
     "volatility",
 ]
 MONITORED_CONDITIONS += MONITORED_CONDITIONS_KEYRATIOS
+
+MONITORED_CONDITIONS_LISTING = [
+    "tickerSymbol",
+    "marketPlace",
+    "flagCode",
+]
+MONITORED_CONDITIONS += MONITORED_CONDITIONS_LISTING
 
 MONITORED_CONDITIONS_COMPANY = [
     "description",
@@ -81,7 +74,31 @@ MONITORED_CONDITIONS_DEFAULT = [
 MONITORED_CONDITIONS_QUOTE = [
     "change",
     "changePercent",
+    "totalValueTraded",
+    "totalVolumeTraded",
 ]
+MONITORED_CONDITIONS += MONITORED_CONDITIONS_QUOTE
+
+MONITORED_CONDITIONS_PRICE = [
+    "priceAtStartOfYear",
+    "priceFiveYearsAgo",
+    "priceOneMonthAgo",
+    "priceOneWeekAgo",
+    "priceOneYearAgo",
+    "priceThreeMonthsAgo",
+    "priceThreeYearsAgo",
+]
+MONITORED_CONDITIONS += MONITORED_CONDITIONS_PRICE
+
+PRICE_MAPPING = {
+    "priceAtStartOfYear": "startOfYear",
+    "priceFiveYearsAgo": "fiveYears",
+    "priceOneMonthAgo": "oneMonth",
+    "priceOneWeekAgo": "oneWeek",
+    "priceOneYearAgo": "oneYear",
+    "priceThreeMonthsAgo": "rhreeMonths",
+    "priceThreeYearsAgo": "rhreeYears",
+}
 
 CHANGE_PRICE_MAPPING = [
     ("changeOneWeek", "oneWeek"),

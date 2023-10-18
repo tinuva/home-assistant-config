@@ -2,51 +2,60 @@
   "config": {
     "step": {
       "user": {
-        "title": "Configure Midea Smart AC Device",
+        "description": "Select how to add a device.",
+        "menu_options": {
+          "discover": "Discover device",
+          "manual": "Configure manually"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Leave the host blank to discover device(s) on the network."
+      },
+      "manual": {
         "description": "Enter information for your device.",
         "data": {
           "id": "ID",
           "host": "Host",
           "port": "Port",
           "token": "Token",
-          "k1": "K1",
-          "prompt_tone": "Prompt Tone",
-          "temp_step": "Temperature Step",
-          "include_off_as_state": "Include \"Off\" State",
-          "use_fan_only_workaround": "Use Fan-only Workaround",
-          "keep_last_known_online_state": "Keep Last Known State",
-          "additional_operation_modes": "Additional Operation Modes"
+          "k1": "Key"
         },
         "data_description": {
           "token": "Token for V3 devices",
-          "k1": "K1 for V3 devices",
-          "prompt_tone": "Enable the beep when sending commands",
-          "temp_step": "Step size for temperature set point"
+          "k1": "Key for V3 devices"
         }
       }
     },
-    "abort":{
-      "already_configured": "The device ID has already been configured."
+    "abort": {
+      "already_configured": "The device has already been configured.",
+      "cannot_connect": "A connection could not be made.",
+      "no_devices_found": "No supported devices found on the network."
     },
-    "error":{
-      "cannot_connect":"A connection could not be made with these settings."
+    "error": {
+      "cannot_connect": "A connection could not be made with these settings.",
+      "device_not_found": "Device not found on the network.",
+      "unsupported_device": "Device is not supported."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Options for Midea Smart AC Device",
         "data": {
-          "prompt_tone": "Prompt Tone",
+          "prompt_tone": "Enable Beep",
           "temp_step": "Temperature Step",
           "include_off_as_state": "Include \"Off\" State",
           "use_fan_only_workaround": "Use Fan-only Workaround",
-          "keep_last_known_online_state": "Keep Last Known State",
-          "additional_operation_modes": "Additional Operation Modes"
+          "show_all_presets": "Show All Presets",
+          "additional_operation_modes": "Additional Operation Modes",
+          "max_connection_lifetime": "Maximum Connection Lifetime"
         },
         "data_description": {
-          "prompt_tone": "Enable the beep when sending commands",
-          "temp_step": "Step size for temperature set point"
+          "temp_step": "Step size for temperature set point",
+          "additional_operation_modes": "Specify additional operational modes",
+          "max_connection_lifetime": "Maximum time in seconds a connection will be used (30 second minimum)"
         }
       }
     }
