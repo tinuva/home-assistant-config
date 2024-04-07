@@ -40,7 +40,7 @@ class MideaDisplaySwitch(MideaCoordinatorEntity, SwitchEntity):
         MideaCoordinatorEntity.__init__(self, coordinator)
 
     async def _toggle_display(self) -> None:
-        await self.coordinator.device.toggle_display()
+        await self._device.toggle_display()
 
         await self.coordinator.async_request_refresh()
 
@@ -54,9 +54,14 @@ class MideaDisplaySwitch(MideaCoordinatorEntity, SwitchEntity):
         }
 
     @property
+    def has_entity_name(self) -> bool:
+        """Indicates if entity follows naming conventions."""
+        return True
+
+    @property
     def name(self) -> str:
         """Return the name of this entity."""
-        return f"{DOMAIN}_display_{self._device.id}"
+        return "Display"
 
     @property
     def unique_id(self) -> str:

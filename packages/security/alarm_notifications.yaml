@@ -20,6 +20,142 @@ binary_sensor:
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
 
 automation:
+  ### Notify alarm zone state change
+  - alias: Notify Alarm Zone Attributes
+    description: Notify Alarm Zone Attributes when zone triggered
+    mode: queued
+    max: 25
+    trigger:
+      - platform: state
+        from: "off"
+        to: "on"
+        entity_id:
+          - binary_sensor.babyroom_pir
+          - binary_sensor.babyroom_window
+          - binary_sensor.back_beam
+          - binary_sensor.back_garage_door
+          - binary_sensor.back_garage_pir
+          - binary_sensor.braai_room_pir
+          - binary_sensor.ensuite_pir
+          - binary_sensor.front_beam
+          - binary_sensor.front_door
+          - binary_sensor.front_garage_door_window
+          - binary_sensor.kitchen_pir
+          - binary_sensor.kitchen_window
+          - binary_sensor.lounge_pir
+          - binary_sensor.lounge_window
+          - binary_sensor.main_bedroom_pir
+          - binary_sensor.main_bedroom_window
+          - binary_sensor.scullery_door
+          - binary_sensor.sculllery_window
+          - binary_sensor.spare_bedroom_pir
+          - binary_sensor.study_pir
+          - binary_sensor.study_window
+          - binary_sensor.box_tamper
+          - binary_sensor.panic
+    action:
+      - alias: "Set variables"
+        variables:
+          zone_nr_name: >
+            Zone {{ trigger.to_state.attributes.zone }} - {{ trigger.to_state.attributes.friendly_name }}
+      - choose:
+          # ALARM TRIGGERED
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.to_state.attributes.alarm == "on" }}'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    *ALARM TRIGGERED!* on {{ zone_nr_name }}
+      - choose:
+          # TAMPER
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.to_state.attributes.tamper == "on" }}'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    {{ zone_nr_name }} in tampered state
+      - choose:
+          # FAULT
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.to_state.attributes.fault == "on" }}'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    {{ zone_nr_name }} in fault state
+      - choose:
+          # LOW BATTERY
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.to_state.attributes.low_battery == "on" }}'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    {{ zone_nr_name }} battery level is low - replace battery
+      # - choose:
+      #     # PANEL triggered so debug
+      #     - conditions:
+      #         - condition: state
+      #           entity_id: alarm_control_panel.home_alarm
+      #           state: 'triggered'
+      #       sequence:
+      #         - service: script.log
+      #           data:
+      #             icon: ':rotating_light:'
+      #             object: 'Home Alarm'
+      #             message: >
+      #               {{ zone_nr_name }} debug log
+      #               {{ trigger }}
+
+# Zone 18 - Braai-room PIR debug log
+# {
+#     'id': '0',
+#     'idx': '0',
+#     'alias': None,
+#     'platform': 'state',
+#     'entity_id': 'binary_sensor.braai_room_pir',
+#     'from_state': < state binary_sensor.braai_room_pir = off;last_tripped_time = 2024 - 02 - 29 T07: 34: 13.030548,
+#     zone = 18,
+#     bypassed = False,
+#     open = False,
+#     fault = False,
+#     alarm = False,
+#     tamper = False,
+#     low_battery = False,
+#     device_class = motion,
+#     friendly_name = Braai - room PIR @ 2024 - 02 - 29 T07: 34: 19.954267 + 02: 00 > ,
+#     'to_state': < state binary_sensor.braai_room_pir = on;last_tripped_time = 2024 - 02 - 29 T07: 34: 23.681189,
+#     zone = 18,
+#     bypassed = False,
+#     open = True,
+#     fault = False,
+#     alarm = False,
+#     tamper = False,
+#     low_battery = False,
+#     device_class = motion,
+#     friendly_name = Braai - room PIR @ 2024 - 02 - 29 T07: 34: 23.681328 + 02: 00 > ,
+#     'for': None,
+#     'attribute': None,
+#     'description': 'state of binary_sensor.braai_room_pir'
+# }
+
+  ##############################################################################################################################
+  ### Older notifications below
+
   ### Notify alarm state change
   - id: '1586327112617'
     alias: Notify Alarm Armed State

@@ -1,0 +1,504 @@
+{
+  "device_automation": {
+    "trigger_type": {
+      "event_print_canceled": "Druckauftrag abgebrochen",
+      "event_print_failed": "Druckauftrag fehlgeschlagen",
+      "event_print_finished": "Druckauftrag beendet",
+      "event_print_started": "Druckauftrag gestartet",
+      "event_printer_error": "Druckerfehler erkannt"
+    }
+  },
+  "config": {
+    "abort": {
+      "already_configured": "Das Gerät ist bereits eingerichtet"
+    },
+    "error": {
+      "cannot_connect": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die Anmeldeinformationen.",
+      "cannot_connect_local_ip": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die angegebene IP-Adresse.",
+      "cannot_connect_local_all": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen.",
+      "invalid_auth": "Authentifizierung fehlgeschlagen.",
+      "unbekannt": "Unerwarteter Fehler."
+    },
+    "step": {
+      "user": {
+        "description": "Die Konfiguration über die Bambu Cloud ist am einfachsten. Unterstützt jedoch keine 2FA- oder Social-Media-Konten ohne Passwort. Und es funktioniert nicht für Drucker, die aktiv auf den Nur-LAN-Modus eingestellt sind.",
+        "data": {
+          "printer_mode": "Drucker-Konfigurationsmodus:"
+        }
+      },
+      "Bambu": {
+        "title": "Bambu Cloud-Verbindung",
+        "description": "Bitte geben Sie Ihre Bambu Lab-Zugangsdaten an:",
+        "data": {
+          "region": "Konto-Region:",
+          "email": "E-Mail-Adresse oder Telefonnummer",
+          "password": "Passwort"
+        }
+      },
+      "Bambu_Choose_Device": {
+        "title": "Drucker-Auswahl",
+        "description": "Wählen Sie den Drucker aus, den Sie hinzufügen möchten.",
+        "data": {
+          "printer": "Wählen Sie den hinzuzufügenden Drucker aus:"
+        }
+      },
+      "Bambu_Lan": {
+        "title": "Lokale Verbindung einrichten",
+        "description": "Sie können optional die IP-Adresse und den Zugriffscode des lokalen Druckers angeben. Dies ist für den Kamerazugriff auf die P1/A1 erforderlich. Oder um sich direkt mit dem Drucker verbinden zu können, anstatt über die Bambu Cloud.",
+        "data": {
+          "local_mqtt": "Verbinden Sie sich direkt mit dem Drucker statt über die Bambu Cloud:",
+          "host": "IP-Adresse des lokalen Druckers:",
+          "access_code": "Zugangscode"
+        }
+      },
+      "Lan": {
+        "title": "LAN-Modus-Verbindung",
+        "Beschreibung": "Bitte geben Sie Ihren lokalen Druckertyp, Ihre IP-Adresse, die Seriennummer und den Zugangscode an. Den Zugangscode finden Sie auf dem Druckerbildschirm in den Netzwerkeinstellungen. Die Seriennummer finden Sie in den Geräteeinstellungen.",
+        "data": {
+          "serial": "Seriennummer:",
+          "host": "IP-Adresse des lokalen Druckers:",
+          "access_code": "Zugangscode"
+        }        
+      }
+    }
+  },
+  "options": {
+    "error": {
+      "cannot_connect": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die Anmeldeinformationen.",
+      "cannot_connect_local_ip": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die angegebene IP-Adresse.",
+      "cannot_connect_local_all": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen.",
+      "no_printers": "Keine nicht konfigurierten Drucker im Konto gefunden",
+      "invalid_auth": "Authentifizierung fehlgeschlagen",
+      "unbekannt": "Unerwarteter Fehler"
+    },
+    "step": {
+      "init": {
+        "title": "Verbindungseinstellungen anpassen",
+        "description": "Die Konfiguration über die Bambu Cloud ist am einfachsten. Unterstützt jedoch keine 2FA- oder Social-Media-Konten ohne Passwort. Und es funktioniert nicht für Drucker, die aktiv auf den Nur-LAN-Modus eingestellt sind.",
+        "data": {
+          "printer_mode": "Drucker-Konfigurationsmodus:"
+        }
+      },
+      "Bambu": {
+        "title": "Bambu Cloud-Verbindung",
+        "description": "Bitte geben Sie Ihre Bambu Lab-Zugangsdaten an:",
+        "data": {
+          "region": "Konto-Region:",
+          "email": "E-Mail-Adresse oder Telefonnummer",
+          "password": "Passwort"
+        }
+      },
+      "Bambu_Lan": {
+        "title": "Anpassen der Druckerkonfiguration",
+        "description": "Sie können optional die IP-Adresse und den Zugriffscode des lokalen Druckers angeben. Dies ist für den Kamerazugriff auf die P1/A1 erforderlich. Oder um sich direkt mit dem Drucker verbinden zu können, anstatt über die Bambu Cloud.",
+        "data": {
+          "printer": "Wählen Sie den hinzuzufügenden Drucker aus:",
+          "host": "IP-Adresse des lokalen Druckers:",
+          "access_code": "Zugangscode",
+          "local_mqtt": "Verbinden Sie sich direkt mit dem Drucker statt über die Bambu Cloud:"
+        }
+      },
+      "Lan": {
+        "title": "LAN-Modus-Verbindung",
+        "Beschreibung": "Bitte geben Sie die IP-Adresse und den Zugangscode Ihres lokalen Druckers an. Den Zugangscode finden Sie auf dem Druckerbildschirm in den Netzwerkeinstellungen.",
+        "data": {
+          "host": "IP-Adresse des lokalen Druckers:",
+          "access_code": "Zugangscode"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "timelapse": {
+        "name": "Aufnahme von Zeitraffern"
+      },
+      "hms_errors": {
+        "name": "HMS-Fehler"
+      },
+      "online": {
+        "name": "Online"
+      },
+      "firmware_update": {
+        "name": "Firmware Status"
+      }
+    },
+    "button": {
+      "pause": {
+        "name": "Druckvorgang anhalten"
+      },
+      "resume": {
+        "name": "Druckvorgang fortsetzen"
+      },
+      "stop": {
+        "name": "Druckvorgang beenden"
+      },
+      "refresh": {
+        "name": "Aktualisierung erzwingen"
+      }
+    },
+    "fan": {
+      "cooling_fan": {
+        "name": "Druckkopflüfter"
+      },
+      "aux_fan": {
+        "name": "Bauteillüfter"
+      },
+      "chamber_fan": {
+        "name": "Druckraumlüfter"
+      }
+    },
+    "image": {
+      "p1p_camera": {
+        "name": "Kamera"
+      },
+      "cover_image": {
+        "name": "Titelbild"
+      }
+    },
+    "light": {
+      "chamber_light": {
+        "name": "Druckraumbeleuchtung"
+      },
+      "camera_light": {
+        "name": "Kamerabeleuchtung"
+      }
+    },
+    "select": {
+      "printing_speed": {
+        "name": "Druckgeschwindigkeit",
+        "state": {
+          "silent": "Stumm",
+          "standard": "Standard",
+          "sport": "Sport",
+          "ludicrous": "Verrückt"
+        }
+      }
+    },
+    "sensor": {
+      "wifi_signal": {
+        "name": "Wi-Fi-Signalquallität"
+      },
+      "bed_temp": {
+        "name": "Druckbetttemperatur"
+      },
+      "target_bed_temp": {
+        "name": "Zieltemperatur des Druckbett"
+      },
+      "chamber_temp": {
+        "name": "Temperatur im Druckraum"
+      },
+      "target_nozzle_temp": {
+        "name": "Zieltemperatur der Düse"
+      },
+      "nozzle_temp": {
+        "name": "Temperatur der Düse"
+      },
+      "aux_fan_speed": {
+        "name": "Bauteillüfterdrehzahl"
+      },
+      "cooling_fan_speed": {
+        "name": "Druckkopflüfterdrehzahl"
+      },
+      "chamber_fan_speed": {
+        "name": "Druckraumlüfterdrehzahl"
+      },
+      "heatbreak_fan_speed": {
+        "name": "Hotendlüfterdrehzahl"
+      },
+      "speed_profile": {
+        "name": "Geschwindigkeitsprofil",
+        "state": {
+          "silent": "Stumm",
+          "standard": "Standard",
+          "sport": "Sport",
+          "ludicrous": "Verrückt"
+        },
+        "state_attributes": {
+          "modifier": {
+            "name": "Modifikator"
+          }
+        }
+      },
+      "printer_name": {
+        "name": "Name des Druckers"
+      },
+      "stage": {
+        "name": "Aktueller Arbeitsschritt",
+        "state": {
+          "offline": "Offline",
+          "printing": "Drucken",
+          "auto_bed_leveling": "Automatische Bettnivellierung",
+          "heatbed_preheating": "Heizbettvorwärmung",
+          "sweeping_xy_mech_mode": "Fegen im XY-Mechanik-Modus",
+          "changing_filament": "Filament wechseln",
+          "m400_pause": "M400 Pause",
+          "paused_filament_runout": "Pausiert, weil das Filament leer ist",
+          "heating_hotend": "Hotend wird erhitzt",
+          "calibrating_extrusion": "Kalibrierung der Extrusion",
+          "scanning_bed_surface": "Abtasten der Oberfläche des Bettes",
+          "inspecting_first_layer": "Inspektion der ersten Schicht",
+          "identifying_build_plate_type": "Identifizierung der Bauplatte",
+          "calibrating_micro_lidar": "Kalibrierung des Mikro-Lidars",
+          "homing_toolhead": "Werkzeugkopf wird in die Mitte bewegt",
+          "cleaning_nozzle_tip": "Reinigung der Düsenspitze",
+          "checking_extruder_temperature": "Kontrolle der Extrudertemperatur",
+          "paused_user": "Der Druckvorgang wurde vom Benutzer angehalten",
+          "paused_front_cover_falling": "Pause, weil die Abdeckung des Druckkopf abgefallen ist",
+          "calibrating_extrusion_flow": "Kalibrierung des Extrusionsflusses",
+          "paused_nozzle_temperature_malfunction": "Pausiert aufgrund einer Störung der Düsentemperatur",
+          "paused_heat_bed_temperature_malfunction": "Pausiert aufgrund einer Störung der Wärmebetttemperatur",
+          "idle": "Leerlauf"
+        }
+      },
+      "print_progress": {
+        "name": "Druckfortschritt"
+      },
+      "print_status": {
+        "name": "Druckstatus",
+        "state": {
+          "failed": "Fehlgeschlagen",
+          "finish": "Fertig",
+          "idle": "Leerlauf",
+          "offline": "Offline",
+          "prepare": "Vorbereiten",
+          "running": "Läuft",
+          "pause": "Pause",
+          "slicing": "Slicen",
+          "init": "Initialisierung"
+        }
+      },
+      "mqtt_mode": {
+        "name": "MQTT-Verbindungsmodus",
+        "state": {
+          "local": "Lokal",
+          "bambu_cloud": "Bambu-Cloud"
+        }
+      },
+      "gcode_file": {
+        "name": "Gcode Dateiname"
+      },
+      "print_bed_type": {
+        "name": "Druckbett Typ"
+      },
+      "print_length": {
+        "name": "Drucklänge"
+      },
+      "print_weight": {
+        "name": "Gewicht des Drucks"
+      },
+      "subtask_name": {
+        "name": "Name der Aufgabe"
+      },
+      "start_time": {
+        "name": "Startzeit"
+      },
+      "remaining_time": {
+        "name": "Verbleibende Zeit"
+      },
+      "end_time": {
+        "name": "Vrs. Fertigstellung"
+      },
+      "total_usage_hours": {
+        "name": "Gesamtnutzung"
+      },
+      "current_layer": {
+        "name": "Aktuelle Schicht"
+      },
+      "total_layers": {
+        "name": "Gesamtzahl der Schichten"
+      },
+      "active_tray": {
+        "name": "Aktiver Slot"
+      },
+      "active_tray_index": {
+        "name": "Aktiver Slotindex"
+      },
+      "humidity_index": {
+        "name": "Index der Luftfeuchtigkeit"
+      },
+      "ams_temp": {
+        "name": "AMS-Temperatur"
+      },
+      "external_spool": {
+        "name": "Externe Spule",
+        "state_attributes": {
+          "active": {
+            "name": "Aktiv"
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "empty": {
+            "name": "Leer"
+          },
+          "k_value": {
+            "name": "K-Wert"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "nozzle_temp_min": {
+            "name": "Düse Mindesttemperatur"
+          },
+          "nozzle_temp_max": {
+            "name": "Düse Maximaltemperatur"
+          },
+          "type": {
+            "name": "Typ"
+          }
+        }
+      },
+      "tray_1": {
+        "name": "Slot 1",
+        "state_attributes": {
+          "active": {
+            "name": "Aktiv"
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "empty": {
+            "name": "Leer"
+          },
+          "k_value": {
+            "name": "K-Wert"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "nozzle_temp_min": {
+            "name": "Düse Mindesttemperatur"
+          },
+          "nozzle_temp_max": {
+            "name": "Düse Maximaltemperatur"
+          },
+          "type": {
+            "name": "Typ"
+          },
+          "remain": {
+            "name": "Verbleibende Filamentmenge"
+          },
+          "tag_uid": {
+            "name": "Seriennummer des Filaments"
+          }
+        }
+      },
+      "tray_2": {
+        "name": "Slot 2",
+        "state_attributes": {
+          "active": {
+            "name": "Aktiv"
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "empty": {
+            "name": "Leer"
+          },
+          "k_value": {
+            "name": "K-Wert"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "nozzle_temp_min": {
+            "name": "Düse Mindesttemperatur"
+          },
+          "nozzle_temp_max": {
+            "name": "Düse Maximaltemperatur"
+          },
+          "type": {
+            "name": "Typ"
+          },
+          "remain": {
+            "name": "Verbleibende Filamentmenge"
+          },
+          "tag_uid": {
+            "name": "Seriennummer des Filaments"
+          }
+        }
+      },
+      "tray_3": {
+        "name": "Slot 3",
+        "state_attributes": {
+          "active": {
+            "name": "Aktiv"
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "empty": {
+            "name": "Leer"
+          },
+          "k_value": {
+            "name": "K-Wert"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "nozzle_temp_min": {
+            "name": "Düse Mindesttemperatur"
+          },
+          "nozzle_temp_max": {
+            "name": "Düse Maximaltemperatur"
+          },
+          "type": {
+            "name": "Typ"
+          },
+          "remain": {
+            "name": "Verbleibende Filamentmenge"
+          },
+          "tag_uid": {
+            "name": "Seriennummer des Filaments"
+          }
+        }
+      },
+      "tray_4": {
+        "name": "Slot 4",
+        "state_attributes": {
+          "active": {
+            "name": "Aktiv"
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "empty": {
+            "name": "Leer"
+          },
+          "k_value": {
+            "name": "K-Wert"
+          },
+          "name": {
+            "name": "Name"
+          },
+          "nozzle_temp_min": {
+            "name": "Düse Mindesttemperatur"
+          },
+          "nozzle_temp_max": {
+            "name": "Düse Maximaltemperatur"
+          },
+          "type": {
+            "name": "Typ"
+          },
+          "remain": {
+            "name": "Verbleibende Filamentmenge"
+          },
+          "tag_uid": {
+            "name": "Seriennummer des Filaments"
+          }
+        }
+      }
+    },
+    "camera": {
+      "camera": {
+        "name": "Kamera"
+      }
+    },
+    "switch": {
+      "manual": {
+        "name": "Manueller Aktualisierungsmodus"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+esphome:
+  name: bluetooth-proxy-02
+  friendly_name: bluetooth-proxy-02
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "LFl//kXcO1OaBRunknllKRP09snbmmtgVk6ZUKfqtNs="
+
+ota:
+  password: "e873124ce11a8cdb835f5592ad7c4af7"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bluetooth-Proxy-02"
+    password: "al7fWJZAPopV"
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+#text_sensor:
+#  - platform: ble_scanner
+#    name: "BLE Devices Scanner"
+
+bluetooth_proxy:
+  active: true
+
+sensor:
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:EA:42:BE"
+    temperature:
+      name: "Braairoom Temperature"
+    humidity:
+      name: "Braairoom Humidity"
+    battery_level:
+      name: "Braairoom Battery-Level"
+    battery_voltage:
+      name: "Braairoom Battery-Voltage"
+    signal_strength:
+      name: "Braairoom Signal"

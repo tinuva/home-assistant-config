@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Wybierz w jaki sposób dodać urządzenie.",
+        "menu_options": {
+          "discover": "Znajdź urządzenie",
+          "manual": "Skonfiguruj ręcznie"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host (IP)"
+        },
+        "description": "Pozostaw host(IP) pusty, aby znaleźć urządzenia w sieci."
+      },
+      "manual": {
+        "description": "Podaj dane Twojego urządzenia.",
+        "data": {
+          "id": "ID",
+          "host": "Host (IP)",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Klucz"
+        },
+        "data_description": {
+          "token": "Token dla urządzeń w wersji V3",
+          "k1": "Klucz dla urządzeń w wersji V3"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "To urządzenie zostało już skonfigurowane.",
+      "cannot_connect": "Nie udało się nawiązać połączenia.",
+      "no_devices_found": "Nie znaleziono wspieranego urządzenia w sieci."
+    },
+    "error": {
+      "cannot_connect": "Nie udało się nawiązać połączenia z tymi ustawieniami.",
+      "device_not_found": "Nie znaleziono urządzenia w sieci.",
+      "unsupported_device": "Urządzenie nie jest wspierane."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Włącz sygnał dźwiękowy",
+          "temp_step": "Krok nastawy temperatury",
+          "use_fan_only_workaround": "Użyj obejścia dla błędu tylko tryb wentylacji.",
+          "show_all_presets": "Pokaż wszystkie ustawienia wstępne",
+          "additional_operation_modes": "Dodatkowe tryby pracy",
+          "max_connection_lifetime": "Maksymalny czas połączenia"
+        },
+        "data_description": {
+          "temp_step": "Wielkość kroku dla nastawy temperatury",
+          "additional_operation_modes": "Określenie dodatkowych trybów pracy",
+          "max_connection_lifetime": "Maksymalny czas w sekundach, przez który połączenie będzie używane (minimum 30 sekund)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Ustaw podążaj za mną",
+      "description": "Ustaw funkcję podążaj za mną.",
+      "fields": {
+        "enabled": {
+          "name": "Włączona",
+          "description": "Określ czy funkcja podążaj za mną ma być włączona."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Cichy",
+              "low": "Niski",
+              "medium": "Średni",
+              "high": "Wysoki",
+              "auto": "Automatyczny",
+              "custom": "Ręcznie"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Wyłączony",
+              "vertical": "Pionowy",
+              "horizontal": "Poziomy",
+              "both": "Oba"
+            }
+          }
+        }
+      }
+    }
+  }
+}

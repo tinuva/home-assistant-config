@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Escolha como adicionar o seu dispositivo.",
+        "menu_options": {
+          "discover": "Procurar dispositivo",
+          "manual": "Configurar Manualmente"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Deixe o Host em branco para procurar dispositivos na sua rede."
+      },
+      "manual": {
+        "description": "Insira a informação do seu dispositivo.",
+        "data": {
+          "id": "ID",
+          "host": "Host",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Key"
+        },
+        "data_description": {
+          "token": "Token para modelos V3",
+          "k1": "Key para modelos V3"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "O dispositivo já está configurado.",
+      "cannot_connect": "Não foi possível conectar.",
+      "no_devices_found": "Não foram encontrados dispositivos compatíveis na sua rede."
+    },
+    "error": {
+      "cannot_connect": "Não foi possível conectar utilizando as atuais configurações.",
+      "device_not_found": "Dispositivo não encontrado na rede.",
+      "unsupported_device": "Dispositivo não suportado."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Ativar Beeps",
+          "temp_step": "Valor de incremento/decremento de temperatura",
+          "use_fan_only_workaround": "Modo só com ventoinha",
+          "show_all_presets": "Mostrar todos os Modos",
+          "additional_operation_modes": "Modos de Funcionamento Adicionais",
+          "max_connection_lifetime": "Tempo máximo de ligação"
+        },
+        "data_description": {
+          "temp_step": "Valor de incremento/decremento para a temperatura",
+          "additional_operation_modes": "Especifique Modos de Funcionamento Adicionais",
+          "max_connection_lifetime": "Tempo máximo, em segundos, que uma ligação é usada (mínimo 30 segundos)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Ativar Seguir",
+      "description": "Ativar Função Seguir.",
+      "fields": {
+        "enabled": {
+          "name": "Ativar",
+          "description": "Ativar Para Usar Função Seguir."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Silencioso",
+              "low": "Baixo",
+              "medium": "Médio",
+              "high": "Alto",
+              "auto": "Automático",
+              "custom": "Customizado"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Desligar",
+              "vertical": "Vertical",
+              "horizontal": "Horizontal",
+              "both": "Ambos"
+            }
+          }
+        }
+      }
+    }
+  }
+}

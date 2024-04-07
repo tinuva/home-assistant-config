@@ -19,7 +19,7 @@ async def async_setup_entry(
         async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up BambuLab sensor based on a config entry."""
-    LOGGER.debug("Select::async_setup_entry")
+    LOGGER.debug("SELECT::async_setup_entry")
     coordinator: BambuDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
 
     async_add_entities(
@@ -47,7 +47,7 @@ class BambuLabSpeedSelect(BambuLabEntity, SelectEntity):
     @property
     def available(self) -> bool:
         """Return True if entity is available."""
-        return self.coordinator.get_model().info.gcode_state == 'RUNNING'
+        return self.coordinator.get_model().print_job.gcode_state == 'RUNNING'
 
     @property
     def current_option(self) -> str:

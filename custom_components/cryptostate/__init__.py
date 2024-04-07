@@ -1,14 +1,15 @@
-"""Crypto tracking"""
-import logging
-import asyncio
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
+"""Crypto tracking."""
 from datetime import timedelta
+import logging
+
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, Config
+from homeassistant.core import Config, HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
 from .api import CryptoTrackerApiClient
-from .const import DOMAIN, CONF_BASE, CONF_CRYPTO
+from .const import CONF_BASE, CONF_CRYPTO, DOMAIN
 
 SCAN_INTERVAL = timedelta(hours=3)
 
@@ -16,12 +17,12 @@ _LOGGER: logging.Logger = logging.getLogger(__package__)
 
 
 async def async_setup(hass: HomeAssistant, config: Config):
-    """Set up this integration using YAML is not supported."""
+    """Set this integration using YAML is not supported."""
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Setup CryptoTracker from config entry"""
+    """Set CryptoTracker from config entry."""
 
     if hass.data.get(DOMAIN) is None:
         hass.data.setdefault(DOMAIN, {})

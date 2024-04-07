@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Selecciona com afegir el dispositiu.",
+        "menu_options": {
+          "discover": "Descobrir dispositiu",
+          "manual": "Configurar manualment"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Amfitrió"
+        },
+        "description": "Deixa l'amfitrió en blanc per descobrir dispositius a la xarxa."
+      },
+      "manual": {
+        "description": "Afegeix la informació del teu dispositiu.",
+        "data": {
+          "id": "ID",
+          "host": "Amfitrió",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Clau"
+        },
+        "data_description": {
+          "token": "Token per a dispositius V3",
+          "k1": "Clau per a dispositius V3"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "El dispositiu ja ha estat configurat.",
+      "cannot_connect": "No s'ha pogut realitzar una connexió.",
+      "no_devices_found": "No s'han trobat dispositius compatibles a la xarxa."
+    },
+    "error": {
+      "cannot_connect": "No s'ha pogut realitzar una connexió amb aquesta configuració.",
+      "device_not_found": "No s'ha pogut trobar el dispositiu a la xarxa.",
+      "unsupported_device": "El dispositiu no és compatible."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Activar so",
+          "temp_step": "Mida de l'escala de temperatura",
+          "use_fan_only_workaround": "Utilitzar l'alternativa \"només ventilador\"",
+          "show_all_presets": "Mostrar tots els preajustaments",
+          "additional_operation_modes": "Mètodes d'operació addicionals",
+          "max_connection_lifetime": "Temps màxim de connexió"
+        },
+        "data_description": {
+          "temp_step": "Mida de l'escala per a la consigna de temperatura",
+          "additional_operation_modes": "Especificar modes d'operació addicionals",
+          "max_connection_lifetime": "Temps màxim que s'utilitzarà una connexió en segons (mínim 30 segons)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Fixar \"segueix-me\"",
+      "description": "Fixar la funció de \"segueix-me\".",
+      "fields": {
+        "enabled": {
+          "name": "Activat",
+          "description": "Si \"segueix-me\" s'ha d'activar."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Silenciós",
+              "low": "Baix",
+              "medium": "Mitjà",
+              "high": "Alt",
+              "auto": "Automàtic",
+              "custom": "Personalitzat"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Apagat",
+              "vertical": "Vertical",
+              "horizontal": "Horitzontal",
+              "both": "Ambdós"
+            }
+          }
+        }
+      }
+    }
+  }
+}

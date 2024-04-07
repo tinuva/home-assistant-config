@@ -55,7 +55,7 @@ class DailySensorConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 # check the interval
                 if (
                     not (isinstance(user_input[CONF_INTERVAL], int))
-                    or int(user_input[CONF_INTERVAL]) <= 0
+                    or user_input[CONF_INTERVAL] <= 0
                 ):
                     raise IntervalNotValid
                 self._name = user_input[CONF_NAME]

@@ -1,17 +1,23 @@
 ---
-
 automation:
-  - alias: Bypass zone with burglar bars
+  - alias: Bypass zone with burglar bars or issues
     trigger:
       - entity_id: binary_sensor.main_bedroom_window
         platform: state
         to: 'on'
+        id: main-bedroom-window
+      - entity_id: binary_sensor.study_window
+        platform: state
+        to: 'on'
+        id: study-window
       - entity_id: alarm_control_panel.home_alarm
+        id: control-panel
         platform: state
         to: 'disarmed'
         for:
           seconds: 30
       - entity_id: sensor.home_alarm_keypad
+        id: keypad
         platform: state
         to: 'Not Ready'
     condition:
@@ -22,12 +28,41 @@ automation:
         entity_id: binary_sensor.main_bedroom_window
         state: 'on'
     action:
-      - service: script.log
-        data:
-          icon: ':rotating_light:'
-          object: 'Home Alarm'
-          message: >
-            Main bed room window, bypass on
-      - service: switch.turn_on
-        data:
-          entity_id: switch.main_bedroom_window_bypass
+      # main-bedroom-window
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: switch.main_bedroom_window_bypass
+                state: 'off'
+              - condition: state
+                entity_id: binary_sensor.main_bedroom_window
+                state: 'on'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    Main bed room window, bypass on
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.main_bedroom_window_bypass
+      # study-window
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: switch.study_window_bypass
+                state: 'off'
+              - condition: state
+                entity_id: binary_sensor.study_window
+                state: 'on'
+            sequence:
+              - service: script.log
+                data:
+                  icon: ':rotating_light:'
+                  object: 'Home Alarm'
+                  message: >
+                    Study window, bypass on
+              - service: switch.turn_on
+                data:
+                  entity_id: switch.study_window_bypass

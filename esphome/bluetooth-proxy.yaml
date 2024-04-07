@@ -1,0 +1,67 @@
+esphome:
+  name: bluetooth-proxy-01
+  friendly_name: bluetooth-proxy-01
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "HqdFDgUd1KELwFP0o9vYSn7U1UvS/DQRegkNliMCmQk="
+
+ota:
+  password: "647e232021c2d612ec6d2e6a5aaeaad5"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bluetooth-Proxy Fallback Hotspot"
+    password: "vtwoiR9I6iKk"
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+#text_sensor:
+#  - platform: ble_scanner
+#    name: "BLE Devices Scanner"
+
+bluetooth_proxy:
+  active: true
+
+sensor:
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:88:01:33"
+    temperature:
+      name: "Main Bedroom Temperature"
+    humidity:
+      name: "Main Bedroom Humidity"
+    battery_level:
+      name: "Main Bedroom Battery-Level"
+    battery_voltage:
+      name: "Main Bedroom Battery-Voltage"
+    signal_strength:
+      name: "Main Bedroom Signal"
+  - platform: atc_mithermometer
+    mac_address: "A4:C1:38:21:30:E0"
+    temperature:
+      name: "Main Bathroom Temperature"
+    humidity:
+      name: "Main Bathroom Humidity"
+    battery_level:
+      name: "Main Bathroom Battery-Level"
+    battery_voltage:
+      name: "Main Bathroom Battery-Voltage"
+    signal_strength:
+      name: "Main Bathroom Signal"

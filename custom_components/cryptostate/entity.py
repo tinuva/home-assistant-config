@@ -1,11 +1,8 @@
 """BlueprintEntity class"""
+from homeassistant.components.sensor import SensorEntityDescription, SensorStateClass
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.components.sensor import (
-    SensorEntityDescription,
-    STATE_CLASS_MEASUREMENT,
-)
 
-from .const import DOMAIN, NAME, VERSION, ATTRIBUTION
+from .const import ATTRIBUTION, DOMAIN, NAME, VERSION
 
 
 class CryptoTrackerEntity(CoordinatorEntity):
@@ -13,12 +10,12 @@ class CryptoTrackerEntity(CoordinatorEntity):
         super().__init__(coordinator)
         self.config_entry = config_entry
         self.entity_description = SensorEntityDescription(
-            key="crypto", state_class=STATE_CLASS_MEASUREMENT
+            key="crypto", state_class=SensorStateClass.MEASUREMENT
         )
         self._date = None
-        if (self.coordinator.data is not None):
+        if self.coordinator.data is not None:
             self._date = self.coordinator.data.get("date")
-        
+
     @property
     def unique_id(self):
         """Return a unique ID to use for this entity."""

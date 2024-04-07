@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     for platform in PLATFORMS:
         coordinator.platforms.append(platform)
-        hass.async_add_job(
+        hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, platform)
         )
 
@@ -140,7 +140,7 @@ class DailySensorUpdateCoordinator(DataUpdateCoordinator):
         self.platforms = []
         self.entry_setup_completed = False
 
-        SCAN_INTERVAL = timedelta(minutes=self.interval)
+        SCAN_INTERVAL = timedelta(seconds=self.interval)
         super().__init__(hass, _LOGGER, name=name, update_interval=SCAN_INTERVAL)
 
         # reset happens at midnight

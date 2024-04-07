@@ -5,10 +5,15 @@ from goodwe import Inverter, InverterError, OperationMode
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, EntityCategory
+from homeassistant.const import (
+    EntityCategory,
+    Platform,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
+)
 from homeassistant.core import Event, HomeAssistant
 from homeassistant.helpers import entity_registry
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
 
@@ -33,7 +38,6 @@ _OPTION_TO_MODE: dict[str, OperationMode] = {
 
 OPERATION_MODE = SelectEntityDescription(
     key="operation_mode",
-    name="Inverter operation mode",
     icon="mdi:solar-power",
     entity_category=EntityCategory.CONFIG,
     translation_key="operation_mode",
@@ -58,7 +62,7 @@ async def async_setup_entry(
         current_eco_soc = eco_mode.soc if eco_mode else 0
     except (InverterError, ValueError):
         # Inverter model does not support this setting
-        _LOGGER.debug("Could not read inverter operation mode")
+        _LOGGER.debug("Could not read inverter operation mode", exc_info=True)
     else:
         entity = InverterOperationModeEntity(
             device_info,
@@ -99,6 +103,7 @@ class InverterOperationModeEntity(SelectEntity):
     """Entity representing the inverter operation mode."""
 
     _attr_should_poll = False
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -136,7 +141,11 @@ class InverterOperationModeEntity(SelectEntity):
 
     async def update_eco_mode_power(self, event: Event) -> None:
         """Update eco mode power value in inverter (when in eco mode)"""
-        self._eco_mode_power = int(float(event.data.get("new_state").state))
+        state = event.data.get("new_state")
+        if state is None or state.state in (STATE_UNKNOWN, "", STATE_UNAVAILABLE):
+            return
+
+        self._eco_mode_power = int(float(state.state))
         if event.data.get("old_state"):
             operation_mode = _OPTION_TO_MODE[self.current_option]
             if operation_mode in (
@@ -150,7 +159,11 @@ class InverterOperationModeEntity(SelectEntity):
 
     async def update_eco_mode_soc(self, event: Event) -> None:
         """Update eco mode SoC value in inverter (when in eco mode)"""
-        self._eco_mode_soc = int(float(event.data.get("new_state").state))
+        state = event.data.get("new_state")
+        if state is None or state.state in (STATE_UNKNOWN, "", STATE_UNAVAILABLE):
+            return
+
+        self._eco_mode_soc = int(float(state.state))
         if event.data.get("old_state"):
             operation_mode = _OPTION_TO_MODE[self.current_option]
             if operation_mode in (

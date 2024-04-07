@@ -11,7 +11,8 @@
 use_x_forwarded_for: true
 trusted_proxies:
   - 172.30.0.0/24
-  - 10.0.3.13/32
+  - 10.0.21.0/24
+  - fd00::/8
 cors_allowed_origins:
   - https://google.com
   - https://www.home-assistant.io

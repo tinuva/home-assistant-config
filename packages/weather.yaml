@@ -1,0 +1,31 @@
+---
+template:
+  - trigger:
+      - platform: time_pattern
+        hours: /1
+      - platform: homeassistant
+        event: start
+    action:
+      - service: weather.get_forecasts
+        data:
+          type: hourly
+        target:
+          entity_id: weather.home
+        response_variable: hourly
+    sensor:
+      - name: Weather Hourly
+        state: "{{ states('weather.home') }}"
+        attributes:
+          temperature: "{{ state_attr('weather.home', 'temperature') }}"
+          dew_point: "{{ state_attr('weather.home', 'dew_point') }}"
+          temperature_unit: "{{ state_attr('weather.home', 'temperature_unit') }}"
+          humidity: "{{ state_attr('weather.home', 'humidity') }}"
+          cloud_coverage: "{{ state_attr('weather.home', 'cloud_coverage') }}"
+          pressure: "{{ state_attr('weather.home', 'pressure') }}"
+          pressure_unit: "{{ state_attr('weather.home', 'pressure_unit') }}"
+          wind_bearing: "{{ state_attr('weather.home', 'wind_bearing') }}"
+          wind_speed: "{{ state_attr('weather.home', 'wind_speed') }}"
+          wind_speed_unit: "{{ state_attr('weather.home', 'wind_speed_unit') }}"
+          visibility_unit: "{{ state_attr('weather.home', 'visibility_unit') }}"
+          precipitation_unit: "{{ state_attr('weather.home', 'precipitation_unit') }}"
+          forecast: "{{ hourly['weather.home'].forecast }}"

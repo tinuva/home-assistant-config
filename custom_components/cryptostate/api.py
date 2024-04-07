@@ -1,26 +1,22 @@
 """Crypto trakcer api client"""
-from email import header
 import logging
-import asyncio
 import socket
-from typing import Optional
-import aiohttp
-from .const import (
-    SINGLE_CURR_URL,
-    ALL_CURR_URLS,
-)
 
+import aiohttp
+
+from .const import ALL_CURR_URLS, SINGLE_CURR_URL
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
 HEADERS = {"Content-type": "application/json; charset=UTF-8"}
 
+
 class CryptoTrackerApiClientError(Exception):
     """Error to indicate a general api error"""
 
-class CryptoTrackerApiClientFetchingError(
-    CryptoTrackerApiClientError
-):
+
+class CryptoTrackerApiClientFetchingError(CryptoTrackerApiClientError):
     """Exception to indicate a fetching error."""
+
 
 class CryptoTrackerApiClient:
     """Crypto tracker api class"""
@@ -34,7 +30,7 @@ class CryptoTrackerApiClient:
     def _format_urls(self):
         urls = []
         for url in SINGLE_CURR_URL:
-            url = url.format(crypto=self._crypto, base=self._base)
+            url = url.format(crypto=self._crypto)
             urls.append(url)
         return urls
 
@@ -48,9 +44,7 @@ class CryptoTrackerApiClient:
         res = await self.api_wrapper(urls=ALL_CURR_URLS, headers=HEADERS)
         return res
 
-    async def api_wrapper(
-        self, urls: str = [], headers: dict = {}
-    ) -> dict:
+    async def api_wrapper(self, urls: str = [], headers: dict = {}) -> dict:
         """Get information from the api"""
         try:
             for url in urls:
@@ -60,10 +54,10 @@ class CryptoTrackerApiClient:
             raise CryptoTrackerApiClientFetchingError(
                 "Can not connect to api to fetch data"
             )
-        except asyncio.TimeoutError as exception:
+        except TimeoutError as exception:
             raise CryptoTrackerApiClientFetchingError(
                 "Timeout fetching data"
-            )from exception
+            ) from exception
         except (aiohttp.ClientError, socket.gaierror) as exception:
             raise CryptoTrackerApiClientFetchingError(
                 "Fatal error fetching data"

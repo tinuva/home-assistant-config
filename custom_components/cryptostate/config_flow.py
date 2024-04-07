@@ -1,11 +1,13 @@
 """Config flow for cryptotracker"""
-from homeassistant.core import callback
-from homeassistant import config_entries
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
-from .const import DOMAIN, CONF_BASE, CONF_CRYPTO
-from homeassistant.const import CONF_NAME
-from .api import CryptoTrackerApiClient
 import voluptuous as vol
+
+from homeassistant import config_entries
+from homeassistant.const import CONF_NAME
+from homeassistant.core import callback
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
+
+from .api import CryptoTrackerApiClient
+from .const import CONF_BASE, CONF_CRYPTO, DOMAIN
 
 
 class CryptoTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -16,7 +18,6 @@ class CryptoTrackerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
 
     async def async_step_user(self, user_input=None):
-
         self._errors = {}
 
         if user_input is not None:

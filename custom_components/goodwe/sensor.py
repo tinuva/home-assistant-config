@@ -1,4 +1,5 @@
 """Support for GoodWe inverter via UDP."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -20,6 +21,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
     POWER_VOLT_AMPERE_REACTIVE,
+    EntityCategory,
     UnitOfApparentPower,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
@@ -30,8 +32,7 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.const import EntityCategory
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.typing import StateType
@@ -75,16 +76,16 @@ _ICONS: dict[SensorKind, str] = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoodweSensorEntityDescription(SensorEntityDescription):
     """Class describing Goodwe sensor entities."""
 
-    value: Callable[
-        [GoodweUpdateCoordinator, str], Any
-    ] = lambda coordinator, sensor: coordinator.sensor_value(sensor)
-    available: Callable[
-        [GoodweUpdateCoordinator], bool
-    ] = lambda coordinator: coordinator.last_update_success
+    value: Callable[[GoodweUpdateCoordinator, str], Any] = (
+        lambda coordinator, sensor: coordinator.sensor_value(sensor)
+    )
+    available: Callable[[GoodweUpdateCoordinator], bool] = (
+        lambda coordinator: coordinator.last_update_success
+    )
 
 
 _DESCRIPTIONS: dict[str, GoodweSensorEntityDescription] = {
@@ -240,7 +241,7 @@ class InverterSensor(CoordinatorEntity[GoodweUpdateCoordinator], SensorEntity):
         In contrast to "total" sensors, these "daily" sensors need to be reset to 0 on midnight.
         """
         if not self.coordinator.last_update_success:
-            self.coordinator.reset_sensor(self._sensor.id)
+            self.coordinator.reset_sensor(self._sensor.id_)
             self.async_write_ha_state()
             _LOGGER.debug("Goodwe reset %s to 0", self.name)
         next_midnight = dt_util.start_of_local_day(

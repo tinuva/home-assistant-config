@@ -189,7 +189,7 @@ automation:
                   - condition: and
                     conditions:
                       - condition: template
-                        value_template: "{{ ('10:00' <= states('sensor.time') < '16:00') }}"
+                        value_template: "{{ ('09:00' <= states('sensor.time') < '16:00') }}"
                       - condition: state
                         entity_id: timer.main_geyser
                         state: 'idle'
@@ -275,20 +275,20 @@ automation:
                     Trigger:
                     ```{{ trigger }}```
         # No conditions met so log and do nothing (exceptions to logging apply)
-        # default:
-        #   # - condition: template
-        #   #   value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
-        #   # - condition: template
-        #   #   value_template: "{{ not (trigger.platform == 'time') }}"
-        #   - alias: "Log action taken"
-        #     service: script.log
-        #     data:
-        #       icon: ':zap:'
-        #       object: 'Geyser - main bedroom'
-        #       message: >
-        #         Not turning on main bedroom geyser because no conditions met
-        #         Trigger:
-        #         ```{{ trigger }}```
+        default:
+          # - condition: template
+          #   value_template: "{{ not (trigger.platform == 'template' and trigger.entity_id == 'sensor.time') }}"
+          # - condition: template
+          #   value_template: "{{ not (trigger.platform == 'time') }}"
+          - alias: "Log action taken"
+            service: script.log
+            data:
+              icon: ':zap:'
+              object: 'Geyser - main bedroom'
+              message: >
+                Not turning on main bedroom geyser because no conditions met
+                Trigger:
+                ```{{ trigger }}```
 
   # start timer when turned on
   - alias: Start timer after Turn on main geyser
@@ -384,7 +384,15 @@ automation:
       - platform: numeric_state
         entity_id: sensor.solcast_pv_forecast_forecast_this_hour
         above: 1800
-        id: pvforecast
+        id: pvforecast1
+      - platform: numeric_state
+        entity_id: sensor.solcast_pv_forecast_power_next_30_mins
+        above: 2400
+        id: pvforecast2
+      - platform: numeric_state
+        entity_id: sensor.solcast_pv_forecast_power_now
+        above: 2500
+        id: pvforecast3
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: template
@@ -404,8 +412,14 @@ automation:
       - choose:
           # Turn on between 9am and 11am for sun times using forecast
           - conditions:
-              - condition: trigger
-                id: pvforecast
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id: pvforecast1
+                  - condition: trigger
+                    id: pvforecast2
+                  - condition: trigger
+                    id: pvforecast3
               - condition: template
                 value_template: "{{ states('sensor.time') <= (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
             sequence:

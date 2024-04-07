@@ -3,30 +3,31 @@ from __future__ import annotations
 
 import logging
 
+import voluptuous as vol
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.components.climate.const import (PRESET_AWAY, PRESET_BOOST,
                                                     PRESET_ECO, PRESET_NONE,
                                                     PRESET_SLEEP,
-                                                    SUPPORT_FAN_MODE,
-                                                    SUPPORT_PRESET_MODE,
-                                                    SUPPORT_SWING_MODE,
-                                                    SUPPORT_TARGET_TEMPERATURE,
+                                                    ClimateEntityFeature,
                                                     HVACMode)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS, TEMP_FAHRENHEIT
+from homeassistant.const import (ATTR_TEMPERATURE, CONF_ENABLED,
+                                 UnitOfTemperature)
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from msmart.device import AirConditioner as AC
 
 from . import helpers
 from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP,
-                    CONF_INCLUDE_OFF_AS_STATE, CONF_SHOW_ALL_PRESETS,
-                    CONF_TEMP_STEP, CONF_USE_FAN_ONLY_WORKAROUND, DOMAIN)
+                    CONF_SHOW_ALL_PRESETS, CONF_TEMP_STEP,
+                    CONF_USE_FAN_ONLY_WORKAROUND, DOMAIN)
 from .coordinator import MideaCoordinatorEntity, MideaDeviceUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-_FAN_CUSTOM = "Custom"
+_FAN_CUSTOM = "custom"
 
 # Dictionaries to convert from Midea mode to HA mode
 _OPERATIONAL_MODE_TO_HVAC_MODE: dict[AC.OperationalMode, HVACMode] = {
@@ -62,9 +63,23 @@ async def async_setup_entry(
         MideaClimateACDevice(hass, coordinator, config_entry.options)
     ])
 
+    # Add a service to control 'follow me' function
+    if helpers.property_exists(coordinator.device, "follow_me"):
+        platform = entity_platform.async_get_current_platform()
+        platform.async_register_entity_service(
+            "set_follow_me",
+            {
+                vol.Required(CONF_ENABLED): cv.boolean,
+            },
+            "async_set_follow_me",
+        )
+
 
 class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
     """Climate entity for Midea AC device."""
+
+    _attr_translation_key = DOMAIN
+    _enable_turn_on_off_backwards_compatibility = False
 
     def __init__(self,
                  hass: HomeAssistant,
@@ -79,13 +94,22 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
         # Apply options
         self._device.beep = options.get(CONF_BEEP, False)
         self._target_temperature_step = options.get(CONF_TEMP_STEP)
-        self._include_off_as_state = options.get(CONF_INCLUDE_OFF_AS_STATE)
         self._use_fan_only_workaround = options.get(
             CONF_USE_FAN_ONLY_WORKAROUND, False)
 
         # Setup default supported features
         self._supported_features = (
-            SUPPORT_TARGET_TEMPERATURE | SUPPORT_FAN_MODE | SUPPORT_PRESET_MODE)
+            ClimateEntityFeature.TARGET_TEMPERATURE |
+            ClimateEntityFeature.FAN_MODE |
+            ClimateEntityFeature.PRESET_MODE
+        )
+
+        # Attempt to add new TURN_OFF/TURN_ON features in HA 2024.2
+        try:
+            self._supported_features |= ClimateEntityFeature.TURN_OFF
+            self._supported_features |= ClimateEntityFeature.TURN_ON
+        except AttributeError:
+            pass
 
         # Setup supported presets
         if options.get(CONF_SHOW_ALL_PRESETS):
@@ -116,10 +140,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
         # Convert from Midea operational modes to HA HVAC mode
         self._hvac_modes = [_OPERATIONAL_MODE_TO_HVAC_MODE[m]
                             for m in supported_op_modes]
-
-        # Include off mode if requested
-        if self._include_off_as_state:
-            self._hvac_modes.append(HVACMode.OFF)
+        self._hvac_modes.append(HVACMode.OFF)
 
         # Append additional operation modes as needed
         additional_modes = options.get(CONF_ADDITIONAL_OPERATION_MODES) or ""
@@ -133,7 +154,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
             self._device, "supported_fan_speeds", AC.FanSpeed.list())
 
         # Convert Midea swing modes to strings
-        self._fan_modes = [m.name.capitalize()
+        self._fan_modes = [m.name.lower()
                            for m in supported_fan_speeds]
 
         # Fetch supported swing modes
@@ -142,10 +163,10 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
 
         # If device supports any swing mode, add it to supported features
         if supported_swing_modes != [AC.SwingMode.OFF]:
-            self._supported_features |= SUPPORT_SWING_MODE
+            self._supported_features |= ClimateEntityFeature.SWING_MODE
 
         # Convert Midea swing modes to strings
-        self._swing_modes = [m.name.capitalize()
+        self._swing_modes = [m.name.lower()
                              for m in supported_swing_modes]
 
         # Dump all supported modes for debug
@@ -166,7 +187,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
 
         # Display on the AC should use the same unit as homeassistant
         helpers.set_properties(self._device, ["fahrenheit", "fahrenheit_unit"],
-                               self.hass.config.units.temperature_unit == TEMP_FAHRENHEIT)
+                               self.hass.config.units.temperature_unit == UnitOfTemperature.FAHRENHEIT)
 
         # Apply via the coordinator
         await self.coordinator.apply()
@@ -178,14 +199,20 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
             "identifiers": {
                 (DOMAIN, self._device.id)
             },
-            "name": self.name,
+            "name": f"Midea AC {self._device.id}",
             "manufacturer": "Midea",
         }
 
     @property
-    def name(self) -> str:
+    def has_entity_name(self) -> bool:
+        """Indicates if entity follows naming conventions."""
+        return True
+
+    @property
+    def name(self) -> None:
         """Return the name of the climate device."""
-        return f"{DOMAIN}_{self._device.id}"
+        # Return None to use device name
+        return None
 
     @property
     def unique_id(self) -> str:
@@ -203,6 +230,22 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
         return not self._use_fan_only_workaround
 
     @property
+    def extra_state_attributes(self) -> dict[str, str]:
+        """Return device specific state attributes."""
+        state_attributes = {}
+
+        if hasattr(self._device, "follow_me"):
+            state_attributes["follow_me"] = getattr(
+                self._device, "follow_me")
+
+        return state_attributes
+
+    async def async_set_follow_me(self, enabled: bool) -> None:
+        """Set 'follow me' mode."""
+        self._device.follow_me = enabled
+        await self._apply()
+
+    @property
     def supported_features(self) -> int:
         """Return the supported features."""
         return self._supported_features
@@ -215,7 +258,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @ property
     def min_temp(self) -> float:
@@ -254,7 +297,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
     @property
     def swing_mode(self) -> str:
         """Return the current swing mode."""
-        return self._device.swing_mode.name.capitalize()
+        return self._device.swing_mode.name.lower()
 
     async def async_set_swing_mode(self, swing_mode: str) -> None:
         """Set the swing mode."""
@@ -280,7 +323,7 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
         fan_speed = self._device.fan_speed
 
         if isinstance(fan_speed, AC.FanSpeed):
-            return fan_speed.name.capitalize()
+            return fan_speed.name.lower()
         elif isinstance(fan_speed, int):
             return _FAN_CUSTOM
 
@@ -305,18 +348,17 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
     @property
     def hvac_mode(self) -> HVACMode:
         """Return current HVAC mode."""
-        if self._include_off_as_state and not self._device.power_state:
+        if not self._device.power_state:
             return HVACMode.OFF
 
         return _OPERATIONAL_MODE_TO_HVAC_MODE.get(self._device.operational_mode, HVACMode.OFF)
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         """Set the HVAC mode."""
-        if self._include_off_as_state and hvac_mode == HVACMode.OFF:
+        if hvac_mode == HVACMode.OFF:
             self._device.power_state = False
         else:
-            if self._include_off_as_state:
-                self._device.power_state = True
+            self._device.power_state = True
 
             self._device.operational_mode = _HVAC_MODE_TO_OPERATIONAL_MODE.get(
                 hvac_mode, self._device.operational_mode)
@@ -383,4 +425,16 @@ class MideaClimateACDevice(MideaCoordinatorEntity, ClimateEntity):
         elif preset_mode == PRESET_SLEEP:
             self._device.sleep_mode = True
 
+        await self._apply()
+
+    async def async_turn_off(self) -> None:
+        """Turn the device off."""
+
+        self._device.power_state = False
+        await self._apply()
+
+    async def async_turn_on(self) -> None:
+        """Turn the device on."""
+
+        self._device.power_state = True
         await self._apply()

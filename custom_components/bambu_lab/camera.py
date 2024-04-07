@@ -1,8 +1,7 @@
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.core import HomeAssistant
-from yarl import URL
-from urllib.parse import urlparse, urlunparse, quote
+from urllib.parse import urlparse
 
 from homeassistant.components import ffmpeg
 
@@ -20,6 +19,8 @@ async def async_setup_entry(
         entry: ConfigEntry,
         async_add_entities: AddEntitiesCallback
 ) -> None:
+    LOGGER.debug(f"CAMERA::async_setup_entry")
+
     coordinator: BambuDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     if coordinator.get_model().supports_feature(Features.CAMERA_RTSP):
         entities_to_add: list = [BambuLabCamera(coordinator, entry)]
@@ -42,17 +43,15 @@ class BambuLabCamera(BambuLabEntity, Camera):
         """Initialize the sensor."""
 
         self._attr_unique_id = f"{config_entry.data['serial']}_camera"
-        self._access_code = config_entry.data['access_code']
-        self._host = config_entry.data['host']
+        self._access_code = config_entry.options['access_code']
+        self._host = config_entry.options['host']
 
         super().__init__(coordinator=coordinator)
         Camera.__init__(self)
 
     @property
     def is_streaming(self) -> bool:
-        if self.coordinator.get_model().camera.rtsp_url == "disable" or None:
-            return False
-        return True
+        return self.available
 
     @property
     def is_recording(self) -> bool:
@@ -60,29 +59,30 @@ class BambuLabCamera(BambuLabEntity, Camera):
             return True
         return False
 
+    @property
+    def use_stream_for_stills(self) -> bool:
+        return True
+    
+    @property
+    def available(self) -> bool:
+        url = self.coordinator.get_model().camera.rtsp_url
+        return url != None and url != "disable"
+
     async def stream_source(self) -> str | None:
-        if self.coordinator.get_model().camera.rtsp_url is not None:
+        if self.available:
             # rtsps://192.168.1.1/streaming/live/1
 
+            LOGGER.debug(f"Raw RTSP URL: {self.coordinator.get_model().camera.rtsp_url}")
             parsed_url = urlparse(self.coordinator.get_model().camera.rtsp_url)
-            url = fr"{parsed_url.scheme}://bblp:{self._access_code}@{parsed_url.netloc}{parsed_url.path}"
-
-            LOGGER.debug(f"Camera RTSP Feed is {url}")
+            split_host = parsed_url.netloc.split(':')
+            if self._host != "":
+                # For unknown reasons the returned rtsp URL sometimes has a completely incorrect IP address in it for the host.
+                # If we have the host IP (may not in bambu cloud mode), rewrite the URL to have that.
+                port = "322" if (len(split_host) == 1) else split_host[1]
+                url = fr"{parsed_url.scheme}://bblp:{self._access_code}@{self._host}:{port}{parsed_url.path}"
+            else:
+                url = fr"{parsed_url.scheme}://bblp:{self._access_code}@{parsed_url.netloc}{parsed_url.path}"
+            LOGGER.debug(f"Adjusted RTSP URL: {url}")
             return str(url)
         LOGGER.debug("No RTSP Feed available")
         return None
-
-    # TODO: async camera image doesn't work for some reason
-    async def async_camera_image(
-            self, width: int | None = None, height: int | None = None
-    ) -> bytes | None:
-        """Return a still image response from the camera."""
-        stream_source = await self.stream_source()
-        if not stream_source:
-            return None
-        return await ffmpeg.async_get_image(
-            self.hass,
-            stream_source,
-            width=width,
-            height=height,
-        )

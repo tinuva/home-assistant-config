@@ -21,7 +21,9 @@ from .const import (
     SERVICE_UPDATE, 
     SERVICE_QUERY_FORECAST_DATA, 
     SERVICE_SET_DAMPENING, 
-    SOLCAST_URL
+    SOLCAST_URL,
+    CUSTOM_HOUR_SENSOR,
+    KEY_ESTIMATE
 )
 
 from .coordinator import SolcastUpdateCoordinator
@@ -31,7 +33,7 @@ from typing import Final
 
 import voluptuous as vol
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.SELECT,]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,32 +56,27 @@ SERVICE_QUERY_SCHEMA: Final = vol.All(
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up solcast parameters."""
-    optdamp = {
-        "0": entry.options["damp00"],
-        "1": entry.options["damp01"],
-        "2": entry.options["damp02"],
-        "3": entry.options["damp03"],
-        "4": entry.options["damp04"],
-        "5": entry.options["damp05"],
-        "6": entry.options["damp06"],
-        "7": entry.options["damp07"],
-        "8": entry.options["damp08"],
-        "9": entry.options["damp09"],
-        "10": entry.options["damp10"],
-        "11": entry.options["damp11"],
-        "12": entry.options["damp12"],
-        "13": entry.options["damp13"],
-        "14": entry.options["damp14"],
-        "15": entry.options["damp15"],
-        "16": entry.options["damp16"],
-        "17": entry.options["damp17"],
-        "18": entry.options["damp18"],
-        "19": entry.options["damp19"],
-        "20": entry.options["damp20"],
-        "21": entry.options["damp21"],
-        "22": entry.options["damp22"],
-        "23": entry.options["damp23"]
-    }
+
+    #new in v4.0.16 for the selector of which field to use from the data
+    if entry.options.get(KEY_ESTIMATE,None) == None:
+        new = {**entry.options}
+        new[KEY_ESTIMATE] = "estimate"
+        entry.version = 7
+        hass.config_entries.async_update_entry(entry, options=new)
+
+
+    optdamp = {}
+    try:
+        #if something goes wrong ever with the damp factors just create a blank 1.0
+        for a in range(0,24):
+            optdamp[str(a)] = entry.options[f"damp{str(a).zfill(2)}"]
+    except Exception as ex:
+        new = {**entry.options}
+        for a in range(0,24):
+            new[f"damp{str(a).zfill(2)}"] = 1.0
+        entry.options = {**new}
+        for a in range(0,24):
+            optdamp[str(a)] = 1.0
 
     options = ConnectionOptions(
         entry.options[CONF_API_KEY],
@@ -87,6 +84,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.config.path('solcast.json'),
         dt_util.get_time_zone(hass.config.time_zone),
         optdamp,
+        entry.options[CUSTOM_HOUR_SENSOR],
+        entry.options.get(KEY_ESTIMATE,"estimate"),
     )
 
     solcast = SolcastApi(aiohttp_client.async_get_clientsession(hass), options)
@@ -118,8 +117,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(async_update_options))
-
-    
 
     _LOGGER.info(f"SOLCAST - Solcast API data UTC times are converted to {hass.config.time_zone}")
 
@@ -222,7 +219,6 @@ async def async_remove_config_entry_device(hass: HomeAssistant, entry: ConfigEnt
 
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry):
     """Reload entry if options change."""
-    _LOGGER.debug("Reloading entry %s", entry.entry_id)
     await hass.config_entries.async_reload(entry.entry_id)
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
@@ -232,42 +228,41 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     if config_entry.version < 4:
         new_options = {**config_entry.options}
         new_options.pop("const_disableautopoll", None)
-
         config_entry.version = 4
+
         hass.config_entries.async_update_entry(config_entry, options=new_options)
 
     #new 4.0.8
     #power factor for each hour
     if config_entry.version == 4:
         new = {**config_entry.options}
-        new["damp00"] = 1.0
-        new["damp01"] = 1.0
-        new["damp02"] = 1.0
-        new["damp03"] = 1.0
-        new["damp04"] = 1.0
-        new["damp05"] = 1.0
-        new["damp06"] = 1.0
-        new["damp07"] = 1.0
-        new["damp08"] = 1.0
-        new["damp09"] = 1.0
-        new["damp10"] = 1.0
-        new["damp11"] = 1.0
-        new["damp12"] = 1.0
-        new["damp13"] = 1.0
-        new["damp14"] = 1.0
-        new["damp15"] = 1.0
-        new["damp16"] = 1.0
-        new["damp17"] = 1.0
-        new["damp18"] = 1.0
-        new["damp19"] = 1.0
-        new["damp20"] = 1.0
-        new["damp21"] = 1.0
-        new["damp22"] = 1.0
-        new["damp23"] = 1.0
-
-        config_entry.options = {**new}
-
+        for a in range(0,24):
+            new[f"damp{str(a).zfill(2)}"] = 1.0
         config_entry.version = 5
+
+        hass.config_entries.async_update_entry(config_entry, options=new)
+
+        
+
+    #new 4.0.15
+    #custom sensor for 'next x hours'
+    if config_entry.version == 5:
+        new = {**config_entry.options}
+        new[CUSTOM_HOUR_SENSOR] = 1
+        config_entry.version = 6
+
+        hass.config_entries.async_update_entry(config_entry, options=new)
+
+        
+
+    #new 4.0.16
+    #which estimate value to use for data calcs est,est10,est90
+    if config_entry.version == 6:
+        new = {**config_entry.options}
+        new[KEY_ESTIMATE] = "estimate"
+        config_entry.version = 7
+
+        hass.config_entries.async_update_entry(config_entry, options=new)
 
     _LOGGER.debug("Solcast Migration to version %s successful", config_entry.version)
 

@@ -158,39 +158,51 @@ sensor:
 
   - platform: template
     sensors:
+      # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
+      # <= 600
+      coct_cost_1:
+        friendly_name: "coct_cost_1"
+        icon_template: "mdi:flash"
+        value_template: "states('sensor.coct_cost_1')|float"
+      # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
+      # > 600
+      coct_cost_2:
+        friendly_name: "coct_cost_2"
+        icon_template: "mdi:flash"
+        value_template: "states('sensor.coct_cost_2')|float"
       # Template sensor for money used
       energy_buy_daily_cost:
         friendly_name: "energy_buy_daily_cost"
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (states('sensor.energy_buy_daily')|float * 331.26 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
           {% else %}
-            {{ (states('sensor.energy_buy_daily')|float * 240.04 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
           {% endif %}
       energy_buy_monthly_cost:
         friendly_name: "energy_buy_monthly_cost"
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (((states('sensor.energy_buy_monthly')|float - 600) * 331.26 / 100)|round(2) + (600 * 240.04 / 100))|round(2) }}
+            {{ (((states('sensor.energy_buy_monthly')|float - 600) * states('sensor.coct_cost_2')|float / 100)|round(2) + (600 * states('sensor.coct_cost_1')|float / 100))|round(2) }}
           {% else %}
-            {{ (states('sensor.energy_buy_monthly')|float * 240.04 / 100)|round(2) }}
+            {{ (states('sensor.energy_buy_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
           {% endif %}
       energy_generate_daily_saving:
         friendly_name: "energy_generate_daily_saving"
         icon_template: "mdi:flash"
         value_template: >-
           {% if states('sensor.energy_buy_monthly')|float > 600 %}
-            {{ (states('sensor.solar_generate_daily')|float * 331.26 / 100)|round(2) }}
+            {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
           {% else %}
-            {{ (states('sensor.solar_generate_daily')|float * 240.04 / 100)|round(2) }}
+            {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
           {% endif %}
       energy_generate_monthly_saving:
         friendly_name: "energy_generate_monthly_saving"
         icon_template: "mdi:flash"
         value_template: >-
-          {{ (states('sensor.solar_generate_monthly')|float * 240.04 / 100)|round(2) }}
+          {{ (states('sensor.solar_generate_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
 
       grid_mode:
         friendly_name_template: "Grid Mode"

@@ -46,7 +46,6 @@
         "data": {
           "prompt_tone": "Enable Beep",
           "temp_step": "Temperature Step",
-          "include_off_as_state": "Include \"Off\" State",
           "use_fan_only_workaround": "Use Fan-only Workaround",
           "show_all_presets": "Show All Presets",
           "additional_operation_modes": "Additional Operation Modes",
@@ -56,6 +55,56 @@
           "temp_step": "Step size for temperature set point",
           "additional_operation_modes": "Specify additional operational modes",
           "max_connection_lifetime": "Maximum time in seconds a connection will be used (30 second minimum)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Set follow me",
+      "description": "Set the follow me function.",
+      "fields": {
+        "enabled": {
+          "name": "Enabled",
+          "description": "Whether follow me should be enabled."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Silent",
+              "low": "Low",
+              "medium": "Medium",
+              "high": "High",
+              "auto": "Auto",
+              "custom": "Custom"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Off",
+              "vertical": "Vertical",
+              "horizontal": "Horizontal",
+              "both": "Both"
+            }
+          }
+        }
+      }
+    },
+    "select": {
+      "swing_angle": {
+        "state": {
+          "off": "Off",
+          "pos_1": "Position 1",
+          "pos_2": "Position 2",
+          "pos_3": "Position 3",
+          "pos_4": "Position 4",
+          "pos_5": "Position 5"
         }
       }
     }

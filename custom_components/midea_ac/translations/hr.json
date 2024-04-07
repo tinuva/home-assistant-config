@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Odaberite kako dodati uređaj.",
+        "menu_options": {
+          "discover": "Pretraživanje uređaja",
+          "manual": "Ručno konfiguriranje"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Ostavite 'host' prazno za pretraživanje uređaja na mreži."
+      },
+      "manual": {
+        "description": "Unesite informacije o vašem uređaju.",
+        "data": {
+          "id": "ID",
+          "host": "Host",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Ključ"
+        },
+        "data_description": {
+          "token": "Token za V3 uređaje",
+          "k1": "Ključ za V3 uređaje"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Uređaj je već konfiguriran.",
+      "cannot_connect": "Nije bilo moguće uspostaviti vezu.",
+      "no_devices_found": "Na mreži nisu pronađeni podržani uređaji."
+    },
+    "error": {
+      "cannot_connect": "Nije moguće uspostaviti vezu s ovim postavkama.",
+      "device_not_found": "Uređaj nije pronađen na mreži.",
+      "unsupported_device": "Uređaj nije podržan."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Omogući zvučni signal",
+          "temp_step": "Temperaturni korak",
+          "use_fan_only_workaround": "Koristite zaobilazno rješenje samo za ventilatore",
+          "show_all_presets": "Prikaži sve unaprijed postavljene postavke",
+          "additional_operation_modes": "Dodatni načini rada",
+          "max_connection_lifetime": "Maksimalno trajanje veze"
+        },
+        "data_description": {
+          "temp_step": "Veličina koraka za zadanu vrijednost temperature",
+          "additional_operation_modes": "Navedite dodatne načine rada",
+          "max_connection_lifetime": "Maksimalno vrijeme u sekundama tijekom kojeg će se veza koristiti (najmanje 30 sekundi)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Prati me",
+      "description": "Podesi 'Prati me' opciju rada.",
+      "fields": {
+        "enabled": {
+          "name": "Omogućeno",
+          "description": "Treba li omogućiti praćenje.?"
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Tiho",
+              "low": "Nisko",
+              "medium": "Srednje",
+              "high": "Visoko",
+              "auto": "Auto",
+              "custom": "Prilagođeno"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Off",
+              "vertical": "Vertikalno",
+              "horizontal": "Horizontalno",
+              "both": "Oba"
+            }
+          }
+        }
+      }
+    }
+  }
+}

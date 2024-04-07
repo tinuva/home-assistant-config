@@ -200,6 +200,8 @@ automation:
     trigger:
       - platform: time
         at: '5:30:00'
+      - platform: time
+        at: '7:00:00'
     action:
       # MainBed
       - choose:
@@ -209,10 +211,23 @@ automation:
                 value_template: >
                   {{ states('climate.midea_ac_30786325862093') not in ['off','unavailable','unknown','none'] }}
             sequence:
-              - service: script.ac
-                data:
-                  ac: "climate.midea_ac_30786325862093"
-                  mode: "off"
+              - choose:
+                # if cooling then switch to fan
+                  - conditions:
+                      - condition: template
+                        value_template: >
+                          {{ states('climate.midea_ac_30786325862093') in ['cool'] }}
+                    sequence:
+                      - service: script.ac
+                        data:
+                          ac: "climate.midea_ac_30786325862093"
+                          mode: "fan_only"
+                # else turn off
+                default:
+                  - service: script.ac
+                    data:
+                      ac: "climate.midea_ac_30786325862093"
+                      mode: "off"
       - choose:
           - conditions:
               # ChildBed ac not off/fan

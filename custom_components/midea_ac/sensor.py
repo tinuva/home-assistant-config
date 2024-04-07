@@ -6,7 +6,7 @@ import logging
 from homeassistant.components.sensor import (SensorDeviceClass, SensorEntity,
                                              SensorStateClass)
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import TEMP_CELSIUS
+from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -28,7 +28,7 @@ async def async_setup_entry(
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
-    # Create sensor entities from device
+    # Create sensor entities
     add_entities([
         MideaTemperatureSensor(coordinator, "indoor_temperature"),
         MideaTemperatureSensor(coordinator, "outdoor_temperature"),
@@ -44,6 +44,7 @@ class MideaTemperatureSensor(MideaCoordinatorEntity, SensorEntity):
         MideaCoordinatorEntity.__init__(self, coordinator)
 
         self._prop = prop
+        self._name = prop.replace("_", " ").capitalize()
 
     @property
     def device_info(self) -> dict:
@@ -55,9 +56,14 @@ class MideaTemperatureSensor(MideaCoordinatorEntity, SensorEntity):
         }
 
     @property
+    def has_entity_name(self) -> bool:
+        """Indicates if entity follows naming conventions."""
+        return True
+
+    @property
     def name(self) -> str:
         """Return the name of this entity."""
-        return f"{DOMAIN}_{self._prop}_{self._device.id}"
+        return self._name
 
     @property
     def unique_id(self) -> str:
@@ -87,7 +93,7 @@ class MideaTemperatureSensor(MideaCoordinatorEntity, SensorEntity):
     @property
     def native_unit_of_measurement(self) -> str:
         """Return the native units pf this entity."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def native_value(self) -> float | None:

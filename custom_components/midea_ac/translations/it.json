@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Seleziona come aggiungere un dispositivo.",
+        "menu_options": {
+          "discover": "Trova dispositivo",
+          "manual": "Configura manualmente"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Lasciare Host vuoto per trovare dispositivi nella rete"
+      },
+      "manual": {
+        "description": "Inserisci le informazioni del tuo.",
+        "data": {
+          "id": "ID",
+          "host": "Host",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Key"
+        },
+        "data_description": {
+          "token": "Token per dispositivi V3",
+          "k1": "Chiave per dispositivi V3"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Il dispositivo è già stato configurato",
+      "cannot_connect": "Connessione non riuscita",
+      "no_devices_found": "Nessun dispositivo supportato è stato trovato nella rete"
+    },
+    "error": {
+      "cannot_connect": "Connessione non riuscita con queste impostazioni",
+      "device_not_found": "Nessun dispositivo supportato è stato trovato nella rete.",
+      "unsupported_device": "Dispositivo non è supportato."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Abilita Beep",
+          "temp_step": "Temperatura Step",
+          "use_fan_only_workaround": "Usare solo la ventola",
+          "show_all_presets": "Mostra tutte le preimpostazioni",
+          "additional_operation_modes": "Funzionalità aggiuntive",
+          "max_connection_lifetime": "Durata massima della connessione"
+        },
+        "data_description": {
+          "temp_step": "Dimensione er il set point della temperatura",
+          "additional_operation_modes": "Specifica ulteriori funzionalità aggiuntive",
+          "max_connection_lifetime": "Tempo massimo di utilizzo della connessione in secondi (minimo 30 secondi)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Imposta Seguimi",
+      "description": "Imposta funzionalità Seguimi",
+      "fields": {
+        "enabled": {
+          "name": "Abilitato",
+          "description": "Quando la funzionalità Seguimi è abilitata"
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Silenziosa",
+              "low": "Bassa",
+              "medium": "Media",
+              "high": "Alta",
+              "auto": "Automatica",
+              "custom": "Personalizzata"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Spento",
+              "vertical": "Verticale",
+              "horizontal": "Orizzontale",
+              "both": "Entrambi"
+            }
+          }
+        }
+      }
+    }
+  }
+}

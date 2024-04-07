@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Selecciona como añadir un dispositivo.",
+        "menu_options": {
+          "discover": "Descubrir dispositivo",
+          "manual": "Configurar manualmente"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Anfitrión"
+        },
+        "description": "Deja el anfitrión en blanco para descubrir los dispositivos en la red."
+      },
+      "manual": {
+        "description": "Introduce la información de tu dispositivo.",
+        "data": {
+          "id": "ID",
+          "host": "Amfitrión",
+          "port": "Puerto",
+          "token": "Token",
+          "k1": "Clave"
+        },
+        "data_description": {
+          "token": "Token para dispositivos V3",
+          "k1": "Clave para dispositivos V3"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "El dispositivo ya ha sido configurado.",
+      "cannot_connect": "No se pudo realizar una connexión.",
+      "no_devices_found": "No se han encontrado dispositivos compatibles en la red."
+    },
+    "error": {
+      "cannot_connect": "No se pudo realizar una connexión con esta configuración.",
+      "device_not_found": "No se ha encontrado el dispositivo en la red.",
+      "unsupported_device": "El dispositivo no es compatible."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Activar pitido",
+          "temp_step": "Tamaño del escalón de temperatura",
+          "use_fan_only_workaround": "Usar la alternativa \"solo ventilador\"",
+          "show_all_presets": "Mostrar todos los preajustes",
+          "additional_operation_modes": "Metodos de operación adicional",
+          "max_connection_lifetime": "Tiempo de connexión máximo"
+        },
+        "data_description": {
+          "temp_step": "Tamaño del escalón para la consigna de temperatura",
+          "additional_operation_modes": "Especificar metodos de operación adicionales",
+          "max_connection_lifetime": "Tiempo máximo en segundos que se usará una connexión (mínimo 30 segundos)"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Fijar \"sígueme\"",
+      "description": "Fijar la funcion de \"sígueme\".",
+      "fields": {
+        "enabled": {
+          "name": "Activado",
+          "description": "Si \"sígueme\" debe estar activado."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Silencioso",
+              "low": "Bajo",
+              "medium": "Medio",
+              "high": "Alto",
+              "auto": "Automático",
+              "custom": "Personalizado"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Apagado",
+              "vertical": "Vertical",
+              "horizontal": "Horizontal",
+              "both": "Ambos"
+            }
+          }
+        }
+      }
+    }
+  }
+}

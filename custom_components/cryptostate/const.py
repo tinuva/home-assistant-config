@@ -18,13 +18,11 @@ CONF_CRYPTO = "crypto"
 DEFAULT_NAME = "basecrypto"
 
 SINGLE_CURR_URL = [
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.json",
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies/{crypto}/{base}.min.json",
-    "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/{crypto}/{base}.min.json",
-    "https://raw.githubusercontent.com/fawazahmed0/currency-api/1/latest/currencies/{crypto}/{base}.json"
+    "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{crypto}.min.json",
+    "https://latest.currency-api.pages.dev/v1/currencies/{crypto}.min.json",
 ]
 # With this url we can get all the currency names that are available
 ALL_CURR_URLS = [
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.json",
-    "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies.min.json"
+    "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json",
+    "https://latest.currency-api.pages.dev/v1/currencies.json",
 ]

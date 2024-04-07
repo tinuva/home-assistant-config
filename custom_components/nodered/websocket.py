@@ -1,4 +1,5 @@
 """Websocket API for Node-RED."""
+
 import json
 import logging
 from typing import Any
@@ -7,8 +8,16 @@ from hassil.recognize import RecognizeResult
 from homeassistant.components import device_automation
 from homeassistant.components.conversation import (
     HOME_ASSISTANT_AGENT,
-    _get_agent_manager,
 )
+
+try:
+    from homeassistant.components.conversation import get_agent_manager
+except ImportError:
+    # _get_agent_manager was renamed to get_agent_manager in 2024.4.0
+    from homeassistant.components.conversation import (
+        _get_agent_manager as get_agent_manager,
+    )
+
 from homeassistant.components.conversation.default_agent import DefaultAgent
 from homeassistant.components.device_automation import DeviceAutomationType
 from homeassistant.components.device_automation.exceptions import (
@@ -308,14 +317,28 @@ async def websocket_sentence(
     response = msg["response"]
 
     @callback
-    async def handle_trigger(sentence: str, result: RecognizeResult = None) -> str:
-        """Handle Sentence trigger."""
-        """RecognizeResult was added in 2023.8.0"""
+    async def handle_trigger(
+        sentence: str,
+        result: RecognizeResult | None = None,
+        device_id: str | None = None,
+    ) -> str:
+        """
+        Handle Sentence trigger.
+        RecognizeResult was added in 2023.8.0
+        device_id was added in 2024.4.0
+        """
 
         _LOGGER.debug(f"Sentence trigger: {sentence}")
         connection.send_message(
             event_message(
-                msg[CONF_ID], {"data": {"sentence": sentence, "result": result}}
+                msg[CONF_ID],
+                {
+                    "data": {
+                        "sentence": sentence,
+                        "result": result,
+                        "deviceId": device_id,
+                    }
+                },
             )
         )
 
@@ -327,7 +350,7 @@ async def websocket_sentence(
         _LOGGER.info(f"Sentence trigger removed: {sentences}")
 
     try:
-        default_agent = await _get_agent_manager(hass).async_get_agent(
+        default_agent = await get_agent_manager(hass).async_get_agent(
             HOME_ASSISTANT_AGENT
         )
         assert isinstance(default_agent, DefaultAgent)

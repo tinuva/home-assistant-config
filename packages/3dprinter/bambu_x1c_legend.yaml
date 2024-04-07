@@ -41,7 +41,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.x1c_00m09a363000342_print_status
-        not_to: ["unavailable", "unknown", "prepare", "running"]
+        not_to: ["unavailable", "unknown", "prepare", "running", "idle"]
     action:
       - choose:
           # IF specific states, we skip the camera
@@ -49,7 +49,7 @@ automation:
               - condition: or
                 conditions:
                   - condition: template
-                    value_template: "{{ trigger.to_state.state in ['offline', 'prepare', 'slicing',' printing'] }}"
+                    value_template: "{{ trigger.to_state.state in ['offline', 'prepare', 'slicing', 'printing'] }}"
             sequence:
               - service: script.alert
                 data:
@@ -80,15 +80,29 @@ automation:
       count: >-
               {{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', 'Count') }}
     action:
-      - service: script.alert
-        data:
-          target: 'alerts-david'
-          icon: ':printer:'
-          object: '3D Printer'
-          camera: 'camera.bambu_x1c_legend'
-          message: >
-            Legend is reporting a Problem {{- '\n' -}}
-            {{ count|string }} errors encountered. {{- '\n' -}}
-            {%- for i in range(1, count+1) -%}
-            Error {{ count|string  }}: <{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Wiki') }}|{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Error') }}>{{- '\n' -}}
-            {%- endfor -%}
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: template
+                    value_template: "{{ 1 < count }}"
+                  - condition: and
+                    conditions:
+                      - condition: template
+                        value_template: "{{ 1 == count }}"
+                      - condition: template
+                        value_template: "{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', '1-Error') != 'HMS_0C00_0300_0003_000B: Inspecting first layer.' }}"
+            sequence:
+              - service: script.alert
+                data:
+                  target: 'alerts-david'
+                  icon: ':printer:'
+                  object: '3D Printer'
+                  camera: 'camera.bambu_x1c_legend'
+                  message: >
+                    Legend is reporting a Problem {{- '\n' -}}
+                    {{ count|string }} errors encountered. {{- '\n' -}}
+                    {%- for i in range(1, count+1) -%}
+                    Error {{ count|string  }}: <{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Wiki') }}|{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Error') }}>{{- '\n' -}}
+                    {%- endfor -%}
+        #default:

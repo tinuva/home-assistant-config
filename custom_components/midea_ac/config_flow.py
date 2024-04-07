@@ -12,16 +12,15 @@ from homeassistant.data_entry_flow import FlowResult
 from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
 from msmart.discover import Discover
+from msmart.lan import AuthenticationError
 
-from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP,
-                    CONF_INCLUDE_OFF_AS_STATE, CONF_KEY,
+from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME, CONF_SHOW_ALL_PRESETS,
                     CONF_TEMP_STEP, CONF_USE_FAN_ONLY_WORKAROUND, DOMAIN)
 
 _DEFAULT_OPTIONS = {
     CONF_BEEP: True,
     CONF_TEMP_STEP: 1.0,
-    CONF_INCLUDE_OFF_AS_STATE: True,
     CONF_USE_FAN_ONLY_WORKAROUND: False,
     CONF_SHOW_ALL_PRESETS: False,
     CONF_ADDITIONAL_OPERATION_MODES: None,
@@ -178,7 +177,11 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         token = config.get(CONF_TOKEN)
         key = config.get(CONF_KEY)
         if token and key:
-            success = await device.authenticate(token, key)
+            try:
+                await device.authenticate(token, key)
+                success = True
+            except AuthenticationError:
+                success = False
         else:
             await device.refresh()
             success = device.online
@@ -227,8 +230,6 @@ class MideaOptionsFlow(OptionsFlow):
                          default=options.get(CONF_BEEP, True)): cv.boolean,
             vol.Optional(CONF_TEMP_STEP,
                          default=options.get(CONF_TEMP_STEP, 1.0)): vol.All(vol.Coerce(float), vol.Range(min=0.5, max=5)),
-            vol.Optional(CONF_INCLUDE_OFF_AS_STATE,
-                         default=options.get(CONF_INCLUDE_OFF_AS_STATE, True)): cv.boolean,
             vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND,
                          default=options.get(CONF_USE_FAN_ONLY_WORKAROUND, False)): cv.boolean,
             vol.Optional(CONF_SHOW_ALL_PRESETS,

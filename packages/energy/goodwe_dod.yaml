@@ -48,21 +48,21 @@ script:
                     {{ dod - 10 }}
               - condition: template
                 value_template: >-
-                  {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
+                  {{ dod|int != states('number.goodwe_depth_of_discharge_on_grid')|int  }}
               - alias: "Set DoD on inverter"
                 service: number.set_value
                 data:
                   value: >
                     {{ dod }}
                 target:
-                  entity_id: number.depth_of_discharge_on_grid
+                  entity_id: number.goodwe_depth_of_discharge_on_grid
               - alias: "Set Eco Charge SoC on inverter"
                 service: number.set_value
                 data:
                   value: >
                     {{ 100 - dod }}
                 target:
-                  entity_id: number.eco_mode_soc
+                  entity_id: number.goodwe_eco_mode_soc
               - alias: "Log action taken"
                 service: script.log
                 data:
@@ -74,21 +74,21 @@ script:
         default:
           - condition: template
             value_template: >-
-              {{ dod|int != states('number.depth_of_discharge_on_grid')|int  }}
+              {{ dod|int != states('number.goodwe_depth_of_discharge_on_grid')|int  }}
           - alias: "Set DoD on inverter"
             service: number.set_value
             data:
               value: >
                 {{ dod }}
             target:
-              entity_id: number.depth_of_discharge_on_grid
+              entity_id: number.goodwe_depth_of_discharge_on_grid
           - alias: "Set Eco Charge SoC on inverter"
             service: number.set_value
             data:
               value: >
                 {{ 100 - dod }}
             target:
-              entity_id: number.eco_mode_soc
+              entity_id: number.goodwe_eco_mode_soc
           - alias: "Log action taken"
             service: script.log
             data:
@@ -104,22 +104,30 @@ automation:
   - id: '1620734902145'
     alias: 'Set DoD on Goodwe based on input'
     trigger:
-      - entity_id: number.depth_of_discharge_on_grid
+      - entity_id: number.goodwe_depth_of_discharge_on_grid
         platform: state
     action:
+      - alias: "Set variables"
+        variables:
+          message: >
+            {% if msg is defined %}
+              {{ msg }}
+            {% else %}
+              input value
+            {% endif %}
       - service: script.log
         data:
           icon: ':zap:'
           object: 'GoodWe'
           message: >
-            DoD set to {{ states('number.depth_of_discharge_on_grid')|int }} - input value
+            DoD set to {{ states('number.goodwe_depth_of_discharge_on_grid')|int }} - {{ message }}
     mode: queued
     max: 2
 
   - id: '1620734902145'
     alias: 'Set DoD on Goodwe based on input'
     trigger:
-      - entity_id: number.eco_mode_soc
+      - entity_id: number.goodwe_eco_mode_soc
         platform: state
     action:
       - service: script.log
@@ -127,7 +135,7 @@ automation:
           icon: ':zap:'
           object: 'GoodWe'
           message: >
-            Eco SoC set to {{ states('number.eco_mode_soc')|int }} - input value
+            Eco SoC set to {{ states('number.goodwe_eco_mode_soc')|int }} - input value
     mode: queued
     max: 2
 
@@ -156,7 +164,7 @@ automation:
               - condition: template
                 value_template: >-
                   {% set start_time = state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False) %}
-                  {{ (start_time < states('sensor.time') <= '06:00' and states('number.depth_of_discharge_on_grid')|int <= 16) or (states('sensor.time') == '06:00') }}
+                  {{ (start_time < states('sensor.time') <= '06:00' and states('number.goodwe_depth_of_discharge_on_grid')|int <= 16) or (states('sensor.time') == '06:00') }}
           - condition: and
             conditions:
               - condition: template
@@ -200,7 +208,7 @@ automation:
       - alias: "Set DoD on inverter"
         service: number.set_value
         target:
-          entity_id: number.depth_of_discharge_on_grid
+          entity_id: number.goodwe_depth_of_discharge_on_grid
         data:
           value: >
             {% set soc_today = states('sensor.solcast_pv_forecast_forecast_today')|int %}
@@ -214,6 +222,12 @@ automation:
     trigger:
       - platform: time
         at: '20:00:00'
+      # - platform: time
+      #   at: '21:00:00'
+      # - platform: time
+      #   at: '22:00:00'
+      # - platform: time
+      #   at: '23:00:00'
     condition:
       # if current SoC above 75%
       - condition: numeric_state
@@ -265,41 +279,96 @@ automation:
   #       data:
   #         value: 16
   #       target:
-  #         entity_id: number.depth_of_discharge_on_grid
+  #         entity_id: number.goodwe_depth_of_discharge_on_grid
   #   mode: single
 
   ## When loadshedding and there a chance geyser needs to run after 4pm
-  - alias: Goodwe DoD 16%
-    description: Goodwe 16% when geysers run under conditions
+  # - alias: Goodwe DoD 16%
+  #   description: Goodwe 16% when geysers run under conditions
+  #   mode: single
+  #   trigger:
+  #     - platform: state
+  #       entity_id: switch.front_bathroom_geyser
+  #       to: 'on'
+  #     - platform: state
+  #       entity_id: switch.main_bathroom_geyser
+  #       to: 'on'
+  #   condition:
+  #     - condition: template
+  #       value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
+  #   action:
+  #     - choose:
+  #         # IF lots of sun and high battery skip
+  #         - conditions:
+  #             - condition: numeric_state
+  #               entity_id: sensor.solcast_pv_forecast_forecast_today
+  #               above: '26.1'
+  #             - condition: numeric_state
+  #               entity_id: sensor.battery_state_of_charge
+  #               above: '50'
+  #           sequence:
+  #             - delay:
+  #                 minutes: "{{ range(1, 11)|random }}"
+  #       # ELSE go 16
+  #       default:
+  #         - alias: "Set DoD on inverter"
+  #           service: number.set_value
+  #           data:
+  #             value: 16
+  #           target:
+  #             entity_id: number.goodwe_depth_of_discharge_on_grid
+
+  ## When load high lower DoD
+  - alias: Goodwe DoD 1% when load high
+    description: Goodwe DoD 0% when load high
     mode: single
     trigger:
-      - platform: state
-        entity_id: switch.front_bathroom_geyser
-        to: 'on'
-      - platform: state
-        entity_id: switch.main_bathroom_geyser
-        to: 'on'
+      - platform: numeric_state
+        entity_id: sensor.battery_power
+        above: '1900'
+        for:
+          seconds: 15
     condition:
-      - condition: template
-        value_template: "{{ ('00:00' <= states('sensor.time') <= '06:00') or ('15:00' <= states('sensor.time') < '23:59') }}"
+      - condition: numeric_state
+        entity_id: number.goodwe_depth_of_discharge_on_grid
+        above: 1
     action:
-      - choose:
-          # IF lots of sun and high battery skip
-          - conditions:
-              - condition: numeric_state
-                entity_id: sensor.solcast_pv_forecast_forecast_today
-                above: '26.1'
-              - condition: numeric_state
-                entity_id: sensor.battery_state_of_charge
-                above: '50'
-            sequence:
-              - delay:
-                  minutes: "{{ range(1, 11)|random }}"
-        # ELSE go 16
-        default:
-          - alias: "Set DoD on inverter"
-            service: number.set_value
-            data:
-              value: 16
-            target:
-              entity_id: number.depth_of_discharge_on_grid
+      - alias: "Set DoD on inverter"
+        service: number.set_value
+        data:
+          value: 1
+        target:
+          entity_id: number.goodwe_depth_of_discharge_on_grid
+
+  ## When load lower
+  - alias: Goodwe DoD set proper when load lower
+    description: Goodwe DoD set proper when load lower
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.house_consumption
+        below: '1200'
+        for:
+          seconds: 30
+    condition:
+      - condition: numeric_state
+        entity_id: number.goodwe_depth_of_discharge_on_grid
+        below: "2"
+    action:
+      - alias: "Set variables"
+        variables:
+          forecast: >
+            {% if '00:00' <= now().time().strftime("%R") <= '16:00' %}
+              {{ states('sensor.solcast_pv_forecast_forecast_today') }}
+            {% else %}
+              {{ states('sensor.solcast_pv_forecast_forecast_tomorrow') }}
+            {% endif %}
+      - service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            House load below 1.2kW for 30 seconds. Setting DoD using forecast value {{ forecast }}
+      - service: script.goodwe_set_dod
+        data:
+          forecast: "{{ forecast }}"

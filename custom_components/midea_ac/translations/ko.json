@@ -1,0 +1,100 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "기기 연결 방법을 선택해주세요.",
+        "menu_options": {
+          "discover": "기기를 탐색합니다.",
+          "manual": "수동으로 설정합니다."
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "호스트"
+        },
+        "description": "네트워크상의 장치를 찾으려면 호스트 필드를 비워 두세요."
+      },
+      "manual": {
+        "description": "기기 정보를 입력하세요.",
+        "data": {
+          "id": "아이디(ID)",
+          "host": "호스트(host)",
+          "port": "포트(port)",
+          "token": "토큰(token)",
+          "k1": "키(key)"
+        },
+        "data_description": {
+          "token": "V3 장치용 토큰",
+          "k1": "V3 장치용 키"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "기기가 이미 설정되었습니다.",
+      "cannot_connect": "연결을 할 수 없습니다.",
+      "no_devices_found": "네트워크상에서 지원되는 기기를 찾을 수 없습니다."
+    },
+    "error": {
+      "cannot_connect": "이 설정으로는 연결을 할 수 없습니다.",
+      "device_not_found": "네트워크상에서 기기를 찾을 수 없습니다.",
+      "unsupported_device": "지원되지 않는 기기입니다."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "삐 소리 활성화",
+          "temp_step": "온도 조절 간격",
+          "use_fan_only_workaround": "팬 전용 우회 사용",
+          "show_all_presets": "모든 사전 설정 보기",
+          "additional_operation_modes": "추가 작동 모드",
+          "max_connection_lifetime": "최대 연결 시간"
+        },
+        "data_description": {
+          "temp_step": "온도 조절 간격 설정",
+          "additional_operation_modes": "추가 작동 모드를 지정하세요",
+          "max_connection_lifetime": "최대 연결 시간(초), 최소 30초"
+        }
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "팔로우 미(follow me) 설정",
+      "description": "팔로우 미 기능을 설정합니다.",
+      "fields": {
+        "enabled": {
+          "name": "활성화됨",
+          "description": "팔로우 미를 활성화할지 여부를 결정합니다."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "조용히",
+              "low": "낮음",
+              "medium": "중간",
+              "high": "높음",
+              "auto": "자동",
+              "custom": "사용자 정의"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "끄기",
+              "vertical": "수직",
+              "horizontal": "수평",
+              "both": "복합"
+            }
+          }
+        }
+      }
+    }
+  }
+}

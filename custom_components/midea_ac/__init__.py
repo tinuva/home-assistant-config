@@ -6,9 +6,10 @@ import logging
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryNotReady
 from msmart import __version__ as MSMART_VERISON
 from msmart.device import AirConditioner as AC
+from msmart.lan import AuthenticationError
 
 from . import helpers
 from .const import CONF_KEY, CONF_MAX_CONNECTION_LIFETIME, DOMAIN
@@ -36,10 +37,11 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     token = config_entry.data[CONF_TOKEN]
     key = config_entry.data[CONF_KEY]
     if token and key:
-        success = await device.authenticate(token, key)
-        if not success:
-            raise ConfigEntryAuthFailed(
-                "Failed to authenticate with device.")
+        try:
+            await device.authenticate(token, key)
+        except AuthenticationError as e:
+            raise ConfigEntryNotReady(
+                "Failed to authenticate with device.") from e
 
     # Configure the connection lifetime
     lifetime = config_entry.options.get(CONF_MAX_CONNECTION_LIFETIME)
@@ -71,6 +73,8 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
         hass.config_entries.async_forward_entry_setup(config_entry, "switch"))
     hass.async_create_task(
         hass.config_entries.async_forward_entry_setup(config_entry, "number"))
+    hass.async_create_task(
+        hass.config_entries.async_forward_entry_setup(config_entry, "select"))
 
     # Reload entry when its updated
     config_entry.async_on_unload(
@@ -83,14 +87,15 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> 
     """Unload a config entry."""
     # Remove the coordinator from global data
     try:
-        hass.data[DOMAIN].pop(config_entry.data[CONF_ID])
+        hass.data[DOMAIN].pop(config_entry.entry_id)
     except KeyError:
         _LOGGER.warning("Failed remove device from global data.")
 
     await hass.config_entries.async_forward_entry_unload(config_entry, "climate")
     await hass.config_entries.async_forward_entry_unload(config_entry, "sensor")
-    await hass.config_entries.async_forward_entry_unload(config_entry, "switch")
     await hass.config_entries.async_forward_entry_unload(config_entry, "binary_sensor")
+    await hass.config_entries.async_forward_entry_unload(config_entry, "switch")
+    await hass.config_entries.async_forward_entry_unload(config_entry, "number")
 
     return True
 

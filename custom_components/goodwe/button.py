@@ -1,4 +1,5 @@
 """GoodWe PV inverter selection settings entities."""
+
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
@@ -10,7 +11,7 @@ from homeassistant.components.button import ButtonEntity, ButtonEntityDescriptio
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, KEY_DEVICE_INFO, KEY_INVERTER
@@ -18,14 +19,14 @@ from .const import DOMAIN, KEY_DEVICE_INFO, KEY_INVERTER
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoodweButtonEntityDescriptionRequired:
     """Required attributes of GoodweButtonEntityDescription."""
 
     action: Callable[[Inverter], Awaitable[None]]
 
 
-@dataclass
+@dataclass(frozen=True)
 class GoodweButtonEntityDescription(
     ButtonEntityDescription, GoodweButtonEntityDescriptionRequired
 ):
@@ -34,7 +35,7 @@ class GoodweButtonEntityDescription(
 
 SYNCHRONIZE_CLOCK = GoodweButtonEntityDescription(
     key="synchronize_clock",
-    name="Synchronize inverter clock",
+    translation_key="synchronize_clock",
     icon="mdi:clock-check-outline",
     entity_category=EntityCategory.CONFIG,
     action=lambda inv: inv.write_setting("time", datetime.now()),
@@ -55,7 +56,7 @@ async def async_setup_entry(
         await inverter.read_setting("time")
     except (InverterError, ValueError):
         # Inverter model does not support clock synchronization
-        _LOGGER.debug("Could not read inverter current clock time")
+        _LOGGER.debug("Could not read inverter current clock time", exc_info=True)
     else:
         async_add_entities(
             [GoodweButtonEntity(device_info, SYNCHRONIZE_CLOCK, inverter)]
@@ -66,6 +67,7 @@ class GoodweButtonEntity(ButtonEntity):
     """Entity representing the inverter clock synchronization button."""
 
     _attr_should_poll = False
+    _attr_has_entity_name = True
     entity_description: GoodweButtonEntityDescription
 
     def __init__(

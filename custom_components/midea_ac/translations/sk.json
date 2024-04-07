@@ -2,49 +2,97 @@
   "config": {
     "step": {
       "user": {
-        "title": "Konfigurácia zariadenia Midea Smart AC",
+        "description": "Zadajte informácie o svojom zariadení.",
+        "menu_options": {
+          "discover": "Objavte zariadenie",
+          "manual": "Nakonfigurujte manuálne"
+        }
+      },
+      "discover": {
+        "data": {
+          "host": "Host"
+        },
+        "description": "Ak chcete zistiť zariadenia v sieti, nechajte hostiteľa prázdne."
+      },
+      "manual": {
         "description": "Zadajte informácie o svojom zariadení.",
         "data": {
           "id": "ID",
           "host": "Host",
           "port": "Port",
           "token": "Token",
-          "k1": "K1",
-          "prompt_tone": "Tón výzvy",
-          "temp_step": "Teplotný krok",
-          "include_off_as_state": "Zhrnúť \"Off\" stav",
-          "use_fan_only_workaround": "Použite alternatívne riešenie pre ventilátor",
-          "additional_operation_modes": "Ďalšie prevádzkové režimy"
+          "k1": "Kľúč"
         },
         "data_description": {
           "token": "Token pre V3 zariadenia",
-          "k1": "K1 pre V3 zariadenia",
-          "prompt_tone": "Povoliť pípnutie pri odosielaní príkazov",
-          "temp_step": "Veľkosť kroku pre nastavenú hodnotu teploty"
+          "k1": "K1 pre V3 zariadenia"
         }
       }
     },
-    "abort":{
-      "already_configured": "ID zariadenia už bolo nakonfigurované."
+    "abort": {
+      "already_configured": "ID zariadenia už bolo nakonfigurované.",
+      "cannot_connect": "Nepodarilo sa vytvoriť spojenie.",
+      "no_devices_found": "V sieti sa nenašli žiadne podporované zariadenia."
     },
-    "error":{
-      "cannot_connect":"S týmito nastaveniami sa nepodarilo nadviazať spojenie."
+    "error": {
+      "cannot_connect":"S týmito nastaveniami sa nepodarilo nadviazať spojenie.",
+      "device_not_found": "Zariadenie sa v sieti nenašlo.",
+      "unsupported_device": "Zariadenie nie je podporované."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Možnosti pre zariadenie Midea Smart AC",
         "data": {
           "prompt_tone": "Tón výzvy",
           "temp_step": "Teplotný krok",
-          "include_off_as_state": "Zhrnúť \"Off\" stav",
           "use_fan_only_workaround": "Použite alternatívne riešenie pre ventilátor",
-          "additional_operation_modes": "Ďalšie prevádzkové režimy"
+          "show_all_presets": "Zobraziť všetky predvoľby",
+          "additional_operation_modes": "Ďalšie prevádzkové režimy",
+          "max_connection_lifetime": "Maximálna životnosť pripojenia"
         },
         "data_description": {
-          "prompt_tone": "Povoliť pípnutie pri odosielaní príkazov",
-          "temp_step": "Veľkosť kroku pre nastavenú hodnotu teploty"
+          "temp_step": "Veľkosť kroku pre nastavenú hodnotu teploty",
+          "additional_operation_modes": "Zadajte ďalšie prevádzkové režimy",
+          "max_connection_lifetime": "Maximálny čas v sekundách, počas ktorého sa bude používať pripojenie (minimálne 30 sekúnd)"
+    }
+  }
+}
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Nasleduj ma",
+      "description": "Nastavte funkciu nasleduj ma.",
+      "fields": {
+        "enabled": {
+          "name": "Povolené",
+          "description": "Či by mala byť povolená funkcia Follow me."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Tichý",
+              "low": "Nízky",
+              "medium": "Stredný",
+              "high": "Vysoký",
+              "auto": "Auto",
+              "custom": "Voliteľný"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Vypnuté",
+              "vertical": "Vertikálny",
+              "horizontal": "Horizontálny",
+              "both": "Obidva"
+            }
+          }
         }
       }
     }
