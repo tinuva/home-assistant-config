@@ -1,1 +1,0 @@
-import{ds as r,c$ as t,cD as n,l as a}from"./card-f444d6e4.js";const e=async(e,s,i,c)=>{if(!i.sign)return i.endpoint;let l;try{l=await r(s,i.endpoint,c)}catch(r){return t(r),null}return l?l.replace(/^http/i,"ws"):(n(e,a("error.failed_sign")),null)};export{e as g};

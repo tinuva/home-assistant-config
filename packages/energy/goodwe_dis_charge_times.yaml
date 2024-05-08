@@ -1,3 +1,5 @@
+---
+
 sensor:
   # This sensor requires the following package installed in HACS
   ### https://github.com/Limych/ha-average

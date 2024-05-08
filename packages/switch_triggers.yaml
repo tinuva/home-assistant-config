@@ -4,13 +4,13 @@ group:
   feeds_off_while_sleeping:
     name: Feeds off while sleeping
     entities:
-      - switch.office_feed_1
-      - switch.office_feed_2
+      - switch.office_feed_1_office_feed_1
+      - switch.office_feed_2_office_feed_2
 
   feeds_off_while_sleeping_without_auto_turn_on:
     name: Feeds off while sleeping
     entities:
-      - switch.bar_media_feed
+      - switch.bar_media_feed_bar_media_feed
 
 automation:
   ### Turn off feeds when Alarm is armed

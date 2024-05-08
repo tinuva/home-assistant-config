@@ -1,13 +1,14 @@
 """GoodWe PV inverter switch entities."""
+
+from dataclasses import dataclass
 import logging
 from typing import Any
 
 from goodwe import Inverter, InverterError
-
 from homeassistant.components.switch import (
+    SwitchDeviceClass,
     SwitchEntity,
     SwitchEntityDescription,
-    SwitchDeviceClass,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -18,12 +19,29 @@ from .const import DOMAIN, KEY_DEVICE_INFO, KEY_INVERTER
 
 _LOGGER = logging.getLogger(__name__)
 
-LOAD_CONTROL = SwitchEntityDescription(
-    key="load_control",
-    name="Load Control",
-    icon="mdi:electric-switch",
-    entity_category=EntityCategory.CONFIG,
-    device_class=SwitchDeviceClass.OUTLET,
+
+@dataclass(frozen=True, kw_only=True)
+class GoodweSwitchEntityDescription(SwitchEntityDescription):
+    """Class describing Goodwe switch entities."""
+
+    setting: str
+
+
+SWITCHES = (
+    GoodweSwitchEntityDescription(
+        key="load_control",
+        translation_key="load_control",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SwitchDeviceClass.OUTLET,
+        setting="load_control_switch",
+    ),
+    GoodweSwitchEntityDescription(
+        key="grid_export_limit_switch",
+        translation_key="grid_export_limit_switch",
+        entity_category=EntityCategory.CONFIG,
+        device_class=SwitchDeviceClass.SWITCH,
+        setting="grid_export",
+    ),
 )
 
 
@@ -36,31 +54,37 @@ async def async_setup_entry(
     inverter = hass.data[DOMAIN][config_entry.entry_id][KEY_INVERTER]
     device_info = hass.data[DOMAIN][config_entry.entry_id][KEY_DEVICE_INFO]
 
-    # read current load control state from the inverter
-    try:
-        current_state = await inverter.read_setting("load_control_switch")
-    except (InverterError, ValueError):
-        # Inverter model does not support this feature
-        _LOGGER.debug("Could not read load control switch value", exc_info=True)
-    else:
-        entity = LoadControlSwitch(
-            device_info,
-            LOAD_CONTROL,
-            inverter,
-            current_state == 1,
-        )
-        async_add_entities([entity])
+    entities = []
+
+    for description in SWITCHES:
+        try:
+            current_state = await inverter.read_setting(description.setting)
+        except (InverterError, ValueError):
+            # Inverter model does not support this feature
+            _LOGGER.debug("Could not read %s value", description.setting)
+        else:
+            entity = InverterSwitchEntity(
+                device_info,
+                description,
+                inverter,
+                current_state == 1,
+            )
+        entities.append(entity)
+
+    async_add_entities(entities)
 
 
-class LoadControlSwitch(SwitchEntity):
+class InverterSwitchEntity(SwitchEntity):
     """Switch representation of inverter's 'Load Control' relay."""
 
     _attr_should_poll = False
+    _attr_has_entity_name = True
+    entity_description: GoodweSwitchEntityDescription
 
     def __init__(
         self,
         device_info: DeviceInfo,
-        description: SwitchEntityDescription,
+        description: GoodweSwitchEntityDescription,
         inverter: Inverter,
         current_is_on: bool,
     ) -> None:
@@ -73,17 +97,17 @@ class LoadControlSwitch(SwitchEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on."""
-        await self._inverter.write_setting("load_control_switch", 1)
+        await self._inverter.write_setting(self.entity_description.setting, 1)
         self._attr_is_on = True
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off."""
-        await self._inverter.write_setting("load_control_switch", 0)
+        await self._inverter.write_setting(self.entity_description.setting, 0)
         self._attr_is_on = False
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
-        """Process update from entity."""
-        status = await self._inverter.read_setting("load_control_switch")
-        return status == 1
+        """Get the current value from inverter."""
+        value = await self._inverter.read_setting(self.entity_description.setting)
+        self._attr_is_on = value == 1

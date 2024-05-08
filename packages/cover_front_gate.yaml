@@ -7,6 +7,7 @@ mqtt:
       state_topic: "stat/front-gate/POWER2"              #SwitchTopic Enabled
       command_topic: "cmnd/front-gate/POWER1"
       availability_topic: "tele/front-gate/LWT"
+      unique_id: front_gate
       name: "Front Gate"
       qos: 0
       retain: false

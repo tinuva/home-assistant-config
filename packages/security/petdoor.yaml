@@ -1,0 +1,58 @@
+---
+
+sensor:
+  - platform: template
+    sensors:
+      # Battery template sensor
+      kitchen_pet_door_battery:
+        unique_id: kitchen_pet_door_battery
+        friendly_name: "Kitchen Pet Door Battery"
+        unit_of_measurement: '%'
+        icon_template: "mdi:battery-arrow-down"
+        value_template: >-
+          {% set battery_voltage = states('sensor.kitchen_kitchen_battery')|float %}
+          {% set battery_percent = (battery_voltage - 4.8)*100|round(2) %}
+          {{ battery_percent }}
+
+automation:
+  ### Notify state change
+  - alias: Notify when kitchen pet door state change
+    description: Notify when kitchen pet door state change
+    trigger:
+      - entity_id: sensor.kitchen_kitchen
+        platform: state
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != "unavailable" }}
+    action:
+      - service: script.alert
+        data:
+          icon: ':cat2:'
+          object: 'Kitchen Pet Door'
+          message: >
+            Kitchen Pet Door lock state changed to: {{ states.sensor.kitchen_kitchen.state }}
+
+  - alias: Notify when kitchen pet door battery low
+    description: Notify when kitchen pet door battery low
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.kitchen_pet_door_battery
+        below: '20'
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != "unavailable" }}
+    action:
+      - service: script.alert
+        data:
+          icon: ':cat2:'
+          object: 'Kitchen Pet Door Battery'
+          message: >
+            Kitchen Pet Door battery below 20%: {{ states.sensor.kitchen_pet_door_battery.state }}%

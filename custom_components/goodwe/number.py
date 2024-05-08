@@ -7,7 +7,6 @@ from dataclasses import dataclass
 import logging
 
 from goodwe import Inverter, InverterError
-
 from homeassistant.components.number import (
     NumberDeviceClass,
     NumberEntity,
@@ -24,21 +23,14 @@ from .const import DOMAIN, KEY_DEVICE_INFO, KEY_INVERTER
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
-class GoodweNumberEntityDescriptionBase:
-    """Required values when describing Goodwe number entities."""
+@dataclass(frozen=True, kw_only=True)
+class GoodweNumberEntityDescription(NumberEntityDescription):
+    """Class describing Goodwe number entities."""
 
     getter: Callable[[Inverter], Awaitable[any]]
     mapper: Callable[[any], int]
     setter: Callable[[Inverter, int], Awaitable[None]]
     filter: Callable[[Inverter], bool]
-
-
-@dataclass(frozen=True)
-class GoodweNumberEntityDescription(
-    NumberEntityDescription, GoodweNumberEntityDescriptionBase
-):
-    """Class describing Goodwe number entities."""
 
 
 def _get_setting_unit(inverter: Inverter, setting: str) -> str:
@@ -53,13 +45,11 @@ NUMBERS = (
     GoodweNumberEntityDescription(
         key="grid_export_limit",
         translation_key="grid_export_limit",
-        icon="mdi:transmission-tower",
         entity_category=EntityCategory.CONFIG,
         device_class=NumberDeviceClass.POWER,
         native_unit_of_measurement=UnitOfPower.WATT,
         native_step=100,
         native_min_value=0,
-        native_max_value=10000,
         getter=lambda inv: inv.get_grid_export_limit(),
         mapper=lambda v: v,
         setter=lambda inv, val: inv.set_grid_export_limit(val),
@@ -69,12 +59,11 @@ NUMBERS = (
     GoodweNumberEntityDescription(
         key="grid_export_limit",
         translation_key="grid_export_limit",
-        icon="mdi:transmission-tower",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
         native_min_value=0,
-        native_max_value=100,
+        native_max_value=200,
         getter=lambda inv: inv.get_grid_export_limit(),
         mapper=lambda v: v,
         setter=lambda inv, val: inv.set_grid_export_limit(val),
@@ -83,7 +72,6 @@ NUMBERS = (
     GoodweNumberEntityDescription(
         key="battery_discharge_depth",
         translation_key="battery_discharge_depth",
-        icon="mdi:battery-arrow-down",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
@@ -96,29 +84,27 @@ NUMBERS = (
     ),
     GoodweNumberEntityDescription(
         key="eco_mode_power",
-        name="Eco mode power",
-        icon="mdi:battery-charging-low",
+        translation_key="eco_mode_power",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
         native_min_value=0,
         native_max_value=100,
         getter=lambda inv: inv.read_setting("eco_mode_1"),
-        mapper=lambda v: abs(v.power) if v else 0,
+        mapper=lambda v: abs(v.power) if v.power else 0,
         setter=None,
         filter=lambda inv: True,
     ),
     GoodweNumberEntityDescription(
         key="eco_mode_soc",
-        name="Eco mode SoC",
-        icon="mdi:battery-charging-low",
+        translation_key="eco_mode_soc",
         entity_category=EntityCategory.CONFIG,
         native_unit_of_measurement=PERCENTAGE,
         native_step=1,
         native_min_value=0,
         native_max_value=100,
         getter=lambda inv: inv.read_setting("eco_mode_1"),
-        mapper=lambda v: v.soc if v else 0,
+        mapper=lambda v: v.soc if v.soc else 0,
         setter=None,
         filter=lambda inv: True,
     ),
@@ -144,9 +130,16 @@ async def async_setup_entry(
             _LOGGER.debug("Could not read inverter setting %s", description.key)
             continue
 
-        entities.append(
-            InverterNumberEntity(device_info, description, inverter, current_value)
-        )
+        entity = InverterNumberEntity(device_info, description, inverter, current_value)
+        # Set the max value of grid_export_limit (W version)
+        if (
+            description.key == "grid_export_limit"
+            and description.native_unit_of_measurement == UnitOfPower.WATT
+        ):
+            entity.native_max_value = (
+                inverter.rated_power * 2 if inverter.rated_power else 10000
+            )
+        entities.append(entity)
 
     async_add_entities(entities)
 
@@ -172,8 +165,13 @@ class InverterNumberEntity(NumberEntity):
         self._attr_native_value = float(current_value)
         self._inverter: Inverter = inverter
 
+    async def async_update(self) -> None:
+        """Get the current value from inverter."""
+        value = await self.entity_description.getter(self._inverter)
+        self._attr_native_value = float(value)
+
     async def async_set_native_value(self, value: float) -> None:
-        """Set new value."""
+        """Set new value to inverter."""
         if self.entity_description.setter:
             await self.entity_description.setter(self._inverter, int(value))
         self._attr_native_value = value

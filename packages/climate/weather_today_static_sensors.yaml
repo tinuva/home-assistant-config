@@ -20,24 +20,28 @@ automation:
         at: 01:00:00
     condition: []
     action:
+      - service: weather.get_forecasts
+        data:
+          type: hourly
+        target:
+          entity_id: weather.home
+        response_variable: today_hourly
+      - variables:
+          tomorrow: >-
+            {{ (as_timestamp(now().date() + timedelta(days=1)) | timestamp_utc).replace(' ', 'T') ~ '+00:00' }}
+      - variables:
+          today: >-
+            {{ today_hourly['weather.home']['forecast']| selectattr('datetime', 'lt', tomorrow) | map(attribute='temperature') | list }}
       - service: mqtt.publish
         data:
           topic: home/weather/today/max
           payload_template: >
-            {% set tomorrow = (as_timestamp(now().date() + timedelta(days=1)) | timestamp_utc)
-              .replace(' ', 'T') ~ '+00:00' %}
-            {% set today = state_attr('weather.home_hourly', 'forecast')
-              | selectattr('datetime', 'lt', tomorrow) | map(attribute='temperature') | list %}
             {{ today | max }}
           retain: true
       - service: mqtt.publish
         data:
           topic: home/weather/today/min
           payload_template: >
-            {% set tomorrow = (as_timestamp(now().date() + timedelta(days=1)) | timestamp_utc)
-              .replace(' ', 'T') ~ '+00:00' %}
-            {% set today = state_attr('weather.home_hourly', 'forecast')
-              | selectattr('datetime', 'lt', tomorrow) | map(attribute='temperature') | list %}
             {{ today | min }}
           retain: true
     mode: single

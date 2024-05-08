@@ -1,36 +1,36 @@
----
+# ---
 
-timer:
-  # When calling the start service on a timer that is already running, it resets
-  # the duration it will need to finish and restart the timer without triggering
-  # a canceled or finished event. This, for example, makes it easy to create
-  # timed lights that get triggered by motion. Starting a timer triggers a
-  # started event unless the timer is paused, in that case, it triggers a
-  # restarted event.
-  watersystem:
-    duration: '00:35:00'
+# timer:
+#   # When calling the start service on a timer that is already running, it resets
+#   # the duration it will need to finish and restart the timer without triggering
+#   # a canceled or finished event. This, for example, makes it easy to create
+#   # timed lights that get triggered by motion. Starting a timer triggers a
+#   # started event unless the timer is paused, in that case, it triggers a
+#   # restarted event.
+#   watersystem:
+#     duration: '00:35:00'
 
-automation:
-  # Start timer after switch turn on
-  - alias: Start water timers after turn on
-    trigger:
-      - platform: state
-        entity_id: switch.water_sprayers
-        to: 'on'
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.watersystem
+# automation:
+#   # Start timer after switch turn on
+#   - alias: Start water timers after turn on
+#     trigger:
+#       - platform: state
+#         entity_id: switch.water_sprayers
+#         to: 'on'
+#     action:
+#       - service: timer.start
+#         data:
+#           entity_id: timer.watersystem
 
-  # Timer end = Turn off
-  - alias: Turn off water switch
-    trigger:
-      platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.watersystem
-    action:
-      service: switch.turn_off
-      data:
-        entity_id:
-          - switch.water_sprayers
+#   # Timer end = Turn off
+#   - alias: Turn off water switch
+#     trigger:
+#       platform: event
+#       event_type: timer.finished
+#       event_data:
+#         entity_id: timer.watersystem
+#     action:
+#       service: switch.turn_off
+#       data:
+#         entity_id:
+#           - switch.water_sprayers

@@ -7,11 +7,12 @@
         "error": {
             "connection_error": "Failed to connect"
         },
-"flow_title": "GoodWe",
+    "flow_title": "GoodWe",
         "step": {
             "user": {
                 "data": {
-                    "host": "IP Address",
+                    "host": "Hostname / IP Address",
+                    "protocol": "Protocol",
                     "model_family": "Inverter Family (optional)"
                 },
                 "description": "Connect to inverter",
@@ -28,6 +29,12 @@
         "number": {
             "battery_discharge_depth": {
                 "name": "Depth of discharge (on-grid)"
+            },
+            "eco_mode_power": {
+                "name": "Eco mode power"
+            },
+            "eco_mode_soc": {
+                "name": "Eco mode SoC"
             },
             "grid_export_limit": {
                 "name": "Grid export limit"
@@ -55,8 +62,16 @@
                     "2": "Importing"
                 }
             }
+        },
+        "switch": {
+            "grid_export_limit_switch": {
+                "name": "Grid export limit switch"
+            },
+            "load_control": {
+                "name": "Load control"
+            }
         }
-},
+    },
     "options": {
         "step": {
             "init": {

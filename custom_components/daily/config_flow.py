@@ -1,4 +1,6 @@
 """Config flow for Daily Sensor integration."""
+
+from homeassistant.core import callback
 from .const import (  # pylint: disable=unused-import
     DOMAIN,
     CONF_INPUT_SENSOR,
@@ -12,11 +14,12 @@ from .const import (  # pylint: disable=unused-import
     DEFAULT_INTERVAL,
     DEFAULT_AUTO_RESET,
 )
-
+from .exceptions import SensorNotFound, OperationNotFound, IntervalNotValid, NotUnique
+from .options_flow import DailySensorOptionsFlowHandler
 import logging
 import voluptuous as vol
 
-from homeassistant import config_entries, exceptions
+from homeassistant import config_entries
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -106,23 +109,13 @@ class DailySensorConfigFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             errors=self._errors,
         )
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get options flow."""
+        return DailySensorOptionsFlowHandler(config_entry)
+
     async def _check_unique(self, thename):
         """Test if the specified name is not already claimed."""
         await self.async_set_unique_id(thename)
         self._abort_if_unique_id_configured()
-
-
-class SensorNotFound(exceptions.HomeAssistantError):
-    """Error to indicate a sensor is not found."""
-
-
-class OperationNotFound(exceptions.HomeAssistantError):
-    """Error to indicate the operation specified is not valid."""
-
-
-class IntervalNotValid(exceptions.HomeAssistantError):
-    """Error to indicate the interval specified is not valid."""
-
-
-class NotUnique(exceptions.HomeAssistantError):
-    """Error to indicate that the name is not unique."""

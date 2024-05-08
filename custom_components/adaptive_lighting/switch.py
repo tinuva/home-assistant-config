@@ -1,4 +1,5 @@
 """Switch for the Adaptive Lighting integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -59,6 +60,7 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
 )
+from homeassistant.const import __version__ as ha_version
 from homeassistant.core import (
     CALLBACK_TYPE,
     Context,
@@ -358,7 +360,8 @@ async def handle_change_switch_settings(
 
     # deep copy the defaults so we don't modify the original dicts
     switch._set_changeable_settings(data=data, defaults=deepcopy(defaults))
-    switch._update_time_interval_listener()
+    if switch.is_on:
+        switch._update_time_interval_listener()
 
     _LOGGER.debug(
         "Called 'adaptive_lighting.change_switch_settings' service with '%s'",
@@ -947,9 +950,15 @@ class AdaptiveSwitch(SwitchEntity, RestoreEntity):
         if self.hass.is_running:
             await self._setup_listeners()
         else:
+            kw = {}
+            year, month = (int(x) for x in ha_version.split(".")[:2])
+            if (year, month) >= (2024, 4):
+                # Added in https://github.com/home-assistant/core/pull/113020
+                kw["run_immediately"] = False
             self.hass.bus.async_listen_once(
                 EVENT_HOMEASSISTANT_STARTED,
                 self._setup_listeners,
+                **kw,
             )
         last_state: State | None = await self.async_get_last_state()
         is_new_entry = last_state is None  # newly added to HA
@@ -1656,10 +1665,12 @@ class AdaptiveLightingManager:
             self.hass.bus.async_listen(
                 EVENT_CALL_SERVICE,
                 self.turn_on_off_event_listener,
+                run_immediately=False,
             ),
             self.hass.bus.async_listen(
                 EVENT_STATE_CHANGED,
                 self.state_changed_event_listener,
+                run_immediately=False,
             ),
         ]
 
@@ -2652,7 +2663,10 @@ class AdaptiveLightingManager:
             entity_id,
             service_data,
         )
-        if any(attr in service_data for attr in COLOR_ATTRS | BRIGHTNESS_ATTRS):
+        if any(
+            attr in service_data
+            for attr in COLOR_ATTRS | BRIGHTNESS_ATTRS | {ATTR_EFFECT}
+        ):
             self.mark_as_manual_control(entity_id)
             return True
         return False

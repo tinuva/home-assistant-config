@@ -46,12 +46,11 @@ automation:
         - timer.loadshedding_slot
         - timer.loungelight
         - timer.main_geyser
-        - timer.no_motion
         - timer.outsidebacklight
         - timer.pool_pump
         - timer.pool_pump_grid_pause
         - timer.vacuumautoresume
-        - timer.watersystem
+        # - timer.watersystem
     action:
       - service: input_text.set_value
         data_template:
