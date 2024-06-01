@@ -9,9 +9,9 @@ homeassistant:
     climate.midea_ac_30786325862093:
       friendly_name: 'AC Main Bedroom'
     climate.midea_ac_30786325862153:
-      friendly_name: 'AC Child Bedroom'
+      friendly_name: 'AC Amy Bedroom'
     climate.midea_ac_32985348871179:
-      friendly_name: 'AC Office'
+      friendly_name: 'AC Andre Bedroom'
 
 # climate:
 #   - platform: midea_ac

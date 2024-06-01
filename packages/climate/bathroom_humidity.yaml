@@ -4,10 +4,10 @@ automation:
   - alias: "Turn on Master Bathroom Fan"
     trigger:
       - platform: state
-        entity_id: sensor.bluetooth_proxy_01_main_bathroom_humidity, sensor.main_bedroom_humidity   # 1st bathroom 2nd main bedroom
+        entity_id: sensor.bluetooth_proxy_01_main_bathroom_humidity, sensor.bluetooth_proxy_01_main_bedroom_humidity   # 1st bathroom 2nd main bedroom
     condition:
       - condition: template
-        value_template: "{{ (states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float - states.sensor.main_bedroom_humidity.state|float > 15) or (states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
+        value_template: "{{ (states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float - states.sensor.bluetooth_proxy_01_main_bedroom_humidity.state|float > 15) or (states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
       - condition: or
         conditions:
           - condition: state  # 'day' condition: from sunrise until sunset
@@ -42,7 +42,7 @@ automation:
   - alias: "Turn off Master Bathroom Fan"
     trigger:
       - platform: state
-        entity_id: sensor.bluetooth_proxy_01_main_bathroom_humidity, sensor.main_bedroom_humidity   # 1st bathroom 2nd main bedroom
+        entity_id: sensor.bluetooth_proxy_01_main_bathroom_humidity, sensor.bluetooth_proxy_01_main_bedroom_humidity   # 1st bathroom 2nd main bedroom
       - platform: state
         entity_id: light.main_bathroom
         to: 'on'
@@ -50,7 +50,7 @@ automation:
           minutes: 20
     condition:
       - condition: template # bathroom vs main bedroom
-        value_template: "{{states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float - states.sensor.main_bedroom_humidity.state|float < 13 and states.light.main_bathroom.state == 'on' and states.binary_sensor.master_bathroom_humidity_falling.state == 'off' and states.binary_sensor.master_bathroom_humidity_rising.state == 'off'}}"
+        value_template: "{{states.sensor.bluetooth_proxy_01_main_bathroom_humidity.state|float - states.sensor.bluetooth_proxy_01_main_bedroom_humidity.state|float < 13 and states.light.main_bathroom.state == 'on' and states.binary_sensor.master_bathroom_humidity_falling.state == 'off' and states.binary_sensor.master_bathroom_humidity_rising.state == 'off'}}"
       - condition: state  # 'day' condition: from sunrise until sunset
         entity_id: sun.sun
         state: 'above_horizon'

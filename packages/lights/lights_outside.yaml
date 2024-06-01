@@ -2,26 +2,29 @@
 
 light:
   - platform: group
+    unique_id: lights_stay_on_with_guest_mode
     name: Lights stay on with guest mode
     entities:
       - light.front_bathroom
   - platform: group
+    unique_id: lights_whole_night
     name: Lights whole night
     entities:
       - light.outside_kitchen
   - platform: group
+    unique_id: lights_while_awake
     name: Lights while awake
     entities:
       - light.courtyard_braai
   - platform: group
     name: Lights while awake with guests
+    unique_id: lights_while_awake_with_guests
     entities:
       - light.courtyard_lounge
       - light.courtyard_main_bedroom
       - light.outside_scullery
       - light.outside_main_bathroom
       - light.pool
-
 
 automation:
   ## Whole night

@@ -39,11 +39,12 @@ sensor:
           Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
           Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
           End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
-          {{- '\n' -}}
-          {%- if states.vacuum.rockrobo.attributes.mainBrush|int < 10 %}Main Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.mainBrush }} hours left {{- '\n' -}}{% endif %}
-          {%- if states.vacuum.rockrobo.attributes.sideBrush|int < 10 %}Side Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.sideBrush }} hours left {{- '\n' -}}{% endif %}
-          {%- if states.vacuum.rockrobo.attributes.filter|int < 10 %}Filter needs cleaning! {{ states.vacuum.rockrobo.attributes.filter }} hours left {{- '\n' -}}{% endif %}
-          {%- if states.vacuum.rockrobo.attributes.sensor|int < 10 %}Sensors needs cleaning! {{ states.vacuum.rockrobo.attributes.sensor }} hours left {{- '\n' -}}{% endif %}
+
+        # {{- '\n' -}}
+        # {%- if states.vacuum.rockrobo.attributes.mainBrush|int < 10 %}Main Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.mainBrush }} hours left {{- '\n' -}}{% endif %}
+        # {%- if states.vacuum.rockrobo.attributes.sideBrush|int < 10 %}Side Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.sideBrush }} hours left {{- '\n' -}}{% endif %}
+        # {%- if states.vacuum.rockrobo.attributes.filter|int < 10 %}Filter needs cleaning! {{ states.vacuum.rockrobo.attributes.filter }} hours left {{- '\n' -}}{% endif %}
+        # {%- if states.vacuum.rockrobo.attributes.sensor|int < 10 %}Sensors needs cleaning! {{ states.vacuum.rockrobo.attributes.sensor }} hours left {{- '\n' -}}{% endif %}
   - platform: template
     sensors:
       vacuum_valetudo_state:

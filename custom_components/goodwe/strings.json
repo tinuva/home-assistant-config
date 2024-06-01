@@ -6,6 +6,7 @@
         "description": "Connect to inverter",
         "data": {
           "host": "[%key:common::config_flow::data::ip%]",
+          "protocol": "Protocol",
           "model_family": "Inverter Family (optional)"
         }
       }
@@ -22,6 +23,12 @@
     "button": {
       "synchronize_clock": {
         "name": "Synchronize inverter clock"
+      },
+      "start_inverter": {
+        "name": "Start inverter"
+      },
+      "stop_inverter": {
+        "name": "Stop inverter"
       }
     },
     "number": {
@@ -36,6 +43,12 @@
       },
       "battery_discharge_depth": {
         "name": "Depth of discharge (on-grid)"
+      },
+      "fast_charging_power": {
+        "name": "Fast charging power"
+      },
+      "fast_charging_soc": {
+        "name": "Fast charging SoC"
       }
     },
     "select": {
@@ -53,6 +66,12 @@
       }
     },
     "switch": {
+      "grid_export_limit_switch": {
+        "name": "Grid export limit switch"
+      },
+      "fast_charging_switch": {
+        "name": "Fast charging switch"
+      },
       "load_control": {
         "name": "Load control"
       }
@@ -64,6 +83,10 @@
         "title": "GoodWe optional settings",
         "description": "Specify optional (network) settings",
         "data": {
+          "host": "[%key:common::config_flow::data::ip%]",
+          "protocol": "Protocol",
+          "keep_alive": "TCP Keep alive",
+          "model_family": "Protocol Family [ET|DT|ES] (optional)",
           "scan_interval": "Scan interval (s)",
           "network_retries": "Network retry attempts",
           "network_timeout": "Network request timeout (s)"

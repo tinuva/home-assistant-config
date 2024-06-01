@@ -1,0 +1,45 @@
+---
+sensor:
+  #Heat index
+  - platform: template
+    sensors:
+      heat_index:
+        friendly_name: 'Outside Feels Like'
+        #formula taken from http://www.srh.noaa.gov/ama/?n=heatindex
+        value_template: >-
+          {%- set outside_f = ((states('sensor.outside_temperature')|float * 1.8000)+32.00) -%}
+          {% if 112 > outside_f | float > 80 and states('sensor.outside_humidity') | float < 13 %}
+            {% set value = (((-42.379 + (2.04901523*(outside_f|float)) + (10.14333127*(states.sensor.outside_humidity.state|float)) - (0.22475541*(outside_f|float)*(states.sensor.outside_humidity.state|float)) - (0.00683783*(outside_f|float)*(outside_f|float)) - (0.05481717*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) + (0.00122874*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)) + (0.00085282*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) - (0.00000199*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)))-(((13-(states.sensor.outside_humidity.state|float))/4)*sqrt((17-(((outside_f|float)-95)|abs))/17))) | round(3)) %}
+          {% elif 87 > outside_f | float > 80 and states('sensor.outside_humidity') | float > 85 %}
+            {% set value = (((-42.379 + (2.04901523*(outside_f|float)) + (10.14333127*(states.sensor.outside_humidity.state|float)) - (0.22475541*(outside_f|float)*(states.sensor.outside_humidity.state|float)) - (0.00683783*(outside_f|float)*(outside_f|float)) - (0.05481717*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) + (0.00122874*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)) + (0.00085282*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) - (0.00000199*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)))-(((states.sensor.outside_humidity.state|float)-85)/10)*((87-(outside_f|float))/5)) | round(3)) %}
+          {% elif outside_f | float < 80 %}
+            {% set value = ((0.5*((outside_f|float) + 61.0 + (((outside_f|float)-68)*1.2) + ((states.sensor.outside_humidity.state|float)*0.094))) | round(3)) %}
+          {% else %}
+            {% set value = ((-42.379 + (2.04901523*(outside_f|float)) + (10.14333127*(states.sensor.outside_humidity.state|float)) - (0.22475541*(outside_f|float)*(states.sensor.outside_humidity.state|float)) - (0.00683783*(outside_f|float)*(outside_f|float)) - (0.05481717*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) + (0.00122874*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)) + (0.00085282*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)) - (0.00000199*(outside_f|float)*(outside_f|float)*(states.sensor.outside_humidity.state|float)*(states.sensor.outside_humidity.state|float)))| round(3)) %}
+          {% endif %}
+          {% if states('sensor.outside_temperature') in ['unavailable','unknown','none'] or states('sensor.outside_humidity') in ['unavailable','unknown','none'] -%}
+            {{ states('sensor.heat_index') }}
+          {% else %}
+            {{ ((value - 32)/1.8000|float) | round(2) }}
+          {% endif %}
+        unit_of_measurement: '°C'
+
+# template:
+#   - sensor:
+#       - name: Feels Like Back Room
+#         unique_id: 'feellike1'
+#         unit_of_measurement: '°F'
+#         state: |-
+#           {% set temperature = states('sensor.temperature_and_humidity_sensor_temperature') | float%}
+#           {% set humidity = states('sensor.temperature_and_humidity_sensor_humidity') | float %}
+#           {% if 112 > temperature > 80 and humidity < 13 %}
+#             {{ (((-42.379 + (2.04901523*temperature) + (10.14333127*humidity) - (0.22475541*temperature*humidity) - 
+#             (0.00683783*temperature**2) - (0.05481717*humidity**2) + (0.00122874*temperature**2*humidity) + (0.00085282*temperature*humidity**2) - 
+#             (0.00000199*temperature**2*humidity**2))-(((13-humidity)/4)*sqrt((17-((temperature-95)|abs))/17))) | round(3)) }}
+#           {% elif 87 > temperature > 80 and humidity > 85 %} 
+#             {{ (((-42.379 + (2.04901523*temperature) + (10.14333127*humidity) - (0.22475541*temperature*humidity) - (0.00683783*temperature**2) - (0.05481717*humidity**2) + (0.00122874*temperature**2*humidity) + (0.00085282*temperature*humidity**2) - (0.00000199*temperature**2*humidity**2))-((humidity-85)/10)*((87-temperature)/5)) | round(3)) }}
+#           {% elif temperature < 80 %}
+#             {{ ((0.5*(temperature + 61.0 + ((temperature-68)*1.2) + (humidity*0.094))) | round(3)) }}
+#           {% else %}
+#             {{ ((-42.379 + (2.04901523*temperature) + (10.14333127*humidity) - (0.22475541*temperature*humidity) - (0.00683783*temperature**2) - (0.05481717*humidity**2) + (0.00122874*temperature**2*humidity) + (0.00085282*temperature*humidity**2) - (0.00000199*temperature**2*humidity**2))| round(3)) }}
+#           {% endif %}

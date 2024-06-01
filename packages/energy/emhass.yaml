@@ -1,94 +1,94 @@
----
+# ---
 
-sensor:
-  # template sensors based on ESP above
-  - platform: template
-    sensors:
-      power_load_no_var_loads:
-        friendly_name: non-deferrable Power
-        unique_id: non-deferrable-loads
-        unit_of_measurement: "W"
-        device_class: power
-        value_template: >
-          {%- set ns = namespace(deferrable_power=states('sensor.house_consumption')|float) -%}
-          {%- set devices = ['sensor.pool_pump_power',
-          'sensor.front_bathroom_geyser_energy_power',
-          'sensor.main_bathroom_geyser_energy_power'] -%}
-          {%- for device in devices -%}
-          {%- if states(device) != 'unavailable' and states(device) != 'unknown' %}
-          {%- set ns.deferrable_power = ns.deferrable_power|float - states(device)|float -%}
-          {%- endif %}
-          {%- endfor -%}
-          {{ ns.deferrable_power|int }}
+# sensor:
+#   # template sensors based on ESP above
+#   - platform: template
+#     sensors:
+#       power_load_no_var_loads:
+#         friendly_name: non-deferrable Power
+#         unique_id: non-deferrable-loads
+#         unit_of_measurement: "W"
+#         device_class: power
+#         value_template: >
+#           {%- set ns = namespace(deferrable_power=states('sensor.house_consumption')|float) -%}
+#           {%- set devices = ['sensor.pool_pump_power',
+#           'sensor.front_bathroom_geyser_energy_power',
+#           'sensor.main_bathroom_geyser_energy_power'] -%}
+#           {%- for device in devices -%}
+#           {%- if states(device) != 'unavailable' and states(device) != 'unknown' %}
+#           {%- set ns.deferrable_power = ns.deferrable_power|float - states(device)|float -%}
+#           {%- endif %}
+#           {%- endfor -%}
+#           {{ ns.deferrable_power|int }}
 
-shell_command:
-  dayahead_optim: "curl -i -H \"Content-Type:application/json\" -X POST -d '{\"pv_power_forecasts:\"{{([states('sensor.pv_power')|float(0)] + (state_attr('sensor.solcast_forecast_data', 'forecasts')|map(attribute='pv_estimate')| list))[:48]}}}' http://localhost:5000/action/dayahead-optim"
-  publish_data: "curl -i -H \"Content-Type:application/json\" -X POST -d '{}' http://localhost:5000/action/publish-data"
-  publish_pv_forecast: "curl -i -H 'Content-Type:application/json' -X POST -d '{\"pv_power_forecasts:\"{{([states('sensor.pv_power')|float(0)] + (state_attr('sensor.solcast_forecast_data', 'forecasts')|map(attribute='pv_estimate')| list))[:48]}}' http://localhost:5000/action/dayahead-optim"
+# shell_command:
+#   dayahead_optim: "curl -i -H \"Content-Type:application/json\" -X POST -d '{\"pv_power_forecasts:\"{{([states('sensor.pv_power')|float(0)] + (state_attr('sensor.solcast_forecast_data', 'forecasts')|map(attribute='pv_estimate')| list))[:48]}}}' http://localhost:5000/action/dayahead-optim"
+#   publish_data: "curl -i -H \"Content-Type:application/json\" -X POST -d '{}' http://localhost:5000/action/publish-data"
+#   publish_pv_forecast: "curl -i -H 'Content-Type:application/json' -X POST -d '{\"pv_power_forecasts:\"{{([states('sensor.pv_power')|float(0)] + (state_attr('sensor.solcast_forecast_data', 'forecasts')|map(attribute='pv_estimate')| list))[:48]}}' http://localhost:5000/action/dayahead-optim"
 
-automation:
-  - alias: EMHASS day-ahead optimization
-    trigger:
-      platform: time
-      at: '05:30:00'
-    action:
-      - service: shell_command.dayahead_optim
-  - alias: EMHASS publish data
-    trigger:
-      - minutes: /5
-        platform: time_pattern
-    action:
-      - service: shell_command.publish_data
+# automation:
+#   - alias: EMHASS day-ahead optimization
+#     trigger:
+#       platform: time
+#       at: '05:30:00'
+#     action:
+#       - service: shell_command.dayahead_optim
+#   - alias: EMHASS publish data
+#     trigger:
+#       - minutes: /5
+#         platform: time_pattern
+#     action:
+#       - service: shell_command.publish_data
 
-  # Deferrable load sensors
-  # sensor.p_deferrable0 - pool
-  # sensor.p_deferrable1 - mainbed ac
+#   # Deferrable load sensors
+#   # sensor.p_deferrable0 - pool
+#   # sensor.p_deferrable1 - mainbed ac
 
-  - alias: pool Optimized ON
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.p_deferrable0
-        above: '0.1'
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 5
-    condition:
-      - condition: numeric_state
-        entity_id: sensor.p_deferrable0
-        above: 0.1
-      - condition: time
-        after: '9:00:00'
-        before: '16:00:00'
-    action:
-      - alias: "Set variables"
-        variables:
-          duration: >
-            {% set duration = 8 %}
-            {{ duration|int * 60 * 60 }}
-      - service: timer.start
-        data_template:
-          entity_id: timer.pool_pump
-          duration: "{{ duration }}"
-      - service: homeassistant.turn_on
-        entity_id: switch.pool_pump
+#   - alias: pool Optimized ON
+#     trigger:
+#       - platform: numeric_state
+#         entity_id: sensor.p_deferrable0
+#         above: '0.1'
+#         for:
+#           hours: 0
+#           minutes: 0
+#           seconds: 5
+#     condition:
+#       - condition: numeric_state
+#         entity_id: sensor.p_deferrable0
+#         above: 0.1
+#       - condition: time
+#         after: '9:00:00'
+#         before: '16:00:00'
+#     action:
+#       - alias: "Set variables"
+#         variables:
+#           duration: >
+#             {% set duration = 8 %}
+#             {{ duration|int * 60 * 60 }}
+#       - service: timer.start
+#         data_template:
+#           entity_id: timer.pool_pump
+#           duration: "{{ duration }}"
+#       - service: homeassistant.turn_on
+#         entity_id: switch.pool_pump
 
-  - alias: pool Optimized OFF
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.p_deferrable0
-        below: '0.1'
-        for:
-          hours: 0
-          minutes: 0
-          seconds: 5
-    condition:
-      - condition: numeric_state
-        entity_id: sensor.p_deferrable0
-        below: 0.1
-    action:
-      - service: homeassistant.turn_off
-        entity_id: switch.pool_pump
-      - service: timer.finish
-        data:
-          entity_id: timer.pool_pump
+#   - alias: pool Optimized OFF
+#     trigger:
+#       - platform: numeric_state
+#         entity_id: sensor.p_deferrable0
+#         below: '0.1'
+#         for:
+#           hours: 0
+#           minutes: 0
+#           seconds: 5
+#     condition:
+#       - condition: numeric_state
+#         entity_id: sensor.p_deferrable0
+#         below: 0.1
+#     action:
+#       - service: homeassistant.turn_off
+#         entity_id: switch.pool_pump
+#       - service: timer.finish
+#         data:
+#           entity_id: timer.pool_pump

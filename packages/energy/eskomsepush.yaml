@@ -6,25 +6,25 @@
 ### Using integration: https://github.com/wernerhp/ha.integration.load_shedding
 
 # This rest sensor is to HA directly, to grab calendar.load_shedding_forecast and make a sensor with events
-rest:
-  - resource: http://localhost:8123/api/calendars/calendar.load_shedding_forecast
-    method: GET
-    scan_interval: 900
-    headers:
-      authorization: !secret ha_rest_bearer
-    params:
-      start: >
-        {{ utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
-      end: >
-        {{ (utcnow() + timedelta(days=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
-    sensor:
-      - name: load_shedding_forecast
-        #value_template: "{{ value_json[0].start.dateTime }}"
-        value_template: >
-          {%- for event in value_json %}
-          {{ event.summary }}
-          {%- if event.start.dateTime %}{{ event.start.dateTime }}{%- endif %}
-          {%- endfor %}
+# rest:
+#   - resource: http://localhost:8123/api/calendars/calendar.load_shedding_forecast
+#     method: GET
+#     scan_interval: 900
+#     headers:
+#       authorization: !secret ha_rest_bearer
+#     params:
+#       start: >
+#         {{ utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+#       end: >
+#         {{ (utcnow() + timedelta(days=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+#     sensor:
+#       - name: load_shedding_forecast
+#         #value_template: "{{ value_json[0].start.dateTime }}"
+#         value_template: >
+#           {%- for event in value_json %}
+#           {{ event.summary }}
+#           {%- if event.start.dateTime %}{{ event.start.dateTime }}{%- endif %}
+#           {%- endfor %}
         # value_template: >
         #   {{ value_json }}
         # value_template: >

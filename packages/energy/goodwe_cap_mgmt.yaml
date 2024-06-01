@@ -76,7 +76,7 @@ automation:
                     Turning off mainbedroom ac
               - service: switch.turn_off
                 data:
-                  entity_id: switch.aircon_main_bedroom
+                  entity_id: switch.aircon_main_bedroom_aircon_main_bedroom
               - repeat:
                   while:
                     - condition: numeric_state
@@ -99,4 +99,4 @@ automation:
                     Turning on mainbedroom ac
               - service: switch.turn_on
                 data:
-                  entity_id: switch.aircon_main_bedroom
+                  entity_id: switch.aircon_main_bedroom_aircon_main_bedroom

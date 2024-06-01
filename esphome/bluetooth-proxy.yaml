@@ -22,6 +22,11 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
+  manual_ip:
+    static_ip: 10.0.22.21
+    gateway: 10.0.22.1
+    subnet: 255.255.255.0
+
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Bluetooth-Proxy Fallback Hotspot"
@@ -33,9 +38,9 @@ esp32_ble_tracker:
     window: 1100ms
     active: true
 
-#text_sensor:
-#  - platform: ble_scanner
-#    name: "BLE Devices Scanner"
+text_sensor:
+  - platform: ble_scanner
+    name: "BLE Devices Scanner"
 
 bluetooth_proxy:
   active: true

@@ -36,20 +36,20 @@ automation:
       - platform: time
         at: '12:00:00'
       - platform: numeric_state
-        entity_id: sensor.goodwe_battery_soc
+        entity_id: sensor.battery_state_of_charge
         above: '94'
         for:
           seconds: 60
     condition:
       - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
+        entity_id: sensor.solcast_pv_forecast_forecast_today
         above: '25'
     action:
       # Office
       - choose:
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
+                entity_id: sensor.solcast_pv_forecast_forecast_today
                 above: '25'
               - condition: state
                 entity_id: binary_sensor.study_window
@@ -63,10 +63,10 @@ automation:
                     {{ states('sensor.ac_central_mode') }}
       # Conditions before turning on further ACS
       - condition: numeric_state
-        entity_id: sensor.goodwe_battery_soc
+        entity_id: sensor.battery_state_of_charge
         above: '94'
       - condition: numeric_state
-        entity_id: sensor.solcast_forecast_energy_today_predicted
+        entity_id: sensor.solcast_pv_forecast_forecast_today
         above: '27'
       # - condition: template
       #   value_template: "{{ ('11:00' <= states('sensor.time') < '15:00')  }}"
@@ -87,7 +87,7 @@ automation:
       - choose:
           - conditions:
               - condition: numeric_state
-                entity_id: sensor.solcast_forecast_energy_today_predicted
+                entity_id: sensor.solcast_pv_forecast_forecast_today
                 above: '29'
               - condition: state
                 entity_id: binary_sensor.babyroom_window

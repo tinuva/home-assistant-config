@@ -91,7 +91,7 @@ NUMBERS = (
         native_min_value=0,
         native_max_value=100,
         getter=lambda inv: inv.read_setting("eco_mode_1"),
-        mapper=lambda v: abs(v.power) if v.power else 0,
+        mapper=lambda v: abs(v.get_power()) if v.get_power() else 0,
         setter=None,
         filter=lambda inv: True,
     ),
@@ -106,6 +106,30 @@ NUMBERS = (
         getter=lambda inv: inv.read_setting("eco_mode_1"),
         mapper=lambda v: v.soc if v.soc else 0,
         setter=None,
+        filter=lambda inv: True,
+    ),
+    GoodweNumberEntityDescription(
+        key="fast_charging_power",
+        translation_key="fast_charging_power",
+        native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+        native_min_value=0,
+        native_max_value=100,
+        getter=lambda inv: inv.read_setting("fast_charging_power"),
+        mapper=lambda v: v,
+        setter=lambda inv, val: inv.write_setting("fast_charging_power", val),
+        filter=lambda inv: True,
+    ),
+    GoodweNumberEntityDescription(
+        key="fast_charging_soc",
+        translation_key="fast_charging_soc",
+        native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+        native_min_value=0,
+        native_max_value=100,
+        getter=lambda inv: inv.read_setting("fast_charging_soc"),
+        mapper=lambda v: v,
+        setter=lambda inv, val: inv.write_setting("fast_charging_soc", val),
         filter=lambda inv: True,
     ),
 )
@@ -156,13 +180,14 @@ class InverterNumberEntity(NumberEntity):
         device_info: DeviceInfo,
         description: GoodweNumberEntityDescription,
         inverter: Inverter,
-        current_value: int,
+        value: int,
     ) -> None:
         """Initialize the number inverter setting entity."""
         self.entity_description = description
         self._attr_unique_id = f"{DOMAIN}-{description.key}-{inverter.serial_number}"
         self._attr_device_info = device_info
-        self._attr_native_value = float(current_value)
+        self._attr_native_value = float(value) if value is not None else None
+
         self._inverter: Inverter = inverter
 
     async def async_update(self) -> None:

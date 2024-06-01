@@ -253,10 +253,10 @@ automation:
                         entity_id: sensor.average_temperature_outside_last_1_day
                         below: '24.5'
                       - condition: numeric_state
-                        entity_id: sensor.solcast_forecast_energy_today_predicted
+                        entity_id: sensor.solcast_pv_forecast_forecast_today
                         above: '26.1'
                       - condition: numeric_state
-                        entity_id: sensor.goodwe_battery_soc
+                        entity_id: sensor.battery_state_of_charge
                         above: '50'
               - condition: template
                 value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
@@ -458,10 +458,10 @@ automation:
                         entity_id: sensor.average_temperature_outside_last_1_day
                         below: '24.5'
                       - condition: numeric_state
-                        entity_id: sensor.solcast_forecast_energy_today_predicted
+                        entity_id: sensor.solcast_pv_forecast_forecast_today
                         above: '26.1'
                       - condition: numeric_state
-                        entity_id: sensor.goodwe_battery_soc
+                        entity_id: sensor.battery_state_of_charge
                         above: '50'
               - condition: template
                 value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"

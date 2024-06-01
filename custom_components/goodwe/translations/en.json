@@ -24,6 +24,12 @@
         "button": {
             "synchronize_clock": {
                 "name": "Synchronize inverter clock"
+            },
+            "start_inverter": {
+                "name": "Start inverter"
+            },
+            "stop_inverter": {
+                "name": "Stop inverter"
             }
         },
         "number": {
@@ -38,6 +44,12 @@
             },
             "grid_export_limit": {
                 "name": "Grid export limit"
+            },
+            "fast_charging_power": {
+                "name": "Fast charging power"
+            },
+              "fast_charging_soc": {
+                "name": "Fast charging SoC"
             }
         },
         "select": {
@@ -50,7 +62,8 @@
                     "eco_discharge": "Eco discharge mode",
                     "general": "General mode",
                     "off_grid": "Off grid mode",
-                    "peak_shaving": "Peak shaving mode"
+                    "peak_shaving": "Peak shaving mode",
+                    "self_use": "Self Use mode"
                 }
             }
         },
@@ -67,6 +80,9 @@
             "grid_export_limit_switch": {
                 "name": "Grid export limit switch"
             },
+            "fast_charging_switch": {
+                "name": "Fast charging switch"
+              },
             "load_control": {
                 "name": "Load control"
             }
@@ -76,6 +92,10 @@
         "step": {
             "init": {
                 "data": {
+                    "host": "Hostname / IP Address",
+                    "protocol": "Protocol",
+                    "keep_alive": "TCP Keep alive",
+                    "model_family": "Protocol Family [ET|DT|ES]",
                     "scan_interval": "Scan interval (s)",
                     "network_retries": "Network retry attempts",
                     "network_timeout": "Network request timeout (s)"
@@ -86,3 +106,4 @@
         }
     }
 }
+

@@ -21,8 +21,11 @@ logs:
   custom_components.localtuya: fatal
   custom_components.load_shedding: error  # ESP integration
 
-  custom_components.goodwe: fatal
-  goodwe: fatal
+  custom_components.goodwe: error
+  goodwe: error
+  goodwe.protocol: fatal
+
+  msmart.device.AC.command: error
 
   #custom_components.coct_loadshedding: debug
 

@@ -166,6 +166,8 @@ automation:
     condition:
       - condition: template
         value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'triggered') }}"
+      - condition: template
+        value_template: "{{ not is_state('alarm_control_panel.home_alarm', 'ready') }}"
     action:
       - choose:
           # If arming home or from disarming home - log instead of alert
@@ -190,20 +192,32 @@ automation:
                   - condition: template
                     value_template: >
                       {{ trigger.from_state.state == 'unavailable' }}
+                  - condition: template
+                    value_template: >
+                      {{ trigger.to_state.state == 'ready' }}
             sequence:
               - service: script.log
                 data:
                   icon: ':rotating_light:'
                   object: 'Home Alarm'
                   message: >
-                    Home alarm {{ states.sensor.home_alarm_keypad.state }}
+                    Home alarm {{ trigger.to_state.state }}
         default:
           - service: script.alert
             data:
               icon: ':rotating_light:'
               object: 'Home Alarm'
               message: >
-                Home alarm {{ states.sensor.home_alarm_keypad.state }}
+                Home alarm {{ trigger.to_state.state }}
+          # - service: script.log
+          #   data:
+          #     icon: ':rotating_light:'
+          #     object: 'Home Alarm'
+          #     message: >
+          #       Home alarm
+          #       ```
+          #       {{ trigger }}
+          #       ```
 
   ### Notify sensor that triggered alarm --- WIP
   - id: '1586327112618'

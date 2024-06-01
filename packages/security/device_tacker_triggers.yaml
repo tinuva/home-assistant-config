@@ -5,6 +5,7 @@ binary_sensor:
   sensors:
     both_parent_phones_charging:
       friendly_name: "Is both parents phones charging"
+      unique_id: both_parent_phones_charging
       value_template: >-
         {{ (is_state('sensor.pixel_4_battery_state', 'charging')
           or is_state('sensor.pixel_4_battery_state', 'full')
@@ -16,6 +17,7 @@ binary_sensor:
 
     either_parent_phones_charging:
       friendly_name: "Is either parents phones charging"
+      unique_id: either_parent_phones_charging
       value_template: >-
         {{ (is_state('sensor.pixel_4_battery_state', 'charging')
           or is_state('sensor.pixel_4_battery_state', 'full')

@@ -44,7 +44,7 @@ SENSORS: dict[str, SensorEntityDescription] = {
         name="Forecast Today",
         icon="mdi:solar-power",
         suggested_display_precision=2,
-        state_class= SensorStateClass.MEASUREMENT,
+        #state_class= SensorStateClass.MEASUREMENT,
     ),
     "peak_w_today": SensorEntityDescription(
         key="peak_w_today",
@@ -148,6 +148,13 @@ SENSORS: dict[str, SensorEntityDescription] = {
         icon="mdi:clock",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    "hard_limit": SensorEntityDescription(
+        key="hard_limit",
+        translation_key="hard_limit",
+        name="Hard Limit Set",
+        icon="mdi:speedometer",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
     "total_kwh_forecast_d3": SensorEntityDescription(
         key="total_kwh_forecast_d3",
         device_class=SensorDeviceClass.ENERGY,
@@ -218,11 +225,11 @@ SENSORS: dict[str, SensorEntityDescription] = {
         #name="Power Next Hour",
         suggested_display_precision=0,
     ),
-    "weather_description": SensorEntityDescription(
-        key="weather_description",
-        translation_key="weather_description",
-        icon="mdi:weather-partly-snowy-rainy",
-    ),
+    #"weather_description": SensorEntityDescription(
+        #key="weather_description",
+        #translation_key="weather_description",
+        #icon="mdi:weather-partly-snowy-rainy",
+    #),
 }
 
 

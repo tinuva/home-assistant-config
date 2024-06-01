@@ -56,8 +56,11 @@ automation:
           device_name: "Main Bedroom"
           light-0-name: "Main Bedroom"
         shellydimmer2-40F520016DF0:
-          device_name: "Small Bedroom"
-          light-0-name: "Small Bedroom"
+          device_name: "Amy Bedroom"
+          light-0-name: "Amy Bedroom"
+        shellydimmer2-C8C9A33BAB1E:
+          device_name: "Andre Bedroom"
+          light-0-name: "Andre Bedroom"
         # Shelly1s as switch
         shelly1-98F4ABF32146:
           device_name: "Water Sprayers"

@@ -1,0 +1,32 @@
+---
+
+automation:
+  # Open = Turn on
+  - alias: Turn on north hallway west lights
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.north_hallway_west_mmw_presence
+        to: 'on'
+    condition:
+      - condition: state  # 'night' condition: from sunset until sunrise
+        entity_id: sun.sun
+        state: 'below_horizon'
+    action:
+      - service: light.turn_on
+        data:
+          entity_id:
+            - light.hallway
+            #- light.hallway_entry
+
+  # Close = Turn off
+  - alias: Turn off north hallway west lights
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.north_hallway_west_mmw_presence
+        to: 'off'
+    action:
+      service: light.turn_off
+      data:
+        entity_id:
+          - light.hallway
+          - light.hallway_entry

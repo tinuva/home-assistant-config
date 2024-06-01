@@ -28,6 +28,7 @@ _MODE_TO_OPTION: dict[OperationMode, str] = {
     OperationMode.BACKUP: "backup",
     OperationMode.ECO: "eco",
     OperationMode.PEAK_SHAVING: "peak_shaving",
+    OperationMode.SELF_USE: "self_use",
     OperationMode.ECO_CHARGE: "eco_charge",
     OperationMode.ECO_DISCHARGE: "eco_discharge",
 }
@@ -68,7 +69,7 @@ async def async_setup_entry(
             OPERATION_MODE,
             inverter,
             [v for k, v in _MODE_TO_OPTION.items() if k in supported_modes],
-            _MODE_TO_OPTION[active_mode],
+            _MODE_TO_OPTION.get(active_mode),
             current_eco_power,
             current_eco_soc,
         )

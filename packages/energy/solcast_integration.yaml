@@ -1,0 +1,14 @@
+---
+automation:
+  - alias: Reload "Solcast"
+    description: ""
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    condition: []
+    action:
+      - service: homeassistant.reload_config_entry
+        data: {}
+        target:
+          device_id: 3842175fa8a8792f4f6b081bf43e022c
+    mode: single
