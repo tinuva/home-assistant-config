@@ -1,3 +1,5 @@
+---
+
 esphome:
   name: bluetooth-proxy-01
   friendly_name: bluetooth-proxy-01
