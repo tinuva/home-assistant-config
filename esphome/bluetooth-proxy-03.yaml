@@ -16,7 +16,8 @@ api:
     key: "iiQWvdUSXwt7tcQfLORWQlmjtC1WA/Ah5zP9819Rot4="
 
 ota:
-  password: "44fc08955643860f3e11deea01cfb730"
+  - platform: esphome
+    password: "44fc08955643860f3e11deea01cfb730"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -46,18 +47,6 @@ bluetooth_proxy:
   active: true
 
 sensor:
-  - platform: atc_mithermometer
-    mac_address: "A4:C1:38:4B:0A:7B"
-    temperature:
-      name: "Outside Temperature"
-    humidity:
-      name: "Outside Humidity"
-    battery_level:
-      name: "Outside Battery-Level"
-    battery_voltage:
-      name: "Outside Battery-Voltage"
-    signal_strength:
-      name: "Outside Signal"
   - platform: atc_mithermometer
     mac_address: "A4:C1:38:8D:C0:E1"
     temperature:
