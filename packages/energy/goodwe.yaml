@@ -478,3 +478,23 @@ automation:
           icon: ':zap: '
           object: 'GoodWe - Updates'
           message: GoodWe integration haven't updated sensors for more than 5 minutes
+
+  ## notification if Backup drop to 0%
+  - alias: Notify Backup drop to 0
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.back_up_power
+        to: '0'
+        for:
+          seconds: 10
+    condition: []
+    action:
+      - service: script.alert
+        data:
+          target: 'alerts'
+          icon: ':zap: '
+          object: 'GoodWe'
+          message: >
+            GoodWe Backup load is 0. Check if essentials earth leakage tripped.
+            Current Essentials load: {{ states('sensor.back_up_power') }}

@@ -333,6 +333,12 @@ automation:
         entity_id: number.goodwe_depth_of_discharge_on_grid
         above: 1
     action:
+      - service: script.log
+        data:
+          icon: ':zap:'
+          object: 'GoodWe'
+          message: >
+            House load above 1.9kW for 15 seconds. Setting DoD to
       - alias: "Set DoD on inverter"
         service: number.set_value
         data:
