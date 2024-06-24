@@ -29,7 +29,7 @@ script:
             {% elif forecast_int >= 18 and forecast_int < 20 %}50
             {% elif forecast_int >= 16 and forecast_int < 18 %}45
             {% elif forecast_int >= 12 and forecast_int < 16 %}40
-            {% elif forecast_int >= 10 and forecast_int < 12 %}30n
+            {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% elif forecast_int >= 8 and forecast_int < 10 %}20
             {% else %}16{% endif -%}
       - choose:
