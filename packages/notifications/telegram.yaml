@@ -1,3 +1,5 @@
+---
+
 telegram_bot:
   - platform: broadcast
     api_key: !secret telegram_bot_key

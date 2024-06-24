@@ -1,3 +1,5 @@
+---
+
 automation:
   - alias: Turn on porch lights when front door opened
     trigger:

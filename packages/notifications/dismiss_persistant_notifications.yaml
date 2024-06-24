@@ -1,3 +1,5 @@
+---
+
 # https://community.home-assistant.io/t/how-to-dismiss-persistent-notification/148620/3
 automation:
   - alias: 'persistent notification dismiss http login'
