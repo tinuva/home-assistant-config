@@ -2,7 +2,6 @@
 
 esphome:
   name: bluetooth-proxy-03
-  friendly_name: bluetooth-proxy-03
 
 esp32:
   board: esp32dev
