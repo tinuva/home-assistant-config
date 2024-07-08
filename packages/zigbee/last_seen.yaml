@@ -1,0 +1,48 @@
+---
+
+automation:
+  # If 'last_seen' sensors for many zigbee entities are disabled, see this issue on github:
+  # https://github.com/Koenkk/zigbee2mqtt/issues/12235
+  # Steps to rectify that worked for me:
+  # 1. stop Z2M
+  # 2. update Z2M config to include:
+  #
+  # ```
+  # device_options:
+  #   homeassistant:
+  #     last_seen:
+  #       enabled_by_default: true
+  # ```
+  #
+  # 3. remove MQTT integration in HA
+  # 4. restart HA
+  # 5. start Z2M
+  # 6. add and reconfigure MQTT integration in HA
+  # 7. restart HA
+  - alias: Zigbee Device Missing Alert
+    id: zigbee_device_missing_alert
+    trigger:
+      - platform: time
+        at: '10:00'
+      - platform: time
+        at: '20:00'
+    condition:
+      - condition: template
+        value_template: >
+          {% set ns = namespace(break = false) %}
+          {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * 8)) and ns.break == false %}
+              {%- set ns.break = true %}
+              true
+            {%- endif -%}
+          {%- endfor %}
+    action:
+      - service: persistent_notification.create
+        data:
+          title: "Some Zigbee devices haven't been seen lately... "
+          message: >
+            {%- for state in (expand(states.sensor,states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * 8)) %}
+            {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+            {%- endif -%} {%- endfor %}
+          notification_id: "last_seen_zigbee_devices"
