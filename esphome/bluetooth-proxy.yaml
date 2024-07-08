@@ -49,29 +49,3 @@ text_sensor:
 
 bluetooth_proxy:
   active: true
-
-sensor:
-  - platform: atc_mithermometer
-    mac_address: "A4:C1:38:88:01:33"
-    temperature:
-      name: "Main Bedroom Temperature"
-    humidity:
-      name: "Main Bedroom Humidity"
-    battery_level:
-      name: "Main Bedroom Battery-Level"
-    battery_voltage:
-      name: "Main Bedroom Battery-Voltage"
-    signal_strength:
-      name: "Main Bedroom Signal"
-  - platform: atc_mithermometer
-    mac_address: "A4:C1:38:21:30:E0"
-    temperature:
-      name: "Main Bathroom Temperature"
-    humidity:
-      name: "Main Bathroom Humidity"
-    battery_level:
-      name: "Main Bathroom Battery-Level"
-    battery_voltage:
-      name: "Main Bathroom Battery-Voltage"
-    signal_strength:
-      name: "Main Bathroom Signal"

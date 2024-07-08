@@ -49,17 +49,3 @@ esp32_ble_tracker:
 
 bluetooth_proxy:
   active: true
-
-sensor:
-  - platform: atc_mithermometer
-    mac_address: "A4:C1:38:8D:C0:E1"
-    temperature:
-      name: "Andre Bedroom Temperature"
-    humidity:
-      name: "Andre Bedroom Humidity"
-    battery_level:
-      name: "Andre Bedroom Battery-Level"
-    battery_voltage:
-      name: "Andre Bedroom Battery-Voltage"
-    signal_strength:
-      name: "Andre Bedroom Signal"

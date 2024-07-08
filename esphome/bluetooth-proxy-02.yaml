@@ -49,17 +49,3 @@ esp32_ble_tracker:
 
 bluetooth_proxy:
   active: true
-
-sensor:
-  - platform: atc_mithermometer
-    mac_address: "A4:C1:38:EA:42:BE"
-    temperature:
-      name: "Braairoom Temperature"
-    humidity:
-      name: "Braairoom Humidity"
-    battery_level:
-      name: "Braairoom Battery-Level"
-    battery_voltage:
-      name: "Braairoom Battery-Voltage"
-    signal_strength:
-      name: "Braairoom Signal"
