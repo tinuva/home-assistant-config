@@ -15,8 +15,8 @@ automation:
       - service: light.turn_on
         data:
           entity_id:
-            - light.hallway
-            #- light.hallway_entry
+            - light.hallway_hallway
+            #- light.hallway_hallway_entry
 
   # Close = Turn off
   - alias: Turn off north hallway west lights
@@ -28,5 +28,5 @@ automation:
       service: light.turn_off
       data:
         entity_id:
-          - light.hallway
-          - light.hallway_entry
+          - light.hallway_hallway
+          - light.hallway_hallway_entry

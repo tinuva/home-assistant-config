@@ -105,7 +105,7 @@ automation:
           expire_after: 7200
         # Shelly25
         shellyswitch25-40F520009D50:
-          device_name: "Main Bathroom"
+          device_name: "Main Bedroom"
           relay-0: "light"
           relay-0-name: "Outside"
           relay-1: "light"

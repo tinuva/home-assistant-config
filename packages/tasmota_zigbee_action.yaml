@@ -14,7 +14,7 @@ automation:
    action:
     - service: light.toggle
       data:
-       entity_id: light.kitchen
+       entity_id: light.kitchen_kitchen
    #  - service: input_boolean.toggle
    #    data:
    #      entity_id: input_boolean.kitchenwork
@@ -33,7 +33,7 @@ automation:
 #    action:
 #      - service: light.turn_on
 #        data_template:
-#          entity_id: light.kitchen
+#          entity_id: light.kitchen_kitchen
 #          transition: 50
 #          brightness: >-
 #            {% set time = states('sensor.time') %}
@@ -100,4 +100,4 @@ automation:
 #      - service: light.turn_off
 #        data:
 #          entity_id:
-#            - light.lounge
+#            - light.lounge_lounge

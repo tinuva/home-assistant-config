@@ -14,7 +14,7 @@ automation:
       - service: light.turn_on
         data:
           entity_id:
-            - light.outside_porch
+            - light.front_porch
 
   - alias: Turn off porch lights when front door closed for 10min
     trigger:
@@ -27,4 +27,4 @@ automation:
       - service: light.turn_off
         data:
           entity_id:
-            - light.outside_porch
+            - light.front_porch

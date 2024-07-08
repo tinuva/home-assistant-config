@@ -16,7 +16,7 @@ adaptive_lighting:
     only_once: false
     name: "lounge"
     lights:
-      - light.lounge
+      - light.lounge_lounge
 
   - prefer_rgb_color: false
     transition: 45
@@ -33,7 +33,7 @@ adaptive_lighting:
     only_once: false
     name: "kitchen"
     lights:
-      - light.kitchen
+      - light.kitchen_kitchen
 
   - prefer_rgb_color: false
     transition: 45
@@ -50,7 +50,7 @@ adaptive_lighting:
     only_once: false
     name: "main bedroom"
     lights:
-      - light.main_bedroom
+      - light.main_bedroom_main_bedroom
 
   - prefer_rgb_color: false
     transition: 45
@@ -67,4 +67,4 @@ adaptive_lighting:
     only_once: false
     name: "small bedroom"
     lights:
-      - light.small_bedroom
+      - light.amy_bedroom_amy_bedroom

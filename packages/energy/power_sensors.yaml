@@ -51,7 +51,7 @@ sensor:
     method: left
   # Sensor for Riemann sum of energy bought (W -> Wh)
   - platform: integration
-    source: sensor.pool_pump_power
+    source: sensor.pool_pump_power_0
     name: pool_pump_usage
     unit_prefix: k
     round: 2

@@ -21,7 +21,7 @@ automation:
     action:
       - service: light.turn_off
         data:
-          entity_id: light.braai_room
+          entity_id: light.braai_room_braai_room
 
   ### Turn on Kitchen Lights when movement
   # Motion = Turn on
@@ -42,7 +42,7 @@ automation:
     action:
       - service: light.turn_on
         data_template:
-          entity_id: light.braai_room
+          entity_id: light.braai_room_braai_room
           #brightness: >-
           #  {%- if(is_state('input_boolean.kitchenwork','on')) -%}
           #  185

@@ -35,7 +35,7 @@ automation:
     mode: parallel
     trigger:
       - platform: state
-        entity_id: light.main_ensuite, light.scullery
+        entity_id: light.main_ensuite, light.scullery_scullery
         to: 'on'
     action:
       - service: timer.start

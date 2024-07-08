@@ -47,7 +47,7 @@ automation:
       path: sbyx/wake-up-light-alarm-with-sunrise-effect.yaml
       input:
         manual_time: 05:40:00
-        light_entity: light.main_bedroom
+        light_entity: light.main_bedroom_main_bedroom
         check_entity: binary_sensor.workday_sensor
         start_brightness: 30
         end_brightness: 90
@@ -77,7 +77,7 @@ automation:
       path: sbyx/wake-up-light-alarm-with-sunrise-effect.yaml
       input:
         manual_time: 05:40:00
-        light_entity: light.small_bedroom
+        light_entity: light.amy_bedroom_amy_bedroom
         check_entity: binary_sensor.workday_sensor
         start_brightness: 30
         end_brightness: 90
@@ -112,10 +112,10 @@ automation:
     mode: parallel
     trigger:
       - platform: state
-        entity_id: light.main_bedroom, light.small_bedroom
+        entity_id: light.main_bedroom_main_bedroom, light.amy_bedroom_amy_bedroom
         to: 'on'
       - platform: state
-        entity_id: light.main_bedroom, light.small_bedroom
+        entity_id: light.main_bedroom_main_bedroom, light.amy_bedroom_amy_bedroom
         attribute: brightness
     condition:
       - condition: state

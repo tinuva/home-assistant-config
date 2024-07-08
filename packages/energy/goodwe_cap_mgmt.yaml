@@ -21,7 +21,7 @@ automation:
           # If pool pump on, turn it off first
           - conditions:
               - condition: state
-                entity_id: switch.pool_pump
+                entity_id: switch.pool_pump_pool_pump
                 state: 'on'
             sequence:
               - service: script.log
@@ -32,7 +32,7 @@ automation:
                     Turning off poolpump
               - service: switch.turn_off
                 data:
-                  entity_id: switch.pool_pump
+                  entity_id: switch.pool_pump_pool_pump
               - repeat:
                   while:
                     - condition: state
@@ -61,7 +61,7 @@ automation:
                     Turning on poolpump
               - service: switch.turn_on
                 data:
-                  entity_id: switch.pool_pump
+                  entity_id: switch.pool_pump_pool_pump
           # else if not pool check mainbedroom ac
           - conditions:
               - condition: template

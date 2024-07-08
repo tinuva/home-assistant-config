@@ -10,21 +10,21 @@ light:
     unique_id: lights_whole_night
     name: Lights whole night
     entities:
-      - light.outside_kitchen
+      - light.outside_kitchen_outside_kitchen
   - platform: group
     unique_id: lights_while_awake
     name: Lights while awake
     entities:
-      - light.courtyard_braai
+      - light.braai_courtyard
   - platform: group
     name: Lights while awake with guests
     unique_id: lights_while_awake_with_guests
     entities:
-      - light.courtyard_lounge
-      - light.courtyard_main_bedroom
-      - light.outside_scullery
-      - light.outside_main_bathroom
-      - light.pool
+      - light.lounge_courtyard
+      - light.main_bedroom_courtyard
+      - light.scullery_outside
+      - light.main_bedroom_outside
+      - light.pool_pool
 
 automation:
   ## Whole night
@@ -100,7 +100,7 @@ automation:
         data_template:
           entity_id: >
             light.lights_while_awake
-      #      {% if is_state('input_boolean.pool_cover_on','off') %},{{ " " }}light.pool{% endif -%}
+      #      {% if is_state('input_boolean.pool_cover_on','off') %},{{ " " }}light.pool_pool{% endif -%}
       - condition: state
         entity_id: input_boolean.guest
         state: 'on'
@@ -141,4 +141,4 @@ automation:
         entity_id:
           - light.lights_while_awake
           - light.lights_while_awake_with_guests
-          - light.pool
+          - light.pool_pool

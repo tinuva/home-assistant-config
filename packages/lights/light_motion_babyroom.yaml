@@ -21,7 +21,7 @@ automation:
     action:
       service: light.turn_off
       data:
-        entity_id: light.small_bedroom
+        entity_id: light.amy_bedroom_amy_bedroom
         transition: 10
 
   # Motion = Turn on
@@ -39,12 +39,12 @@ automation:
       - condition: or
         conditions:
           - condition: state
-            entity_id: light.small_bedroom
+            entity_id: light.amy_bedroom_amy_bedroom
             state: 'off'
             for:
               seconds: 15
           - condition: state
-            entity_id: light.small_bedroom
+            entity_id: light.amy_bedroom_amy_bedroom
             state: 'on'
     action:
       - service: timer.start
@@ -63,7 +63,7 @@ automation:
             {%- endif -%}
       - service: light.turn_on
         data_template:
-          entity_id: light.small_bedroom
+          entity_id: light.amy_bedroom_amy_bedroom
           # transition: 10
           # brightness_pct: >-
           #   {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
@@ -85,7 +85,7 @@ automation:
   - alias: Set brightness on smallbedroom light turn on
     trigger:
       - platform: state
-        entity_id: light.small_bedroom
+        entity_id: light.amy_bedroom_amy_bedroom
         to: 'on'
     condition:
       - condition: and
@@ -96,7 +96,7 @@ automation:
     action:
       - service: light.turn_on
         data_template:
-          entity_id: light.small_bedroom
+          entity_id: light.amy_bedroom_amy_bedroom
           # brightness_pct: >-
           #   {% set hours = [[0,1],[500,25],[600,45],[630,55],[700,60],[730,65],
           #                 [800,70],[900,75],[1630,75],[1700,70],[1730,65],

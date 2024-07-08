@@ -18,7 +18,7 @@ automation:
     action:
       service: light.turn_off
       data:
-        entity_id: light.front_garage
+        entity_id: light.front_garage_front_garage
 
   # Open/Close = Start timer
   - alias: Turn on front garage lights when door opened or closed
@@ -40,7 +40,7 @@ automation:
       - service: light.turn_on
         data:
           entity_id:
-            - light.front_garage
+            - light.front_garage_front_garage
       - service: timer.start
         data:
           entity_id: timer.front_garage_light

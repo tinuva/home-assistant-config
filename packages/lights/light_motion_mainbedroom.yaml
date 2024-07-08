@@ -20,7 +20,7 @@ automation:
     action:
       service: light.turn_off
       data:
-        entity_id: light.main_bedroom
+        entity_id: light.main_bedroom_main_bedroom
         transition: 30
 
   # Motion = Turn on
@@ -38,17 +38,17 @@ automation:
       - condition: or
         conditions:
           - condition: state
-            entity_id: light.main_bedroom
+            entity_id: light.main_bedroom_main_bedroom
             state: 'off'
             for:
               seconds: 15
           - condition: state
-            entity_id: light.main_bedroom
+            entity_id: light.main_bedroom_main_bedroom
             state: 'on'
     action:
       - service: light.turn_on
         data_template:
-          entity_id: light.main_bedroom
+          entity_id: light.main_bedroom_main_bedroom
           # transition: >
           #   {%- if(is_state('binary_sensor.either_parent_phones_charging','on')) -%}
           #   300

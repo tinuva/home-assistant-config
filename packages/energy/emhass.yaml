@@ -71,7 +71,7 @@
 #           entity_id: timer.pool_pump
 #           duration: "{{ duration }}"
 #       - service: homeassistant.turn_on
-#         entity_id: switch.pool_pump
+#         entity_id: switch.pool_pump_pool_pump
 
 #   - alias: pool Optimized OFF
 #     trigger:
@@ -88,7 +88,7 @@
 #         below: 0.1
 #     action:
 #       - service: homeassistant.turn_off
-#         entity_id: switch.pool_pump
+#         entity_id: switch.pool_pump_pool_pump
 #       - service: timer.finish
 #         data:
 #           entity_id: timer.pool_pump

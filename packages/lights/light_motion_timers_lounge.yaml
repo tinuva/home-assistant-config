@@ -21,7 +21,7 @@ automation:
     action:
       service: light.turn_off
       data:
-        entity_id: light.lounge
+        entity_id: light.lounge_lounge
         transition: 10
 
   ### Lounge Lights
@@ -46,7 +46,7 @@ automation:
     action:
       - service: light.turn_on
         data_template:
-          entity_id: light.lounge
+          entity_id: light.lounge_lounge
           # transition: 10
           # brightness: >-
           #   {%- if(is_state('alarm_control_panel.home_alarm','armed_home')) -%}

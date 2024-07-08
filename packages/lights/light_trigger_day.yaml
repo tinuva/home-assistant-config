@@ -34,7 +34,7 @@ automation:
     mode: parallel
     trigger:
       - platform: state
-        entity_id: light.dining, light.braai_room
+        entity_id: light.lounge_dining, light.braai_room_braai_room
         to: 'on'
     condition:
       - condition: and

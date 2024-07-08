@@ -22,7 +22,7 @@
 #    action:
 #      service: light.turn_off
 #      data:
-#        entity_id: light.hallway_entry
+#        entity_id: light.hallway_hallway_entry
 #
 #  - alias: Turn off front_hallway light after timer finish
 #    trigger:
@@ -59,7 +59,7 @@
 #    action:
 #      - service: light.turn_on
 #        data_template:
-#          entity_id: light.hallway_entry
+#          entity_id: light.hallway_hallway_entry
 #      - service: timer.start
 #        data:
 #          entity_id: timer.hallway_entry

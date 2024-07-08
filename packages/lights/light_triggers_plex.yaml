@@ -21,12 +21,12 @@
 #           # IF lots of sun and high battery skip
 #           - conditions:
 #               - condition: state
-#                 entity_id: light.lounge
+#                 entity_id: light.lounge_lounge
 #                 state: 'off'
 #             sequence:
 #               - service: light.turn_on
 #                 data:
-#                   entity_id: light.lounge
+#                   entity_id: light.lounge_lounge
 #               - delay:
 #                   seconds: "2"
 #       - service: switch.turn_on
@@ -39,7 +39,7 @@
 #       - service: light.turn_off
 #         data:
 #           entity_id:
-#             - light.kitchen
+#             - light.kitchen_kitchen
 #           transition: 25
 
 #   - alias: TV Lounge idle

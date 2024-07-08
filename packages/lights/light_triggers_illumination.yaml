@@ -9,4 +9,4 @@
 #    data:
 #      entity_id:
 #        - light.lounge
-#        - light.kitchen
+#        - light.kitchen_kitchen

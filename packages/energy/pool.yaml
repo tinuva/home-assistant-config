@@ -82,7 +82,7 @@ automation:
                   duration: "{{ duration }}"
               - service: switch.turn_on
                 data:
-                  entity_id: switch.pool_pump
+                  entity_id: switch.pool_pump_pool_pump
           # Afternoon after geyser
           - conditions:
               - condition: time
@@ -104,16 +104,16 @@ automation:
                     {% else %}{{ 1 * 60 | int * 60 }}{% endif -%}
               - service: switch.turn_on
                 data:
-                  entity_id: switch.pool_pump
+                  entity_id: switch.pool_pump_pool_pump
         default:
           - service: switch.turn_off
-            entity_id: switch.pool_pump
+            entity_id: switch.pool_pump_pool_pump
 
   # start timer when turned on (2 min)
   - alias: Start timer after Turn on pool pump
     trigger:
       - platform: state
-        entity_id: switch.pool_pump
+        entity_id: switch.pool_pump_pool_pump
         from: 'off'
         to: 'on'
     condition:
@@ -161,7 +161,7 @@ automation:
     action:
       - service: switch.turn_off
         data:
-          entity_id: switch.pool_pump
+          entity_id: switch.pool_pump_pool_pump
       - service: timer.finish
         data:
           entity_id: timer.pool_pump

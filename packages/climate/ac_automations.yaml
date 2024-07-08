@@ -134,7 +134,7 @@ automation:
                 value_template: >
                   {{ states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none'] }}
               - condition: state
-                entity_id: switch.pool_pump
+                entity_id: switch.pool_pump_pool_pump
                 state: "off"
             sequence:
               - service: script.ac
@@ -152,7 +152,7 @@ automation:
                 value_template: >
                   {{ states('climate.midea_ac_30786325862093') not in ['fan_only','off','unavailable','unknown','none'] }}
               - condition: state
-                entity_id: switch.pool_pump
+                entity_id: switch.pool_pump_pool_pump
                 state: "off"
             sequence:
               - service: script.ac
@@ -163,7 +163,7 @@ automation:
       - choose:
           - conditions:
               - condition: state
-                entity_id: switch.pool_pump
+                entity_id: switch.pool_pump_pool_pump
                 state: "off"
               # childbed ac not off/fan
               - condition: template
@@ -178,7 +178,7 @@ automation:
       - choose:
           - conditions:
               - condition: state
-                entity_id: switch.pool_pump
+                entity_id: switch.pool_pump_pool_pump
                 state: "on"
             sequence:
               - service: script.log
@@ -188,7 +188,7 @@ automation:
                   message: 'Energy: turning pool pump off'
               - service: switch.turn_off
                 data:
-                  entity_id: switch.pool_pump
+                  entity_id: switch.pool_pump_pool_pump
               - condition: state
                 entity_id: timer.pool_pump
                 state: "active"
