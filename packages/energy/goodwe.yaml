@@ -163,13 +163,13 @@ sensor:
       coct_cost_1:
         friendly_name: "coct_cost_1"
         icon_template: "mdi:flash"
-        value_template: "states('sensor.coct_cost_1')|float"
+        value_template: "308.58"
       # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
       # > 600
       coct_cost_2:
         friendly_name: "coct_cost_2"
         icon_template: "mdi:flash"
-        value_template: "states('sensor.coct_cost_2')|float"
+        value_template: "426.56"
       # Template sensor for money used
       energy_buy_daily_cost:
         friendly_name: "energy_buy_daily_cost"
