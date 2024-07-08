@@ -96,8 +96,19 @@
         }
       }
     },
+    "binary_sensor": {
+      "filter_alert": {
+        "name": "Filter upoyozornenia"
+      }
+    },
+    "number": {
+      "fan_speed": {
+        "name": "Rýchlosť ventilátora"
+      }
+    },
     "select": {
       "horizontal_swing_angle": {
+        "name": "Horizontálny uhol výkyvu",
         "state": {
           "off": "Vypnuté",
           "pos_1": "Vľavo",
@@ -108,6 +119,7 @@
         }
       },
       "vertical_swing_angle": {
+        "name": "Vertikálny uhol výkyvu",
         "state": {
           "off": "Vypnuté",
           "pos_1": "Hore",
@@ -116,6 +128,22 @@
           "pos_4": "Dole-stred",
           "pos_5": "Dole"
         }
+      }
+    },
+    "sensor": {
+      "indoor_temperature": {
+        "name": "Vnútorná teplota"
+      },
+      "outdoor_temperature": {
+        "name": "Vonkajšia teplota"
+      }
+    },
+    "switch": {
+      "display": {
+        "name": "Zobraziť"
+      },
+      "purifier": {
+        "name": "Čistička"
       }
     }
   }
