@@ -81,6 +81,7 @@
               "low": "Nízky",
               "medium": "Stredný",
               "high": "Vysoký",
+              "max": "Max",
               "auto": "Auto",
               "custom": "Voliteľný"
             }
@@ -98,7 +99,15 @@
     },
     "binary_sensor": {
       "filter_alert": {
-        "name": "Filter upoyozornenia"
+        "name": "Upozornenie filtra"
+      },
+      "self_clean": {
+        "name": "Samočistenie čistenie"
+      }
+    },
+    "button": {
+      "self_clean": {
+        "name": "Spustiť samočistenie"
       }
     },
     "number": {
@@ -131,11 +140,23 @@
       }
     },
     "sensor": {
+      "current_energy_usage": {
+        "name": "Aktuálna energia"
+      },
+      "indoor_humidity": {
+        "name": "Vnútorná vlhkosť"
+      },
       "indoor_temperature": {
         "name": "Vnútorná teplota"
       },
       "outdoor_temperature": {
         "name": "Vonkajšia teplota"
+      },
+      "real_time_power_usage": {
+        "name": "Výkon"
+      },
+      "total_energy_usage": {
+        "name": "Celková energia"
       }
     },
     "switch": {

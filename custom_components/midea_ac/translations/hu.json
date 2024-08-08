@@ -81,6 +81,7 @@
               "low": "Alacsony",
               "medium": "Közepes",
               "high": "Magas",
+              "max": "Maximum",
               "auto": "Auto",
               "custom": "Egyéni"
             }
@@ -96,8 +97,27 @@
         }
       }
     },
+    "binary_sensor": {
+      "filter_alert": {
+        "name": "Szűrő figyelmeztetés"
+      },
+      "self_clean": {
+        "name": "Öntisztítás"
+      }
+    },
+    "button": {
+      "self_clean": {
+        "name": "Öntisztítás indítása"
+      }
+    },
+    "number": {
+      "fan_speed": {
+        "name": "Ventilátor sebesség"
+      }
+    },
     "select": {
       "horizontal_swing_angle": {
+        "name": "Vízszintes lengési szög",
         "state": {
           "off": "Ki",
           "pos_1": "Bal",
@@ -108,6 +128,7 @@
         }
       },
       "vertical_swing_angle": {
+        "name": "Függőleges lengési szög",
         "state": {
           "off": "Ki",
           "pos_1": "Felső",
@@ -116,6 +137,34 @@
           "pos_4": "Alsó-közép",
           "pos_5": "Alsó"
         }
+      }
+    },
+    "sensor": {
+      "current_energy_usage": {
+        "name": "Aktuális energiafogyasztás"
+      },
+      "indoor_humidity": {
+        "name": "Beltéri páratartalom"
+      },
+      "indoor_temperature": {
+        "name": "Beltéri hőmérséklet"
+      },
+      "outdoor_temperature": {
+        "name": "Kültéri hőmérséklet"
+      },
+      "real_time_power_usage": {
+        "name": "Teljesítmény"
+      },
+      "total_energy_usage": {
+        "name": "Összesített energiafogyasztás"
+      }
+    },
+    "switch": {
+      "display": {
+        "name": "Kijelző"
+      },
+      "purifier": {
+        "name": "Légtisztító"
       }
     }
   }
