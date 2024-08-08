@@ -23,6 +23,26 @@ timer:
     name: Geyser(F) Timer
     duration: '02:00:00'
 
+sensor:
+  - platform: template
+    sensors:
+      # Template sensor to display input value only
+      geyser_morning_runtime:
+        friendly_name: "Geyser Morning run-time"
+        unit_of_measurement: 'minutes'
+        icon_template: "mdi:timer-outline"
+        value_template: >-
+            {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
+            {% if average_temp_int >= 19 %}15
+            {% elif average_temp_int >= 18 and average_temp_int < 19 %}20
+            {% elif average_temp_int >= 17 and average_temp_int < 18 %}25
+            {% elif average_temp_int >= 16 and average_temp_int < 17 %}30
+            {% elif average_temp_int >= 15 and average_temp_int < 16 %}35
+            {% elif average_temp_int >= 14 and average_temp_int < 15 %}40
+            {% elif average_temp_int >= 13 and average_temp_int < 14 %}45
+            {% elif average_temp_int >= 12 and average_temp_int < 13 %}50
+            {% else %}60{% endif -%}
+
 script:
   ######################################################################
   # Re-usable script to start main bedroom geyser
@@ -48,9 +68,10 @@ script:
           duration: >
             {% set sensor_names = [ 'monday', 'tuesday', 'wednesday','thursday','friday','saturday','sunday'] %}
             {% set today_name = sensor_names[now().weekday()] %}
+            {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
             {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
-            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 15 | int * 60 }}
+            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ states('sensor.geyser_morning_runtime') | int * 60 }}
             {% else %}{{ 180 | int * 60 }}{% endif -%}
       # If device is unavailable, need a retry loop here
       - alias: "Repeat the sequence UNTIL the conditions are true"
@@ -108,7 +129,7 @@ script:
             {% set today_name = sensor_names[now().weekday()] %}
             {% if today_name == 'sunday_disable' %}{{ 300 | int * 60 }}
             {% elif '17:00' <= states('sensor.time') <= '18:00' %}{{ 180 | int * 60 }}
-            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ 15 | int * 60 }}
+            {% elif '00:00' <= states('sensor.time') <= '06:00' %}{{ states('sensor.geyser_morning_runtime') | int * 60 }}
             {% else %}{{ 180 | int * 60 }}{% endif -%}
       - service: timer.start
         data_template:
