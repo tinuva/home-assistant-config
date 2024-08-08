@@ -159,7 +159,7 @@ automation:
                 data:
                   ac: "climate.midea_ac_30786325862093"
                   mode: "off"
-      # ChildBed
+      # ChildBed - Amy
       - choose:
           - conditions:
               - condition: state
@@ -173,6 +173,21 @@ automation:
               - service: script.ac
                 data:
                   ac: "climate.midea_ac_30786325862153"
+                  mode: "off"
+      # ChildBed - Andre
+      - choose:
+          - conditions:
+              - condition: state
+                entity_id: switch.pool_pump_pool_pump
+                state: "off"
+              # childbed ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_32985348871179') not in ['fan_only','off','unavailable','unknown','none'] }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_32985348871179"
                   mode: "off"
       # Pool pump
       - choose:
@@ -230,7 +245,7 @@ automation:
                       mode: "off"
       - choose:
           - conditions:
-              # ChildBed ac not off/fan
+              # ChildBed (Amy) ac not off/fan
               - condition: template
                 value_template: >
                   {{ states('climate.midea_ac_30786325862153') not in ['off','unavailable','unknown','none'] }}
@@ -239,7 +254,17 @@ automation:
                 data:
                   ac: "climate.midea_ac_30786325862153"
                   mode: "off"
-
+      - choose:
+          - conditions:
+              # ChildBed (Andre) ac not off/fan
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_32985348871179') not in ['off','unavailable','unknown','none'] }}
+            sequence:
+              - service: script.ac
+                data:
+                  ac: "climate.midea_ac_32985348871179"
+                  mode: "off"
 
 script:
   ######################################################################
