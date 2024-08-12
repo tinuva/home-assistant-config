@@ -14,6 +14,9 @@
       "horizontal_swing_angle": {
         "default": "mdi:angle-acute"
       },
+      "rate_select": {
+        "default": "mdi:slope-downhill"
+      },
       "vertical_swing_angle": {
         "default": "mdi:angle-acute"
       }
@@ -24,6 +27,15 @@
       }
     },
     "switch": {
+      "breeze_away": {
+        "default": "mdi:weather-windy"
+      },
+      "breeze_mild": {
+        "default": "mdi:tailwind"
+      },
+      "breezeless": {
+        "default": "mdi:blur"
+      },
       "display": {
         "default": "mdi:led-on",
         "state": {
