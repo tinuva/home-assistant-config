@@ -35,13 +35,13 @@ automation:
       - service: mqtt.publish
         data:
           topic: home/weather/today/max
-          payload_template: >
+          payload: >
             {{ today | max }}
           retain: true
       - service: mqtt.publish
         data:
           topic: home/weather/today/min
-          payload_template: >
+          payload: >
             {{ today | min }}
           retain: true
     mode: single
