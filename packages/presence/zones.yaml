@@ -21,11 +21,29 @@ zone:
     radius: 310
     icon: mdi:work
 
-  - name: Curro Rosen Castle
-    latitude: !secret latitude_currorosencastle
-    longitude: !secret longitude_currorosencastle
-    radius: 125
+  - name: Smith Residence
+    latitude: !secret latitude_smith_residence
+    longitude: !secret longitude_smith_residence
+    radius: 50
     icon: mdi:map-marker
+
+  - name: Curro Rosen Castle
+    latitude: -33.870495724293235
+    longitude: 18.64191055297852
+    radius: 125
+    icon: mdi:school
+
+  - name: Kleuterland
+    latitude: -33.81517682555813
+    longitude: 18.66156377094001
+    radius: 50
+    icon: mdi:school
+
+  - name: DurbanvillePrep
+    latitude: -33.837977074259335
+    longitude: 18.652743908220234
+    radius: 50
+    icon: mdi:school
 
 # David = device_tracker.pixel_4
 # Karen = device_tracker.nokia_6_1
@@ -40,52 +58,111 @@ binary_sensor:
            or is_state('device_tracker.pixel_4', 'home') }}
 
 automation:
-  - alias: Parent arrived at School
-    description: Parent arrived at School
+  - alias: zone arrived at
+    description: zone arrived at
     trigger:
       - entity_id: device_tracker.pixel_4
         platform: state
-        to: 'Curro Rosen Castle'
+        from: 'not_home'
+        not_to: ["unavailable", "unknown"]
       - entity_id: device_tracker.nokia_6_1
         platform: state
-        to: 'Curro Rosen Castle'
+        from: 'not_home'
+        not_to: ["unavailable", "unknown"]
     action:
+      - alias: "Set variables"
+        variables:
+          person: >
+            {% if (trigger.entity_id == "device_tracker.pixel_4") %}David{% endif %}
+            {% if (trigger.entity_id == "device_tracker.nokia_6_1") %}Karen{% endif %}
+          location: >
+            {{ trigger.to_state.state }}
       - service: script.alert
         data:
           target: 'logs' #'general'
           icon: ':car: '
           object: 'Tracking'
           message: >
-            {% if (states.device_tracker.pixel_4.state == "Curro Rosen Castle") %}David{% endif %}
-            {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
-            arrived at Curro Rosen Castle
+            {{ person }} arrived at {{ location }}
 
-  - alias: Parent left School
-    description: Parent left School
+  - alias: zone left
+    description: zone left
     trigger:
       - entity_id: device_tracker.pixel_4
         platform: state
-        from: 'Curro Rosen Castle'
+        to: 'not_home'
+        not_from: ["unavailable", "unknown"]
       - entity_id: device_tracker.nokia_6_1
         platform: state
-        from: 'Curro Rosen Castle'
+        to: 'not_home'
+        not_from: ["unavailable", "unknown"]
     action:
+      - alias: "Set variables"
+        variables:
+          person: >
+            {% if (trigger.entity_id == "device_tracker.pixel_4") %}David{% endif %}
+            {% if (trigger.entity_id == "device_tracker.nokia_6_1") %}Karen{% endif %}
+          location: >
+            {{ trigger.from_state.state }}
       - service: script.alert
         data:
           target: 'logs' #'general'
           icon: ':car: '
           object: 'Tracking'
           message: >
-            {% if (trigger.from_state.object_id == 'pixel_4') %}David{% endif %}
-            {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
-            left Curro Rosen Castle
-      # - service: script.alert
-      #   data:
-      #     target: 'logs' #'general'
-      #     icon: ':car: '
-      #     object: 'Tracking'
-      #     message: >
-      #       {{ trigger }}
+            {{ person }} left {{ location }}
+
+
+  # - alias: Parent arrived at School
+  #   description: Parent arrived at School
+  #   trigger:
+  #     - entity_id: device_tracker.pixel_4
+  #       platform: state
+  #       to: 'Curro Rosen Castle'
+  #     - entity_id: device_tracker.nokia_6_1
+  #       platform: state
+  #       to: 'Curro Rosen Castle'
+  #   action:
+  #     - service: script.alert
+  #       data:
+  #         target: 'logs' #'general'
+  #         icon: ':car: '
+  #         object: 'Tracking'
+  #         message: >
+  #           {% if (states.device_tracker.pixel_4.state == "Curro Rosen Castle") %}David{% endif %}
+  #           {% if (states.device_tracker.nokia_6_1.state == "Curro Rosen Castle") %}Karen{% endif %}
+  #           arrived at Curro Rosen Castle
+  #           Trigger:
+  #           ```{{ trigger }}```
+
+  # - alias: Parent left School
+  #   description: Parent left School
+  #   trigger:
+  #     - entity_id: device_tracker.pixel_4
+  #       platform: state
+  #       from: 'Curro Rosen Castle'
+  #     - entity_id: device_tracker.nokia_6_1
+  #       platform: state
+  #       from: 'Curro Rosen Castle'
+  #   action:
+  #     - service: script.alert
+  #       data:
+  #         target: 'logs' #'general'
+  #         icon: ':car: '
+  #         object: 'Tracking'
+  #         message: >
+  #           {% if (trigger.from_state.object_id == 'pixel_4') %}David{% endif %}
+  #           {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
+  #           left Curro Rosen Castle
+  #           Trigger:
+  #           ```{{ trigger }}```
+  #     # - service: script.alert
+  #     #   data:
+  #     #     target: 'logs' #'general'
+  #     #     icon: ':car: '
+  #     #     object: 'Tracking'
+  #     #     message: >
+  #     #       {{ trigger }}
 
   # Start robot vacuum when Dave leave the house in the morning
   # - alias: Dave left the house in the morning - start vacuum

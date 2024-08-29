@@ -1,5 +1,35 @@
 ---
 
+sensor:
+  # Used as a shared variable for the binary sensor and notification
+  - platform: template
+    sensors:
+      zigbee_last_seen_timeout:
+        friendly_name: "Zigbee Last Seen Timeout"
+        unit_of_measurement: "hours"
+        icon_template: "mdi:clock"
+        value_template: >
+          {{ 8|float }}
+
+binary_sensor:
+  # Used to trigger the automation. Using this, we can automatically create and dismiss the notification if the problem is resolved
+  # TODO: Devices that are unavailable, will need a separate notification. Depending on what it is.
+  - platform: template
+    sensors:
+      zigbee_last_seen_problem:
+        friendly_name: "Zigbee Last Seen Problem"
+        value_template: >-
+          {% set ns = namespace(break = false) %}
+          {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
+              {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
+                {%- set ns.break = true %}
+                true
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor %}
+          {{ ns.break }}
+
 automation:
   # If 'last_seen' sensors for many zigbee entities are disabled, see this issue on github:
   # https://github.com/Koenkk/zigbee2mqtt/issues/12235
@@ -22,27 +52,35 @@ automation:
   - alias: Zigbee Device Missing Alert
     id: zigbee_device_missing_alert
     trigger:
-      - platform: time
-        at: '10:00'
-      - platform: time
-        at: '20:00'
-    condition:
-      - condition: template
-        value_template: >
-          {% set ns = namespace(break = false) %}
-          {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * 8)) and ns.break == false %}
-              {%- set ns.break = true %}
-              true
-            {%- endif -%}
-          {%- endfor %}
+      - platform: state
+        entity_id: binary_sensor.zigbee_last_seen_problem
+        to: 'off'
+      - platform: state
+        entity_id: binary_sensor.zigbee_last_seen_problem
+        to: 'on'
     action:
-      - service: persistent_notification.create
-        data:
-          title: "Some Zigbee devices haven't been seen lately... "
-          message: >
-            {%- for state in (expand(states.sensor,states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * 8)) %}
-            {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
-            {%- endif -%} {%- endfor %}
-          notification_id: "last_seen_zigbee_devices"
+      - choose:
+          # IF 'zigbee_last_seen_problem' to 'on'
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.zigbee_last_seen_problem
+                state: 'on'
+            sequence:
+              - service: persistent_notification.create
+                data:
+                  title: "Some Zigbee devices haven't been seen lately... "
+                  message: >
+                    {%- for state in (expand(states.sensor,states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+                    {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) %}
+                    {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+                    {%- endif -%} {%- endfor %}
+                  notification_id: "last_seen_zigbee_devices"
+          # IF 'zigbee_last_seen_problem' to 'off'
+          - conditions:
+              - condition: state
+                entity_id: binary_sensor.zigbee_last_seen_problem
+                state: 'off'
+            sequence:
+              - service: persistent_notification.dismiss
+                data_template:
+                  notification_id: "last_seen_zigbee_devices"

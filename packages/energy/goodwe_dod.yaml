@@ -355,7 +355,7 @@ automation:
         entity_id: sensor.house_consumption
         below: '1200'
         for:
-          seconds: 30
+          seconds: 90
     condition:
       - condition: numeric_state
         entity_id: number.goodwe_depth_of_discharge_on_grid
@@ -374,7 +374,7 @@ automation:
           icon: ':zap:'
           object: 'GoodWe'
           message: >
-            House load below 1.2kW for 30 seconds. Setting DoD using forecast value {{ forecast }}
+            House load below 1.2kW for 90 seconds. Setting DoD using forecast value {{ forecast }}
       - service: script.goodwe_set_dod
         data:
           forecast: "{{ forecast }}"
