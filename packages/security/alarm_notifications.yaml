@@ -257,6 +257,9 @@ automation:
       - condition: template
         value_template: >
           {{ trigger.from_state.state != "unavailable" }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state != None }}
     action:
       - service: script.log
         data:
@@ -276,7 +279,10 @@ automation:
       - entity_id: binary_sensor.alarm_battery_trouble
         platform: state
         to: 'off'
-    condition: []
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state != None }}
     action:
       - service: script.log
         data:
