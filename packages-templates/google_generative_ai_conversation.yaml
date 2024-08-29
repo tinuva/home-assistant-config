@@ -1,15 +1,18 @@
 ---
 
-automations:
-
-    - service: google_generative_ai_conversation.generate_content
-      data:
-        prompt: >-
-          Very briefly describe what you see in this image from my doorbell camera.
-          Keep it short, only describe people and vehicles
-        image_filename: /config/www/Security/Latest/doorbell.jpg
-      response_variable: generated_content
-      continue_on_error: true
-    - service: notify.cellphone_group
-      data:
-        message: "{{ generated_content['text'] }}"
+automation:
+  - alias: example
+    description: example
+    trigger: []
+    action:
+      - service: google_generative_ai_conversation.generate_content
+        data:
+          prompt: >-
+            Very briefly describe what you see in this image from my doorbell camera.
+            Keep it short, only describe people and vehicles
+          image_filename: /config/www/Security/Latest/doorbell.jpg
+        response_variable: generated_content
+        continue_on_error: true
+      - service: notify.cellphone_group
+        data:
+          message: "{{ generated_content['text'] }}"
