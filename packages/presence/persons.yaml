@@ -18,4 +18,4 @@ person:
     name: Karen
     user_id: d85013026cdc493ea31c9db258a2b7b6
     device_trackers:
-      - device_tracker.nokia_6_1
+      - device_tracker.pixel_7a
