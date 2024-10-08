@@ -7,12 +7,19 @@ automation:
     trigger:
       - platform: state
         entity_id: fan.x1c_00m09a363000342_cooling_fan
+      - platform: state
+        entity_id: fan.x1c_00m09a363000342_aux_fan
     action:
       - choose:
           - conditions:
-              - condition: state
-                entity_id: fan.x1c_00m09a363000342_cooling_fan
-                state: 'on'
+              - condition: or
+                conditions:
+                  - condition: state
+                    entity_id: fan.x1c_00m09a363000342_cooling_fan
+                    state: 'on'
+                  - condition: state
+                    entity_id: fan.x1c_00m09a363000342_aux_fan
+                    state: 'on'
             sequence:
               - service: switch.turn_on
                 data:
