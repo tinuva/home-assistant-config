@@ -11,8 +11,9 @@ sensor:
         icon_template: "mdi:battery-arrow-down"
         value_template: >-
           {% set battery_voltage = states('sensor.kitchen_kitchen_battery')|float %}
-          {% set battery_percent = (battery_voltage - 4.8)*100|round(2) %}
-          {{ battery_percent }}
+          {% set battery_percent = (battery_voltage - 4.8)*100 %}
+          {% from 'formatter.jinja' import format_number %}
+          {{ format_number(battery_percent) }}
 
 automation:
   ### Notify state change
