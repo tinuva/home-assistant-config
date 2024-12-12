@@ -22,9 +22,9 @@
 
 # {# ----------------- PROVIDE YOUR OWN ENTITY ID AND ROOM COUNT HERE ----------------- #}
 # {% set vacuum_entity = "vacuum.xiaomi_robot_vacuum_x20" %}
-# {# ------------------- DO NOT CHANGE ANYTHING BELOW ------------------- #} 
+# {# ------------------- DO NOT CHANGE ANYTHING BELOW ------------------- #}
 # {%- set vacuum_name = states[vacuum_entity].entity_id.replace('vacuum.', '') %}
-# {%- set mop_pad = ('mop_pad_humidity' in states[vacuum_entity].attributes)|bool %} 
+# {%- set mop_pad = ('mop_pad_humidity' in states[vacuum_entity].attributes)|bool %}
 # {% set rooms = namespace(list=[]) %}
 # {%- if 'rooms' in states[vacuum_entity].attributes %}
 # {%- for map in states[vacuum_entity].attributes.rooms.values() %}

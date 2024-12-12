@@ -1,10 +1,11 @@
+---
 input_boolean:
   # Andre bedroom
   xiaomi_robot_vacuum_x20_mopping_1:
     name: Andre Bedroom Mopping
   xiaomi_robot_vacuum_x20_vacuuming_1:
     name: Andre Bedroom Vacuuming
-  
+
   # Main bedroom
   xiaomi_robot_vacuum_x20_mopping_2:
     name: Main Bedroom Mopping
@@ -16,7 +17,7 @@ input_boolean:
     name: Amy Bedroom Mopping
   xiaomi_robot_vacuum_x20_vacuuming_3:
     name: Amy Bedroom Vacuuming
-  
+
   # Hallways
   xiaomi_robot_vacuum_x20_mopping_4:
     name: Hallway NE Mopping
@@ -26,7 +27,7 @@ input_boolean:
     name: Hallway NW Mopping
   xiaomi_robot_vacuum_x20_vacuuming_5:
     name: Hallway NW Vacuuming
-  
+
   # Bathrooms
   xiaomi_robot_vacuum_x20_mopping_7:
     name: Main Bathroom Mopping
@@ -40,7 +41,7 @@ input_boolean:
     name: Braai Bathroom Mopping
   xiaomi_robot_vacuum_x20_vacuuming_16:
     name: Braai Bathroom Vacuuming
-  
+
   # Living areas
   xiaomi_robot_vacuum_x20_mopping_11:
     name: Kitchen Mopping

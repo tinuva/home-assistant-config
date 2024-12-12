@@ -1,3 +1,4 @@
+---
 automation:
   - alias: "Dreame Vacuum: Done Cleaning"
     description: "Turn off all helper entities when vacuum is done cleaning"
