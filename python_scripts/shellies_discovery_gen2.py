@@ -1,6 +1,6 @@
 """This script adds MQTT discovery support for Shellies Gen2 devices."""
 
-VERSION = "2.34.1"
+VERSION = "3.6.0"
 
 ATTR_BATTERY_POWERED = "battery_powered"
 ATTR_BINARY_SENSORS = "binary_sensors"
@@ -31,6 +31,7 @@ ATTR_MIN_FIRMWARE_DATE = "min_firmware_date"
 ATTR_MODEL = "model"
 ATTR_MODEL_ID = "model_id"
 ATTR_NAME = "name"
+ATTR_NUMBERS = "numbers"
 ATTR_PROFILE = "profile"
 ATTR_RELAY_BINARY_SENSORS = "relay_binary_sensors"
 ATTR_RELAY_SENSORS = "relay_sensors"
@@ -46,8 +47,11 @@ ATTR_THERMOSTATS = "thermostats"
 ATTR_UPDATES = "updates"
 ATTR_WAKEUP_PERIOD = "wakeup_period"
 
+BUTTON_CALIBRATE = "calibrate"
 BUTTON_MUTE_ALARM = "mute_alarm"
 BUTTON_RESTART = "restart"
+BUTTON_START_BOOST = "start_boost"
+BUTTON_STOP_BOOST = "stop_boost"
 BUTTON_UPDATE_FIRMWARE = "update_firmware"
 
 CONF_DISCOVERY_PREFIX = "discovery_prefix"
@@ -65,6 +69,7 @@ DEVICE_CLASS_ENERGY = "energy"
 DEVICE_CLASS_FREQUENCY = "frequency"
 DEVICE_CLASS_HUMIDITY = "humidity"
 DEVICE_CLASS_ILLUMINANCE = "illuminance"
+DEVICE_CLASS_MOTION = "motion"
 DEVICE_CLASS_POWER = "power"
 DEVICE_CLASS_POWER_FACTOR = "power_factor"
 DEVICE_CLASS_PROBLEM = "problem"
@@ -136,12 +141,16 @@ KEY_EVENT_TYPES = "evt_typ"
 KEY_EXPIRE_AFTER = "expire_after"
 KEY_HW_VERSION = "hw"
 KEY_ICON = "icon"
+KEY_IDENTIFIERS = "ids"
 KEY_JSON_ATTRIBUTES_TEMPLATE = "json_attr_tpl"
 KEY_JSON_ATTRIBUTES_TOPIC = "json_attr_t"
 KEY_LATEST_VERSION_TEMPLATE = "l_ver_tpl"
 KEY_LATEST_VERSION_TOPIC = "l_ver_t"
 KEY_MAC = "mac"
 KEY_MANUFACTURER = "mf"
+KEY_MAX = "max"
+KEY_MIN = "min"
+KEY_MODE = "mode"
 KEY_MODEL = "mdl"
 KEY_MODEL_ID = "mdl_id"
 KEY_NAME = "name"
@@ -172,6 +181,7 @@ KEY_STATE_STOPPED = "stat_stopped"
 KEY_STATE_TEMPLATE = "stat_tpl"
 KEY_STATE_TOPIC = "stat_t"
 KEY_STATE_VALUE_TEMPLATE = "stat_val_tpl"
+KEY_STEP = "step"
 KEY_SUBTYPE = "stype"
 KEY_SUGGESTED_DISPLAY_PRECISION = "sug_dsp_prc"
 KEY_SUPPORT_URL = "url"
@@ -186,6 +196,7 @@ KEY_TYPE = "type"
 KEY_UNIQUE_ID = "uniq_id"
 KEY_UNIT = "unit_of_meas"
 KEY_VALUE_TEMPLATE = "val_tpl"
+KEY_VIA_DEVICE = "via_device"
 
 # Gen2 devices
 MODEL_PLUS_1 = "shellyplus1"
@@ -193,6 +204,7 @@ MODEL_PLUS_1_MINI = "shelly1mini"
 MODEL_PLUS_1PM = "shellyplus1pm"
 MODEL_PLUS_1PM_MINI = "shelly1pmmini"
 MODEL_PLUS_2PM = "shellyplus2pm"
+MODEL_PLUS_DIMMER_10V = "shellyplus010v"
 MODEL_PLUS_HT = "shellyplusht"
 MODEL_PLUS_I4 = "shellyplusi4"
 MODEL_PLUS_PLUG_IT = "shellyplusplugit"
@@ -225,11 +237,22 @@ MODEL_1PM_G3 = "shelly1pmg3"
 MODEL_1_MINI_G3 = "shelly1minig3"
 MODEL_1PM_MINI_G3 = "shelly1pmminig3"
 MODEL_2PM_G3 = "shelly2pmg3"
+MODEL_BLU_GATEWAY_G3 = "shellyblugwg3"
+MODEL_EM_G3 = "shellyemg3"
 MODEL_HT_G3 = "shellyhtg3"
 MODEL_I4_G3 = "shellyi4g3"
+MODEL_PLUG_S_G3 = "shellyplugsg3"
 MODEL_PM_MINI_G3 = "shellypmminig3"
+MODEL_DALI_DIMMER_G3 = "shellyddimmerg3"
 MODEL_DIMMER_10V_G3 = "shelly0110dimg3"
 MODEL_X_MOD1 = "shellyxmod1"
+# BLU devices
+MODEL_BLU_HT = "SBHT-003C"
+MODEL_BLU_MOTION = "SBMO-003Z"
+MODEL_BLU_TRV = "SBTR-001AEU"
+
+NUMBER_EXTERNAL_TEMPERATURE = "external_temperature"
+NUMBER_BOOST_TIME = "boost_time"
 
 SENSOR_ACTIVE_POWER = "active_power"
 SENSOR_ANALOG_INPUT = "analog_input"
@@ -250,12 +273,15 @@ SENSOR_HUMIDITY = "humidity"
 SENSOR_ILLUMINANCE = "illuminance"
 SENSOR_INPUT = "input"
 SENSOR_LAST_RESTART = "last_restart"
+SENSOR_MOTION = "motion"
 SENSOR_N_CURRENT = "n_current"
 SENSOR_OVERPOWER = "overpower"
 SENSOR_OVERTEMP = "overtemp"
 SENSOR_OVERVOLTAGE = "overvoltage"
 SENSOR_POWER = "power"
 SENSOR_POWER_FACTOR = "power_factor"
+SENSOR_RETURNED_ENERGY = "returned_energy"
+SENSOR_SIGNAL_STRENGTH = "signal_strength"
 SENSOR_SMOKE = "smoke"
 SENSOR_SSID = "ssid"
 SENSOR_TEMPERATURE = "temperature"
@@ -271,32 +297,42 @@ SENSOR_WIFI_SIGNAL = "wifi_signal"
 UPDATE_FIRMWARE = "firmware"
 UPDATE_FIRMWARE_BETA = "firmware_beta"
 
-SCRIPT_CODE = """let topic_prefix = null;
-let installed_version = null;
+SCRIPT_CODE = """let topicPrefix = null;
 
-Shelly.call(^MQTT.GetConfig^, {}, function (config) {
-    topic_prefix = config.topic_prefix;
-});
-
-function SendDeviceStatus() {
-    let _device_info = Shelly.getDeviceInfo();
-    installed_version = _device_info.ver;
+function sendDeviceStatus() {
+  try {
+    let installedVersion = Shelly.getDeviceInfo().ver;
     Shelly.call(^Shelly.GetStatus^, {}, function (status) {
-        status.sys.installed_version = installed_version;
-        MQTT.publish(topic_prefix + ^/status/rpc^, JSON.stringify(status));
+      status.sys.installed_version = installedVersion;
+      MQTT.publish(topicPrefix + ^/status/rpc^, JSON.stringify(status));
     });
+  } catch (e) {
+    console.log(^sendDeviceStatus has failed: ^, e1);
+  }
 };
 
+function initScript() {
+  console.log(^Starting shellies_discovery_gen2_script^);
+  try {
+    Shelly.call(^MQTT.GetConfig^, {}, function (config) {
+      topicPrefix = config.topic_prefix;
+      console.log(^Using topic prefix: ^, topicPrefix);
+    });
+    let updateTimer = Timer.set(30000, true, sendDeviceStatus);
+  } catch (e) {
+    console.log(^initScript has failed: ^, e1);
+  }
+}
 
-MQTT.setConnectHandler(SendDeviceStatus);
-let UpdateTimer = Timer.set(30000, true, SendDeviceStatus);
+initScript();
 """
-SCRIPT_CURRENT_NAME = "shellies_discovery_gen2_script_20240216"
+SCRIPT_CURRENT_NAME = "shellies_discovery_gen2_script_20241123"
 SCRIPT_OLD_NAMES = [
     "Send Device Status",
     "send_device_status",
     "send_device_status.js",
     "shellies_discovery_gen2_script_20221116",
+    "shellies_discovery_gen2_script_20240216",
 ]
 
 STATE_CLASS_MEASUREMENT = "measurement"
@@ -315,6 +351,9 @@ TOPIC_LIGHT = "~status/light:{id}"
 TOPIC_ONLINE = "~online"
 TOPIC_RPC = "~rpc"
 TOPIC_SHELLIES_DISCOVERY_SCRIPT = "shellies_discovery_script"
+TOPIC_STATUS_BLU_TRV = "~status/blutrv:{id}"
+TOPIC_STATUS_BTH_DEVICE = "~status/bthomedevice:{id}"
+TOPIC_STATUS_BTH_SENSOR = "~status/bthomesensor:{id}"
 TOPIC_STATUS_CLOUD = "~status/cloud"
 TOPIC_STATUS_DEVICE_POWER = "~status/devicepower:0"
 TOPIC_STATUS_PM1 = "~status/pm1:0"
@@ -332,7 +371,10 @@ TOPIC_VOLTMETER = "~status/voltmeter:{id}"
 TPL_ACTION_TEMPLATE = "{{%if value_json.output%}}{action}{{%else%}}idle{{%endif%}}"
 TPL_ANALOG_INPUT = "{{value_json.percent}}"
 TPL_ANALOG_VALUE = "{{value_json.xpercent}}"
-TPL_BATTERY = "{{value_json.battery.percent}}"
+TPL_BATTERY = "{{value_json.battery}}"
+TPL_BATTERY_PERCENT = "{{value_json.battery.percent}}"
+TPL_BLU_TRV_REPORT_EXTERNAL_TEMPERATURE = "{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.SetExternalTemperature^,^params^:{{^id^:0,^t_C^:value}}}}}}|to_json}}}}"
+TPL_BLU_TRV_SET_BOOST_TIME = "{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^Trv.SetConfig^,^params^:{{^id^:0,^config^:{{^default_boost_duration^:value*60}}}}}}}}|to_json}}}}"
 TPL_COUNTER = "{{value_json.counts.total}}"
 TPL_COUNTER_VALUE = "{{value_json.counts.xtotal}}"
 TPL_CLOUD = "{%if value_json.cloud.connected%}ON{%else%}OFF{%endif%}"
@@ -363,6 +405,7 @@ TPL_EMETER_PHASE_VOLTAGE = "{{{{value_json.{phase}_voltage}}}}"
 TPL_EVENT = "{{%if value_json.params.events.0.id=={input_id}%}}{{{{{{^event_type^:value_json.params.events.0.event}}|to_json}}}}{{%endif%}}"
 TPL_FREQUENCY = "{{value_json.freq}}"
 TPL_ENERGY = "{{value_json.aenergy.total}}"
+TPL_RETURNED_ENERGY = "{{value_json.ret_aenergy.total}}"
 TPL_ETH_IP = "{{value_json.eth.ip}}"
 TPL_EXTERNAL_POWER = "{%if value_json.external.present%}ON{%else%}OFF{%endif%}"
 TPL_FIRMWARE_BETA = "{%if value_json.sys.available_updates.beta is defined%}{{value_json.sys.available_updates.beta.version}}{%else%}{{value_json.sys.installed_version}}{%endif%}"
@@ -394,6 +437,8 @@ TPL_RELAY_OVERVOLTAGE = (
     "{%if ^overvoltage^ in value_json.get(^errors^,[])%}ON{%else%}OFF{%endif%}"
 )
 TPL_RELAY_TEMPERATURE = "{{{{value_json[^switch:{relay}^].temperature.tC}}}}"
+TPL_SET_BLU_TARGET_TEMPERATURE = "{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.SetTarget^,^params^:{{^id^:0,^target_C^:value|round(1)}}}}}}|tojson}}}}"
+TPL_SET_BLU_THERMOSTAT_MODE = "{{%set target=4 if value==^off^ else 21%}}{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.SetTarget^,^params^:{{^id^:0,^target_C^:target}}}}}}|to_json}}}}"
 TPL_SET_TARGET_TEMPERATURE = "{{{{{{^id^:1,^src^:^{source}^,^method^:^Thermostat.SetConfig^,^params^:{{^config^:{{^id^:{thermostat},^target_C^:value}}}}}}|tojson}}}}"
 TPL_SET_THERMOSTAT_MODE = "{{%if value==^off^%}}{{%set enable=false%}}{{%else%}}{{%set enable=true%}}{{%endif%}}{{{{{{^id^:1,^src^:^{source}^,^method^:^Thermostat.SetConfig^,^params^:{{^config^:{{^id^:{thermostat},^enable^:enable}}}}}}|tojson}}}}"
 TPL_SMOKE = "{%if value_json.alarm%}ON{%else%}OFF{%endif%}"
@@ -401,16 +446,20 @@ TPL_TARGET_TEMPERATURE = "{{value_json.target_C}}"
 TPL_TEMPERATURE = "{{value_json.temperature.tC}}"
 TPL_TEMPERATURE_0 = "{{value_json[^temperature:0^].tC}}"
 TPL_TEMPERATURE_INDEPENDENT = "{{value_json.tC}}"
+TPL_BTH_SENSOR = "{{value_json.value}}"
+TPL_BTH_BINARY_SENSOR = "{{^ON^ if value_json.value else ^OFF^}}"
+TPL_BLU_THERMOSTAT_MODE = "{{^off^ if value_json.value==4 else ^heat^}}"
 TPL_THERMOSTAT_MODE = "{{%if value_json.enable%}}{action}{{%else%}}off{{%endif%}}"
 TPL_UPTIME = "{{(as_timestamp(now())-value_json.sys.uptime)|timestamp_local}}"
 TPL_UPTIME_INDEPENDENT = "{{(as_timestamp(now())-value_json.uptime)|timestamp_local}}"
+TPL_VALUE = "{{value_json.value}}"
 TPL_VOLTAGE = "{{value_json.voltage}}"
 TPL_WIFI_IP = "{{value_json.wifi.sta_ip}}"
 TPL_WIFI_IP_INDEPENDENT = "{{value_json.sta_ip}}"
-TPL_WIFI_SIGNAL = "{{value_json.wifi.rssi}}"
-TPL_WIFI_SIGNAL_INDEPENDENT = "{{value_json.rssi}}"
+TPL_WIFI_RSSI = "{{value_json.wifi.rssi}}"
 TPL_WIFI_SSID = "{{value_json.wifi.ssid}}"
 TPL_WIFI_SSID_INDEPENDENT = "{{value_json.ssid}}"
+TPL_RSSI = "{{value_json.rssi}}"
 
 TRIGGER_BUTTON_DOUBLE_PRESS = "button_double_press"
 TRIGGER_BUTTON_DOWN = "button_down"
@@ -424,6 +473,7 @@ UNIT_CELSIUS = "°C"
 UNIT_DBM = "dBm"
 UNIT_HERTZ = "Hz"
 UNIT_LUX = "lx"
+UNIT_MINUTES = "min"
 UNIT_PERCENT = "%"
 UNIT_PULSE = "pulse"
 UNIT_VOLT = "V"
@@ -434,6 +484,16 @@ UNIT_WATTH = "Wh"
 VALUE_OFF = "off"
 VALUE_ON = "on"
 VALUE_TRIGGER = "trigger"
+
+BTH_HUMIDITY = 46
+BTH_MOTION = 33
+BTH_TEMPERATURE = 69
+
+BTH_IDX_MAP = {
+    BTH_HUMIDITY: SENSOR_HUMIDITY,
+    BTH_MOTION: SENSOR_MOTION,
+    BTH_TEMPERATURE: SENSOR_TEMPERATURE,
+}
 
 DEVICE_TRIGGER_MAP = {
     EVENT_DOUBLE_PUSH: TRIGGER_BUTTON_DOUBLE_PRESS,
@@ -460,12 +520,74 @@ DESCRIPTION_BUTTON_RESTART = {
     KEY_NAME: "Restart",
     KEY_PAYLOAD_PRESS: "{{^id^:1,^src^:^{source}^,^method^:^Shelly.Reboot^}}",
 }
-DESCRIPTION_BATTERY = {
+DESCRIPTION_BUTTON_BLU_TRV_CALIBRATE = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_CONFIG,
+    KEY_NAME: "Calibrate",
+    KEY_PAYLOAD_PRESS: "{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.Calibrate^,^params^:{{^id^:0}}}}}}",
+}
+DESCRIPTION_BUTTON_BLU_TRV_START_BOOST = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_CONFIG,
+    KEY_NAME: "Start boost",
+    KEY_PAYLOAD_PRESS: "{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.SetBoost^,^params^:{{^id^:0}}}}}}",
+}
+DESCRIPTION_BUTTON_BLU_TRV_STOP_BOOST = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_CONFIG,
+    KEY_NAME: "Stop boost",
+    KEY_PAYLOAD_PRESS: "{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.ClearBoost^,^params^:{{^id^:0}}}}}}",
+}
+DESCRIPTION_NUMBER_BLU_TRV_EXTERNAL_TEMPERATURE = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_CONFIG,
+    KEY_NAME: "External temperature",
+    KEY_MODE_COMMAND_TOPIC: TOPIC_RPC,
+    KEY_COMMAND_TEMPLATE: TPL_BLU_TRV_REPORT_EXTERNAL_TEMPERATURE,
+    KEY_UNIT: UNIT_CELSIUS,
+    KEY_ICON: "mdi:thermometer-check",
+    KEY_MIN: -50,
+    KEY_MAX: 50,
+    KEY_STEP: 0.1,
+    KEY_MODE: "box",
+}
+DESCRIPTION_NUMBER_BLU_TRV_BOOST_TIME = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_CONFIG,
+    KEY_NAME: "Boost time",
+    KEY_MODE_COMMAND_TOPIC: TOPIC_RPC,
+    KEY_COMMAND_TEMPLATE: TPL_BLU_TRV_SET_BOOST_TIME,
+    KEY_UNIT: UNIT_MINUTES,
+    KEY_ICON: "mdi:clock-outline",
+    KEY_MIN: 1,
+    KEY_MAX: 100,
+    KEY_STEP: 1,
+    KEY_MODE: "box",
+}
+DESCRIPTION_SENSOR_BATTERY = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_BATTERY,
     KEY_ENABLED_BY_DEFAULT: True,
     KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
     KEY_NAME: "Battery",
     KEY_STATE_TOPIC: TOPIC_STATUS_DEVICE_POWER,
+    KEY_UNIT: UNIT_PERCENT,
+    KEY_VALUE_TEMPLATE: TPL_BATTERY_PERCENT,
+}
+DESCRIPTION_SENSOR_BLU_TRV_BATTERY = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_BATTERY,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+    KEY_NAME: "Battery",
+    KEY_STATE_TOPIC: TOPIC_STATUS_BLU_TRV,
+    KEY_UNIT: UNIT_PERCENT,
+    KEY_VALUE_TEMPLATE: TPL_BATTERY,
+}
+DESCRIPTION_SENSOR_BTH_DEV_BATTERY = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_BATTERY,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+    KEY_NAME: "Battery",
+    KEY_STATE_TOPIC: TOPIC_STATUS_BTH_DEVICE,
     KEY_UNIT: UNIT_PERCENT,
     KEY_VALUE_TEMPLATE: TPL_BATTERY,
 }
@@ -638,6 +760,16 @@ DESCRIPTION_SENSOR_ENERGY = {
     KEY_SUGGESTED_DISPLAY_PRECISION: 1,
     KEY_UNIT: UNIT_WATTH,
     KEY_VALUE_TEMPLATE: TPL_ENERGY,
+}
+DESCRIPTION_SENSOR_RETURNED_ENERGY = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_ENERGY,
+    KEY_ENABLED_BY_DEFAULT: False,
+    KEY_NAME: "Returned energy",
+    KEY_STATE_CLASS: STATE_CLASS_TOTAL_INCREASING,
+    KEY_STATE_TOPIC: TOPIC_SWITCH_RELAY,
+    KEY_SUGGESTED_DISPLAY_PRECISION: 1,
+    KEY_UNIT: UNIT_WATTH,
+    KEY_VALUE_TEMPLATE: TPL_RETURNED_ENERGY,
 }
 DESCRIPTION_SENSOR_CCT_ENERGY = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_ENERGY,
@@ -1167,11 +1299,31 @@ DESCRIPTION_SENSOR_WIFI_SIGNAL = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_SIGNAL_STRENGTH,
     KEY_ENABLED_BY_DEFAULT: True,
     KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
-    KEY_NAME: "WiFi signal",
+    KEY_NAME: "Signal strength",
     KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
     KEY_STATE_TOPIC: TOPIC_STATUS_RPC,
     KEY_UNIT: UNIT_DBM,
-    KEY_VALUE_TEMPLATE: TPL_WIFI_SIGNAL,
+    KEY_VALUE_TEMPLATE: TPL_WIFI_RSSI,
+}
+DESCRIPTION_SENSOR_BTH_DEV_SIGNAL_STRENGTH = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_SIGNAL_STRENGTH,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+    KEY_NAME: "Signal strength",
+    KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
+    KEY_STATE_TOPIC: TOPIC_STATUS_BTH_DEVICE,
+    KEY_UNIT: UNIT_DBM,
+    KEY_VALUE_TEMPLATE: TPL_RSSI,
+}
+DESCRIPTION_SENSOR_BLU_TRV_SIGNAL_STRENGTH = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_SIGNAL_STRENGTH,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+    KEY_NAME: "Signal strength",
+    KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
+    KEY_STATE_TOPIC: TOPIC_STATUS_BLU_TRV,
+    KEY_UNIT: UNIT_DBM,
+    KEY_VALUE_TEMPLATE: TPL_RSSI,
 }
 DESCRIPTION_SLEEPING_SENSOR_CLOUD = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_CONNECTIVITY,
@@ -1218,6 +1370,23 @@ DESCRIPTION_SENSOR_HUMIDITY = {
     KEY_UNIT: UNIT_PERCENT,
     KEY_VALUE_TEMPLATE: TPL_HUMIDITY,
 }
+DESCRIPTION_SENSOR_BTH_HUMIDITY = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_HUMIDITY,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Humidity",
+    KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
+    KEY_STATE_TOPIC: TOPIC_STATUS_BTH_SENSOR,
+    KEY_SUGGESTED_DISPLAY_PRECISION: 1,
+    KEY_UNIT: UNIT_PERCENT,
+    KEY_VALUE_TEMPLATE: TPL_BTH_SENSOR,
+}
+DESCRIPTION_SENSOR_BTH_MOTION = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_MOTION,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Motion",
+    KEY_STATE_TOPIC: TOPIC_STATUS_BTH_SENSOR,
+    KEY_VALUE_TEMPLATE: TPL_BTH_BINARY_SENSOR,
+}
 DESCRIPTION_SENSOR_TEMPERATURE = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
     KEY_ENABLED_BY_DEFAULT: True,
@@ -1227,6 +1396,16 @@ DESCRIPTION_SENSOR_TEMPERATURE = {
     KEY_SUGGESTED_DISPLAY_PRECISION: 1,
     KEY_UNIT: UNIT_CELSIUS,
     KEY_VALUE_TEMPLATE: TPL_TEMPERATURE_INDEPENDENT,
+}
+DESCRIPTION_SENSOR_BTH_TEMPERATURE = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Temperature",
+    KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
+    KEY_STATE_TOPIC: TOPIC_STATUS_BTH_SENSOR,
+    KEY_SUGGESTED_DISPLAY_PRECISION: 1,
+    KEY_UNIT: UNIT_CELSIUS,
+    KEY_VALUE_TEMPLATE: TPL_BTH_SENSOR,
 }
 DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_TIMESTAMP,
@@ -1256,11 +1435,11 @@ DESCRIPTION_SLEEPING_SENSOR_WIFI_SIGNAL = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_SIGNAL_STRENGTH,
     KEY_ENABLED_BY_DEFAULT: True,
     KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
-    KEY_NAME: "WiFi signal",
+    KEY_NAME: "Signal strength",
     KEY_STATE_CLASS: STATE_CLASS_MEASUREMENT,
     KEY_STATE_TOPIC: TOPIC_STATUS_WIFI,
     KEY_UNIT: UNIT_DBM,
-    KEY_VALUE_TEMPLATE: TPL_WIFI_SIGNAL_INDEPENDENT,
+    KEY_VALUE_TEMPLATE: TPL_RSSI,
 }
 DESCRIPTION_UPDATE_FIRMWARE = {
     KEY_DEVICE_CLASS: "firmware",
@@ -1345,14 +1524,100 @@ DESCRIPTION_THERMOSTAT = {
     ATTR_TEMPERATURE_MAX: 35,
     ATTR_TEMPERATURE_STEP: 0.5,
 }
+DESCRIPTION_BLU_TRV_THERMOSTAT = {
+    ATTR_TEMPERATURE_MIN: 5,
+    ATTR_TEMPERATURE_MAX: 30,
+    ATTR_TEMPERATURE_STEP: 0.1,
+}
 
 
-def get_component_number(component: str, config) -> int:
+def get_component_number(component: str, config):
     """Return the number of components."""
     return len([key for key in config if key.startswith(f"{component}:")])
 
 
+def get_component_ids(component: str, config):
+    """Return the list of IDs for component."""
+    return [
+        int(key.split(":")[-1]) for key in config if key.startswith(f"{component}:")
+    ]
+
+
 SUPPORTED_MODELS = {
+    MODEL_BLU_TRV: {
+        ATTR_NAME: "Shelly BLU TRV",
+        ATTR_MODEL_ID: "SBTR-001AEU",
+        ATTR_SENSORS: {
+            SENSOR_SIGNAL_STRENGTH: DESCRIPTION_SENSOR_BLU_TRV_SIGNAL_STRENGTH,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BLU_TRV_BATTERY,
+        },
+        ATTR_BUTTONS: {
+            BUTTON_CALIBRATE: DESCRIPTION_BUTTON_BLU_TRV_CALIBRATE,
+            BUTTON_START_BOOST: DESCRIPTION_BUTTON_BLU_TRV_START_BOOST,
+            BUTTON_STOP_BOOST: DESCRIPTION_BUTTON_BLU_TRV_STOP_BOOST,
+        },
+        ATTR_NUMBERS: {
+            "report_eternal_temperature": {},
+            "report_external_temperature": {},
+            NUMBER_EXTERNAL_TEMPERATURE: DESCRIPTION_NUMBER_BLU_TRV_EXTERNAL_TEMPERATURE,
+            NUMBER_BOOST_TIME: DESCRIPTION_NUMBER_BLU_TRV_BOOST_TIME,
+        },
+    },
+    MODEL_BLU_HT: {
+        ATTR_NAME: "Shelly BLU H&T",
+        ATTR_MODEL_ID: "SBHT-003C",
+        ATTR_SENSORS: {
+            SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_BTH_TEMPERATURE,
+            SENSOR_HUMIDITY: DESCRIPTION_SENSOR_BTH_HUMIDITY,
+            SENSOR_SIGNAL_STRENGTH: DESCRIPTION_SENSOR_BTH_DEV_SIGNAL_STRENGTH,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BTH_DEV_BATTERY,
+        },
+    },
+    MODEL_BLU_MOTION: {
+        ATTR_NAME: "Shelly BLU Motion",
+        ATTR_MODEL_ID: "SBMO-003Z",
+        ATTR_SENSORS: {
+            SENSOR_SIGNAL_STRENGTH: DESCRIPTION_SENSOR_BTH_DEV_SIGNAL_STRENGTH,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BTH_DEV_BATTERY,
+        },
+        ATTR_BINARY_SENSORS: {
+            SENSOR_MOTION: DESCRIPTION_SENSOR_BTH_MOTION,
+        },
+    },
+    MODEL_EM_G3: {
+        ATTR_NAME: "Shelly EM Gen3",
+        ATTR_MODEL_ID: "S3EM-002CXCEU",
+        ATTR_GEN: 3,
+        ATTR_EMETERS: 2,
+        ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_RELAYS: 1,
+        ATTR_RELAY_SENSORS: {
+            SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_RELAY_TEMPERATURE_STATUS
+        },
+        ATTR_SENSORS: {
+            SENSOR_ETH_IP: DESCRIPTION_SENSOR_ETH_IP,
+            SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_EMETER_SENSORS: {
+            SENSOR_ACTIVE_POWER: DESCRIPTION_SENSOR_EMETER_ACTIVE_POWER,
+            SENSOR_APPARENT_POWER: DESCRIPTION_SENSOR_EMETER_APPARENT_POWER,
+            SENSOR_CURRENT: DESCRIPTION_SENSOR_EMETER_CURRENT,
+            SENSOR_POWER_FACTOR: DESCRIPTION_SENSOR_EMETER_POWER_FACTOR,
+            SENSOR_TOTAL_ACTIVE_ENERGY: DESCRIPTION_SENSOR_EMETER_TOTAL_ACTIVE_ENERGY,
+            SENSOR_TOTAT_ACTIVE_RETURNED_ENERGY: DESCRIPTION_SENSOR_EMETER_TOTAL_ACTIVE_RETURNED_ENERGY,
+            SENSOR_VOLTAGE: DESCRIPTION_SENSOR_EMETER_VOLTAGE,
+            SENSOR_FREQUENCY: DESCRIPTION_SENSOR_EMETER_FREQUENCY,
+        },
+        ATTR_UPDATES: {
+            UPDATE_FIRMWARE: DESCRIPTION_UPDATE_FIRMWARE,
+            UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20241029,
+    },
     MODEL_1_G3: {
         ATTR_NAME: "Shelly 1 Gen3",
         ATTR_MODEL_ID: "S3SW-001X16EU",
@@ -1426,6 +1691,64 @@ SUPPORTED_MODELS = {
         },
         ATTR_MIN_FIRMWARE_DATE: 20240331,
     },
+    MODEL_PLUS_DIMMER_10V: {
+        ATTR_NAME: "Shelly Plus 0-10V Dimmer",
+        ATTR_MODEL_ID: "SNDM-00100WW",
+        ATTR_GEN: 2,
+        ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_INPUT_BINARY_SENSORS: {SENSOR_INPUT: DESCRIPTION_SENSOR_INPUT},
+        ATTR_INPUT_EVENTS: [
+            EVENT_BUTTON_DOWN,
+            EVENT_BUTTON_UP,
+            EVENT_DOUBLE_PUSH,
+            EVENT_LONG_PUSH,
+            EVENT_SINGLE_PUSH,
+            EVENT_TRIPLE_PUSH,
+        ],
+        ATTR_LIGHT_SENSORS: {
+            SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_LIGHT_TEMPERATURE,
+        },
+        ATTR_SENSORS: {
+            SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_UPDATES: {
+            UPDATE_FIRMWARE: DESCRIPTION_UPDATE_FIRMWARE,
+            UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20240331,
+    },
+    MODEL_DALI_DIMMER_G3: {
+        ATTR_NAME: "Shelly DALI Dimmer Gen3",
+        ATTR_MODEL_ID: "S3DM-0A1WW",
+        ATTR_GEN: 3,
+        ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_INPUT_BINARY_SENSORS: {SENSOR_INPUT: DESCRIPTION_SENSOR_INPUT},
+        ATTR_INPUT_EVENTS: [
+            EVENT_BUTTON_DOWN,
+            EVENT_BUTTON_UP,
+            EVENT_DOUBLE_PUSH,
+            EVENT_LONG_PUSH,
+            EVENT_SINGLE_PUSH,
+            EVENT_TRIPLE_PUSH,
+        ],
+        ATTR_LIGHT_SENSORS: {SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_LIGHT_TEMPERATURE},
+        ATTR_SENSORS: {
+            SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_UPDATES: {
+            UPDATE_FIRMWARE: DESCRIPTION_UPDATE_FIRMWARE,
+            UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20240813,
+    },
     MODEL_DIMMER_10V_G3: {
         ATTR_NAME: "Shelly Dimmer 0/1-10V PM Gen3",
         ATTR_MODEL_ID: "S3DM-0010WW",
@@ -1460,6 +1783,23 @@ SUPPORTED_MODELS = {
         },
         ATTR_MIN_FIRMWARE_DATE: 20240331,
     },
+    MODEL_BLU_GATEWAY_G3: {
+        ATTR_NAME: "Shelly BLU Gateway Gen3",
+        ATTR_MODEL_ID: "S3GW-1DBT001",
+        ATTR_GEN: 3,
+        ATTR_BINARY_SENSORS: {
+            SENSOR_CLOUD: DESCRIPTION_SLEEPING_SENSOR_CLOUD,
+            SENSOR_FIRMWARE: DESCRIPTION_SLEEPING_SENSOR_FIRMWARE,
+        },
+        ATTR_SENSORS: {
+            SENSOR_LAST_RESTART: DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SLEEPING_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SLEEPING_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SLEEPING_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_MIN_FIRMWARE_DATE: 20241007,
+    },
     MODEL_HT_G3: {
         ATTR_BATTERY_POWERED: True,
         ATTR_NAME: "Shelly H&T Gen3",
@@ -1471,7 +1811,7 @@ SUPPORTED_MODELS = {
             SENSOR_FIRMWARE: DESCRIPTION_SLEEPING_SENSOR_FIRMWARE,
         },
         ATTR_SENSORS: {
-            SENSOR_BATTERY: DESCRIPTION_BATTERY,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BATTERY,
             SENSOR_HUMIDITY: DESCRIPTION_SENSOR_HUMIDITY,
             SENSOR_LAST_RESTART: DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART,
             SENSOR_SSID: DESCRIPTION_SLEEPING_SENSOR_SSID,
@@ -1483,7 +1823,7 @@ SUPPORTED_MODELS = {
         ATTR_WAKEUP_PERIOD: 7200,
     },
     MODEL_I4_G3: {
-        ATTR_NAME: "Shelly I4 Gen3",
+        ATTR_NAME: "Shelly i4 Gen3",
         ATTR_MODEL_ID: "S3SN-0024X",
         ATTR_GEN: 3,
         ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
@@ -1835,7 +2175,7 @@ SUPPORTED_MODELS = {
             SENSOR_FIRMWARE: DESCRIPTION_SLEEPING_SENSOR_FIRMWARE,
         },
         ATTR_SENSORS: {
-            SENSOR_BATTERY: DESCRIPTION_BATTERY,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BATTERY,
             SENSOR_HUMIDITY: DESCRIPTION_SENSOR_HUMIDITY,
             SENSOR_LAST_RESTART: DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART,
             SENSOR_SSID: DESCRIPTION_SLEEPING_SENSOR_SSID,
@@ -1847,7 +2187,7 @@ SUPPORTED_MODELS = {
         ATTR_WAKEUP_PERIOD: 7200,
     },
     MODEL_PLUS_I4: {
-        ATTR_NAME: "Shelly Plus I4",
+        ATTR_NAME: "Shelly Plus i4",
         ATTR_MODEL_ID: "SNSW-0024X",
         ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
         ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
@@ -1931,6 +2271,39 @@ SUPPORTED_MODELS = {
             UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
         },
         ATTR_MIN_FIRMWARE_DATE: 20230803,
+    },
+    MODEL_PLUG_S_G3: {
+        ATTR_NAME: "Shelly Plug S Gen3",
+        ATTR_MODEL_ID: "S3PL-00112EU",
+        ATTR_GEN: 3,
+        ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_RELAYS: 1,
+        ATTR_RELAY_BINARY_SENSORS: {
+            SENSOR_OVERPOWER: DESCRIPTION_SENSOR_OVERPOWER,
+            SENSOR_OVERTEMP: DESCRIPTION_SENSOR_OVERTEMP,
+            SENSOR_OVERVOLTAGE: DESCRIPTION_SENSOR_OVERVOLTAGE,
+        },
+        ATTR_RELAY_SENSORS: {
+            SENSOR_CURRENT: DESCRIPTION_SENSOR_CURRENT,
+            SENSOR_ENERGY: DESCRIPTION_SENSOR_ENERGY,
+            SENSOR_FREQUENCY: DESCRIPTION_SENSOR_FREQUENCY,
+            SENSOR_POWER: DESCRIPTION_SENSOR_POWER,
+            SENSOR_RETURNED_ENERGY: DESCRIPTION_SENSOR_RETURNED_ENERGY,
+            SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_RELAY_TEMPERATURE,
+            SENSOR_VOLTAGE: DESCRIPTION_SENSOR_VOLTAGE,
+        },
+        ATTR_SENSORS: {
+            SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_UPDATES: {
+            UPDATE_FIRMWARE: DESCRIPTION_UPDATE_FIRMWARE,
+            UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20240820,
     },
     MODEL_PLUS_PLUG_UK: {
         ATTR_NAME: "Shelly Plus Plug UK",
@@ -2114,7 +2487,7 @@ SUPPORTED_MODELS = {
         },
         ATTR_BUTTONS: {BUTTON_MUTE_ALARM: DESCRIPTION_BUTTON_MUTE_ALARM},
         ATTR_SENSORS: {
-            SENSOR_BATTERY: DESCRIPTION_BATTERY,
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BATTERY,
             SENSOR_LAST_RESTART: DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART,
             SENSOR_SSID: DESCRIPTION_SLEEPING_SENSOR_SSID,
             SENSOR_WIFI_IP: DESCRIPTION_SLEEPING_SENSOR_WIFI_IP,
@@ -2851,6 +3224,47 @@ def get_climate(thermostat_id, description):
     return topic, payload
 
 
+def get_blu_climate(
+    thermostat_id: str, temperature_id: str, target_id: str, description
+) -> tuple:
+    """Create configuration for Shelly BLU climate entity."""
+    topic = encode_config_topic(
+        f"{disc_prefix}/climate/{device_id}-{thermostat_id}/config"
+    )
+
+    payload = {
+        KEY_NAME: "",
+        KEY_CURRENT_TEMPERATURE_TOPIC: TOPIC_STATUS_BTH_SENSOR.format(
+            id=temperature_id
+        ),
+        KEY_CURRENT_TEMPERATURE_TEMPLATE: TPL_VALUE,
+        KEY_TEMPERATURE_STATE_TOPIC: TOPIC_STATUS_BTH_SENSOR.format(id=target_id),
+        KEY_TEMPERATURE_STATE_TEMPLATE: TPL_VALUE,
+        KEY_TEMPERATURE_COMMAND_TOPIC: TOPIC_RPC,
+        KEY_TEMPERATURE_COMMAND_TEMPLATE: TPL_SET_BLU_TARGET_TEMPERATURE.format(
+            source=source_topic, thermostat=thermostat_id
+        ),
+        KEY_TEMP_STEP: description[ATTR_TEMPERATURE_STEP],
+        KEY_MIN_TEMP: description[ATTR_TEMPERATURE_MIN],
+        KEY_MAX_TEMP: description[ATTR_TEMPERATURE_MAX],
+        KEY_MODES: ["off", "heat"],
+        KEY_MODE_STATE_TOPIC: TOPIC_STATUS_BTH_SENSOR.format(id=target_id),
+        KEY_MODE_STATE_TEMPLATE: TPL_BLU_THERMOSTAT_MODE,
+        KEY_MODE_COMMAND_TOPIC: TOPIC_RPC,
+        KEY_MODE_COMMAND_TEMPLATE: TPL_SET_BLU_THERMOSTAT_MODE.format(
+            source=source_topic, thermostat=thermostat_id
+        ),
+        KEY_AVAILABILITY: availability,
+        KEY_UNIQUE_ID: f"{device_id}-{thermostat_id}".lower(),
+        KEY_QOS: qos,
+        KEY_DEVICE: device_info,
+        KEY_ORIGIN: origin_info,
+        KEY_DEFAULT_TOPIC: default_topic,
+    }
+
+    return topic, payload
+
+
 def get_switch(relay_id, relay_type, profile):
     """Create configuration for Shelly switch entity."""
     topic = encode_config_topic(f"{disc_prefix}/switch/{device_id}-{relay_id}/config")
@@ -3027,6 +3441,8 @@ def get_sensor(
     emeter_phase=None,
     sensor_id=None,
     input_id=None,
+    thermostat_id=None,
+    bt_id=None,
 ):
     """Create configuration for Shelly sensor entity."""
     if emeter_id is not None and emeter_phase is not None:
@@ -3060,6 +3476,10 @@ def get_sensor(
     elif sensor_id is not None:
         topic = encode_config_topic(
             f"{disc_prefix}/sensor/{device_id}-{sensor_id}-{sensor}/config"
+        )
+    elif bt_id is not None:
+        topic = encode_config_topic(
+            f"{disc_prefix}/sensor/{device_id}-{bt_id}-{sensor}/config"
         )
     else:
         topic = encode_config_topic(f"{disc_prefix}/sensor/{device_id}-{sensor}/config")
@@ -3125,6 +3545,9 @@ def get_sensor(
         sensor_name = device_config[f"{sensor}:{sensor_id}"][ATTR_NAME] or description[
             KEY_NAME
         ].format(sensor=sensor_id)
+    elif bt_id is not None:
+        unique_id = f"{device_id}-{bt_id}-{sensor}".lower()
+        sensor_name = description[KEY_NAME]
     elif input_id is not None:
         unique_id = f"{device_id}-{input_id}-{sensor}".lower()
         sensor_name = device_config[f"input:{input_id}"][ATTR_NAME] or description[
@@ -3180,6 +3603,10 @@ def get_sensor(
         payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=sensor_id)
     elif input_id is not None:
         payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=input_id)
+    elif thermostat_id is not None:
+        payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=thermostat_id)
+    elif bt_id is not None:
+        payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=bt_id)
     else:
         payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC]
 
@@ -3202,12 +3629,22 @@ def get_sensor(
 
 
 def get_binary_sensor(
-    sensor, description, entity_id=None, is_input=False, input_type=None, profile=None
+    sensor,
+    description,
+    entity_id=None,
+    is_input=False,
+    input_type=None,
+    profile=None,
+    bt_id=None,
 ):
     """Create configuration for Shelly binary sensor entity."""
     if entity_id is not None:
         topic = encode_config_topic(
             f"{disc_prefix}/binary_sensor/{device_id}-{entity_id}-{sensor}/config"
+        )
+    elif bt_id is not None:
+        topic = encode_config_topic(
+            f"{disc_prefix}/binary_sensor/{device_id}-{bt_id}-{sensor}/config"
         )
     else:
         topic = encode_config_topic(
@@ -3229,6 +3666,9 @@ def get_binary_sensor(
         sensor_name = (
             f"{name} {description[KEY_NAME]}" if description.get(KEY_NAME) else name
         )
+    elif bt_id is not None:
+        unique_id = f"{device_id}-{bt_id}-{sensor}".lower()
+        sensor_name = description[KEY_NAME]
     else:
         unique_id = f"{device_id}-{sensor}".lower()
         sensor_name = description[KEY_NAME]
@@ -3255,6 +3695,8 @@ def get_binary_sensor(
 
     if entity_id is not None:
         payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=entity_id)
+    elif bt_id is not None:
+        payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC].format(id=bt_id)
     else:
         payload[KEY_STATE_TOPIC] = description[KEY_STATE_TOPIC]
 
@@ -3328,14 +3770,13 @@ def get_event(input_id, input_type):
     return topic, payload
 
 
-def get_button(button, description):
+def get_button(button, description, thermostat_id=None):
     """Create configuration for Shelly button entity."""
     topic = encode_config_topic(f"{disc_prefix}/button/{device_id}-{button}/config")
 
     payload = {
         KEY_NAME: description[KEY_NAME],
         KEY_COMMAND_TOPIC: TOPIC_RPC,
-        KEY_PAYLOAD_PRESS: description[KEY_PAYLOAD_PRESS].format(source=source_topic),
         KEY_ENABLED_BY_DEFAULT: str(description[KEY_ENABLED_BY_DEFAULT]).lower(),
         KEY_UNIQUE_ID: f"{device_id}-{button}".lower(),
         KEY_QOS: qos,
@@ -3343,6 +3784,15 @@ def get_button(button, description):
         KEY_ORIGIN: origin_info,
         KEY_DEFAULT_TOPIC: default_topic,
     }
+
+    if thermostat_id is not None:
+        payload[KEY_PAYLOAD_PRESS] = description[KEY_PAYLOAD_PRESS].format(
+            source=source_topic, thermostat=thermostat_id
+        )
+    else:
+        payload[KEY_PAYLOAD_PRESS] = description[KEY_PAYLOAD_PRESS].format(
+            source=source_topic
+        )
 
     if description.get(KEY_AVAILABILITY_TOPIC):
         payload[KEY_AVAILABILITY_TOPIC] = description[KEY_AVAILABILITY_TOPIC]
@@ -3355,6 +3805,51 @@ def get_button(button, description):
         payload[KEY_ENTITY_CATEGORY] = description[KEY_ENTITY_CATEGORY]
     if description.get(KEY_ICON):
         payload[KEY_ICON] = description[KEY_ICON]
+
+    return topic, payload
+
+
+def get_number(number: str, description, thermostat_id=None) -> tuple:
+    """Create configuration for Shelly number entity."""
+    topic = encode_config_topic(f"{disc_prefix}/number/{device_id}-{number}/config")
+
+    if not description:
+        return topic, ""
+
+    payload = {
+        KEY_NAME: description[KEY_NAME],
+        KEY_COMMAND_TOPIC: TOPIC_RPC,
+        KEY_MIN: description[KEY_MIN],
+        KEY_MAX: description[KEY_MAX],
+        KEY_MODE: description[KEY_MODE],
+        KEY_ENABLED_BY_DEFAULT: str(description[KEY_ENABLED_BY_DEFAULT]).lower(),
+        KEY_UNIQUE_ID: f"{device_id}-{number}".lower(),
+        KEY_QOS: qos,
+        KEY_DEVICE: device_info,
+        KEY_ORIGIN: origin_info,
+        KEY_DEFAULT_TOPIC: default_topic,
+        KEY_AVAILABILITY: availability,
+    }
+
+    if thermostat_id is not None:
+        payload[KEY_COMMAND_TEMPLATE] = description[KEY_COMMAND_TEMPLATE].format(
+            source=source_topic, thermostat=thermostat_id
+        )
+    else:
+        payload[KEY_COMMAND_TEMPLATE] = description[KEY_COMMAND_TEMPLATE].format(
+            source=source_topic
+        )
+
+    if description.get(KEY_DEVICE_CLASS):
+        payload[KEY_DEVICE_CLASS] = description[KEY_DEVICE_CLASS]
+    if description.get(KEY_ENTITY_CATEGORY):
+        payload[KEY_ENTITY_CATEGORY] = description[KEY_ENTITY_CATEGORY]
+    if description.get(KEY_ICON):
+        payload[KEY_ICON] = description[KEY_ICON]
+    if description.get(KEY_STEP):
+        payload[KEY_STEP] = description[KEY_STEP]
+    if description.get(KEY_UNIT):
+        payload[KEY_UNIT] = description[KEY_UNIT]
 
     return topic, payload
 
@@ -3501,7 +3996,7 @@ def configure_device():
                 topic, payload = get_switch(switch_id, ATTR_SWITCH, ATTR_SWITCH)
                 config[topic] = payload
 
-    for input_id in range(inputs):
+    for input_id in inputs:
         input_type = device_config[f"input:{input_id}"]["type"]
 
         topic, payload = get_event(input_id, input_type)
@@ -3683,85 +4178,11 @@ if device_id is None:
 model = device_id.rsplit("-", 1)[0]
 if model not in SUPPORTED_MODELS:
     raise ValueError(
-        f"model {model} is not supported, please open an issue here https://github.com/bieniu/ha-shellies-discovery-gen2/issues"
+        f"model {model} is not supported, please open a feature request here https://github.com/bieniu/ha-shellies-discovery-gen2/issues"
     )
 
 device_config = data["device_config"]  # noqa: F821
 
-if (
-    model == MODEL_PRO_3EM
-    and device_config["sys"]["device"].get(ATTR_PROFILE) == "monophase"
-):
-    model = MODEL_PRO_3EM_MONOPHASE
-
-default_topic = f"{device_config['mqtt']['topic_prefix']}/"
-if " " in default_topic:
-    raise ValueError(
-        f"MQTT prefix value {default_topic} is not valid, check device configuration"
-    )
-firmware_id = device_config["sys"]["device"][ATTR_FW_ID]
-
-script_prefix = data.get(CONF_SCRIPT_PREFIX, None)  # noqa: F821
-if script_prefix and (script_prefix[-1] == "/" or " " in script_prefix):
-    raise ValueError(
-        f"Script prefix value {script_prefix} is not valid, check script configuration"
-    )
-
-source_topic = f"{script_prefix}/{HOME_ASSISTANT}" if script_prefix else HOME_ASSISTANT
-
-if (
-    model not in (MODEL_HT_G3, MODEL_PLUS_HT, MODEL_PLUS_SMOKE, MODEL_WALL_DISPLAY)
-    and not current_script_installed()
-):
-    device_topic = encode_config_topic(f"{default_topic}rpc")
-    if script_prefix:
-        script_topic = f"{script_prefix}/{TOPIC_SHELLIES_DISCOVERY_SCRIPT}"
-    else:
-        script_topic = TOPIC_SHELLIES_DISCOVERY_SCRIPT
-
-    script_id = get_script_id()
-    install_script(script_id, device_topic, script_topic)
-    remove_old_script_versions(device_topic, script_topic)
-
-min_firmware_date = SUPPORTED_MODELS[model][ATTR_MIN_FIRMWARE_DATE]
-try:
-    firmware_date = int(firmware_id.split("-", 1)[0])
-except ValueError as exc:
-    raise ValueError(
-        f"firmware version {min_firmware_date} is not supported, update your device {device_id}"
-    ) from exc
-if firmware_date < min_firmware_date:
-    raise ValueError(
-        f"firmware dated {min_firmware_date} is required, update your device {device_id}"
-    )
-
-mac = device_config["sys"]["device"][ATTR_MAC]
-if mac is None:
-    raise ValueError("mac value None is not valid, check script configuration")
-
-device_name = device_config["sys"]["device"].get(ATTR_NAME)
-device_url = f"http://{device_id}.local/"
-
-if not device_name:
-    device_name = SUPPORTED_MODELS[model][ATTR_NAME]
-
-qos = data.get(CONF_QOS, 0)  # noqa: F821
-if qos not in (0, 1, 2):
-    raise ValueError(f"QoS value {qos} is not valid, check script configuration")
-
-disc_prefix = data.get(CONF_DISCOVERY_PREFIX, DEFAULT_DISC_PREFIX)  # noqa: F821
-
-gen = SUPPORTED_MODELS[model].get(ATTR_GEN, 2)
-device_info = {
-    KEY_CONNECTIONS: [[KEY_MAC, format_mac(mac)]],
-    KEY_NAME: device_name,
-    KEY_MODEL: SUPPORTED_MODELS[model][ATTR_NAME],
-    KEY_MODEL_ID: SUPPORTED_MODELS[model].get(ATTR_MODEL_ID),
-    KEY_SW_VERSION: firmware_id,
-    KEY_HW_VERSION: f"gen{gen}",
-    KEY_MANUFACTURER: ATTR_MANUFACTURER,
-    KEY_CONFIGURATION_URL: device_url,
-}
 origin_info = {
     KEY_NAME: "Shellies Discovery Gen2",
     KEY_SW_VERSION: VERSION,
@@ -3773,13 +4194,15 @@ if wakeup_period > 0:
     availability = None
     expire_after = wakeup_period * 1.2
 else:
-    availability = [
-        {
-            KEY_TOPIC: TOPIC_ONLINE,
-            KEY_PAYLOAD_AVAILABLE: "true",
-            KEY_PAYLOAD_NOT_AVAILABLE: "false",
-        }
-    ]
+    availability = []
+    if model != MODEL_BLU_GATEWAY_G3:
+        availability.append(
+            {
+                KEY_TOPIC: TOPIC_ONLINE,
+                KEY_PAYLOAD_AVAILABLE: "true",
+                KEY_PAYLOAD_NOT_AVAILABLE: "false",
+            }
+        )
     if model not in (MODEL_PLUS_HT, MODEL_PLUS_SMOKE, MODEL_WALL_DISPLAY):
         availability.append(
             {
@@ -3789,39 +4212,273 @@ else:
         )
     expire_after = None
 
-inputs = get_component_number(ATTR_INPUT, device_config)
-input_events = SUPPORTED_MODELS[model].get(ATTR_INPUT_EVENTS, [])
-input_binary_sensors = SUPPORTED_MODELS[model].get(ATTR_INPUT_BINARY_SENSORS, {})
-input_sensors = SUPPORTED_MODELS[model].get(ATTR_INPUT_SENSORS, {})
+disc_prefix = data.get(CONF_DISCOVERY_PREFIX, DEFAULT_DISC_PREFIX)  # noqa: F821
 
-emeters = SUPPORTED_MODELS[model].get(ATTR_EMETERS, 0)
-emeter_phases = SUPPORTED_MODELS[model].get(ATTR_EMETER_PHASES, [])
-emeter_sensors = SUPPORTED_MODELS[model].get(ATTR_EMETER_SENSORS, {})
+script_prefix = data.get(CONF_SCRIPT_PREFIX, None)  # noqa: F821
+if script_prefix and (script_prefix[-1] == "/" or " " in script_prefix):
+    raise ValueError(
+        f"Script prefix value {script_prefix} is not valid, check script configuration"
+    )
 
-relays = SUPPORTED_MODELS[model].get(ATTR_RELAYS, 0)
-relay_sensors = SUPPORTED_MODELS[model].get(ATTR_RELAY_SENSORS, {})
-relay_binary_sensors = SUPPORTED_MODELS[model].get(ATTR_RELAY_BINARY_SENSORS, {})
+source_topic = f"{script_prefix}/{HOME_ASSISTANT}" if script_prefix else HOME_ASSISTANT
 
-thermostats = SUPPORTED_MODELS[model].get(ATTR_THERMOSTATS, {})
+qos = data.get(CONF_QOS, 0)  # noqa: F821
+if qos not in (0, 1, 2):
+    raise ValueError(f"QoS value {qos} is not valid, check script configuration")
 
-lights = get_component_number(ATTR_LIGHT, device_config)
-light_sensors = SUPPORTED_MODELS[model].get(ATTR_LIGHT_SENSORS, {})
+if "components" in device_config:
+    components = {
+        comp["key"]: comp["config"]
+        for comp in device_config["components"]
+        if comp["key"].startswith(("blu", "bt", "mqtt"))
+    }
 
-cct_lights = get_component_number(ATTR_CCT, device_config)
-cct_sensors = SUPPORTED_MODELS[model].get(ATTR_CCT_SENSORS, {})
+    if "mqtt" not in components:
+        raise ValueError(
+            "Missing MQTT component, probably 'Shelly.GetComponent' pagination problem"
+        )
 
-rgb_lights = get_component_number(ATTR_RGB, device_config)
-rgb_sensors = SUPPORTED_MODELS[model].get(ATTR_RGB_SENSORS, {})
+    default_topic = f"{components['mqtt']['topic_prefix']}/"
+    if " " in default_topic:
+        raise ValueError(
+            f"MQTT prefix value {default_topic} is not valid, check device configuration"
+        )
 
-buttons = SUPPORTED_MODELS[model].get(ATTR_BUTTONS, {})
-sensors = SUPPORTED_MODELS[model].get(ATTR_SENSORS, {})
-binary_sensors = SUPPORTED_MODELS[model].get(ATTR_BINARY_SENSORS, {})
-updates = SUPPORTED_MODELS[model].get(ATTR_UPDATES, {})
+    bthome_devices = {
+        key: {**conf, "components": []}
+        for key, conf in components.items()
+        if key.startswith("bthomedevice")
+    }
+    for dev in bthome_devices.values():
+        for comp, config in components.items():
+            if (
+                dev["addr"] == config.get("addr")
+                and config.get("obj_id") in BTH_IDX_MAP
+            ):
+                dev["components"].append({BTH_IDX_MAP[config["obj_id"]]: comp})
 
-covers = SUPPORTED_MODELS[model].get(ATTR_COVERS, 0)
-cover_sensors = SUPPORTED_MODELS[model].get(ATTR_COVER_SENSORS, {})
+    blutrv_devices = {
+        key: {**conf, "components": []}
+        for key, conf in components.items()
+        if key.startswith("blutrv")
+    }
+    for dev in blutrv_devices.values():
+        for comp, config in components.items():
+            if (
+                dev["addr"] == config.get("addr")
+                and config.get("obj_id") == BTH_TEMPERATURE
+            ):
+                dev["components"].append(comp)
 
-config_data = configure_device()
+    config_data = {}
+
+    via_device = format_mac(device_id.rsplit("-", 1)[-1])
+
+    for device, config in bthome_devices.items():
+        btdevice_id = device.split(":")[-1]
+        if f"blutrv:{btdevice_id}" in blutrv_devices:
+            continue
+
+        if not (model := config["meta"]["ui"].get("local_name")):
+            logger.warning(  # noqa: F821
+                "device %s doesn't present MODEL ID, update device's firmware", device
+            )
+            continue
+
+        if model not in SUPPORTED_MODELS:
+            logger.warning(  # noqa: F821
+                "device %s is not supported, please open a feature request here "
+                "https://github.com/bieniu/ha-shellies-discovery-gen2/issues",
+                device,
+            )
+            continue
+
+        logger.debug("Found BTHome devices: %s", bthome_devices)  # noqa: F821
+
+        mac = config["addr"].lower()
+        device_name = config["name"] or SUPPORTED_MODELS[model][ATTR_NAME]
+        device_id += f"-{mac.replace(":", "")}"
+        device_info = {
+            KEY_CONNECTIONS: [["bluetooth", mac]],
+            KEY_IDENTIFIERS: [mac],
+            KEY_NAME: device_name,
+            KEY_MODEL: SUPPORTED_MODELS[model][ATTR_NAME],
+            KEY_MODEL_ID: SUPPORTED_MODELS[model][ATTR_MODEL_ID],
+            KEY_MANUFACTURER: ATTR_MANUFACTURER,
+            KEY_VIA_DEVICE: via_device,
+        }
+
+        binary_sensors = SUPPORTED_MODELS[model].get(ATTR_BINARY_SENSORS, {})
+        sensors = SUPPORTED_MODELS[model].get(ATTR_SENSORS, {})
+
+        for sensor, description in sensors.items():
+            btsensor_id = None
+            for component in config["components"]:
+                if comp_id := component.get(sensor):
+                    btsensor_id = comp_id.split(":")[-1]
+                    break
+
+            topic, payload = get_sensor(
+                sensor, description, bt_id=btsensor_id or btdevice_id
+            )
+            config_data[topic] = payload
+
+        for binary_sensor, description in binary_sensors.items():
+            btsensor_id = None
+            for component in config["components"]:
+                if comp_id := component.get(binary_sensor):
+                    btsensor_id = comp_id.split(":")[-1]
+                    break
+
+            topic, payload = get_binary_sensor(
+                binary_sensor, description, bt_id=btsensor_id or btdevice_id
+            )
+            config_data[topic] = payload
+
+    for thermostat, config in blutrv_devices.items():
+        model = MODEL_BLU_TRV
+        mac = config["addr"].lower()
+        device_name = config["name"] or SUPPORTED_MODELS[model][ATTR_NAME]
+        device_id += f"-{mac.replace(":", "")}"
+        device_info = {
+            KEY_CONNECTIONS: [["bluetooth", mac]],
+            KEY_IDENTIFIERS: [mac],
+            KEY_NAME: device_name,
+            KEY_MODEL: SUPPORTED_MODELS[model][ATTR_NAME],
+            KEY_MODEL_ID: SUPPORTED_MODELS[model][ATTR_MODEL_ID],
+            KEY_MANUFACTURER: ATTR_MANUFACTURER,
+            KEY_VIA_DEVICE: via_device,
+        }
+        thermostat_id = thermostat.split(":")[-1]
+        temperature_id = config["components"][1].split(":")[-1]
+        target_id = config["components"][0].split(":")[-1]
+        topic, payload = get_blu_climate(
+            thermostat_id, temperature_id, target_id, DESCRIPTION_BLU_TRV_THERMOSTAT
+        )
+        config_data[topic] = payload
+
+        sensors = SUPPORTED_MODELS[model].get(ATTR_SENSORS, {})
+
+        for sensor, description in sensors.items():
+            topic, payload = get_sensor(
+                sensor, description, thermostat_id=thermostat_id
+            )
+            config_data[topic] = payload
+
+        buttons = SUPPORTED_MODELS[model].get(ATTR_BUTTONS, {})
+
+        for button, description in buttons.items():
+            topic, payload = get_button(
+                button, description, thermostat_id=thermostat_id
+            )
+            config_data[topic] = payload
+
+        numbers = SUPPORTED_MODELS[model].get(ATTR_NUMBERS, {})
+
+        for number, description in numbers.items():
+            topic, payload = get_number(
+                number, description, thermostat_id=thermostat_id
+            )
+            config_data[topic] = payload
+
+else:
+    if (
+        model == MODEL_PRO_3EM
+        and device_config["sys"]["device"].get(ATTR_PROFILE) == "monophase"
+    ):
+        model = MODEL_PRO_3EM_MONOPHASE
+
+    default_topic = f"{device_config['mqtt']['topic_prefix']}/"
+    if " " in default_topic:
+        raise ValueError(
+            f"MQTT prefix value {default_topic} is not valid, check device configuration"
+        )
+    firmware_id = device_config["sys"]["device"][ATTR_FW_ID]
+
+    if (
+        model not in (MODEL_HT_G3, MODEL_PLUS_HT, MODEL_PLUS_SMOKE, MODEL_WALL_DISPLAY)
+        and not current_script_installed()
+    ):
+        device_topic = encode_config_topic(f"{default_topic}rpc")
+        if script_prefix:
+            script_topic = f"{script_prefix}/{TOPIC_SHELLIES_DISCOVERY_SCRIPT}"
+        else:
+            script_topic = TOPIC_SHELLIES_DISCOVERY_SCRIPT
+
+        script_id = get_script_id()
+        install_script(script_id, device_topic, script_topic)
+        remove_old_script_versions(device_topic, script_topic)
+
+    min_firmware_date = SUPPORTED_MODELS[model][ATTR_MIN_FIRMWARE_DATE]
+    try:
+        firmware_date = int(firmware_id.split("-", 1)[0])
+    except ValueError as exc:
+        raise ValueError(
+            f"firmware version {min_firmware_date} is not supported, update your device {device_id}"
+        ) from exc
+    if firmware_date < min_firmware_date:
+        raise ValueError(
+            f"firmware dated {min_firmware_date} is required, update your device {device_id}"
+        )
+
+    mac = device_config["sys"]["device"][ATTR_MAC]
+    if mac is None:
+        raise ValueError("mac value None is not valid, check script configuration")
+
+    mac = format_mac(mac).lower()
+
+    device_name = device_config["sys"]["device"].get(ATTR_NAME)
+    device_url = f"http://{device_id}.local/"
+
+    if not device_name:
+        device_name = SUPPORTED_MODELS[model][ATTR_NAME]
+
+    gen = SUPPORTED_MODELS[model].get(ATTR_GEN, 2)
+    device_info = {
+        KEY_CONNECTIONS: [[KEY_MAC, mac]],
+        KEY_IDENTIFIERS: [mac],
+        KEY_NAME: device_name,
+        KEY_MODEL: SUPPORTED_MODELS[model][ATTR_NAME],
+        KEY_MODEL_ID: SUPPORTED_MODELS[model].get(ATTR_MODEL_ID),
+        KEY_SW_VERSION: firmware_id,
+        KEY_HW_VERSION: f"gen{gen}",
+        KEY_MANUFACTURER: ATTR_MANUFACTURER,
+        KEY_CONFIGURATION_URL: device_url,
+    }
+
+    inputs = get_component_ids(ATTR_INPUT, device_config)
+    input_events = SUPPORTED_MODELS[model].get(ATTR_INPUT_EVENTS, [])
+    input_binary_sensors = SUPPORTED_MODELS[model].get(ATTR_INPUT_BINARY_SENSORS, {})
+    input_sensors = SUPPORTED_MODELS[model].get(ATTR_INPUT_SENSORS, {})
+
+    emeters = SUPPORTED_MODELS[model].get(ATTR_EMETERS, 0)
+    emeter_phases = SUPPORTED_MODELS[model].get(ATTR_EMETER_PHASES, [])
+    emeter_sensors = SUPPORTED_MODELS[model].get(ATTR_EMETER_SENSORS, {})
+
+    relays = SUPPORTED_MODELS[model].get(ATTR_RELAYS, 0)
+    relay_sensors = SUPPORTED_MODELS[model].get(ATTR_RELAY_SENSORS, {})
+    relay_binary_sensors = SUPPORTED_MODELS[model].get(ATTR_RELAY_BINARY_SENSORS, {})
+
+    thermostats = SUPPORTED_MODELS[model].get(ATTR_THERMOSTATS, {})
+
+    lights = get_component_number(ATTR_LIGHT, device_config)
+    light_sensors = SUPPORTED_MODELS[model].get(ATTR_LIGHT_SENSORS, {})
+
+    cct_lights = get_component_number(ATTR_CCT, device_config)
+    cct_sensors = SUPPORTED_MODELS[model].get(ATTR_CCT_SENSORS, {})
+
+    rgb_lights = get_component_number(ATTR_RGB, device_config)
+    rgb_sensors = SUPPORTED_MODELS[model].get(ATTR_RGB_SENSORS, {})
+
+    buttons = SUPPORTED_MODELS[model].get(ATTR_BUTTONS, {})
+    sensors = SUPPORTED_MODELS[model].get(ATTR_SENSORS, {})
+    binary_sensors = SUPPORTED_MODELS[model].get(ATTR_BINARY_SENSORS, {})
+    updates = SUPPORTED_MODELS[model].get(ATTR_UPDATES, {})
+
+    covers = SUPPORTED_MODELS[model].get(ATTR_COVERS, 0)
+    cover_sensors = SUPPORTED_MODELS[model].get(ATTR_COVER_SENSORS, {})
+
+    config_data = configure_device()
 
 if config_data:
     for config_topic, config_payload in config_data.items():
