@@ -11,7 +11,7 @@ input_boolean:
     name: Main Bedroom Mopping
   xiaomi_robot_vacuum_x20_vacuuming_2:
     name: Main Bedroom Vacuuming
-  
+
   # Amy bedroom
   xiaomi_robot_vacuum_x20_mopping_3:
     name: Amy Bedroom Mopping
