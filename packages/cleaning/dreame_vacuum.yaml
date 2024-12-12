@@ -1,0 +1,39 @@
+---
+
+### Rooms
+
+# {'id': 1, 'name': 'Andre bedrm'} 
+# {'id': 2, 'name': 'main bedroom'} 
+# {'id': 3, 'name': 'Amy bedrm'} 
+# {'id': 4, 'name': 'Hallway NE'} 
+# {'id': 5, 'name': 'Hallway NW'} 
+# {'id': 7, 'name': 'main bathrm'} 
+# {'id': 8, 'name': 'Courtyard'} 
+# {'id': 9, 'name': 'white bathrm'} 
+# {'id': 10, 'name': 'spare bedrm'} 
+# {'id': 11, 'name': 'kitchen'} 
+# {'id': 13, 'name': 'front hall'} 
+# {'id': 14, 'name': 'Lounge'} 
+# {'id': 15, 'name': 'braairoom'} 
+# {'id': 16, 'name': 'Braai bathrm'} 
+# {'id': 17, 'name': 'Living room'}
+
+### Script to get rooms - In Dev Tools Template tab
+
+# {# ----------------- PROVIDE YOUR OWN ENTITY ID AND ROOM COUNT HERE ----------------- #}
+# {% set vacuum_entity = "vacuum.xiaomi_robot_vacuum_x20" %}
+# {# ------------------- DO NOT CHANGE ANYTHING BELOW ------------------- #}
+# {%- set vacuum_name = states[vacuum_entity].entity_id.replace('vacuum.', '') %} 
+# {%- set mop_pad = ('mop_pad_humidity' in states[vacuum_entity].attributes)|bool %}
+# {% set rooms = namespace(list=[]) %}
+# {%- if 'rooms' in states[vacuum_entity].attributes %}
+# {%- for map in states[vacuum_entity].attributes.rooms.values() %}  
+#     {%- for room in map %}  
+#     {{- {'id': room.id, 'name': room.name} }} {{ '\n' -}}
+#     {%- if room.id not in rooms.list %}
+#         {%- set rooms.list = rooms.list + [room.id] %}
+#     {%- endif %}
+#     {%- endfor %}
+# {%- endfor %}
+# {%- endif %}
+
