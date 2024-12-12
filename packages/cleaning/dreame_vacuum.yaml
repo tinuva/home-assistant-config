@@ -2,33 +2,33 @@
 
 ### Rooms
 
-# {'id': 1, 'name': 'Andre bedrm'} 
-# {'id': 2, 'name': 'main bedroom'} 
-# {'id': 3, 'name': 'Amy bedrm'} 
-# {'id': 4, 'name': 'Hallway NE'} 
-# {'id': 5, 'name': 'Hallway NW'} 
-# {'id': 7, 'name': 'main bathrm'} 
-# {'id': 8, 'name': 'Courtyard'} 
-# {'id': 9, 'name': 'white bathrm'} 
-# {'id': 10, 'name': 'spare bedrm'} 
-# {'id': 11, 'name': 'kitchen'} 
-# {'id': 13, 'name': 'front hall'} 
-# {'id': 14, 'name': 'Lounge'} 
-# {'id': 15, 'name': 'braairoom'} 
-# {'id': 16, 'name': 'Braai bathrm'} 
+# {'id': 1, 'name': 'Andre bedrm'}
+# {'id': 2, 'name': 'main bedroom'}
+# {'id': 3, 'name': 'Amy bedrm'}
+# {'id': 4, 'name': 'Hallway NE'}
+# {'id': 5, 'name': 'Hallway NW'}
+# {'id': 7, 'name': 'main bathrm'}
+# {'id': 8, 'name': 'Courtyard'}
+# {'id': 9, 'name': 'white bathrm'}
+# {'id': 10, 'name': 'spare bedrm'}
+# {'id': 11, 'name': 'kitchen'}
+# {'id': 13, 'name': 'front hall'}
+# {'id': 14, 'name': 'Lounge'}
+# {'id': 15, 'name': 'braairoom'}
+# {'id': 16, 'name': 'Braai bathrm'}
 # {'id': 17, 'name': 'Living room'}
 
 ### Script to get rooms - In Dev Tools Template tab
 
 # {# ----------------- PROVIDE YOUR OWN ENTITY ID AND ROOM COUNT HERE ----------------- #}
 # {% set vacuum_entity = "vacuum.xiaomi_robot_vacuum_x20" %}
-# {# ------------------- DO NOT CHANGE ANYTHING BELOW ------------------- #}
-# {%- set vacuum_name = states[vacuum_entity].entity_id.replace('vacuum.', '') %} 
-# {%- set mop_pad = ('mop_pad_humidity' in states[vacuum_entity].attributes)|bool %}
+# {# ------------------- DO NOT CHANGE ANYTHING BELOW ------------------- #} 
+# {%- set vacuum_name = states[vacuum_entity].entity_id.replace('vacuum.', '') %}
+# {%- set mop_pad = ('mop_pad_humidity' in states[vacuum_entity].attributes)|bool %} 
 # {% set rooms = namespace(list=[]) %}
 # {%- if 'rooms' in states[vacuum_entity].attributes %}
-# {%- for map in states[vacuum_entity].attributes.rooms.values() %}  
-#     {%- for room in map %}  
+# {%- for map in states[vacuum_entity].attributes.rooms.values() %}
+#     {%- for room in map %}
 #     {{- {'id': room.id, 'name': room.name} }} {{ '\n' -}}
 #     {%- if room.id not in rooms.list %}
 #         {%- set rooms.list = rooms.list + [room.id] %}
@@ -36,4 +36,253 @@
 #     {%- endfor %}
 # {%- endfor %}
 # {%- endif %}
-
+script:
+  clean_room:
+    - alias: Clean Room
+      fields:
+        mode:
+          name: Mode
+          description: Vacuum or mop a room
+          required: true
+          selector:
+            select:
+              mode: dropdown
+              options:
+                - Vacuum
+                - Mop
+        room:
+          name: Room
+          description: The room to clean
+          required: true
+          selector:
+            select:
+              mode: dropdown
+              options:
+                - label: Andre Bedroom
+                  value: "1"
+                - label: Main Bedroom
+                  value: "2"
+                - label: Amy Bedroom
+                  value: "3"
+                - label: Hallway NE
+                  value: "4"
+                - label: Hallway NW
+                  value: "5"
+                - label: Main Bathroom
+                  value: "7"
+                - label: Courtyard
+                  value: "8"
+                - label: White Bathroom
+                  value: "9"
+                - label: Spare Bedroom
+                  value: "10"
+                - label: Kitchen
+                  value: "11"
+                - label: Front Hall
+                  value: "13"
+                - label: Lounge
+                  value: "14"
+                - label: Braai Room
+                  value: "15"
+                - label: Braai Bathroom
+                  value: "16"
+                - label: Living Room
+                  value: "17"
+      sequence:
+        - choose:
+            - conditions:
+                - condition: or
+                  conditions:
+                    - condition: state
+                      entity_id: sensor.xiaomi_robot_vacuum_x20_status
+                      state: idle
+                    - condition: state
+                      entity_id: sensor.xiaomi_robot_vacuum_x20_status
+                      state: returning_home
+                    - condition: state
+                      entity_id: sensor.xiaomi_robot_vacuum_x20_status
+                      state: charging
+              sequence:
+                - choose:
+                    - conditions:
+                        - condition: template
+                          value_template: "{{ mode == 'Mop' }}"
+                      sequence:
+                        - device_id: 656ec1051d31a0c67eecae2410fa14f2
+                          domain: select
+                          entity_id: select.xiaomi_robot_vacuum_x20_mop_wash_level
+                          type: select_option
+                          option: intense
+                        - service: vacuum.xiaomi_robot_vacuum_x20_suction_level
+                          data:
+                            fan_speed: balanced
+                          target:
+                            entity_id: vacuum.xiaomi_robot_vacuum_x20
+                        - service: dreame_vacuum.vacuum_clean_segment
+                          data:
+                            segments:
+                              - "{{ room }}"
+                            repeat: 2
+                          target:
+                            entity_id: vacuum.xiaomi_robot_vacuum_x20
+                        - service: input_boolean.turn_on
+                          data: {}
+                          target:
+                            entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_mopping_' + room }}"
+                        - service: input_text.set_value
+                          data:
+                            value: "{{ room }}"
+                          target:
+                            entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
+                    - conditions:
+                        - condition: template
+                          value_template: "{{ mode == 'Vacuum' }}"
+                      sequence:
+                        - device_id: 656ec1051d31a0c67eecae2410fa14f2
+                          domain: select
+                          entity_id: select.xiaomi_robot_vacuum_x20_mop_intensity
+                          type: select_option
+                          option: "off"
+                        - service: vacuum.set_fan_speed
+                          data:
+                            fan_speed: max
+                          target:
+                            entity_id: vacuum.xiaomi_robot_vacuum_x20
+                        - service: dreame_vacuum.vacuum_clean_segment
+                          data:
+                            segments:
+                              - "{{ room }}"
+                            repeat: 1
+                          target:
+                            entity_id: vacuum.xiaomi_robot_vacuum_x20
+                        - service: input_boolean.turn_on
+                          data: {}
+                          target:
+                            entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_vacuuming_' + room }}"
+                        - service: input_text.set_value
+                          data:
+                            value: "{{ room }}"
+                          target:
+                            entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
+          default:
+            - wait_for_trigger:
+                - platform: state
+                  entity_id:
+                    - sensor.xiaomi_robot_vacuum_x20_status
+                  to: idle
+                - platform: state
+                  entity_id:
+                    - sensor.xiaomi_robot_vacuum_x20_status
+                  to: returning_home
+                - platform: state
+                  entity_id:
+                    - sensor.xiaomi_robot_vacuum_x20_status
+                  to: charging
+              continue_on_timeout: false
+            - service: input_boolean.turn_off
+              data: {}
+              target:
+                entity_id: 
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_1
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_2
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_3
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_4
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_5
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_7
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_9
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_11
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_13
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_14
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_15
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_16
+                  - input_boolean.xiaomi_robot_vacuum_x20_mopping_17
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_1
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_2
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_3
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_4
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_5
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_7
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_9
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_11
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_13
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_14
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_15
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_16
+                  - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ mode == 'Mop' }}"
+                  sequence:
+                    - device_id: 656ec1051d31a0c67eecae2410fa14f2
+                      domain: select
+                      entity_id: select.xiaomi_robot_vacuum_x20_mop_intensity
+                      type: select_option
+                      option: intense
+                    - service: vacuum.set_fan_speed
+                      data:
+                        fan_speed: balanced
+                      target:
+                        entity_id: vacuum.xiaomi_robot_vacuum_x20
+                    - service: dreame_vacuum.vacuum_clean_segment
+                      data:
+                        segments:
+                          - "{{ room }}"
+                        repeat: 2
+                      target:
+                        entity_id: vacuum.xiaomi_robot_vacuum_x20
+                    - service: input_boolean.turn_on
+                      data: {}
+                      target:
+                        entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_mopping_' + room }}"
+                    - service: input_text.set_value
+                      data:
+                        value: "{{ room }}"
+                      target:
+                        entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
+                - conditions:
+                    - condition: template
+                      value_template: "{{ mode == 'Vacuum' }}"
+                  sequence:
+                    - device_id: 656ec1051d31a0c67eecae2410fa14f2
+                      domain: select
+                      entity_id: select.xiaomi_robot_vacuum_x20_mop_intensity
+                      type: select_option
+                      option: "off"
+                    - service: vacuum.set_fan_speed
+                      data:
+                        fan_speed: max
+                      target:
+                        entity_id: vacuum.xiaomi_robot_vacuum_x20
+                    - service: dreame_vacuum.vacuum_clean_segment
+                      data:
+                        segments:
+                          - "{{ room }}"
+                        repeat: 1
+                      target:
+                        entity_id: vacuum.xiaomi_robot_vacuum_x20
+                    - service: input_boolean.turn_on
+                      data: {}
+                      target:
+                        entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_vacuuming_' + room }}"
+                    - service: input_text.set_value
+                      data:
+                        value: "{{ room }}"
+                      target:
+                        entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
+        - wait_for_trigger:
+            - platform: state
+              entity_id:
+                - sensor.xiaomi_robot_vacuum_x20_status
+              to: idle
+            - platform: state
+              entity_id:
+                - sensor.xiaomi_robot_vacuum_x20_status
+              to: returning_home
+            - platform: state
+              entity_id:
+                - sensor.xiaomi_robot_vacuum_x20_status
+              to: charging
+          continue_on_timeout: false
+      mode: queued
+      max: 10
