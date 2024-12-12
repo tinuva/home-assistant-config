@@ -36,7 +36,10 @@
 #     {%- endfor %}
 # {%- endfor %}
 # {%- endif %}
+
 script:
+
+  # Source: https://community.home-assistant.io/t/room-cleaning-automation-script/582466/10
   clean_room:
     - alias: Clean Room
       fields:

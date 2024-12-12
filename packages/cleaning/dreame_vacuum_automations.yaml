@@ -85,8 +85,3 @@ automation:
             - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_14  # Lounge
             - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_13  # Front Hall
             - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17  # Living Room
-      - service: input_text.set_value
-        data:
-          value: "17"  # Set to the last room (Living Room)
-        target:
-          entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
