@@ -5,6 +5,7 @@ sensor:
     sensors:
       heat_index:
         friendly_name: 'Outside Feels Like'
+        unique_id: heat_index
         #formula taken from http://www.srh.noaa.gov/ama/?n=heatindex
         value_template: >-
           {%- set outside_f = ((states('sensor.outside_temperature')|float * 1.8000)+32.00) -%}

@@ -14,6 +14,7 @@ template:
         response_variable: hourly
     sensor:
       - name: Weather Hourly
+        unique_id: weather_hourly
         state: "{{ states('weather.home') }}"
         attributes:
           temperature: "{{ state_attr('weather.home', 'temperature') }}"

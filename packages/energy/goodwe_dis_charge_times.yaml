@@ -24,6 +24,7 @@ sensor:
       # Battery template sensors
       battery_available:
         friendly_name: "Battery Available"
+        unique_id: battery_available
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
@@ -32,6 +33,7 @@ sensor:
           {{ battery_current }}
       battery_available_dod:
         friendly_name: "Battery Available (DoD)"
+        unique_id: battery_available_dod
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
@@ -47,6 +49,7 @@ sensor:
       #To charge: {{ battery_to_charge }}
       battery_tocharge:
         friendly_name: "Battery Need Charge"
+        unique_id: battery_tocharge
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
@@ -57,6 +60,7 @@ sensor:
       # Remaining minutes
       goodwe_battery_charging_remaining_minutes:
         icon_template: "mdi:battery-high"
+        unique_id: goodwe_battery_charging_remaining_minutes
         value_template: >
           {% set y = states('sensor.goodwe_average_battery_dis_charge_rate') | float(0) %}
           {% if y == 0 %}
@@ -84,6 +88,7 @@ sensor:
           {% endif %}
       # Display in HhMm (was H:M) if more than 60 minutes
       goodwe_battery_charging_remaining_time:
+        unique_id: goodwe_battery_charging_remaining_time
         icon_template: "mdi:battery-high"
         value_template: >
           {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
@@ -96,6 +101,7 @@ sensor:
           {% endif %}
       # Display finish time?
       goodwe_battery_charging_finish_time:
+        unique_id: goodwe_battery_charging_finish_time
         icon_template: "mdi:battery-high"
         value_template: >
           {% if is_state('sensor.goodwe_battery_charging_remaining_minutes','Unknown') %}

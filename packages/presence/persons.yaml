@@ -13,7 +13,7 @@ person:
     name: David
     user_id: c58b84c8b5fe4d94b3013f471f8c8615
     device_trackers:
-      - device_tracker.pixel_4
+      - device_tracker.pixel_8
   - id: karen
     name: Karen
     user_id: d85013026cdc493ea31c9db258a2b7b6

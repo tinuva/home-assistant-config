@@ -5,6 +5,7 @@ sensor:
     sensors:
       lights_power:
         friendly_name: "Lights Power"
+        unique_id: lights_power
         unit_of_measurement: "W"
         icon_template: "mdi:flash"
         value_template: >

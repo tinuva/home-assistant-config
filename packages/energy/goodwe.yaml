@@ -16,6 +16,7 @@ sensor:
       # Template sensor to display input value only
       goodwe_depth_of_discharge_on_grid:
         friendly_name: "Depth of discharge (on-grid)"
+        unique_id: goodwe_depth_of_discharge_on_grid
         unit_of_measurement: '%'
         icon_template: "mdi:battery-arrow-down"
         value_template: >-
@@ -26,6 +27,7 @@ sensor:
           {% endif %}
       goodwe_eco_mode_soc:
         friendly_name: "Eco mode target SoC"
+        unique_id: goodwe_eco_mode_soc
         unit_of_measurement: '%'
         icon_template: "mdi:battery-arrow-up"
         value_template: >-
@@ -36,6 +38,7 @@ sensor:
           {% endif %}
       goodwe_eco_mode_power:
         friendly_name: "Eco mode power"
+        unique_id: goodwe_eco_mode_power
         unit_of_measurement: '%'
         icon_template: "mdi:battery-arrow-up"
         value_template: >-
@@ -46,11 +49,13 @@ sensor:
           {% endif %}
       goodwe_inverter_operation_mode:
         friendly_name: "Inverter operation mode"
+        unique_id: goodwe_inverter_operation_mode
         icon_template: "mdi:solar-power"
         value_template: "{{ (states('select.inverter_operation_mode')) }}"
       # Template sensor for values of energy bought (active_power < 0)
       energy_buy:
         friendly_name: "GoodWe Grid Power"
+        unique_id: energy_buy
         unit_of_measurement: 'W'
         device_class: power
         icon_template: "mdi:flash"
@@ -63,6 +68,7 @@ sensor:
       # Template sensor for values of energy sold (active_power > 0)
       energy_sell:
         friendly_name: "Energy Sell"
+        unique_id: energy_sell
         unit_of_measurement: 'W'
         device_class: power
         icon_template: "mdi:flash"
@@ -75,6 +81,7 @@ sensor:
       # Template sensor for values of power sent to battery (goodwe_pbattery1 < 0)
       battery_charge_power:
         friendly_name: "Battery Charging Power"
+        unique_id: battery_charge_power
         unit_of_measurement: 'W'
         value_template: >-
           {% if states('sensor.battery_power')|float < 0 %}
@@ -87,6 +94,7 @@ sensor:
       # Template sensor for values of power pulled from (goodwe_pbattery1 > 0)
       battery_discharge_power:
         friendly_name: "Battery Discharging Power"
+        unique_id: battery_discharge_power
         unit_of_measurement: 'W'
         value_template: >-
           {% if states('sensor.battery_power')|float > 0 %}
@@ -99,6 +107,7 @@ sensor:
       # Template sensor for values of non-essential energy usage
       energy_non_essentials:
         friendly_name: "non-essentials Power"
+        unique_id: energy_non_essentials
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-
@@ -110,6 +119,7 @@ sensor:
       # PV usage over backup/essential
       pv_backup_excess:
         friendly_name: "PV Excess over Backup Power"
+        unique_id: pv_backup_excess
         unit_of_measurement: 'W'
         icon_template: "mdi:flash"
         value_template: >-

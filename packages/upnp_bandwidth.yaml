@@ -5,6 +5,7 @@ sensor:
     sensors:
       mikrotik_total_bandwidth:
         friendly_name: "Total Bandwidth"
+        unique_id: mikrotik_total_bandwidth
         unit_of_measurement: 'GBs'
         value_template: "{{((states('sensor.mikrotik_router_b_received')|float / 1000000000) + (states('sensor.mikrotik_router_b_sent')|float / 1000000000))|round(2)}}"
 

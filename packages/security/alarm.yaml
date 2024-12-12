@@ -185,6 +185,7 @@ sensor:
     sensors:
       armed_home:
         friendly_name: Armed Home
+        unique_id: armed_home_sensors
         value_template: >-
           {%- for entity_id in states.group.armed_home.attributes.entity_id if states(entity_id) == 'on' -%}
           {% set parts = entity_id.split('.') -%}
@@ -197,6 +198,7 @@ sensor:
     sensors:
       armed_away:
         friendly_name: Armed Away
+        unique_id: armed_away_sensors
         value_template: >-
           {%- for entity_id in states.group.armed_away.attributes.entity_id if states(entity_id) == 'on' -%}
           {% set parts = entity_id.split('.') -%}

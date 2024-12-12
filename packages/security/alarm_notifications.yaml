@@ -7,16 +7,19 @@ binary_sensor:
     sensors:
       alarm_trouble:
         #entity_id: sensor.home_alarm_keypad
+        unique_id: alarm_trouble
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'trouble') }}"
   - platform: template
     sensors:
       alarm_battery_trouble:
         #entity_id: sensor.home_alarm_keypad
+        unique_id: alarm_battery_trouble
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'bat_trouble') }}"
   - platform: template
     sensors:
       alarm_ac_power:
         #entity_id: sensor.home_alarm_keypad
+        unique_id: alarm_ac_power
         value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
 
 automation:
