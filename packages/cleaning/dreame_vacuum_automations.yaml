@@ -2,6 +2,7 @@
 automation:
   - alias: "Dreame Vacuum: Done Cleaning"
     description: "Turn off all helper entities when vacuum is done cleaning"
+    mode: single
     trigger:
       - platform: event
         event_type: dreame_vacuum_task_status
@@ -40,4 +41,52 @@ automation:
             - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_16
             - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17
         data: {}
+
+  - alias: "Dreame Vacuum: Daily Living Areas Clean"
+    description: "Clean kitchen, lounge, front hall and living room at 4:50am"
     mode: single
+    trigger:
+      - platform: time
+        at: "04:50:00"
+    condition:
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: sensor.xiaomi_robot_vacuum_x20_status
+            state: idle
+          - condition: state
+            entity_id: sensor.xiaomi_robot_vacuum_x20_status
+            state: charging
+    action:
+      - device_id: 656ec1051d31a0c67eecae2410fa14f2
+        domain: select
+        entity_id: select.xiaomi_robot_vacuum_x20_mop_intensity
+        type: select_option
+        option: "off"
+      - service: vacuum.set_fan_speed
+        data:
+          fan_speed: max
+        target:
+          entity_id: vacuum.xiaomi_robot_vacuum_x20
+      - service: dreame_vacuum.vacuum_clean_segment
+        data:
+          segments:
+            - "11"  # Kitchen
+            - "14"  # Lounge
+            - "13"  # Front Hall
+            - "17"  # Living Room
+          repeat: 1
+        target:
+          entity_id: vacuum.xiaomi_robot_vacuum_x20
+      - service: input_boolean.turn_on
+        target:
+          entity_id:
+            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_11  # Kitchen
+            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_14  # Lounge
+            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_13  # Front Hall
+            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17  # Living Room
+      - service: input_text.set_value
+        data:
+          value: "17"  # Set to the last room (Living Room)
+        target:
+          entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
