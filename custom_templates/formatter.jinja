@@ -1,0 +1,7 @@
+{% macro format_number(number) %}
+{{ number | float | round(2) }}
+{% endmacro %}
+
+{% macro format_number_entity(entity_id) %}
+{{ format_number(states(entity_id)) }}
+{% endmacro %}
