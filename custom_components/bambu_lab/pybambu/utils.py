@@ -11,7 +11,9 @@ from .const import (
     HMS_SEVERITY_LEVELS,
     HMS_MODULES,
     LOGGER,
+    BAMBU_URL,
     FansEnum,
+    TempEnum
 )
 from .commands import SEND_GCODE_TEMPLATE
 
@@ -48,6 +50,18 @@ def fan_percentage_to_gcode(fan: FansEnum, percentage: int):
     return command
 
 
+def set_temperature_to_gcode(temp: TempEnum, temperature: int):
+    """Converts a temperature to the gcode command to set that"""
+    if temp == TempEnum.NOZZLE:
+        tempCommand = "M104"
+    elif temp == TempEnum.HEATBED:
+        tempCommand = "M140"
+
+    command = SEND_GCODE_TEMPLATE
+    command['print']['param'] = f"{tempCommand} S{temperature}\n"
+    return command
+
+
 def to_whole(number):
     if not number:
         return 0
@@ -59,8 +73,8 @@ def get_filament_name(idx, custom_filaments: dict):
     result = FILAMENT_NAMES.get(idx, "unknown")
     if result == "unknown" and idx != "":
         result = custom_filaments.get(idx, "unknown")
-    if result == "unknown" and idx != "":
-        LOGGER.debug(f"UNKNOWN FILAMENT IDX: '{idx}'")
+    # if result == "unknown" and idx != "":
+    #     LOGGER.debug(f"UNKNOWN FILAMENT IDX: '{idx}'")
     return result
 
 
@@ -145,7 +159,7 @@ def get_printer_type(modules, default):
     # },
     # P1P    = AP04 / C11
     # P1S    = AP04 / C12
-    # A1Mini = AP05 / N1 or AP04 / N1
+    # A1Mini = AP05 / N1 or AP04 / N1 or AP07 / N1
     # A1     = AP05 / N2S
     #
     # X1C printers are of the form:
@@ -173,16 +187,14 @@ def get_printer_type(modules, default):
         project_name = apNode.get('project_name', '')
         if hw_ver == 'AP02':
             return 'X1E'
+        elif project_name == 'N1':
+            return 'A1MINI'
         elif hw_ver == 'AP04':
             if project_name == 'C11':
                 return 'P1P'
             if project_name == 'C12':
                 return 'P1S'
-            if project_name == 'N1':
-                return 'A1MINI'
         elif hw_ver == 'AP05':
-            if project_name == 'N1':
-                return 'A1MINI'
             if project_name == 'N2S':
                 return 'A1'
             if project_name == '':
@@ -227,3 +239,10 @@ def round_minute(date: datetime = None, round_to: int = 1):
     date = date.replace(second=0, microsecond=0)
     delta = date.minute % round_to
     return date.replace(minute=date.minute - delta)
+
+
+def get_Url(url: str, region: str):
+    urlstr = BAMBU_URL[url]
+    if region == "China":
+        urlstr = urlstr.replace('.com', '.cn')
+    return urlstr

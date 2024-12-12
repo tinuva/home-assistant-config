@@ -1,0 +1,14 @@
+{
+  "domain": "pollen_za",
+  "name": "South African Pollen Count",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/yourusername/ha-pollen-za",
+  "iot_class": "cloud_polling",
+  "requirements": [
+    "beautifulsoup4>=4.9.3"
+  ],
+  "version": "1.0.0",
+  "integration_type": "service"
+}

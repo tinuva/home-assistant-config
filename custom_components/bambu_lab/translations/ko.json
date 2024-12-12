@@ -5,20 +5,29 @@
       "event_print_failed": "출력 실패",
       "event_print_finished": "출력 완료됨",
       "event_print_started": "출력 시작됨",
-      "event_printer_error": "프린터 오류 감지됨"
+      "event_print_error": "인쇄 오류",
+      "event_print_error_cleared": "인쇄 오류가 해결되었습니다.",
+      "event_printer_error": "HMS 오류",
+      "event_printer_error_cleared": "HMS 오류가 해결되었습니다."
     }
   },
   "config": {
     "abort": {
-      "already_configured": "장치가 이미 구성되어 있습니다"
+      "already_configured": "장치가 이미 구성되어 있습니다",
+      "no_printers": "계정에서 구성되지 않은 프린터를 찾을 수 없습니다.",
+      "cloudflare": "Cloudflare가 연결 시도를 차단했습니다.",
+      "curl_unavailable": "컬_cffi 라이브러리를 사용할 수 없습니다."
     },
     "error": {
       "cannot_connect": "연결에 실패했습니다. 자격 증명을 확인하세요.",
       "cannot_connect_local_ip": "연결에 실패했습니다. 제공된 IP 주소를 확인하세요.",
       "cannot_connect_local_all": "연결에 실패했습니다. 제공된 설정을 확인하세요.",
-      "no_printers": "계정에서 구성되지 않은 프린터를 찾을 수 없습니다.",
       "invalid_auth": "잘못된 인증 정보입니다.",
-      "unknown": "예기치 않은 오류입니다."
+      "unknown": "예기치 않은 오류입니다.",
+      "verifyCode": "인증코드가 필요합니다. ",
+      "code_expired": "인증 코드가 만료되었습니다. ",
+      "code_incorrect": "인증코드가 올바르지 않습니다. ",
+      "tfaCode": "2FA 코드가 필요합니다. "
     },
     "step": {
       "user": {
@@ -33,14 +42,16 @@
         "data": {
           "region": "계정 지역:",
           "email": "이메일 주소 또는 전화번호",
-          "password": "비밀번호"
+          "password": "비밀번호",
+          "verifyCode": "이메일 인증 코드",
+          "tfaCode": "2단계 인증 코드"
         }
       },
       "Bambu_Choose_Device": {
         "title": "프린터 선택",
         "description": "추가할 프린터를 선택하세요.",
         "data": {
-          "printer": "추가할 프린터 선택:"
+          "serial": "추가할 프린터 선택:"
         }
       },
       "Bambu_Lan": {
@@ -66,12 +77,20 @@
     }
   },
   "options": {
+    "abort": {
+      "cloudflare": "Cloudflare가 연결 시도를 차단했습니다.",
+      "curl_unavailable": "컬_cffi 라이브러리를 사용할 수 없습니다."
+    },
     "error": {
       "cannot_connect": "연결에 실패했습니다.",
       "cannot_connect_local_ip": "연결에 실패했습니다. 제공된 IP 주소를 확인하세요.",
       "cannot_connect_local_all": "연결에 실패했습니다. 제공된 설정을 확인하세요.",
       "invalid_auth": "잘못된 인증 정보입니다.",
-      "unknown": "예기치 않은 오류입니다."
+      "unknown": "예기치 않은 오류입니다.",
+      "verifyCode": "인증코드가 필요합니다. ",
+      "code_expired": "인증 코드가 만료되었습니다. ",
+      "code_incorrect": "인증코드가 올바르지 않습니다. ",
+      "tfaCode": "2FA 코드가 필요합니다. "
     },
     "step": {
       "init": {
@@ -87,14 +106,16 @@
         "data": {
           "region": "계정 지역:",
           "email": "이메일 주소 또는 전화번호",
-          "password": "비밀번호"
+          "password": "비밀번호",
+          "verifyCode": "이메일 인증 코드",
+          "tfaCode": "2단계 인증 코드"
         }
       },
       "Bambu_Lan": {
         "title": "프린터 구성 조정",
         "description": "로컬 프린터 IP 주소와 접근 코드를 제공할 수 있습니다. 이는 P1/A1의 카메라 접근에 필요하거나, Bambu Cloud 대신 프린터에 직접 연결할 수 있도록 합니다.",
         "data": {
-          "printer": "추가할 프린터 선택:",
+          "serial": "추가할 프린터 선택:",
           "host": "로컬 프린터 IP 주소:",
           "access_code": "접근 코드:",
           "local_mqtt": "Bambu Cloud 대신 프린터에 직접 연결:",
@@ -172,6 +193,14 @@
       },
       "camera_light": {
         "name": "카메라 라이트"
+      }
+    },
+    "number": {
+      "target_bed_temperature": {
+        "name": "목표 베드 온도"
+      },
+      "target_nozzle_temperature": {
+        "name": "노즐 목표 온도"
       }
     },
     "select": {
@@ -456,14 +485,14 @@
           "nozzle_temp_max": {
             "name": "노즐 최대 온도"
           },
-          "type": {
-            "name": "유형"
-          },
           "remain": {
             "name": "남은 필라멘트"
           },
           "tag_uid": {
             "name": "필라멘트 시리얼 번호"
+          },
+          "type": {
+            "name": "유형"
           }
         }
       },
@@ -491,14 +520,14 @@
           "nozzle_temp_max": {
             "name": "노즐 최대 온도"
           },
-          "type": {
-            "name": "유형"
-          },
           "remain": {
             "name": "남은 필라멘트"
           },
           "tag_uid": {
             "name": "필라멘트 시리얼 번호"
+          },
+          "type": {
+            "name": "유형"
           }
         }
       },
@@ -526,14 +555,14 @@
           "nozzle_temp_max": {
             "name": "노즐 최대 온도"
           },
-          "type": {
-            "name": "유형"
-          },
           "remain": {
             "name": "남은 필라멘트"
           },
           "tag_uid": {
             "name": "필라멘트 시리얼 번호"
+          },
+          "type": {
+            "name": "유형"
           }
         }
       }
@@ -546,6 +575,12 @@
     "switch": {
       "manual": {
         "name": "수동 새로 고침 모드"
+      },
+      "camera": {
+        "name": "카메라 활성화"
+      },
+      "imagecamera": {
+        "name": "이미지 센서 카메라 사용"
       }
     }
   }

@@ -1,0 +1,14 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "data": {
+                    "city": "City"
+                },
+                "description": "Select your city for pollen monitoring",
+                "title": "South African Pollen Count"
+            }
+        },
+        "title": "South African Pollen Count"
+    }
+}

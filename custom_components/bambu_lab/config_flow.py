@@ -1,10 +1,6 @@
 """Config flow to configure Bambu Lab."""
 from __future__ import annotations
 
-import base64
-import json
-import queue
-import requests
 import voluptuous as vol
 
 from typing import Any
@@ -28,6 +24,14 @@ from homeassistant.helpers.selector import (
 
 from .const import DOMAIN, LOGGER
 from .pybambu import BambuClient, BambuCloud
+from .pybambu.bambu_cloud import (
+    CloudflareError,
+    CurlUnavailableError,
+    EmailCodeRequiredError,
+    EmailCodeExpiredError,
+    EmailCodeIncorrectError,
+    TfaCodeRequiredError
+)
 
 CONFIG_VERSION = 2
 
@@ -84,6 +88,8 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a flow initiated by the user."""
         errors = {}
 
+        self._bambu_cloud = BambuCloud("", "", "", "")
+
         if user_input is not None:
             if user_input['printer_mode'] == "Lan":
                 return await self.async_step_Lan(None)
@@ -105,34 +111,94 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         errors = {}
+        default_region = ''
+        default_email = ''
 
+        if user_input is None:
+            # Iterate over all existing entries and try any existing credentials to see if they work
+            config_entries = self.hass.config_entries.async_entries(DOMAIN)
+            LOGGER.debug(f"Found {len(config_entries)} existing config entries for the integration.")
+            for config_entry in config_entries:
+                if config_entry.options.get('region', '') != '' and config_entry.options.get('email', '') != '' and config_entry.options.get('username', '') != '' and config_entry.options.get('auth_token', '') != '':
+                    LOGGER.debug(f"Testing credentials from existing entry id: {config_entry.entry_id}")
+                    default_region = config_entry.options['region']
+                    default_email = config_entry.options['email']
+                    username = config_entry.options['username']
+                    auth_token = config_entry.options['auth_token']
+                    if await self.hass.async_add_executor_job(self._bambu_cloud.test_authentication,
+                                                              default_region,
+                                                              default_email,
+                                                              username,
+                                                              auth_token):
+                        LOGGER.debug("Found working credentials.")
+                        self.region = default_region
+                        self.email = default_email
+                        self.bambu_cloud = BambuCloud(
+                            default_region,
+                            default_email,
+                            username,
+                            auth_token
+                        )
+                        return await self.async_step_Bambu_Choose_Device(None)
+
+        authentication_type = None
         if user_input is not None:
             try:
-                self._bambu_cloud = BambuCloud("", "", "", "")
-
-                await self.hass.async_add_executor_job(
-                    self._bambu_cloud.login,
-                    user_input['region'],
-                    user_input['email'],
-                    user_input['password'])
-
-                self.region = user_input['region']
-                self.email = user_input['email']
+                if user_input.get('verifyCode', None) is not None:
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login_with_verification_code,
+                        user_input['verifyCode'])
+                elif user_input.get('tfaCode', None) is not None:
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login_with_2fa_code,
+                        user_input['tfaCode'])
+                else:
+                    self.region = user_input['region']
+                    self.email = user_input['email']
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login,
+                        user_input['region'],
+                        user_input['email'],
+                        user_input['password'])
                 return await self.async_step_Bambu_Choose_Device(None)
 
+            # Handle possible failure cases
+            except CloudflareError:
+                return self.async_abort(reason='cloudflare')
+            except CurlUnavailableError:
+                return self.async_abort(reason='curl_unavailable')
+            except EmailCodeRequiredError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'verifyCode'
+                # Fall through to form generation to ask for verification code
+            except EmailCodeExpiredError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'code_expired'
+                # Fall through to form generation to ask for verification code
+            except EmailCodeIncorrectError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'code_incorrect'
+                # Fall through to form generation to ask for verification code
+            except TfaCodeRequiredError:
+                authentication_type = 'tfaCode'
+                errors['base'] = 'tfaCode'
+                # Fall through to form generation to ask for verification code
             except Exception as e:
                 LOGGER.error(f"Failed to connect with error code {e.args}")
-
-            errors['base'] = "cannot_connect"
+                errors['base'] = "cannot_connect"
 
         # Build form
         fields: OrderedDict[vol.Marker, Any] = OrderedDict()
-        default_region = '' if user_input is None else user_input.get('region', '')
+        default_region = default_region if user_input is None else user_input.get('region', '')
         fields[vol.Required("region", default=default_region)] = REGION_SELECTOR
-        default_email = '' if user_input is None else user_input.get('email', '')
+        default_email = default_email if user_input is None else user_input.get('email', '')
         fields[vol.Required('email', default=default_email)] = EMAIL_SELECTOR
         default_password = '' if user_input is None else user_input.get('password', '')
         fields[vol.Required('password', default=default_password)] = PASSWORD_SELECTOR
+        if authentication_type == 'verifyCode':
+            fields[vol.Required('verifyCode', default='')] = TEXT_SELECTOR
+        if authentication_type == 'tfaCode':
+            fields[vol.Required('tfaCode', default='')] = TEXT_SELECTOR
 
         return self.async_show_form(
             step_id="Bambu",
@@ -147,19 +213,22 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
         LOGGER.debug("async_step_Bambu_Choose_Device")
 
-        device_list = await self.hass.async_add_executor_job(
-            self._bambu_cloud.get_device_list)
-
         if user_input is not None:
             self.serial = user_input['serial']
             return await self.async_step_Bambu_Lan(None)
+            
+        device_list = await self.hass.async_add_executor_job(
+            self._bambu_cloud.get_device_list)
             
         printer_list = []
         for device in device_list:
             dev_reg = device_registry.async_get(self.hass)
             hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, device['dev_id'])})
             if hadevice is None:
+                LOGGER.debug(f"Printer {device['dev_id']} found.")
                 printer_list.append(SelectOptionDict(value = device['dev_id'], label = f"{device['name']}: {device['dev_id']}"))
+            else:
+                LOGGER.debug(f"Printer {device['dev_id']} already registered with HA. Ignoring it.")
 
         printer_selector = SelectSelector(
             SelectSelectorConfig(
@@ -167,14 +236,13 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 mode=SelectSelectorMode.LIST)
         )
 
-        LOGGER.debug(f"Printer count = {printer_list.count}")
+        LOGGER.debug(f"Printer count = {len(printer_list)}")
         if len(printer_list) == 0:
-            errors['base'] = "no_printers"
+            return self.async_abort(reason='no_printers')
 
         # Build form
         fields: OrderedDict[vol.Marker, Any] = OrderedDict()
-        if len(printer_list) != 0:
-            fields[vol.Required('serial')] = printer_selector
+        fields[vol.Required('serial')] = printer_selector
 
         return self.async_show_form(
             step_id="Bambu_Choose_Device",
@@ -201,15 +269,15 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             device_type = self._bambu_cloud.get_device_type_from_device_product_name(device['dev_product_name'])
             if user_input.get('host', "") != "":
                 LOGGER.debug("Config Flow: Testing local mqtt connection")
-                bambu = BambuClient(device_type=device_type,
-                                    serial=device['dev_id'],
-                                    host=user_input['host'],
-                                    local_mqtt=True,
-                                    region=self.region,
-                                    email="",
-                                    username="",
-                                    auth_token="",
-                                    access_code=user_input['access_code'])
+                config = {
+                    'access_code': user_input['access_code'],
+                    'device_type': device_type,
+                    'host': user_input['host'],
+                    'local_mqtt': True,
+                    'region': self.region,
+                    'serial': device['dev_id'],
+                }
+                bambu = BambuClient(config)
                 success = await bambu.try_connection()
                 if not success:
                     errors['base'] = "cannot_connect_local_all"
@@ -265,15 +333,13 @@ class BambuLabFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             user_input['serial'] = user_input['serial'].upper()
 
             LOGGER.debug("Config Flow: Testing local mqtt connection")
-            bambu = BambuClient(device_type="unknown",
-                                serial=user_input['serial'],
-                                host=user_input['host'],
-                                local_mqtt=True,
-                                region="",
-                                email="",
-                                username="",
-                                auth_token="",
-                                access_code=user_input['access_code'])
+            config = {
+                'access_code': user_input['access_code'],
+                'serial': user_input['serial'],
+                'host': user_input['host'],
+                'local_mqtt': True,
+            }
+            bambu = BambuClient(config)
             success = await bambu.try_connection()
 
             if success:
@@ -339,6 +405,8 @@ class BambuOptionsFlowHandler(config_entries.OptionsFlow):
         self.region = self.config_entry.options.get('region', '')
         self.email = self.config_entry.options.get('email', '')
 
+        self._bambu_cloud = BambuCloud("", "", "", "")
+
         LOGGER.debug(self.config_entry)
 
     async def async_step_init(self, user_input: None = None) -> FlowResult:
@@ -367,39 +435,90 @@ class BambuOptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         errors = {}
 
-        self._bambu_cloud = BambuCloud("", "", "", "")
-
-        credentialsGood = False
         if user_input is None:
-            if self.config_entry.options.get('region', '') != '' and self.config_entry.options.get('email', '') != '' and self.config_entry.options.get('username', '') != '' and self.config_entry.options.get('auth_token', '') != '':
-                credentialsGood = await self.hass.async_add_executor_job(
-                    self._bambu_cloud.test_authentication,
-                    self.config_entry.options['region'],
-                    self.config_entry.options['email'],
-                    self.config_entry.options['username'],
-                    self.config_entry.options['auth_token'])
-
+            # Iterate over all existing entries and try any existing credentials to see if they work
+            config_entries = self.hass.config_entries.async_entries(DOMAIN)
+            LOGGER.debug(f"Found {len(config_entries)} existing config entries for the integration.")
+            for config_entry in config_entries:
+                if config_entry.options.get('region', '') != '' and config_entry.options.get('email', '') != '' and config_entry.options.get('username', '') != '' and config_entry.options.get('auth_token', '') != '':
+                    LOGGER.debug(f"Testing credentials from existing entry id: {config_entry.entry_id}")
+                    region = config_entry.options['region']
+                    email = config_entry.options['email']
+                    username = config_entry.options['username']
+                    auth_token = config_entry.options['auth_token']
+                    if await self.hass.async_add_executor_job(self._bambu_cloud.test_authentication,
+                                                              region,
+                                                              email,
+                                                              username,
+                                                              auth_token):
+                        LOGGER.debug("Found working credentials.")
+                        self.region = region
+                        self.email = email
+                        self.bambu_cloud = BambuCloud(
+                            region,
+                            email,
+                            username,
+                            auth_token
+                        )
+                        return await self.async_step_Bambu_Lan(None)
+                    
+        authentication_type = None
         if user_input is not None:
             try:
-                await self.hass.async_add_executor_job(
-                    self._bambu_cloud.login,
-                    user_input['region'],
-                    user_input['email'],
-                    user_input['password'])
-                
-                self.region = user_input['region']
-                self.email = user_input['email']
+                if user_input.get('verifyCode', None) is not None:
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login_with_verification_code,
+                        user_input['verifyCode'])
+                    return await self.async_step_Bambu_Lan(None)
 
-                return await self.async_step_Bambu_Lan(None)
+                elif user_input.get('tfaCode', None) is not None:
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login_with_2fa_code,
+                        user_input['tfaCode'])
+                    return await self.async_step_Bambu_Lan(None)
 
+                else:
+                    self.region = user_input['region']
+                    self.email = user_input['email']
+                    await self.hass.async_add_executor_job(
+                        self._bambu_cloud.login,
+                        user_input['region'],
+                        user_input['email'],
+                        user_input['password'])
+                    return await self.async_step_Bambu_Lan(None)
+
+            # Handle possible failure cases
+            except EmailCodeExpiredError:
+                authentication_type = 'verifyCode'
+                errors['base'] = "code_expired"
+                # Fall through to form generation to ask for verification code
+            except EmailCodeIncorrectError:
+                authentication_type = 'verifyCode'
+                errors['base'] = "code_incorrect"
+                # Fall through to form generation to ask for verification code
+            except CloudflareError:
+                return self.async_abort(reason='cloudflare')
+            except CurlUnavailableError:
+                return self.async_abort(reason='curl_unavailable')
+            except EmailCodeRequiredError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'verifyCode'
+                # Fall through to form generation to ask for verification code
+            except EmailCodeExpiredError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'code_expired'
+                # Fall through to form generation to ask for verification code
+            except EmailCodeIncorrectError:
+                authentication_type = 'verifyCode'
+                errors['base'] = 'code_incorrect'
+                # Fall through to form generation to ask for verification code
+            except TfaCodeRequiredError:
+                authentication_type = 'tfaCode'
+                errors['base'] = 'tfaCode'
+                # Fall through to form generation to ask for verification code
             except Exception as e:
                 LOGGER.error(f"Failed to connect with error code {e.args}")
-
-            errors['base'] = "cannot_connect"
-        elif credentialsGood:
-            self.region = self.config_entry.options['region']
-            self.email = self.config_entry.options['email']
-            return await self.async_step_Bambu_Lan(None)
+                errors['base'] = "cannot_connect"
 
         # Build form
         fields: OrderedDict[vol.Marker, Any] = OrderedDict()
@@ -409,6 +528,10 @@ class BambuOptionsFlowHandler(config_entries.OptionsFlow):
         fields[vol.Required('email', default=default_email)] = EMAIL_SELECTOR
         default_password = '' if user_input is None else user_input.get('password', '')
         fields[vol.Required('password', default=default_password)] = PASSWORD_SELECTOR
+        if authentication_type == 'verifyCode':
+            fields[vol.Required('verifyCode', default='')] = TEXT_SELECTOR
+        if authentication_type == 'tfaCode':
+            fields[vol.Required('tfaCode', default='')] = TEXT_SELECTOR
 
         return self.async_show_form(
             step_id="Bambu",
@@ -433,15 +556,14 @@ class BambuOptionsFlowHandler(config_entries.OptionsFlow):
                     success = True
                     if user_input.get('host', "") != "":
                         LOGGER.debug(f"Options Flow: Testing local mqtt connection to {user_input.get('host')}")
-                        bambu = BambuClient(device_type=self.config_entry.data['device_type'],
-                                            serial=self.config_entry.data['serial'],
-                                            host=user_input['host'],
-                                            local_mqtt=True,
-                                            region="",
-                                            email="",
-                                            username="",
-                                            auth_token="",
-                                            access_code=user_input['access_code'])
+                        config = {
+                            'access_code': user_input['access_code'],
+                            'device_type': self.config_entry.data['device_type'],
+                            'host': user_input['host'],
+                            'local_mqtt': True,
+                            'serial': self.config_entry.data['serial'],
+                        }
+                        bambu = BambuClient(config)
                         success = await bambu.try_connection()
                         if not success:
                             errors['base'] = "cannot_connect_local_ip"
@@ -507,15 +629,14 @@ class BambuOptionsFlowHandler(config_entries.OptionsFlow):
 
         if user_input is not None:
             LOGGER.debug("Options Flow: Testing local mqtt Connection")
-            bambu = BambuClient(device_type=self.config_entry.data['device_type'],
-                                serial=self.config_entry.data['serial'],
-                                host=user_input['host'],
-                                local_mqtt=True,
-                                region="",
-                                email="",
-                                username="",
-                                auth_token="",
-                                access_code=user_input['access_code'])
+            config = {
+                'access_code': user_input['access_code'],
+                'device_type': self.config_entry.data['device_type'],
+                'host': user_input['host'],
+                'local_mqtt': True,
+                'serial': self.config_entry.data['serial'],
+            }
+            bambu = BambuClient(config)
             success = await bambu.try_connection()
 
             if success:

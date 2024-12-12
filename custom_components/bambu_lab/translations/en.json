@@ -5,20 +5,29 @@
       "event_print_failed": "Print failed",
       "event_print_finished": "Print finished",
       "event_print_started": "Print started",
-      "event_printer_error": "Printer error detected"
+      "event_print_error": "Print error",
+      "event_print_error_cleared": "Print error cleared",
+      "event_printer_error": "HMS error",
+      "event_printer_error_cleared": "HMS error cleared"
     }
   },
   "config": {
     "abort": {
-      "already_configured": "Device is already configured"
+      "already_configured": "Device is already configured",
+      "no_printers": "No unconfigured printers found in the account.",
+      "cloudflare": "Cloudflare has blocked the connection attempt.",
+      "curl_unavailable": "curl_cffi library is not available."
     },
     "error": {
       "cannot_connect": "Failed to connect. Check credentials.",
       "cannot_connect_local_ip": "Failed to connect. Check provided IP address.",
       "cannot_connect_local_all": "Failed to connect. Check provided settings.",
-      "no_printers": "No unconfigured printers found in the account.",
       "invalid_auth": "Invalid authentication.",
-      "unknown": "Unexpected error."
+      "unknown": "Unexpected error.",
+      "verifyCode": "Verification code is required. Check your email.",
+      "code_expired": "Verification code expired. New code requested. Check your email.",
+      "code_incorrect": "Verification code was incorrect. Please re-enter.",
+      "tfaCode": "2FA code is required. Please enter it now."
     },
     "step": {
       "user": {
@@ -33,14 +42,16 @@
         "data": {
           "region": "Account region:",
           "email": "Email Address or Phone Number",
-          "password": "Password"
+          "password": "Password",
+          "verifyCode": "Email verification code",
+          "tfaCode": "Two factor authentication code"
         }
       },
       "Bambu_Choose_Device": {
         "title": "Printer Selection",
         "description": "Choose which printer you want to add.",
         "data": {
-          "printer": "Choose Printer To Add:"
+          "serial": "Choose Printer To Add:"
         }
       },
       "Bambu_Lan": {
@@ -66,12 +77,20 @@
     }
   },
   "options": {
+    "abort": {
+      "cloudflare": "Cloudflare has blocked the connection attempt.",
+      "curl_unavailable": "curl_cffi library is not available."
+    },
     "error": {
       "cannot_connect": "Failed to connect",
       "cannot_connect_local_ip": "Failed to connect. Check provided IP address.",
       "cannot_connect_local_all": "Failed to connect. Check provided settings.",
       "invalid_auth": "Invalid authentication.",
-      "unknown": "Unexpected error."
+      "unknown": "Unexpected error.",
+      "verifyCode": "Verification code is required. Check your email.",
+      "code_expired": "Verification code expired. New code requested. Check your email.",
+      "code_incorrect": "Verification code was incorrect. Please re-enter.",
+      "tfaCode": "2FA code is required. Please enter it now."
     },
     "step": {
       "init": {
@@ -87,14 +106,16 @@
         "data": {
           "region": "Account region:",
           "email": "Email Address or Phone Number",
-          "password": "Password"
+          "password": "Password",
+          "verifyCode": "Email verification code",
+          "tfaCode": "Two factor authentication code"
         }
       },
       "Bambu_Lan": {
         "title": "Adjust Printer Configuration",
         "description": "You can optionally provide the local printer IP address and access code. This is required for camera access on the P1/A1. Or to be able to connect directly to the printer instead of via Bambu Cloud.",
         "data": {
-          "printer": "Choose Printer To Add:",
+          "serial": "Choose Printer To Add:",
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
           "local_mqtt": "Connect directly to printer instead of by Bambu Cloud:",
@@ -174,6 +195,14 @@
         "name": "Camera light"
       }
     },
+    "number": {
+      "target_bed_temperature": {
+        "name": "Bed target temperature"
+      },
+      "target_nozzle_temperature": {
+        "name": "Nozzle target temperature"
+      }
+    },
     "select": {
       "printing_speed": {
         "name": "Printing speed",
@@ -193,7 +222,7 @@
         "name": "Bed temperature"
       },
       "target_bed_temp": {
-        "name": "Target Bed temperature"
+        "name": "Bed target temperature"
       },
       "chamber_temp": {
         "name": "Chamber temperature"
@@ -456,14 +485,14 @@
           "nozzle_temp_max": {
             "name": "Nozzle max temperature"
           },
-          "type": {
-            "name": "Type"
-          },
           "remain": {
             "name": "Remaining filament"
           },
           "tag_uid": {
             "name": "Serial number of filament"
+          },
+          "type": {
+            "name": "Type"
           }
         }
       },
@@ -491,14 +520,14 @@
           "nozzle_temp_max": {
             "name": "Nozzle max temperature"
           },
-          "type": {
-            "name": "Type"
-          },
           "remain": {
             "name": "Remaining filament"
           },
           "tag_uid": {
             "name": "Serial number of filament"
+          },
+          "type": {
+            "name": "Type"
           }
         }
       },
@@ -526,14 +555,14 @@
           "nozzle_temp_max": {
             "name": "Nozzle max temperature"
           },
-          "type": {
-            "name": "Type"
-          },
           "remain": {
             "name": "Remaining filament"
           },
           "tag_uid": {
             "name": "Serial number of filament"
+          },
+          "type": {
+            "name": "Type"
           }
         }
       }
@@ -546,6 +575,12 @@
     "switch": {
       "manual": {
         "name": "Manual refresh mode"
+      },
+      "camera": {
+        "name": "Enable camera"
+      },
+      "imagecamera": {
+        "name": "Use image sensor camera"
       }
     }
   }

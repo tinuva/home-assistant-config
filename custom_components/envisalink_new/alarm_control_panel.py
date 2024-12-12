@@ -6,19 +6,11 @@ import voluptuous as vol
 from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
     AlarmControlPanelEntityFeature,
+    AlarmControlPanelState,
     CodeFormat,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_CODE,
-    STATE_ALARM_ARMED_AWAY,
-    STATE_ALARM_ARMED_HOME,
-    STATE_ALARM_ARMED_NIGHT,
-    STATE_ALARM_DISARMED,
-    STATE_ALARM_PENDING,
-    STATE_ALARM_TRIGGERED,
-    STATE_UNKNOWN,
-)
+from homeassistant.const import CONF_CODE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -33,6 +25,7 @@ from .const import (
     DEFAULT_PANIC,
     DEFAULT_PARTITION_SET,
     DOMAIN,
+    HONEYWELL_ARM_MODE_INSTANT_VALUE,
     LOGGER,
 )
 from .helpers import find_yaml_info, generate_entity_setup_info, parse_range_string
@@ -162,24 +155,24 @@ class EnvisalinkAlarm(EnvisalinkDevice, AlarmControlPanelEntity):
         return self._controller.controller.alarm_state["partition"][self._partition_number]
 
     @property
-    def state(self) -> str:
+    def alarm_state(self) -> AlarmControlPanelState | None:
         """Return the state of the device."""
-        state = STATE_UNKNOWN
+        state = None
 
         if self._info["status"]["alarm"]:
-            state = STATE_ALARM_TRIGGERED
-        elif self._info["status"]["armed_zero_entry_delay"]:
-            state = STATE_ALARM_ARMED_NIGHT
+            state = AlarmControlPanelState.TRIGGERED
+        elif self._is_night_mode():
+            state = AlarmControlPanelState.ARMED_NIGHT
         elif self._info["status"]["armed_away"]:
-            state = STATE_ALARM_ARMED_AWAY
+            state = AlarmControlPanelState.ARMED_AWAY
         elif self._info["status"]["armed_stay"]:
-            state = STATE_ALARM_ARMED_HOME
+            state = AlarmControlPanelState.ARMED_HOME
         elif self._info["status"]["exit_delay"]:
-            state = STATE_ALARM_PENDING
+            state = AlarmControlPanelState.PENDING
         elif self._info["status"]["entry_delay"]:
-            state = STATE_ALARM_PENDING
+            state = AlarmControlPanelState.PENDING
         elif self._info["status"]["alpha"]:
-            state = STATE_ALARM_DISARMED
+            state = AlarmControlPanelState.DISARMED
         return state
 
     async def async_alarm_disarm(self, code: str | None = None) -> None:
@@ -239,3 +232,10 @@ class EnvisalinkAlarm(EnvisalinkDevice, AlarmControlPanelEntity):
         if not code:
             code = self._code
         await self._controller.controller.command_output(code, self._partition_number, pgm)
+
+    def _is_night_mode(self) -> bool:
+        if self._controller.controller.panel_type == PANEL_TYPE_HONEYWELL:
+            if self._arm_night_mode == HONEYWELL_ARM_MODE_INSTANT_VALUE:
+                return self._info["status"]["armed_zero_entry_delay"]
+
+        return self._info["status"]["armed_night"]

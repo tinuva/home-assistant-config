@@ -79,13 +79,6 @@ class EnvisalinkAlarmPanel:
         self._zoneBypassStateChangeCallback = self._defaultCallback
         self._cidEventCallback = self._defaultCallback
 
-        loggingconfig = {
-            "level": "DEBUG",
-            "format": "%(asctime)s %(levelname)s <%(name)s %(module)s %(funcName)s> %(message)s",
-        }
-
-        logging.basicConfig(**loggingconfig)
-
     @property
     def host(self):
         return self._host
@@ -425,7 +418,12 @@ class EnvisalinkAlarmPanel:
                     panel_regex = ">Security Subsystem - ([^<]*)<"
                     m = re.search(panel_regex, html)
                     if m and m.lastindex == 1:
-                        self._panelType = m.group(1).upper()
+                        panelType = m.group(1).upper()
+                        # Handle the UNO STANDALONE variant
+                        if PANEL_TYPE_UNO in panelType:
+                            self._panelType = PANEL_TYPE_UNO
+                        else:
+                            self._panelType = panelType
                     else:
                         success = False
 
