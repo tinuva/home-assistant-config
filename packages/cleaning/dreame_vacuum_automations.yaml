@@ -3,14 +3,12 @@ automation:
   - alias: "Dreame Vacuum: Done Cleaning"
     description: "Turn off all helper entities when vacuum is done cleaning"
     trigger:
-      - platform: device
-        device_id: 656ec1051d31a0c67eecae2410fa14f2
-        domain: vacuum
-        type: docked
-      - platform: device
-        device_id: 656ec1051d31a0c67eecae2410fa14f2
-        domain: binary_sensor
-        type: not_running
+      - platform: event
+        event_type: dreame_vacuum_task_status
+        event_data:
+          entity_id: vacuum.xiaomi_robot_vacuum_x20
+          completed: true
+    condition: []
     action:
       - service: input_boolean.turn_off
         target:

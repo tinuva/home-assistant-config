@@ -49,7 +49,7 @@ automation:
         - timer.outsidebacklight
         - timer.pool_pump
         - timer.pool_pump_grid_pause
-        - timer.vacuumautoresume
+        # - timer.vacuumautoresume
         # - timer.watersystem
     action:
       - service: input_text.set_value
