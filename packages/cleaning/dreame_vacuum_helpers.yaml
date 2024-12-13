@@ -63,3 +63,9 @@ input_boolean:
     name: Living Room Mopping
   xiaomi_robot_vacuum_x20_vacuuming_17:
     name: Living Room Vacuuming
+
+input_text:
+  xiaomi_robot_vacuum_x20_last_room:
+    name: Last Cleaned Room
+    initial: ""
+    max: 20
