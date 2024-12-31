@@ -43,7 +43,7 @@ automation:
         discovery_prefix: 'homeassistant'
         qos: 2
         # Dimmers
-        shellydimmer-D3E771:
+        shellydimmer2-C4D8D50D4A91:
           device_name: "Lounge"
           light-0-name: "Lounge"
         shellydimmer-D42C70:
@@ -129,12 +129,6 @@ automation:
           relay-1: "light"
           relay-1-name: "Dining"
           expire_after: 7200
-        shellyswitch25-40F52000F5B7:
-          device_name: "Braai"
-          relay-0: "light"
-          relay-0-name: "Bar"
-          relay-1: "light"
-          relay-1-name: "Courtyard"
         shellyswitch25-40F52000E5A4:
           device_name: "Main"
           relay-0: "light"
