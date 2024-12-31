@@ -59,6 +59,7 @@ script:
         required: true
         selector:
           select:
+            multiple: true
             mode: dropdown
             options:
               - label: Andre Bedroom
@@ -73,8 +74,6 @@ script:
                 value: "5"
               - label: Main Bathroom
                 value: "7"
-              - label: Courtyard
-                value: "8"
               - label: White Bathroom
                 value: "9"
               - label: Spare Bedroom
@@ -131,8 +130,7 @@ script:
                         option: sweeping_and_mopping
                       - service: dreame_vacuum.vacuum_clean_segment
                         data:
-                          segments:
-                            - "{{ room }}"
+                          segments: "{{ room }}"
                         target:
                           entity_id: vacuum.xiaomi_robot_vacuum_x20
                       - service: input_boolean.turn_on
@@ -165,8 +163,7 @@ script:
                         option: sweeping
                       - service: dreame_vacuum.vacuum_clean_segment
                         data:
-                          segments:
-                            - "{{ room }}"
+                          segments: "{{ room }}"
                         target:
                           entity_id: vacuum.xiaomi_robot_vacuum_x20
                       - service: input_boolean.turn_on
