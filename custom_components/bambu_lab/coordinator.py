@@ -9,14 +9,16 @@ from .const import (
 import asyncio
 from typing import Any
 
+from homeassistant import config_entries
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers import device_registry
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.core import Event, HomeAssistant, callback
-from homeassistant.const import EVENT_HOMEASSISTANT_STOP, Platform
-
-import paho.mqtt.client as mqtt
+from homeassistant.const import (
+    EVENT_HOMEASSISTANT_STOP,
+    Platform
+)
 
 from .pybambu import BambuClient
 from .pybambu.const import Features
@@ -34,6 +36,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         self.latest_usage_hours = float(entry.options.get('usage_hours', 0))
         config = entry.data.copy()
         config.update(entry.options.items())
+        config['user_language'] = hass.config.language
         self.client = BambuClient(config)
             
         self._updatedDevice = False

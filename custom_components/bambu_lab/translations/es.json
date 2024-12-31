@@ -24,14 +24,15 @@
       "cannot_connect_local_all": "Error al conectar. Revisa la configuración proporcionada.",
       "invalid_auth": "Autenticación inválida.",
       "unknown": "Error inesperado.",
-      "verifyCode": "Se requiere código de verificación. Revisa tu correo electrónico.",
-      "code_expired": "El código de verificación ha caducado. Se ha solicidado un nuevo código. Revisa tu correo electrónico.",
+      "code_needed": "Se debe proporcionar el código de verificación.",
+      "verifyCode": "Se requiere código de verificación. Consulta tu correo electrónico o teléfono.",
+      "code_expired": "El código de verificación expiró. Nuevo código solicitado. Consulta tu correo electrónico o teléfono.",
       "code_incorrect": "El código de verificación era incorrecto. Por favor, introdúcelo de nuevo.",
       "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo."
     },
     "step": {
       "user": {
-        "description": "La configuración mediante Bambu Cloud es más simple, pero no soporta 2FA o cuentas de redes sociales sin una contraseña, y no funcionará con impresoras activamente configuradas como Solo LAN.",
+        "description": "La configuración a través de Bambu Cloud es la más sencilla. Opcionalmente, puede configurar manualmente el acceso solo local, pero perderá algunas funciones; esto es necesario para las impresoras configuradas en modo solo Lan.\n\rSi existen y funcionan, también puede reutilizar las credenciales de autenticación existentes de otras impresoras configuradas.\n \rTenga en cuenta que las cuentas de redes sociales sin contraseña no son compatibles con la configuración en la nube.",
         "data": {
           "printer_mode": "Modo de configuración de la impresora:"
         }
@@ -43,7 +44,8 @@
           "region": "Región de la cuenta:",
           "email": "Dirección de Correo Electrónico o Número de Teléfono",
           "password": "Contraseña",
-          "verifyCode": "Código de verificación por correo electrónico",
+          "newCode": "Solicitar nuevo código",
+          "verifyCode": "Código de verificación por correo electrónico o teléfono",
           "tfaCode": "Código de autenticación de dos factores"
         }
       },
@@ -87,15 +89,16 @@
       "cannot_connect_local_all": "Error al conectar. Revisa configuración proporcionada.",
       "invalid_auth": "Autenticación inválida.",
       "unknown": "Error inesperado.",
-      "verifyCode": "Se requiere código de verificación. Revisa tu correo electrónico.",
-      "code_expired": "El código de verificación ha caducado. Se ha solicidado un nuevo código. Revisa tu correo electrónico.",
+      "code_needed": "Se debe proporcionar el código de verificación.",
+      "verifyCode": "Se requiere código de verificación. Consulta tu correo electrónico o teléfono.",
+      "code_expired": "El código de verificación expiró. Nuevo código solicitado. Consulta tu correo electrónico o teléfono.",
       "code_incorrect": "El código de verificación era incorrecto. Por favor, introdúcelo de nuevo.",
       "tfaCode": "Se requiere código 2FA. Por favor, introdúcelo."
     },
     "step": {
       "init": {
         "title": "Ajusta la configuración de conexión",
-        "description": "La configuración mediante Bambu Cloud es más simple, pero no soporta 2FA o cuentas de redes sociales sin una contraseña, y no funcionará con impresoras activamente configuradas como Solo LAN.",
+        "description": "La configuración a través de Bambu Cloud es la más sencilla. Opcionalmente, puede configurar manualmente el acceso solo local, pero perderá algunas funciones; esto es necesario para las impresoras configuradas en modo solo Lan.\n\rSi existen y funcionan, también puede reutilizar las credenciales de autenticación existentes de otras impresoras configuradas.\n \rTenga en cuenta que las cuentas de redes sociales sin contraseña no son compatibles con la configuración en la nube.",
         "data": {
           "printer_mode": "Modo de configuración de la impresora:"
         }
@@ -107,7 +110,8 @@
           "region": "Región de la cuenta:",
           "email": "Dirección de Correo Electrónico o Número de Teléfono",
           "password": "Contraseña",
-          "verifyCode": "Código de verificación de correo electrónico",
+          "newCode": "Solicitar nuevo código",
+          "verifyCode": "Código de verificación por correo electrónico o teléfono",
           "tfaCode": "Código de autenticación de dos factores"
         }
       },
@@ -581,6 +585,14 @@
       },
       "imagecamera": {
         "name": "Usar cámara con sensor de imagen"
+      }
+    }
+  },
+  "selector": {
+    "configuration_type": {
+      "options": {
+        "bambu": "Nube de bambú",
+        "lan": "Conexión Local"
       }
     }
   }

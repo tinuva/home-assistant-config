@@ -305,13 +305,23 @@ class BambuClient:
 
         self._device = Device(self)
         self.bambu_cloud = BambuCloud(
-            config.get('region', ''),
-            config.get('email', ''),
-            config.get('username', ''),
-            config.get('auth_token', '')
+            region = config.get('region', ''),
+            email = config.get('email', ''),
+            username = config.get('username', ''),
+            auth_token = config.get('auth_token', '')
         )
         self.slicer_settings = SlicerSettings(self)
+        language = config.get('user_language', 'pt')
+        if 'zh' in language:
+            language = 'zh-CN'
+        else:
+            language = language[:2]
+        self._user_language = language
 
+    @property
+    def user_language(self):
+        return self._user_language
+    
     @property
     def connected(self):
         """Return if connected to server"""
@@ -375,8 +385,6 @@ class BambuClient:
         self._mqtt.start()
 
     def subscribe_and_request_info(self):
-        LOGGER.debug("Loading slicer settings...")
-        self.slicer_settings.update()
         LOGGER.debug("Now subscribing...")
         self.subscribe()
         LOGGER.debug("On Connect: Getting version info")
@@ -493,6 +501,9 @@ class BambuClient:
                 elif json_data.get("info") and json_data.get("info").get("command") == "get_version":
                     LOGGER.debug("Got Version Data")
                     self._device.info_update(data=json_data.get("info"))
+                    # Only update slicer settings on a successful connection to the printer.
+                    self.slicer_settings.update()
+
         except Exception as e:
             LOGGER.error("An exception occurred processing a message:", exc_info=e)
 
@@ -524,8 +535,6 @@ class BambuClient:
             LOGGER.debug("Force Refresh: Request Push All")
             self._refreshed = True
             self.publish(PUSH_ALL)
-
-        self.slicer_settings.update()
 
     def get_device(self):
         """Return device"""
