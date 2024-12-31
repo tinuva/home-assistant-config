@@ -60,6 +60,11 @@ automation:
           - condition: state
             entity_id: sensor.xiaomi_robot_vacuum_x20_status
             state: sleeping
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: input_boolean.floor_disaster_zone
+            state: "on"
     action:
       - device_id: 656ec1051d31a0c67eecae2410fa14f2
         domain: select

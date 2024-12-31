@@ -1,0 +1,5 @@
+---
+
+input_boolean:
+  floor_disaster_zone:
+    name: Floor disaster zone

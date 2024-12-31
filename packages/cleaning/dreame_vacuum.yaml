@@ -121,7 +121,7 @@ script:
                         option: water_saving
                       - service: vacuum.set_fan_speed
                         data:
-                          fan_speed: standard
+                          fan_speed: turbo
                         target:
                           entity_id: vacuum.xiaomi_robot_vacuum_x20
                       - device_id: 656ec1051d31a0c67eecae2410fa14f2
@@ -235,7 +235,7 @@ script:
                     option: water_saving
                   - service: vacuum.set_fan_speed
                     data:
-                      fan_speed: standard
+                      fan_speed: turbo
                     target:
                       entity_id: vacuum.xiaomi_robot_vacuum_x20
                   - device_id: 656ec1051d31a0c67eecae2410fa14f2
