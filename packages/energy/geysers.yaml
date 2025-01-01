@@ -719,7 +719,7 @@ automation:
               - service: script.goodwe_set_dod
                 data:
                   forecast: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
-          
+
           # If loadshedding is coming up (within ~5 hours)
           - conditions:
               - condition: numeric_state
@@ -749,7 +749,7 @@ automation:
               - service: script.goodwe_set_dod
                 data:
                   forecast: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
-          
+
           # No loadshedding expected
           - conditions:
               - condition: or
