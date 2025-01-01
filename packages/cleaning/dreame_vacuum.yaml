@@ -128,18 +128,25 @@ script:
                         entity_id: select.xiaomi_robot_vacuum_x20_cleaning_mode
                         type: select_option
                         option: sweeping_and_mopping
+                      # Clean the room(s)
                       - service: dreame_vacuum.vacuum_clean_segment
                         data:
-                          segments: "{{ room }}"
+                          segments: >
+                            {{ room if room is string else room }}
                         target:
                           entity_id: vacuum.xiaomi_robot_vacuum_x20
-                      - service: input_boolean.turn_on
-                        data: {}
-                        target:
-                          entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_mopping_' + room }}"
+                      # Turn on input_boolean for each room
+                      - repeat:
+                          for_each: "{{ [room] if room is string else room }}"
+                          sequence:
+                            - service: input_boolean.turn_on
+                              data: {}
+                              target:
+                                entity_id: "input_boolean.xiaomi_robot_vacuum_x20_mopping_{{ repeat.item }}"
+                      # Set the last room to the final room in the list
                       - service: input_text.set_value
                         data:
-                          value: "{{ room }}"
+                          value: "{{ room if room is string else room[-1] }}"
                         target:
                           entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
                   - conditions:
@@ -163,16 +170,22 @@ script:
                         option: sweeping
                       - service: dreame_vacuum.vacuum_clean_segment
                         data:
-                          segments: "{{ room }}"
+                          segments: >
+                            {{ room if room is string else room }}
                         target:
                           entity_id: vacuum.xiaomi_robot_vacuum_x20
-                      - service: input_boolean.turn_on
-                        data: {}
-                        target:
-                          entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_vacuuming_' + room }}"
+                      # Turn on input_boolean for each room
+                      - repeat:
+                          for_each: "{{ [room] if room is string else room }}"
+                          sequence:
+                            - service: input_boolean.turn_on
+                              data: {}
+                              target:
+                                entity_id: "input_boolean.xiaomi_robot_vacuum_x20_mopping_{{ repeat.item }}"
+                      # Set the last room to the final room in the list
                       - service: input_text.set_value
                         data:
-                          value: "{{ room }}"
+                          value: "{{ room if room is string else room[-1] }}"
                         target:
                           entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
         default:
@@ -242,17 +255,22 @@ script:
                     option: sweeping_and_mopping
                   - service: dreame_vacuum.vacuum_clean_segment
                     data:
-                      segments:
-                        - "{{ room }}"
+                      segments: >
+                        {{ room if room is string else room }}
                     target:
                       entity_id: vacuum.xiaomi_robot_vacuum_x20
-                  - service: input_boolean.turn_on
-                    data: {}
-                    target:
-                      entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_mopping_' + room }}"
+                  # Turn on input_boolean for each room
+                  - repeat:
+                      for_each: "{{ [room] if room is string else room }}"
+                      sequence:
+                        - service: input_boolean.turn_on
+                          data: {}
+                          target:
+                            entity_id: "input_boolean.xiaomi_robot_vacuum_x20_mopping_{{ repeat.item }}"
+                  # Set the last room to the final room in the list
                   - service: input_text.set_value
                     data:
-                      value: "{{ room }}"
+                      value: "{{ room if room is string else room[-1] }}"
                     target:
                       entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
               - conditions:
@@ -276,17 +294,22 @@ script:
                     option: sweeping
                   - service: dreame_vacuum.vacuum_clean_segment
                     data:
-                      segments:
-                        - "{{ room }}"
+                      segments: >
+                        {{ room if room is string else room }}
                     target:
                       entity_id: vacuum.xiaomi_robot_vacuum_x20
-                  - service: input_boolean.turn_on
-                    data: {}
-                    target:
-                      entity_id: "{{ 'input_boolean.xiaomi_robot_vacuum_x20_vacuuming_' + room }}"
+                  # Turn on input_boolean for each room
+                  - repeat:
+                      for_each: "{{ [room] if room is string else room }}"
+                      sequence:
+                        - service: input_boolean.turn_on
+                          data: {}
+                          target:
+                            entity_id: "input_boolean.xiaomi_robot_vacuum_x20_mopping_{{ repeat.item }}"
+                  # Set the last room to the final room in the list
                   - service: input_text.set_value
                     data:
-                      value: "{{ room }}"
+                      value: "{{ room if room is string else room[-1] }}"
                     target:
                       entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
       - wait_for_trigger:
