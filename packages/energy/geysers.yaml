@@ -416,8 +416,8 @@ automation:
         id: pvforecast3
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.front_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
-      - platform: template
-        value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
+      # - platform: template
+      #   value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       #- platform: time
       #  at: '10:35:00'
     condition:
@@ -469,9 +469,9 @@ automation:
                       - condition: numeric_state
                         entity_id: sensor.average_temperature_outside_last_1_day
                         below: '19.4'
-                      - condition: state
-                        entity_id: input_boolean.morning_geyser_front
-                        state: 'on'
+                      # - condition: state
+                      #   entity_id: input_boolean.morning_geyser_front
+                      #   state: 'on'
                   # IF lots of sun and high battery also turn on
                   - condition: and
                     conditions:
@@ -674,3 +674,117 @@ automation:
               - service: switch.turn_off
                 data:
                   entity_id: switch.front_bathroom_geyser
+
+
+  - alias: "Front Geyser Morning Schedule"
+    description: "Schedule front geyser based on loadshedding status"
+    mode: single
+    trigger:
+      - platform: time
+        at: "00:00:00"
+    condition:
+      - condition: or
+        conditions:
+          - condition: state
+            entity_id: input_boolean.morning_geyser_front
+            state: 'on'
+          - condition: state
+            entity_id: input_boolean.guest
+            state: 'on'
+    action:
+      - choose:
+          # If loadshedding is active or imminent (within ~1 hour)
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.time_till_loadshedding
+                below: 4000
+            sequence:
+              - wait_for_trigger:
+                  - platform: state
+                    entity_id: timer.loadshedding_slot
+                    to: 'idle'
+                    for:
+                      minutes: 20
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "16"
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - delay:
+                  hours: 1
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
+          
+          # If loadshedding is coming up (within ~5 hours)
+          - conditions:
+              - condition: numeric_state
+                entity_id: sensor.time_till_loadshedding
+                below: 19000
+                above: 4000
+            sequence:
+              - wait_for_trigger:
+                  - platform: numeric_state
+                    entity_id: sensor.time_till_loadshedding
+                    below: 3700
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "16"
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - wait_for_trigger:
+                  - platform: numeric_state
+                    entity_id: sensor.time_till_loadshedding
+                    below: 200
+                timeout:
+                  hours: 1
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
+          
+          # No loadshedding expected
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: numeric_state
+                    entity_id: sensor.time_till_loadshedding
+                    above: 19000
+                  - condition: state
+                    entity_id: sensor.time_till_loadshedding
+                    state: unavailable
+                  - condition: state
+                    entity_id: sensor.time_till_loadshedding
+                    state: unknown
+            sequence:
+              - wait_for_trigger:
+                  - platform: time
+                    at: "04:00:00"
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "16"
+              - service: switch.turn_on
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - delay:
+                  hours: 1
+              - service: switch.turn_off
+                target:
+                  entity_id: switch.front_bathroom_geyser
+              - service: script.goodwe_set_dod
+                data:
+                  forecast: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
+        default:
+          - service: script.alert
+            data:
+              target: 'alerts'
+              icon: ':warning:'
+              object: 'Front Geyser'
+              message: "Front geyser morning schedule failed to run. Please check the automation."
