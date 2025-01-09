@@ -1,0 +1,83 @@
+# ---
+
+# BI Cameras
+mqtt:
+  camera:
+    - topic: BI/frontg/alert-image-b64
+      name: Cam Alert Front Garage
+      unique_id: camera.cam_alert_frontg
+      object_id: cam_alert_frontg
+      image_encoding: b64
+
+    - topic: BI/back/alert-image-b64
+      name: Cam Alert Back
+      unique_id: camera.cam_alert_back
+      object_id: cam_alert_back
+      image_encoding: b64
+
+  sensor:
+    - name: Cam Alert Front Garage
+      unique_id: camera.cam_alert_status_frontg
+      object_id: cam_alert_frontg
+      state_topic: BI/frontg/status
+      value_template: '{{ value_json.dbid }}'
+      json_attributes_topic: BI/frontg/status
+      json_attributes_template: '{{ value_json | tojson }}'
+
+    - name: Cam Alert Back
+      unique_id: camera.cam_alert_status_back
+      object_id: cam_alert_back
+      state_topic: BI/back/status
+      value_template: '{{ value_json.dbid }}'
+      json_attributes_topic: BI/back/status
+      json_attributes_template: '{{ value_json | tojson }}'
+
+automation:
+  - alias: 'Blue Iris: Camera Alert Notification'
+    id: bi-cam-alert
+    description: ''
+    mode: queued
+    trigger:
+      - entity_id: sensor.cam_alert_frontg
+        platform: state
+      - entity_id: sensor.cam_alert_back
+        platform: state
+    variables:
+      cam: "{{           trigger.to_state.attributes.cam                }}"
+      cam_name: "{{      trigger.to_state.attributes.cam_name           }}"
+      img_time: "{{      trigger.to_state.attributes.time               }}"
+      bi_dbid: "{{       trigger.to_state.attributes.dbid               }}"
+      bi_clip: "{{       trigger.to_state.attributes.clipid             }}"
+      ai_memo: "{{       trigger.to_state.attributes.memo               }}"
+      ai_object: "{{     trigger.to_state.attributes.memo.split(':')[0] }}"
+      ai_confidence: "{{ trigger.to_state.attributes.memo.split(':')[1] }}"
+      cam_entity: "camera.cam_alert_"
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state is not none and
+            trigger.from_state.state not in ['unknown','unavailable'] }}
+    action:
+      - service: notify.bezuidenhouts
+        data:
+          target: '#alerts-camera'
+          message: >-
+            Motion on {{ cam_name }} camera at {{ img_time }} {{- '\n' -}}
+            Type: {{ ai_object }} Confidence: {{ ai_confidence }}
+          title: Camera Alert
+          data:
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >-
+                    Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+                    *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+                    <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image> 
+                    <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+              - type: image
+                image_url: https://ha.heaven.za.net{{ state_attr( cam_entity + cam , "entity_picture") }}
+                alt_text: Image preview
