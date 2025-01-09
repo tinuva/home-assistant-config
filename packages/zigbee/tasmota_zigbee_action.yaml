@@ -42,13 +42,13 @@ automation:
   - alias: 'MQTT Zigbee Button Main Bathroom single click'
     initial_state: true
     trigger:
-    - platform: mqtt
-      topic: 'zigbee2mqtt/Main Bathroom Button/action'
-      payload: 'single'
+      - platform: mqtt
+        topic: 'zigbee2mqtt/Main Bathroom Button/action'
+        payload: 'single'
     action:
-    - service: light.toggle
-      target:
-        entity_id: light.main_bathroom
+      - service: light.toggle
+        target:
+          entity_id: light.main_bathroom
 
 #  # Lounge button
 #  - alias: 'MQTT Zigbee Button Lounge hold action'
