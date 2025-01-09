@@ -84,8 +84,6 @@ script:
                   filename: "/config/www/cam_captures/script_log.jpg"
                 target:
                   entity_id: "{{ cam }}"
-              - delay:
-                  seconds: 7
               - service: notify.bezuidenhouts
                 data:
                   message: '{{ message }}'
