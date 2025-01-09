@@ -5,9 +5,6 @@ automation:
  - alias: 'MQTT Zigbee Button Kitchen single click'
    initial_state: true
    trigger:
-    # - platform: mqtt
-    #   topic: 'tele/zigbee/Kitchen Button/Click'
-    #   payload: 'single'
     - platform: mqtt
       topic: 'zigbee2mqtt/Kitchen Button/action'
       payload: 'single'
@@ -15,41 +12,34 @@ automation:
     - service: light.toggle
       data:
        entity_id: light.kitchen_kitchen
-   #  - service: input_boolean.toggle
-   #    data:
-   #      entity_id: input_boolean.kitchenwork
-#
-#  - alias: 'MQTT Zigbee Button Kitchen hold action'
-#    initial_state: true
-#    trigger:
-#      - platform: mqtt
-#        topic: 'tele/zigbee/Kitchen Button/Action'
-#        payload: 'single'
-#      - platform: state
-#        entity_id: sensor.kitchenm_button_action
-#    condition:
-#      - condition: template
-#        value_template: '{{ "hold" == trigger.to_state.attributes.action }}'
-#    action:
-#      - service: light.turn_on
-#        data_template:
-#          entity_id: light.kitchen_kitchen
-#          transition: 50
-#          brightness: >-
-#            {% set time = states('sensor.time') %}
-#            {%- if(is_state('input_boolean.kitchenwork','on')) -%}
-#            185
-#            {% elif '18:00' <= time <= '20:25' %}
-#            175
-#            {% elif '05:30' <= time <= '07:30' %}
-#            175
-#            {%- else -%}
-#            175
-#            {%- endif -%}
-#
-##zigbee2mqtt        | Zigbee2MQTT:info  2022-08-14 19:16:33: MQTT publish: topic 'zigbee2mqtt/Main Bathroom Button/action', payload 'single'
-##zigbee2mqtt        | Zigbee2MQTT:info  2022-08-14 19:16:33: MQTT publish: topic 'zigbee2mqtt/Main Bathroom Button/click', payload 'single'
-#
+
+ - alias: 'MQTT Zigbee Button Kitchen double click'
+   initial_state: true
+   trigger:
+    - platform: mqtt
+      topic: 'zigbee2mqtt/Kitchen Button/action'
+      payload: 'double'
+   action:
+    - service: light.turn_on
+      data:
+       entity_id: light.kitchen_kitchen
+       data:
+         brightness_pct: 90
+
+ - alias: 'MQTT Zigbee Button Kitchen hold action'
+   initial_state: true
+   trigger:
+    - platform: mqtt
+      topic: 'zigbee2mqtt/Kitchen Button/action'
+      payload: 'hold'
+   action:
+    # Mop Kitchen floor
+    - service: script.clean_room
+      data:
+        mode: Mop
+        room:
+          - "11"
+
  # Main Bathroom button
  - alias: 'MQTT Zigbee Button Main Bathroom single click'
    initial_state: true
@@ -62,22 +52,6 @@ automation:
       data:
        entity_id: light.main_bathroom
 
-## sensor.main_bathroom_button_action
-#
-#  # - alias: mb button test
-#  #   trigger:
-#  #     - platform: state
-#  #       entity_id: sensor.main_bathroom_button_action
-#  #   action:
-#  #     - alias: "Log action taken"
-#  #       service: script.log
-#  #       data:
-#  #         icon: ':zap:'
-#  #         object: 'mb button'
-#  #         message: >
-#  #               State:
-#  #               {{ trigger.to_state.attributes.click }}
-#
 #  # Lounge button
 #  - alias: 'MQTT Zigbee Button Lounge hold action'
 #    initial_state: true
