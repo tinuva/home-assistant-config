@@ -1,44 +1,42 @@
 ---
 
 automation:
- # Kitchen button
- - alias: 'MQTT Zigbee Button Kitchen single click'
-   initial_state: true
-   trigger:
-    - platform: mqtt
-      topic: 'zigbee2mqtt/Kitchen Button/action'
-      payload: 'single'
-   action:
-    - service: light.toggle
-      data:
-       entity_id: light.kitchen_kitchen
-
- - alias: 'MQTT Zigbee Button Kitchen double click'
-   initial_state: true
-   trigger:
-    - platform: mqtt
-      topic: 'zigbee2mqtt/Kitchen Button/action'
-      payload: 'double'
-   action:
-    - service: light.turn_on
-      data:
-       entity_id: light.kitchen_kitchen
-       data:
-         brightness_pct: 90
-
- - alias: 'MQTT Zigbee Button Kitchen hold action'
-   initial_state: true
-   trigger:
-    - platform: mqtt
-      topic: 'zigbee2mqtt/Kitchen Button/action'
-      payload: 'hold'
-   action:
-    # Mop Kitchen floor
-    - service: script.clean_room
-      data:
-        mode: Mop
-        room:
-          - "11"
+  # Kitchen button
+  - alias: 'MQTT Zigbee Button Kitchen actions'
+    initial_state: true
+    trigger:
+      - platform: mqtt
+        topic: 'zigbee2mqtt/Kitchen Button/action'
+    action:
+      - choose:
+          # Single - toggle kitchen light
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.payload == 'single' }}"
+            sequence:
+              - service: light.toggle
+                target:
+                  entity_id: light.kitchen_kitchen
+          # Double - turn on kitchen light high brightness
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.payload == 'double' }}"
+            sequence:
+              - service: light.turn_on
+                target:
+                  entity_id: light.kitchen_kitchen
+                data:
+                  brightness_pct: 90
+          # Hold - Mop Kitchen floor
+          - conditions:
+              - condition: template
+                value_template: "{{ trigger.payload == 'hold' }}"
+            sequence:
+              - service: script.clean_room
+                data:
+                  mode: Mop
+                  room:
+                    - "11"
 
  # Main Bathroom button
  - alias: 'MQTT Zigbee Button Main Bathroom single click'
@@ -49,8 +47,8 @@ automation:
       payload: 'single'
    action:
     - service: light.toggle
-      data:
-       entity_id: light.main_bathroom
+      target:
+        entity_id: light.main_bathroom
 
 #  # Lounge button
 #  - alias: 'MQTT Zigbee Button Lounge hold action'
