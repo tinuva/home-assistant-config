@@ -9,6 +9,8 @@ automation:
         entity_id: fan.x1c_00m09a363000342_cooling_fan
       - platform: state
         entity_id: fan.x1c_00m09a363000342_aux_fan
+      - platform: state
+        entity_id: sensor.x1c_00m09a363000342_bed_temperature
     action:
       - choose:
           - conditions:
@@ -20,6 +22,9 @@ automation:
                   - condition: state
                     entity_id: fan.x1c_00m09a363000342_aux_fan
                     state: 'on'
+                  - condition: numeric_state
+                    entity_id: sensor.x1c_00m09a363000342_bed_temperature
+                    above: 35
             sequence:
               - service: switch.turn_on
                 data:
