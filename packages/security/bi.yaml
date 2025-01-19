@@ -52,6 +52,20 @@ automation:
       ai_object: "{{     trigger.to_state.attributes.memo.split(':')[0] }}"
       ai_confidence: "{{ trigger.to_state.attributes.memo.split(':')[1] }}"
       cam_entity: "camera.cam_alert_"
+      is_back_camera: "{{ cam == 'back' }}"
+      is_front_camera: "{{ cam == 'frontg' }}"
+      is_person: "{{ ai_object == 'person' }}"
+      is_car: "{{ ai_object == 'car' }}"
+      alarm_armed: >
+        {{ is_state('alarm_control_panel.home_alarm', 'armed_home') or 
+           is_state('alarm_control_panel.home_alarm', 'armed_away') }}
+      front_gate_open: "{{ is_state('cover.front_gate', 'open') }}"
+      should_notify: >
+        {% if is_back_camera %}
+          {{ alarm_armed }}
+        {% else %}
+          {{ is_person or (is_car and front_gate_open) }}
+        {% endif %}
     condition:
       - condition: template
         value_template: >
@@ -60,6 +74,9 @@ automation:
         value_template: >
           {{ trigger.from_state is not none and
             trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: template
+        value_template: >
+          {{ should_notify }}
     action:
       - service: notify.bezuidenhouts
         data:
