@@ -1,6 +1,6 @@
-"""This script adds MQTT discovery support for Shellies Gen2 devices."""
+"""This script adds MQTT discovery support for Shellies Gen2+ devices."""
 
-VERSION = "3.9.1"
+VERSION = "3.9.4"
 
 ATTR_BATTERY_POWERED = "battery_powered"
 ATTR_BINARY_SENSORS = "binary_sensors"
@@ -310,6 +310,7 @@ UPDATE_FIRMWARE = "firmware"
 UPDATE_FIRMWARE_BETA = "firmware_beta"
 
 SCRIPT_CODE = """let topicPrefix = null;
+let updateTimer = null;
 
 function sendDeviceStatus() {
   try {
@@ -319,32 +320,38 @@ function sendDeviceStatus() {
       MQTT.publish(topicPrefix + ^/status/rpc^, JSON.stringify(status));
     });
   } catch (e) {
-    console.log(^sendDeviceStatus has failed: ^, e1);
+    console.log(^sendDeviceStatus has failed: ^, e);
   }
-};
+}
+
+function onMQTTConfigReceived(config) {
+  topicPrefix = config.topic_prefix;
+  console.log(^Using topic prefix: ^, topicPrefix);
+
+  if (!updateTimer) {
+    updateTimer = Timer.set(30000, true, sendDeviceStatus);
+  }
+}
 
 function initScript() {
   console.log(^Starting shellies_discovery_gen2_script^);
   try {
-    Shelly.call(^MQTT.GetConfig^, {}, function (config) {
-      topicPrefix = config.topic_prefix;
-      console.log(^Using topic prefix: ^, topicPrefix);
-    });
-    let updateTimer = Timer.set(30000, true, sendDeviceStatus);
+    Shelly.call(^MQTT.GetConfig^, {}, onMQTTConfigReceived);
   } catch (e) {
-    console.log(^initScript has failed: ^, e1);
+    console.log(^initScript has failed: ^, e);
   }
 }
 
 initScript();
 """
-SCRIPT_CURRENT_NAME = "shellies_discovery_gen2_script_20241123"
+SCRIPT_CURRENT_NAME = "shellies_discovery_gen2_script_20250114"
 SCRIPT_OLD_NAMES = [
     "Send Device Status",
     "send_device_status",
     "send_device_status.js",
     "shellies_discovery_gen2_script_20221116",
     "shellies_discovery_gen2_script_20240216",
+    "shellies_discovery_gen2_script_20241123",
 ]
 
 STATE_CLASS_MEASUREMENT = "measurement"
@@ -850,6 +857,16 @@ DESCRIPTION_SENSOR_ENERGY_PM = {
     KEY_SUGGESTED_DISPLAY_PRECISION: 1,
     KEY_UNIT: UNIT_WATTH,
     KEY_VALUE_TEMPLATE: TPL_ENERGY,
+}
+DESCRIPTION_SENSOR_RETURNED_ENERGY_PM = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_ENERGY,
+    KEY_ENABLED_BY_DEFAULT: False,
+    KEY_NAME: "Total active returned energy",
+    KEY_STATE_CLASS: STATE_CLASS_TOTAL_INCREASING,
+    KEY_STATE_TOPIC: TOPIC_STATUS_PM1,
+    KEY_SUGGESTED_DISPLAY_PRECISION: 1,
+    KEY_UNIT: UNIT_WATTH,
+    KEY_VALUE_TEMPLATE: TPL_RETURNED_ENERGY,
 }
 DESCRIPTION_SENSOR_ENERGY_COVER = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_ENERGY,
@@ -2691,6 +2708,7 @@ SUPPORTED_MODELS = {
             SENSOR_FREQUENCY: DESCRIPTION_SENSOR_FREQUENCY_PM,
             SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
             SENSOR_POWER: DESCRIPTION_SENSOR_POWER_PM,
+            SENSOR_RETURNED_ENERGY: DESCRIPTION_SENSOR_RETURNED_ENERGY_PM,
             SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
             SENSOR_VOLTAGE: DESCRIPTION_SENSOR_VOLTAGE_PM,
             SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
@@ -2780,6 +2798,7 @@ SUPPORTED_MODELS = {
             SENSOR_FREQUENCY: DESCRIPTION_SENSOR_FREQUENCY_PM,
             SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
             SENSOR_POWER: DESCRIPTION_SENSOR_POWER_PM,
+            SENSOR_RETURNED_ENERGY: DESCRIPTION_SENSOR_RETURNED_ENERGY_PM,
             SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
             SENSOR_VOLTAGE: DESCRIPTION_SENSOR_VOLTAGE_PM,
             SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
@@ -3483,7 +3502,9 @@ def get_cover(cover_id, profile):
     if profile != ATTR_COVER:
         return topic, ""
 
-    cover_name = device_config[f"cover:{cover_id}"][ATTR_NAME] or f"Cover {cover_id}"
+    cover_name = (
+        device_config[f"cover:{cover_id}"][ATTR_NAME] or f"Cover {cover_id}"
+    ).replace("'", "_")
     payload = {
         KEY_NAME: cover_name,
         KEY_COMMAND_TOPIC: TOPIC_RPC,
@@ -3534,7 +3555,7 @@ def get_climate(thermostat_id, description):
     thermostat_name = (
         device_config.get(f"thermostat:{thermostat_id}", {}).get(ATTR_NAME)
         or f"Thermostat {thermostat_id}"
-    )
+    ).replace("'", "_")
 
     thermostat_topic = TOPIC_THERMOSTAT.format(id=thermostat_id)
     payload = {
@@ -3625,7 +3646,7 @@ def get_switch(relay_id, relay_type, profile):
     relay_name = (
         device_config.get(f"switch:{relay_id}", {}).get(ATTR_NAME)
         or f"Relay {relay_id}"
-    )
+    ).replace("'", "_")
     payload = {
         KEY_NAME: relay_name,
         KEY_COMMAND_TOPIC: TOPIC_RPC,
@@ -3652,7 +3673,9 @@ def get_relay_light(relay_id, relay_type, profile):
     if relay_type != ATTR_LIGHT or profile == ATTR_COVER:
         return topic, ""
 
-    relay_name = device_config[f"switch:{relay_id}"][ATTR_NAME] or f"Relay {relay_id}"
+    relay_name = (
+        device_config[f"switch:{relay_id}"][ATTR_NAME] or f"Relay {relay_id}"
+    ).replace("'", "_")
     payload = {
         KEY_SCHEMA: "template",
         KEY_NAME: relay_name,
@@ -3678,7 +3701,9 @@ def get_relay_fan(relay_id, relay_type, profile):
     if relay_type != ATTR_FAN or profile == ATTR_COVER:
         return topic, ""
 
-    relay_name = device_config[f"switch:{relay_id}"][ATTR_NAME] or f"Relay {relay_id}"
+    relay_name = (
+        device_config[f"switch:{relay_id}"][ATTR_NAME] or f"Relay {relay_id}"
+    ).replace("'", "_")
     payload = {
         KEY_NAME: relay_name,
         KEY_COMMAND_TOPIC: TOPIC_RPC,
@@ -3699,7 +3724,9 @@ def get_light(light_id: int):
     """Create configuration for Shelly light entity."""
     topic = encode_config_topic(f"{disc_prefix}/light/{device_id}-{light_id}/config")
 
-    light_name = device_config[f"light:{light_id}"][ATTR_NAME] or f"Light {light_id}"
+    light_name = (
+        device_config[f"light:{light_id}"][ATTR_NAME] or f"Light {light_id}"
+    ).replace("'", "_")
     payload = {
         KEY_SCHEMA: "template",
         KEY_NAME: light_name,
@@ -3723,7 +3750,9 @@ def get_cct_light(cct_id: int):
     """Create configuration for Shelly CCT light entity."""
     topic = encode_config_topic(f"{disc_prefix}/light/{device_id}-cct-{cct_id}/config")
 
-    light_name = device_config[f"cct:{cct_id}"][ATTR_NAME] or f"CCT light {cct_id}"
+    light_name = (
+        device_config[f"cct:{cct_id}"][ATTR_NAME] or f"CCT light {cct_id}"
+    ).replace("'", "_")
     payload = {
         KEY_SCHEMA: "template",
         KEY_NAME: light_name,
@@ -3750,7 +3779,9 @@ def get_rgb_light(rgb_id: int):
     """Create configuration for Shelly RGB light entity."""
     topic = encode_config_topic(f"{disc_prefix}/light/{device_id}-rgb-{rgb_id}/config")
 
-    light_name = device_config[f"rgb:{rgb_id}"][ATTR_NAME] or f"RGB light {rgb_id}"
+    light_name = (
+        device_config[f"rgb:{rgb_id}"][ATTR_NAME] or f"RGB light {rgb_id}"
+    ).replace("'", "_")
     payload = {
         KEY_SCHEMA: "template",
         KEY_NAME: light_name,
@@ -3851,32 +3882,32 @@ def get_sensor(
     if cover_id is not None:
         switch_name = (
             device_config[f"cover:{cover_id}"][ATTR_NAME] or f"Cover {cover_id}"
-        )
+        ).replace("'", "_")
         unique_id = f"{device_id}-cover-{cover_id}-{sensor}".lower()
         sensor_name = f"{switch_name} {description[KEY_NAME]}"
     elif relay_id is not None:
         switch_name = (
             device_config[f"switch:{relay_id}"].get(ATTR_NAME, {})
             or f"Relay {relay_id}"
-        )
+        ).replace("'", "_")
         unique_id = f"{device_id}-{relay_id}-{sensor}".lower()
         sensor_name = f"{switch_name} {description[KEY_NAME]}"
     elif light_id is not None:
         light_name = (
             device_config[f"light:{light_id}"].get(ATTR_NAME, {}) or f"Light {light_id}"
-        )
+        ).replace("'", "_")
         unique_id = f"{device_id}-{light_id}-{sensor}".lower()
         sensor_name = f"{light_name} {description[KEY_NAME]}"
     elif rgb_id is not None:
         rgb_name = (
             device_config[f"rgb:{rgb_id}"].get(ATTR_NAME, {}) or f"RGB light {rgb_id}"
-        )
+        ).replace("'", "_")
         unique_id = f"{device_id}-rgb-{rgb_id}-{sensor}".lower()
         sensor_name = f"{rgb_name} {description[KEY_NAME]}"
     elif cct_id is not None:
         cct_name = (
             device_config[f"cct:{cct_id}"].get(ATTR_NAME, {}) or f"CCT light {cct_id}"
-        )
+        ).replace("'", "_")
         unique_id = f"{device_id}-cct-{cct_id}-{sensor}".lower()
         sensor_name = f"{cct_name} {description[KEY_NAME]}"
     elif emeter_id is not None and emeter_phase is not None:
@@ -3889,7 +3920,7 @@ def get_sensor(
         unique_id = f"{device_id}-{sensor_id}-{sensor}".lower()
         sensor_name = device_config[f"{sensor}:{sensor_id}"][ATTR_NAME] or description[
             KEY_NAME
-        ].format(sensor=sensor_id)
+        ].format(sensor=sensor_id).replace("'", "_")
     elif bt_id is not None:
         unique_id = f"{device_id}-{bt_id}-{sensor}".lower()
         sensor_name = description[KEY_NAME]
@@ -3897,7 +3928,7 @@ def get_sensor(
         unique_id = f"{device_id}-{input_id}-{sensor}".lower()
         sensor_name = device_config[f"input:{input_id}"][ATTR_NAME] or description[
             KEY_NAME
-        ].format(input=input_id)
+        ].format(input=input_id).replace("'", "_")
     else:
         unique_id = f"{device_id}-{sensor}".lower()
         sensor_name = description[KEY_NAME]
@@ -4008,12 +4039,14 @@ def get_binary_sensor(
         return topic, ""
 
     if is_input:
-        name = device_config[f"input:{entity_id}"][ATTR_NAME] or f"Input {entity_id}"
+        name = (
+            device_config[f"input:{entity_id}"][ATTR_NAME] or f"Input {entity_id}"
+        ).replace("'", "_")
     elif entity_id is not None:
         name = (
             device_config[f"switch:{entity_id}"].get(ATTR_NAME, {})
             or f"Relay {entity_id}"
-        )
+        ).replace("'", "_")
     if entity_id is not None:
         unique_id = f"{device_id}-{entity_id}-{sensor}".lower()
         sensor_name = (
@@ -4109,7 +4142,7 @@ def get_event(input_id, input_type):
 
     input_name = (
         device_config[f"input:{input_id}"].get(ATTR_NAME) or f"Button {input_id}"
-    )
+    ).replace("'", "_")
 
     payload = {
         KEY_NAME: input_name,
@@ -4466,7 +4499,7 @@ def install_script(script_id, device_topic, script_topic):
         "id": 1,
         "src": script_topic,
         "method": "Script.Create",
-        "params": {"name": SCRIPT_CURRENT_NAME},
+        "params": {ATTR_NAME: SCRIPT_CURRENT_NAME},
     }
     mqtt_publish(device_topic, payload)
     payload = {
@@ -4493,7 +4526,7 @@ def current_script_installed():
 
     while True:
         if f"script:{script_id}" in device_config:
-            if device_config[f"script:{script_id}"]["name"] == SCRIPT_CURRENT_NAME:
+            if device_config[f"script:{script_id}"][ATTR_NAME] == SCRIPT_CURRENT_NAME:
                 return True
         else:
             return False
@@ -4516,7 +4549,7 @@ def remove_old_script_versions(device_topic, script_topic):
     """Remove old script versions."""
     for script_id in range(1, 100):
         if f"script:{script_id}" in device_config:
-            script_name = device_config[f"script:{script_id}"]["name"]
+            script_name = device_config[f"script:{script_id}"][ATTR_NAME]
             if script_name in SCRIPT_OLD_NAMES:
                 logger.info(  # noqa: F821
                     "Removing the old script %s, ID: %s", script_name, script_id
@@ -4662,8 +4695,11 @@ if "components" in device_config:
         logger.debug("Found BTHome devices: %s", bthome_devices)  # noqa: F821
 
         mac = config["addr"].lower()
-        device_name = config["name"] or SUPPORTED_MODELS[model][ATTR_NAME]
-        device_id += f"-{mac.replace(":", "")}"
+        device_name = (
+            config[ATTR_NAME]
+            or f"{SUPPORTED_MODELS[model][ATTR_NAME]} {mac.upper().replace(':', '')}"
+        ).replace("'", "_")
+        device_id += f"-{mac.replace(':', '')}"
         device_info = {
             KEY_CONNECTIONS: [["bluetooth", mac]],
             KEY_IDENTIFIERS: [mac],
@@ -4704,8 +4740,11 @@ if "components" in device_config:
     for thermostat, config in blutrv_devices.items():
         model = BTH_DEV_MAP.get(config.get("model_id"))
         mac = config["addr"].lower()
-        device_name = config["name"] or SUPPORTED_MODELS[model][ATTR_NAME]
-        device_id += f"-{mac.replace(":", "")}"
+        device_name = (
+            config[ATTR_NAME]
+            or f"{SUPPORTED_MODELS[model][ATTR_NAME]} {mac.upper().replace(':', '')}"
+        ).replace("'", "_")
+        device_id += f"-{mac.replace(':', '')}"
         device_info = {
             KEY_CONNECTIONS: [["bluetooth", mac]],
             KEY_IDENTIFIERS: [mac],
@@ -4797,11 +4836,11 @@ else:
 
     mac = format_mac(mac).lower()
 
-    device_name = device_config["sys"]["device"].get(ATTR_NAME)
+    device_name = (
+        device_config["sys"]["device"].get(ATTR_NAME)
+        or f"{SUPPORTED_MODELS[model][ATTR_NAME]} {mac.upper().replace(':', '')}"
+    ).replace("'", "_")
     device_url = f"http://{device_id}.local/"
-
-    if not device_name:
-        device_name = SUPPORTED_MODELS[model][ATTR_NAME]
 
     gen = SUPPORTED_MODELS[model].get(ATTR_GEN, 2)
     device_info = {
