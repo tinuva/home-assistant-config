@@ -57,8 +57,7 @@ automation:
       is_person: "{{ ai_object == 'person' }}"
       is_car: "{{ ai_object == 'car' }}"
       alarm_armed: >
-        {{ is_state('alarm_control_panel.home_alarm', 'armed_home') or 
-           is_state('alarm_control_panel.home_alarm', 'armed_away') }}
+        {{ is_state('alarm_control_panel.home_alarm', 'armed_home') or is_state('alarm_control_panel.home_alarm', 'armed_away') }}
       front_gate_open: "{{ is_state('cover.front_gate', 'open') }}"
       should_notify: >
         {% if is_back_camera %}
