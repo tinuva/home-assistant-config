@@ -1,47 +1,5 @@
 ---
 automation:
-  - alias: "Dreame Vacuum: Done Cleaning"
-    description: "Turn off all helper entities when vacuum is done cleaning"
-    mode: single
-    trigger:
-      - platform: event
-        event_type: dreame_vacuum_task_status
-        event_data:
-          entity_id: vacuum.xiaomi_robot_vacuum_x20
-          completed: true
-    condition: []
-    action:
-      - service: input_boolean.turn_off
-        target:
-          entity_id:
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_1
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_2
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_3
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_4
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_5
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_7
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_9
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_11
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_13
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_14
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_15
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_16
-            - input_boolean.xiaomi_robot_vacuum_x20_mopping_17
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_1
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_2
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_3
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_4
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_5
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_7
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_9
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_11
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_13
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_14
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_15
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_16
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17
-        data: {}
-
   - alias: "Dreame Vacuum: Daily Living Areas Clean"
     description: "Clean kitchen, lounge, front hall and living room at 4:50am"
     mode: single
@@ -66,34 +24,19 @@ automation:
             entity_id: input_boolean.floor_disaster_zone
             state: "on"
     action:
-      - device_id: 656ec1051d31a0c67eecae2410fa14f2
-        domain: select
-        entity_id: select.xiaomi_robot_vacuum_x20_mop_intensity
-        type: select_option
-        option: "off"
-      - service: vacuum.set_fan_speed
-        data:
-          fan_speed: turbo
+      # Turn on lights in areas to be cleaned
+      - service: light.turn_on
         target:
-          entity_id: vacuum.xiaomi_robot_vacuum_x20
-      - service: dreame_vacuum.vacuum_clean_segment
+          entity_id:
+            - light.kitchen_kitchen
+            - light.lounge_lounge
+            - light.lounge_dining
+        data: {}
+      - service: script.clean_room
         data:
-          segments:
+          mode: Vacuum
+          room:
             - "11"  # Kitchen
             - "14"  # Lounge
             - "13"  # Front Hall
             - "17"  # Living Room
-        target:
-          entity_id: vacuum.xiaomi_robot_vacuum_x20
-      - service: input_boolean.turn_on
-        target:
-          entity_id:
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_11  # Kitchen
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_14  # Lounge
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_13  # Front Hall
-            - input_boolean.xiaomi_robot_vacuum_x20_vacuuming_17  # Living Room
-      - service: input_text.set_value
-        data:
-          value: "17"  # Set to the last room (Living Room)
-        target:
-          entity_id: input_text.xiaomi_robot_vacuum_x20_last_room
