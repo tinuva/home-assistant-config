@@ -266,6 +266,27 @@ automation:
                   ac: "climate.midea_ac_32985348871179"
                   mode: "off"
 
+  - alias: "Turn off Main Bedroom AC display when phone charging at night"
+    description: "Turns off the AC display when phone is charging at night and AC is running"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.pixel_8_phone_charging
+        to: 'on'
+    condition:
+      - condition: state
+        entity_id: binary_sensor.pixel_8_phone_charging
+        state: 'on'
+      - condition: state
+        entity_id: sun.sun
+        state: 'below_horizon'
+      - condition: template
+        value_template: >-
+          {{ states('climate.midea_ac_30786325862093') not in ['off', 'unavailable', 'unknown', 'none'] }}
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.midea_ac_30786325862093_display
+
 script:
   ######################################################################
   # Re-usable script to change ac to silent fan in the am
