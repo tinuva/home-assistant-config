@@ -1,6 +1,6 @@
 """This script adds MQTT discovery support for Shellies Gen2+ devices."""
 
-VERSION = "3.9.4"
+VERSION = "3.10.0"
 
 ATTR_BATTERY_POWERED = "battery_powered"
 ATTR_BINARY_SENSORS = "binary_sensors"
@@ -69,6 +69,7 @@ DEVICE_CLASS_ENERGY = "energy"
 DEVICE_CLASS_FREQUENCY = "frequency"
 DEVICE_CLASS_HUMIDITY = "humidity"
 DEVICE_CLASS_ILLUMINANCE = "illuminance"
+DEVICE_CLASS_MOISTURE = "moisture"
 DEVICE_CLASS_MOTION = "motion"
 DEVICE_CLASS_POWER = "power"
 DEVICE_CLASS_POWER_FACTOR = "power_factor"
@@ -242,6 +243,7 @@ MODEL_BLU_GATEWAY_G3 = "shellyblugwg3"
 MODEL_EM_G3 = "shellyemg3"
 MODEL_HT_G3 = "shellyhtg3"
 MODEL_I4_G3 = "shellyi4g3"
+MODEL_OUTDOOR_PLUG_S_G3 = "shellyoutdoorsg3"
 MODEL_PLUG_S_G3 = "shellyplugsg3"
 MODEL_PM_MINI_G3 = "shellypmminig3"
 MODEL_DALI_DIMMER_G3 = "shellyddimmerg3"
@@ -255,6 +257,7 @@ MODEL_1PM_G4 = "shelly1pmg4"
 MODEL_1PM_MINI_G4 = "shelly1pmminig4"
 MODEL_2PM_G4 = "shelly2pmg4"
 MODEL_I4_G4 = "shellyi4g4"
+MODEL_FLOOD_G4 = "shellyfloodg4"
 # BLU devices
 MODEL_BLU_HT = "SBHT-003C"
 MODEL_BLU_MOTION = "SBMO-003Z"
@@ -265,6 +268,7 @@ NUMBER_BOOST_TIME = "boost_time"
 NUMBER_VALVE_POSITION = "valve_position"
 
 SENSOR_ACTIVE_POWER = "active_power"
+SENSOR_ALARM_SOUND = "alarm_sound"
 SENSOR_ANALOG_INPUT = "analog_input"
 SENSOR_ANALOG_VALUE = "analog_value"
 SENSOR_APPARENT_POWER = "apparent_power"
@@ -279,6 +283,7 @@ SENSOR_ENERGY = "energy"
 SENSOR_ETH_IP = "eth_ip"
 SENSOR_EXTERNAL_POWER = "external_power"
 SENSOR_FIRMWARE = "firmware"
+SENSOR_FLOOD = "flood"
 SENSOR_FREQUENCY = "frequency"
 SENSOR_HUMIDITY = "humidity"
 SENSOR_ILLUMINANCE = "illuminance"
@@ -375,6 +380,7 @@ TOPIC_STATUS_BTH_DEVICE = "~status/bthomedevice:{id}"
 TOPIC_STATUS_BTH_SENSOR = "~status/bthomesensor:{id}"
 TOPIC_STATUS_CLOUD = "~status/cloud"
 TOPIC_STATUS_DEVICE_POWER = "~status/devicepower:0"
+TOPIC_STATUS_FLOOD = "~status/flood:0"
 TOPIC_STATUS_PM1 = "~status/pm1:0"
 TOPIC_STATUS_CCT = "~status/cct:{id}"
 TOPIC_STATUS_RGB = "~status/rgb:{id}"
@@ -465,7 +471,8 @@ TPL_SET_BLU_TARGET_TEMPERATURE = "{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV
 TPL_SET_BLU_THERMOSTAT_MODE = "{{%set target=4 if value==^off^ else 21%}}{{{{{{^id^:1,^src^:^{source}^,^method^:^BluTRV.Call^,^params^:{{^id^:{thermostat},^method^:^TRV.SetTarget^,^params^:{{^id^:0,^target_C^:target}}}}}}|to_json}}}}"
 TPL_SET_TARGET_TEMPERATURE = "{{{{{{^id^:1,^src^:^{source}^,^method^:^Thermostat.SetConfig^,^params^:{{^config^:{{^id^:{thermostat},^target_C^:value}}}}}}|tojson}}}}"
 TPL_SET_THERMOSTAT_MODE = "{{%if value==^off^%}}{{%set enable=false%}}{{%else%}}{{%set enable=true%}}{{%endif%}}{{{{{{^id^:1,^src^:^{source}^,^method^:^Thermostat.SetConfig^,^params^:{{^config^:{{^id^:{thermostat},^enable^:enable}}}}}}|tojson}}}}"
-TPL_SMOKE = "{%if value_json.alarm%}ON{%else%}OFF{%endif%}"
+TPL_ALARM = "{%if value_json.alarm%}ON{%else%}OFF{%endif%}"
+TPL_MUTE = "{%if value_json.mute%}OFF{%else%}ON{%endif%}"
 TPL_TARGET_TEMPERATURE = "{{value_json.target_C}}"
 TPL_TEMPERATURE = "{{value_json.temperature.tC}}"
 TPL_TEMPERATURE_0 = "{{value_json[^temperature:0^].tC}}"
@@ -1403,7 +1410,28 @@ DESCRIPTION_SENSOR_SMOKE = {
     KEY_ENABLED_BY_DEFAULT: True,
     KEY_NAME: "Smoke",
     KEY_STATE_TOPIC: TOPIC_STATUS_SMOKE,
-    KEY_VALUE_TEMPLATE: TPL_SMOKE,
+    KEY_VALUE_TEMPLATE: TPL_ALARM,
+}
+DESCRIPTION_SENSOR_SMOKE_ALARM_SOUND = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Alarm sound",
+    KEY_STATE_TOPIC: TOPIC_STATUS_SMOKE,
+    KEY_VALUE_TEMPLATE: TPL_MUTE,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+}
+DESCRIPTION_SENSOR_FLOOD_ALARM_SOUND = {
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Alarm sound",
+    KEY_STATE_TOPIC: TOPIC_STATUS_FLOOD,
+    KEY_VALUE_TEMPLATE: TPL_MUTE,
+    KEY_ENTITY_CATEGORY: ENTITY_CATEGORY_DIAGNOSTIC,
+}
+DESCRIPTION_SENSOR_FLOOD = {
+    KEY_DEVICE_CLASS: DEVICE_CLASS_MOISTURE,
+    KEY_ENABLED_BY_DEFAULT: True,
+    KEY_NAME: "Flood",
+    KEY_STATE_TOPIC: TOPIC_STATUS_FLOOD,
+    KEY_VALUE_TEMPLATE: TPL_ALARM,
 }
 DESCRIPTION_SLEEPING_SENSOR_FIRMWARE = {
     KEY_DEVICE_CLASS: DEVICE_CLASS_UPDATE,
@@ -2604,6 +2632,39 @@ SUPPORTED_MODELS = {
         },
         ATTR_MIN_FIRMWARE_DATE: 20230803,
     },
+    MODEL_OUTDOOR_PLUG_S_G3: {
+        ATTR_NAME: "Shelly Outdoor Plug S Gen3",
+        ATTR_MODEL_ID: "S3PL-20112EU",
+        ATTR_GEN: 3,
+        ATTR_BINARY_SENSORS: {SENSOR_CLOUD: DESCRIPTION_SENSOR_CLOUD},
+        ATTR_BUTTONS: {BUTTON_RESTART: DESCRIPTION_BUTTON_RESTART},
+        ATTR_RELAYS: 1,
+        ATTR_RELAY_BINARY_SENSORS: {
+            SENSOR_OVERPOWER: DESCRIPTION_SENSOR_OVERPOWER,
+            SENSOR_OVERTEMP: DESCRIPTION_SENSOR_OVERTEMP,
+            SENSOR_OVERVOLTAGE: DESCRIPTION_SENSOR_OVERVOLTAGE,
+        },
+        ATTR_RELAY_SENSORS: {
+            SENSOR_CURRENT: DESCRIPTION_SENSOR_CURRENT,
+            SENSOR_ENERGY: DESCRIPTION_SENSOR_ENERGY,
+            SENSOR_FREQUENCY: DESCRIPTION_SENSOR_FREQUENCY,
+            SENSOR_POWER: DESCRIPTION_SENSOR_POWER,
+            SENSOR_RETURNED_ENERGY: DESCRIPTION_SENSOR_RETURNED_ENERGY,
+            SENSOR_TEMPERATURE: DESCRIPTION_SENSOR_RELAY_TEMPERATURE,
+            SENSOR_VOLTAGE: DESCRIPTION_SENSOR_VOLTAGE,
+        },
+        ATTR_SENSORS: {
+            SENSOR_LAST_RESTART: DESCRIPTION_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_UPDATES: {
+            UPDATE_FIRMWARE: DESCRIPTION_UPDATE_FIRMWARE,
+            UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20241128,
+    },
     MODEL_PLUG_S_G3: {
         ATTR_NAME: "Shelly Plug S Gen3",
         ATTR_MODEL_ID: "S3PL-00112EU",
@@ -2815,6 +2876,7 @@ SUPPORTED_MODELS = {
         ATTR_NAME: "Shelly Plus Smoke",
         ATTR_MODEL_ID: "SNSN-0031Z",
         ATTR_BINARY_SENSORS: {
+            SENSOR_ALARM_SOUND: DESCRIPTION_SENSOR_SMOKE_ALARM_SOUND,
             SENSOR_CLOUD: DESCRIPTION_SLEEPING_SENSOR_CLOUD,
             SENSOR_FIRMWARE: DESCRIPTION_SLEEPING_SENSOR_FIRMWARE,
             SENSOR_SMOKE: DESCRIPTION_SENSOR_SMOKE,
@@ -3452,6 +3514,26 @@ SUPPORTED_MODELS = {
             UPDATE_FIRMWARE_BETA: DESCRIPTION_UPDATE_FIRMWARE_BETA,
         },
         ATTR_MIN_FIRMWARE_DATE: 20240520,
+    },
+    MODEL_FLOOD_G4: {
+        ATTR_BATTERY_POWERED: True,
+        ATTR_NAME: "Shelly Flood Gen4",
+        ATTR_MODEL_ID: "S4SN-0071A",
+        ATTR_BINARY_SENSORS: {
+            SENSOR_ALARM_SOUND: DESCRIPTION_SENSOR_FLOOD_ALARM_SOUND,
+            SENSOR_CLOUD: DESCRIPTION_SLEEPING_SENSOR_CLOUD,
+            SENSOR_FIRMWARE: DESCRIPTION_SLEEPING_SENSOR_FIRMWARE,
+            SENSOR_FLOOD: DESCRIPTION_SENSOR_FLOOD,
+        },
+        ATTR_SENSORS: {
+            SENSOR_BATTERY: DESCRIPTION_SENSOR_BATTERY,
+            SENSOR_LAST_RESTART: DESCRIPTION_SLEEPING_SENSOR_LAST_RESTART,
+            SENSOR_SSID: DESCRIPTION_SLEEPING_SENSOR_SSID,
+            SENSOR_WIFI_IP: DESCRIPTION_SLEEPING_SENSOR_WIFI_IP,
+            SENSOR_WIFI_SIGNAL: DESCRIPTION_SLEEPING_SENSOR_WIFI_SIGNAL,
+        },
+        ATTR_MIN_FIRMWARE_DATE: 20250129,
+        ATTR_WAKEUP_PERIOD: 43200,
     },
 }
 
@@ -4601,7 +4683,13 @@ else:
             KEY_PAYLOAD_NOT_AVAILABLE: "false",
         }
     ]
-    if model not in (MODEL_PLUS_HT, MODEL_PLUS_SMOKE, MODEL_WALL_DISPLAY):
+    if model not in (
+        MODEL_FLOOD_G4,
+        MODEL_HT_G3,
+        MODEL_PLUS_HT,
+        MODEL_PLUS_SMOKE,
+        MODEL_WALL_DISPLAY,
+    ):
         availability.append(
             {
                 KEY_TOPIC: TOPIC_STATUS_RPC,
@@ -4805,7 +4893,14 @@ else:
     firmware_id = device_config["sys"]["device"][ATTR_FW_ID]
 
     if (
-        model not in (MODEL_HT_G3, MODEL_PLUS_HT, MODEL_PLUS_SMOKE, MODEL_WALL_DISPLAY)
+        model
+        not in (
+            MODEL_FLOOD_G4,
+            MODEL_HT_G3,
+            MODEL_PLUS_HT,
+            MODEL_PLUS_SMOKE,
+            MODEL_WALL_DISPLAY,
+        )
         and not current_script_installed()
     ):
         device_topic = encode_config_topic(f"{default_topic}rpc")
