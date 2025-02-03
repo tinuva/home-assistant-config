@@ -339,8 +339,8 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:file",
         value_fn=lambda self: self.coordinator.get_model().print_job.print_length,
-        extra_attributes=lambda self: self.coordinator.get_model().print_job.get_ams_print_lengths,
-        exists_fn=lambda coordinator: coordinator.get_model().info.has_bambu_cloud_connection
+        extra_attributes=lambda self: self.coordinator.get_model().print_job.get_print_lengths,
+        exists_fn=lambda coordinator: coordinator.get_model().info.has_bambu_cloud_connection or coordinator.client.ftp_enabled
     ),
     BambuLabSensorEntityDescription(
         key="print_bed_type",
@@ -357,8 +357,8 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         state_class=SensorStateClass.MEASUREMENT,
         icon="mdi:file",
         value_fn=lambda self: self.coordinator.get_model().print_job.print_weight,
-        extra_attributes=lambda self: self.coordinator.get_model().print_job.get_ams_print_weights,
-        exists_fn=lambda coordinator: coordinator.get_model().info.has_bambu_cloud_connection
+        extra_attributes=lambda self: self.coordinator.get_model().print_job.get_print_weights,
+        exists_fn=lambda coordinator: coordinator.get_model().info.has_bambu_cloud_connection or coordinator.client.ftp_enabled
     ),
     BambuLabSensorEntityDescription(
         key="active_tray",
@@ -393,6 +393,12 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="nozzle_type",
         icon="mdi:printer-3d-nozzle",
         value_fn=lambda self: self.coordinator.get_model().info.nozzle_type
+    ),
+    BambuLabSensorEntityDescription(
+        key="ip_address",
+        translation_key="ip_address",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda self: self.coordinator.get_model().info.ip_address
     ),
 )
 

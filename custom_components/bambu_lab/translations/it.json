@@ -32,13 +32,13 @@
     },
     "step": {
       "user": {
-        "description": "La configurazione tramite Bambu Cloud è la più semplice. Facoltativamente, puoi configurare manualmente l'accesso solo locale, ma perderai alcune funzionalità: è necessario per le stampanti impostate sulla modalità Solo Lan.\n\rSe esistono e funzionano, puoi anche riutilizzare le credenziali di autenticazione esistenti da altre stampanti configurate.\n \rTieni presente che gli account di social media senza password non supportano la configurazione cloud.",
+        "description": "La configurazione tramite cloud Bambu Lab è la più semplice e veloce. Gli account di social media senza password non sono supportati.\n\rÈ inoltre possibile riutilizzare le credenziali di autenticazione funzionanti di altre stampanti. Se trovati, verranno elencati in base all'indirizzo e-mail.\n\rOppure è possibile connettersi fornendo manualmente i dettagli della connessione locale della stampante. Ciò è necessario per una stampante in modalità Lan.",
         "data": {
           "printer_mode": "Modalità di configurazione della stampante:"
         }
       },
       "Bambu": {
-        "title": "Connessione al cloud Bambu",
+        "title": "Connessione cloud Bambu Lab",
         "description": "Fornisci le tue credenziali Bambu Lab:",
         "data": {
           "region": "Area dell'account:",
@@ -51,14 +51,13 @@
       },
       "Bambu_Choose_Device": {
         "title": "Selezione della stampante",
-        "description": "Scegli la stampante che desideri aggiungere.",
         "data": {
           "serial": "Scegli la stampante da aggiungere:"
         }
       },
       "Bambu_Lan": {
         "title": "Configura la connessione locale",
-        "description": "Facoltativamente, è possibile specificare l'indirizzo IP locale e il codice di accesso della stampante. Questa operazione è necessaria per accedere alla fotocamera su P1/A1. O per potersi connettere direttamente alla stampante invece che tramite Bambu Cloud.",
+        "description": "Puoi scegliere di connetterti direttamente alla stampante per gli aggiornamenti di stato anziché tramite il cloud Bambu Lab. Ciò ti offre resilienza alle interruzioni del cloud di Bambu Lab, ma Bambu Lab ha limitato il controllo della stampante quando si trova in questa modalità ibrida, quindi alcuni controlli non saranno disponibili.",
         "data": {
           "local_mqtt": "Connettiti direttamente alla stampante invece che tramite Bambu Cloud:",
           "host": "Indirizzo IP locale della stampante:",
@@ -98,13 +97,13 @@
     "step": {
       "init": {
         "title": "Regolare le impostazioni di connessione",
-        "description": "La configurazione tramite Bambu Cloud è la più semplice. Facoltativamente, puoi configurare manualmente l'accesso solo locale, ma perderai alcune funzionalità: è necessario per le stampanti impostate sulla modalità Solo Lan.\n\rSe esistono e funzionano, puoi anche riutilizzare le credenziali di autenticazione esistenti da altre stampanti configurate.\n \rTieni presente che gli account di social media senza password non supportano la configurazione cloud.",
+        "description": "La configurazione tramite cloud Bambu Lab è la più semplice e veloce. Gli account di social media senza password non sono supportati.\n\rÈ inoltre possibile riutilizzare le credenziali di autenticazione funzionanti di altre stampanti. Se trovati, verranno elencati in base all'indirizzo e-mail.\n\rOppure è possibile connettersi fornendo manualmente i dettagli della connessione locale della stampante. Ciò è necessario per una stampante in modalità Lan.",
         "data": {
           "printer_mode": "Modalità di configurazione della stampante:"
         }
       },
       "Bambu": {
-        "title": "Connessione al cloud Bambu",
+        "title": "Connessione cloud Bambu Lab",
         "description": "Fornisci le tue credenziali Bambu Lab:",
         "data": {
           "region": "Area dell'account:",
@@ -117,12 +116,12 @@
       },
       "Bambu_Lan": {
         "title": "Regolare la configurazione della stampante",
-        "description": "Facoltativamente, è possibile specificare l'indirizzo IP locale e il codice di accesso della stampante. Questa operazione è necessaria per accedere alla fotocamera su P1/A1. O per potersi connettere direttamente alla stampante invece che tramite Bambu Cloud.",
+        "description": "Puoi scegliere di connetterti direttamente alla stampante per gli aggiornamenti di stato anziché tramite il cloud Bambu Lab. Ciò ti offre resilienza alle interruzioni del cloud di Bambu Lab, ma Bambu Lab ha limitato il controllo della stampante quando si trova in questa modalità ibrida, quindi alcuni controlli non saranno disponibili.",
         "data": {
-          "serial": "Scegli la stampante da aggiungere:",
+          "serial": "Regola le impostazioni per:",
           "host": "Indirizzo IP della stampante:",
           "access_code": "Codice di accesso:",
-          "local_mqtt": "Connettiti direttamente alla stampante invece che tramite Bambu Cloud:",
+          "local_mqtt": "Connettiti direttamente alla stampante anziché al cloud Bambu Lab:",
           "usage_hours": "Orari di utilizzo attuali (facoltativo):"
         }
       },
@@ -169,7 +168,7 @@
         "name": "Interrompi Stampa"
       },
       "refresh": {
-        "name": "Forza Aggiornamento Dati"
+        "name": "Forza l'aggiornamento dei dati"
       }
     },
     "fan": {
@@ -329,7 +328,7 @@
         "name": "Modalità di Connessione MQTT",
         "state": {
           "local": "Locale",
-          "bambu_cloud": "Bambu Cloud"
+          "bambu_cloud": "La nuvola di Bambu Lab"
         }
       },
       "gcode_file": {
@@ -569,6 +568,9 @@
             "name": "Tipo"
           }
         }
+      },
+      "ip_address": {
+        "name": "Indirizzo IP"
       }
     },
     "camera": {
@@ -588,14 +590,17 @@
       },
       "prompt_sound": {
         "name": "Consenti suono rapido"
+      },
+      "ftp": {
+        "name": "Carica i dati del modello dalla stampante"
       }
     }
   },
   "selector": {
     "configuration_type": {
       "options": {
-        "bambu": "Nuvola di bambù",
-        "lan": "Connessione locale"
+        "bambu": "La nuvola di Bambu Lab",
+        "lan": "Modalità Lan"
       }
     }
   }

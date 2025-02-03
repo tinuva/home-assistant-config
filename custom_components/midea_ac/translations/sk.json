@@ -9,10 +9,14 @@
         }
       },
       "discover": {
+        "description": "Ak chcete zistiť zariadenia v sieti, nechajte hostiteľa prázdne.",
         "data": {
-          "host": "Host"
+          "host": "Host",
+          "country_code": "Cloud región"
         },
-        "description": "Ak chcete zistiť zariadenia v sieti, nechajte hostiteľa prázdne."
+        "data_description":{
+          "country_code": "Vyberte krajinu, ktorá je najbližšie k vašej polohe."
+        }
       },
       "manual": {
         "description": "Zadajte informácie o svojom zariadení.",
@@ -59,6 +63,15 @@
           "additional_operation_modes": "Zadajte ďalšie prevádzkové režimy",
           "max_connection_lifetime": "Maximálny čas v sekundách, počas ktorého sa bude používať pripojenie (minimálne 30 sekúnd)"
         }
+      }
+    }
+  },
+  "selector": {
+    "energy_format": {
+      "options": {
+        "default": "Predvolené",
+        "alternate_a": "Alternatíva A",
+        "alternate_b": "Alternatíva B"
       }
     }
   },

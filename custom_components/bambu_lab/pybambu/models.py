@@ -1,9 +1,14 @@
+import asyncio
 import math
+import re
 
 from dataclasses import dataclass, field
 from datetime import datetime
 from dateutil import parser, tz
 from packaging import version
+from zipfile import ZipFile
+import tempfile
+import xml.etree.ElementTree as ElementTree
 
 from .utils import (
     search,
@@ -11,6 +16,7 @@ from .utils import (
     fan_percentage_to_gcode,
     get_current_stage,
     get_filament_name,
+    get_ip_address_from_int,
     get_printer_type,
     get_speed_name,
     get_hw_version,
@@ -130,7 +136,7 @@ class Device:
         elif feature == Features.CAMERA_RTSP:
             return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E"
         elif feature == Features.CAMERA_IMAGE:
-            return (self._client.host != "") and (self._client._access_code != "") and (self.info.device_type == "P1P" or self.info.device_type == "P1S" or self.info.device_type == "A1" or self.info.device_type == "A1MINI")
+            return self.info.device_type == "P1P" or self.info.device_type == "P1S" or self.info.device_type == "A1" or self.info.device_type == "A1MINI"
         elif feature == Features.DOOR_SENSOR:
             return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E"
         elif feature == Features.MANUAL_MODE:
@@ -142,6 +148,8 @@ class Device:
             return self._supports_temperature_set()
         elif feature == Features.PROMPT_SOUND:
             return self.info.device_type == "A1" or self.info.device_type == "A1MINI"
+        elif feature == Features.FTP:
+            return False
 
         return False
     
@@ -156,6 +164,16 @@ class Device:
             return None if active_ams is None else active_ams.tray[active_tray]
         else:
             return self.external_spool
+
+    @property
+    def is_external_spool_active(self) -> bool:
+        if self.supports_feature(Features.AMS):
+            if self.ams.tray_now == 254:
+                return True
+        else:
+            return True
+        return False
+
 
 @dataclass
 class Lights:
@@ -414,19 +432,29 @@ class PrintJob:
     _ams_print_lengths: float
 
     @property
-    def get_ams_print_weights(self) -> float:
+    def get_print_weights(self) -> dict:
         values = {}
-        for i in range(16):
-            if self._ams_print_weights[i] != 0:
-                values[f"AMS Slot {i+1}"] = self._ams_print_weights[i]
+        if self._client._device.is_external_spool_active:
+            values["External Spool"] = self.print_weight
+        else:
+            for i in range(16):
+                if self._ams_print_weights[i] != 0:
+                    ams_index = (i // 4) + 1
+                    ams_tray = (i % 4) + 1
+                    values[f"AMS {ams_index} Tray {ams_tray}"] = self._ams_print_weights[i]
         return values
 
     @property
-    def get_ams_print_lengths(self) -> float:
+    def get_print_lengths(self) -> dict:
         values = {}
-        for i in range(16):
-            if self._ams_print_lengths[i] != 0:
-                values[f"AMS Slot {i+1}"] = self._ams_print_lengths[i]
+        if self._client._device.is_external_spool_active:
+            values["External Spool"] = self.print_length
+        else:
+            for i in range(16):
+                if self._ams_print_lengths[i] != 0:
+                    ams_index = (i // 4) + 1
+                    ams_tray = (i % 4) + 1
+                    values[f"AMS {ams_index} Tray {ams_tray}"] = self._ams_print_lengths[i]
         return values
 
     def __init__(self, client):
@@ -492,7 +520,7 @@ class PrintJob:
 
         # Initialize task data at startup.
         if previous_gcode_state == "unknown" and self.gcode_state != "unknown":
-            self._update_task_data()
+            self._update_task_data(True)
 
         # Calculate start / end time after we update task data so we don't stomp on prepopulated values while idle on integration start.
         if data.get("gcode_start_time") is not None:
@@ -606,8 +634,143 @@ class PrintJob:
     #     "bedType": "textured_plate"
     #     },
 
-    def _update_task_data(self):
-        if self._client.bambu_cloud.auth_token != "":
+    def _find_model_path(self, ftp):
+        if self.gcode_file != '':
+            # Attempt to find the model in one of many known directories
+            for search_path in ['/', '/cache', '/models', '/sdcard']:
+                try:
+                    path_contents = ftp.nlst(f"{search_path}")
+                    if self.gcode_file in path_contents:
+                        model_path = f"{search_path}/{self.gcode_file}"
+                        LOGGER.debug(f"Found model {model_path}")
+                        return model_path
+                except:
+                    pass
+        else:
+            # Look for the newest 3mf file in the /cache directory.
+            LOGGER.debug("Looking for newest 3md model file in /cache")
+            file_list = []
+            def parse_line(line):
+                # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 12:34 filename'
+                pattern_with_time_no_year      = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+:\d+)\s+(.+)$'
+                # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 2024 filename'
+                pattern_without_time_just_year = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+)\s+(.+)$'
+                match = re.match(pattern_with_time_no_year, line)
+                if match:
+                    timestamp_str, filename = match.groups()
+                    if filename.endswith('.3mf'):
+                        # Since these dates don't have the year we have to work it out. If the date is earlier in 
+                        # the year than now then it's this year. If it's later it's last year.
+                        timestamp = datetime.strptime(timestamp_str, '%b %d %H:%M')
+                        timestamp = timestamp.replace(year=datetime.now().year)
+                        if timestamp > datetime.now():
+                            timestamp = timestamp.replace(year=datetime.now().year - 1)
+                        return timestamp, filename
+                    else:
+                        return None
+
+                match = re.match(pattern_without_time_just_year, line)
+                if match:
+                    timestamp_str, filename = match.groups()
+                    if filename.endswith('.3mf'):
+                        timestamp = datetime.strptime(timestamp_str, '%b %d %Y')
+                        return timestamp, filename
+                    else:
+                        return None
+                
+                LOGGER.debug(f"UNEXPECTED LIST LINE FORMAT: '{line}'")
+                return None
+
+            # Attempt to find the model in one of many known directories
+            ftp.retrlines(f"LIST /Cache", lambda line: file_list.append(file) if (file := parse_line(line)) is not None else None)
+            files = sorted(file_list, key=lambda file: file[0], reverse=True)
+            for file in files:
+                if file[1].endswith('.3mf'):
+                    model_path = f"/cache/{file[1]}"
+                    LOGGER.debug(f"Found model {model_path}")
+                    return model_path
+
+        LOGGER.debug(f"Model '{self.gcode_file}' count not be found in any known directories")
+        return None
+
+    def _download_task_data_from_printer(self):
+        LOGGER.debug(f"Updating task data via FTP: {datetime.now()}")
+
+        # Open the FTP connection
+        ftp = self._client.ftp_connection()
+        model_path = self._find_model_path(ftp)
+
+        # Create a temporary file we can download the 3mf into
+        with tempfile.NamedTemporaryFile(delete=True) as f:
+            # Fetch the 3mf from FTP and close the connection
+            LOGGER.debug(f"Downloading {model_path}")
+            ftp.retrbinary(f'RETR {model_path}', f.write)
+            f.flush()
+            ftp.quit()
+
+            # Open the 3mf zip archive
+            with ZipFile(f) as archive:
+                # Extract the slicer XML config and parse the plate tree
+                plate = ElementTree.fromstring(archive.read('Metadata/slice_info.config')).find('plate')
+                
+                # Iterate through each config element and extract the data
+                # Example contents:
+                # {'key': 'index', 'value': '2'}
+                # {'key': 'printer_model_id', 'value': 'C12'}
+                # {'key': 'nozzle_diameters', 'value': '0.4'}
+                # {'key': 'timelapse_type', 'value': '0'}
+                # {'key': 'prediction', 'value': '5935'}
+                # {'key': 'weight', 'value': '20.91'}
+                # {'key': 'outside', 'value': 'false'}
+                # {'key': 'support_used', 'value': 'false'}
+                # {'key': 'label_object_enabled', 'value': 'true'}
+                # {'identify_id': '123', 'name': 'ModelObjectOne.stl', 'skipped': 'false'}
+                # {'identify_id': '394', 'name': 'ModelObjectTwo.stl', 'skipped': 'false'}
+                # {'id': '1', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#000000', 'used_m': '5.45', 'used_g': '17.32'}
+                # {'id': '2', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#8D8C8F', 'used_m': '0.84', 'used_g': '2.66'}
+                # {'id': '3', 'tray_info_idx': 'GFA01', 'type': 'PLA', 'color': '#FFFFFF', 'used_m': '0.29', 'used_g': '0.93'}
+                
+                # Start a total print length count to be compiled from each filament
+                print_length = 0
+                for metadata in plate:
+                    if (metadata.get('key') == 'index'):
+                        # Index is the plate number being printed
+                        plate = metadata.get('value')
+                        LOGGER.debug(f"Plate: {plate}")
+                        
+                        # Now we have the plate number, extract the cover image from the archive
+                        self._client._device.cover_image.set_jpeg(archive.read(f"Metadata/plate_{plate}.png"))
+                        LOGGER.debug(f"Cover image: Metadata/plate_{plate}.png")
+                    elif (metadata.get('key') == 'weight'):
+                        LOGGER.debug(f"Weight: {metadata.get('value')}")
+                        self.print_weight = metadata.get('value')
+                    elif (metadata.get('key') == 'prediction'):
+                        # Estimated print length in seconds
+                        LOGGER.debug(f"Print time: {metadata.get('value')}s")
+                    elif (metadata.tag == 'filament'):
+                        # Filament used for the current print job. The plate info does not distinguish
+                        # between AMS and External Spool, both AMS Tray 1 and External Spool have
+                        # an ID of 1
+                        LOGGER.debug(f"AMS Tray {metadata.get('id')}: {metadata.get('used_m')}m | {metadata.get('used_g')}g")
+                        
+                        # Print weights and lengths expect zero-indexed allocation, reduce the ID by 1
+                        ams_index = int(metadata.get('id')) - 1
+                        self._ams_print_weights[ams_index] = metadata.get('used_g')
+                        self._ams_print_lengths[ams_index] = metadata.get('used_m')
+                        
+                        # Increase the total print length
+                        print_length += float(metadata.get('used_m'))
+                
+                self.print_length = print_length
+
+            archive.close()
+
+        LOGGER.debug(f"Done updating task data via FTP: {datetime.now()}")
+
+    def _update_task_data(self, boot = False):
+        if not boot and self._client.ftp_enabled:
+            self._download_task_data_from_printer()
+        elif self._client.bambu_cloud.auth_token != "":
             self._task_data = self._client.bambu_cloud.get_latest_task_for_printer(self._client._serial)
             if self._task_data is None:
                 LOGGER.debug("No bambu cloud task data found for printer.")
@@ -682,6 +845,7 @@ class Info:
     nozzle_diameter: float
     nozzle_type: str
     usage_hours: float
+    _ip_address: str
 
     def __init__(self, client):
         self._client = client
@@ -697,6 +861,7 @@ class Info:
         self.nozzle_diameter = 0
         self.nozzle_type = "unknown"
         self.usage_hours = client._usage_hours
+        self._ip_address = client.host
 
     def set_online(self, online):
         if self.online != online:
@@ -756,6 +921,33 @@ class Info:
 
         self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
 
+        # "print": {
+        #   "net": {
+        #     "conf": 16,
+        #     "info": [
+        #       {
+        #         "ip": 1594493450,
+        #         "mask": 16777215
+        #       },
+        #       {
+        #         "ip": 0,
+        #         "mask": 0
+        #       }
+        #     ]
+        #   },
+
+        info = data.get('net', {}).get('info', [])
+        for net in info:
+            ip_int = net.get("ip", 0)
+            if ip_int != 0:
+                prev_ip_address = self._ip_address
+                self._ip_address = get_ip_address_from_int(ip_int)
+                if self._ip_address != prev_ip_address:
+                    # IP address was retrieved from the initial mqtt payload or has changed.
+                    self._client.stop_camera()
+                    self._client.start_camera()                    
+                break
+
         # Version data is provided differently for X1 and P1
         # P1P example:
         # "upgrade_state": {
@@ -813,11 +1005,17 @@ class Info:
         self.nozzle_diameter = float(data.get("nozzle_diameter", self.nozzle_diameter))
         self.nozzle_type = data.get("nozzle_type", self.nozzle_type)
 
+        #
+
         return (old_data != f"{self.__dict__}")
 
     @property
     def has_bambu_cloud_connection(self) -> bool:
         return self._client.bambu_cloud.auth_token != ""
+    
+    @property
+    def ip_address(self) -> str:
+        return self._ip_address
     
     def set_prompt_sound(self, enable: bool):
         if enable:
@@ -1350,7 +1548,7 @@ class ChamberImage:
     
 @dataclass
 class CoverImage:
-    """Returns the cover image from the Bambu API"""
+    """Returns the cover image from the Bambu API or FTP"""
 
     def __init__(self, client):
         self._client = client

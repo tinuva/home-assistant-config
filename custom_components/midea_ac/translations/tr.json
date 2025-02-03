@@ -1,0 +1,214 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "description": "Cihazın nasıl ekleneceğini seçin.",
+        "menu_options": {
+          "discover": "Cihaz bul",
+          "manual": "Manuel yapılandır"
+        }
+      },
+      "discover": {
+        "description": "Cihazı ağ üzerinden bulmak için sunucu kısmını boş bırakın.",
+        "data": {
+          "host": "Sunucu",
+          "country_code": "Sunucu Bölgesi"
+        },
+        "data_description":{
+          "country_code": "Konumunuza en yakın ülkeyi seçin."
+        }
+      },
+      "manual": {
+        "description": "Cihazının için bilgileri girin.",
+        "data": {
+          "id": "ID",
+          "host": "Sunucu",
+          "port": "Port",
+          "token": "Token",
+          "k1": "Key"
+        },
+        "data_description": {
+          "token": "V3 cihazları için Token",
+          "k1": "V3 cihazları için Key"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Cihaz zaten yapılandırılmış.",
+      "cannot_connect": "Bağlantı kurulamadı.",
+      "no_devices_found": "Ağda desteklenen bir cihaz bulunamadı."
+    },
+    "error": {
+      "cannot_connect": "Bu ayarlar ile bir bağlantı kurulamadı.",
+      "device_not_found": "Cihaz ağda bulunamadı.",
+      "unsupported_device": "Cihaz desteklenmiyor."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "prompt_tone": "Bip Sesini Etkinleştir",
+          "temp_step": "Sıcaklık Adımı",
+          "fan_speed_step": "Fan Hızı Adımı",
+          "use_fan_only_workaround": "Sadece Fan Modu Kullan",
+          "show_all_presets": "Tüm Ön Tanımları Göster",
+          "additional_operation_modes": "Ek Çalışma Modları",
+          "max_connection_lifetime": "Maksimum Bağlantısı Süresi",
+          "energy_format": "Enerji Formatı"
+        },
+        "data_description": {
+          "temp_step": "Sıcaklık ayar noktası için adım boyutu",
+          "fan_speed_step": "Özel fan hızı için adım boyutu",
+          "additional_operation_modes": "Ek çalışma modlarını belirle",
+          "max_connection_lifetime": "Bir bağlantının maksimum kullanacağı süre (minimum 30 saniye)"
+        }
+      }
+    }
+  },
+  "selector": {
+    "energy_format": {
+      "options": {
+        "default": "Varsayılan",
+        "alternate_a": "Alternatif A",
+        "alternate_b": "Alternatif B"
+      }
+    }
+  },
+  "services": {
+    "set_follow_me": {
+      "name": "Beni takip et ayarı",
+      "description": "Beni takip et fonksiyonunu ayarla.",
+      "fields": {
+        "enabled": {
+          "name": "Etkin",
+          "description": "Beni takip et özelliğinin etkin olup olmayacağını belirler."
+        }
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "midea_ac": {
+        "state_attributes": {
+          "fan_mode": {
+            "state": {
+              "silent": "Sessiz",
+              "low": "Düşük",
+              "medium": "Orta",
+              "high": "Yüksek",
+              "max": "Maksimum",
+              "auto": "Otomatik",
+              "custom": "Özel"
+            }
+          },
+          "preset_mode": {
+            "state": {
+              "ieco": "iECO"
+            }
+          },
+          "swing_mode": {
+            "state": {
+              "off": "Kapalı",
+              "vertical": "Dikey",
+              "horizontal": "Yatay",
+              "both": "İkisi"
+            }
+          }
+        }
+      }
+    },
+    "binary_sensor": {
+      "filter_alert": {
+        "name": "Filtre uyarısı"
+      },
+      "self_clean": {
+        "name": "Kendini temizle"
+      }
+    },
+    "button": {
+      "self_clean": {
+        "name": "Kendini temizlemeyi başlat"
+      }
+    },
+    "number": {
+      "fan_speed": {
+        "name": "Fan hızı"
+      }
+    },
+    "select": {
+      "horizontal_swing_angle": {
+        "name": "Yatay salınım açısı",
+        "state": {
+          "off": "Kapalı",
+          "pos_1": "Sol",
+          "pos_2": "Sol-orta",
+          "pos_3": "Orta",
+          "pos_4": "Sağ-orta",
+          "pos_5": "Sağ"
+        }
+      },
+      "rate_select": {
+        "name": "Oran seç",
+        "state": {
+          "off": "Kapalı",
+          "gear_75": "75%",
+          "gear_50": "50%",
+          "level_5": "Seviye 5",
+          "level_4": "Seviye 4",
+          "level_3": "Seviye 3",
+          "level_2": "Seviye 2",
+          "level_1": "Seviye 1"
+        }
+      },
+      "vertical_swing_angle": {
+        "name": "Dikey salınım açısı",
+        "state": {
+          "off": "Kapalı",
+          "pos_1": "Üst",
+          "pos_2": "Üst-orta",
+          "pos_3": "Orta",
+          "pos_4": "Alt-orta",
+          "pos_5": "Alt"
+        }
+      }
+    },
+    "sensor": {
+      "current_energy_usage": {
+        "name": "Anlık güç"
+      },
+      "indoor_humidity": {
+        "name": "İç nem"
+      },
+      "indoor_temperature": {
+        "name": "İç sıcaklık"
+      },
+      "outdoor_temperature": {
+        "name": "Dış sıcaklık"
+      },
+      "real_time_power_usage": {
+        "name": "Güç"
+      },
+      "total_energy_usage": {
+        "name": "Toplam enerji tüketimi"
+      }
+    },
+    "switch": {
+      "breeze_away": {
+        "name": "Esintiyi yay"
+      },
+      "breeze_mild": {
+        "name": "Hafif esinti"
+      },
+      "breezeless": {
+        "name": "Esintisiz"
+      },
+      "display": {
+        "name": "Gösterge"
+      },
+      "purifier": {
+        "name": "Temizleyici"
+      }
+    }
+  }
+}
