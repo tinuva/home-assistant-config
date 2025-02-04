@@ -51,7 +51,7 @@ automation:
                     - "14"  # Lounge
                     - "13"  # Front Hall
                     - "17"  # Living Room
-          
+
           # Morning cleaning routine
           ## Monday & Friday
           - conditions:
