@@ -7,8 +7,6 @@ script:
   ######################################################################
   # - service: script.log
   #   data:
-  #     icon: ':robot_face:'            # optional
-  #     object: 'Vacuum Robot'          # required
   #     message: 'The robot is stuck'   # required
   #     target: 'logs'                  # optional - default 'logs'
   ######################################################################
@@ -25,13 +23,6 @@ script:
             {% endif %}
           message: '{{ message }}'
           data:
-            icon: >
-              {% if icon is defined %}
-                {{ icon }}
-              {% else %}
-                :house:
-              {% endif %}
-            username: '{{ object }}'
             blocks_template:
               - type: section
                 text:
@@ -45,8 +36,6 @@ script:
   ######################################################################
   # - service: script.alert
   #   data:
-  #     icon: ':robot_face:'            # optional
-  #     object: 'Vacuum Robot'          # required
   #     message: 'The robot is stuck'   # required
   #     target: 'alerts'                # optional - default 'alerts'
   ######################################################################
@@ -59,12 +48,6 @@ script:
               ["#{{ target }}"]
             {% else %}
               ["#alerts"]
-            {% endif %}
-          icon: >
-            {% if icon is defined %}
-              {{ icon }}
-            {% else %}
-              :house:
             {% endif %}
           cam: >
             {% if camera is defined %}
@@ -81,34 +64,24 @@ script:
             sequence:
               - service: camera.snapshot
                 data:
-                  filename: "/config/www/cam_captures/script_log.jpg"
+                  filename: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
                 target:
                   entity_id: "{{ cam }}"
               - service: notify.bezuidenhouts
                 data:
                   message: '{{ message }}'
                   target: '{{ target }}'
+                  title: '{{ cam  }}'
                   data:
-                    icon: "{{ icon }}"
-                    username: '{{ object }}'
-              - service: notify.bezuidenhouts
-                data:
-                  message: ''
-                  target: '{{ target }}'
-                  data:
-                    #icon: "{{ icon }}"
-                    #username: '{{ object }}'
                     file:
-                      path: "/config/www/cam_captures/script_log.jpg"
-                      ### path is now required as of 0.113.0 see https://github.com/home-assistant/home-assistant.io/pull/13860/files
+                      path: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
+
         default:
           - service: notify.bezuidenhouts
             data_template:
               target: "{{ target }}"
               message: '{{ message }}'
               data:
-                icon: "{{ icon }}"
-                username: '{{ object }}'
                 blocks_template:
                   - type: section
                     text:
@@ -122,8 +95,6 @@ script:
   ######################################################################
   # - service: script.alert
   #   data:
-  #     icon: ':robot_face:'            # optional
-  #     object: 'Vacuum Robot'          # required
   #     message: 'The robot is stuck'   # required
   #     target: 'alerts'                # optional - default 'alerts'
   ######################################################################
@@ -132,13 +103,6 @@ script:
     sequence:
       - service: script.alert
         data:
-          icon: >
-            {% if icon is defined %}
-              {{ icon }}
-            {% else %}
-              :house:
-            {% endif %}
-          object: '{{ object }}'
           target: >
             {% if target is defined %}
               {{ target }}

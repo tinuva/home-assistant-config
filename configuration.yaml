@@ -12,6 +12,8 @@ homeassistant:
   name: Home
   allowlist_external_dirs: # changed from whitelist_external_dirs to allowlist_external_dirs in 0.113.0
     - /config/
+  allowlist_external_urls:
+    - https://ha.heaven.za.net
   #customize: !include includes/customize.yaml
 default_config:
 frontend:

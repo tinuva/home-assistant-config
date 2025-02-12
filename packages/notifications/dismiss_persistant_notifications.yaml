@@ -73,13 +73,13 @@ automation:
             Persistent notification dismissed. {{now()}}
             {{ trigger.event.as_dict()['data']}}
           level: warning
-      - service: script.log
-        data:
-          object: 'persistent_notification'
-          message: >
-            Persistent notification dismissed. {{now()}}
-            {{ trigger.event.as_dict()['data']}}
-          target: 'alerts-david'
+      # - service: script.log
+      #   data:
+      #     object: 'persistent_notification'
+      #     message: >
+      #       Persistent notification dismissed. {{now()}}
+      #       {{ trigger.event.as_dict()['data']}}
+      #     target: 'alerts-david'
 
   - alias: 'persistent notification log and dismiss invalid config'
     trigger:

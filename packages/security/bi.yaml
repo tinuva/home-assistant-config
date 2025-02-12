@@ -77,23 +77,33 @@ automation:
         value_template: >
           {{ should_notify }}
     action:
-      - service: notify.bezuidenhouts
+      - service: script.alert
         data:
-          target: '#alerts-camera'
+          target: 'alerts-camera'
+          camera: >-
+            {{ cam_entity + cam }}
           message: >-
-            Motion on {{ cam_name }} camera at {{ img_time }} {{- '\n' -}}
-            Type: {{ ai_object }} Confidence: {{ ai_confidence }}
-          title: Camera Alert
-          data:
-            blocks:
-              - type: section
-                text:
-                  type: mrkdwn
-                  text: >-
-                    Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
-                    *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
-                    <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
-                    <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
-              - type: image
-                image_url: https://ha.heaven.za.net{{ state_attr( cam_entity + cam , "entity_picture") }}
-                alt_text: Image preview
+            Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+            *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+            <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+            <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+      # - service: notify.bezuidenhouts
+      #   data:
+      #     target: '#alerts-camera'
+      #     message: >-
+      #       Motion on {{ cam_name }} camera at {{ img_time }} {{- '\n' -}}
+      #       Type: {{ ai_object }} Confidence: {{ ai_confidence }}
+      #     title: Camera Alert
+      #     data:
+      #       blocks:
+      #         - type: section
+      #           text:
+      #             type: mrkdwn
+      #             text: >-
+      #               Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+      #               *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+      #               <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+      #               <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+      #         - type: image
+      #           image_url: https://ha.heaven.za.net{{ state_attr( cam_entity + cam , "entity_picture") }}
+      #           alt_text: Image preview

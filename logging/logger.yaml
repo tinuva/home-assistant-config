@@ -49,7 +49,8 @@ logs:
   # homeassistant.components.light: warn
   # homeassistant.components.media_player: debug
   # homeassistant.components.mqtt: debug
-  # homeassistant.components.notify: error
+  homeassistant.components.notify: warn
+  homeassistant.components.slack.notify: debug
   # homeassistant.components.python_script: debug
   homeassistant.components.rest: debug
   homeassistant.components.sensor: fatal
@@ -74,3 +75,5 @@ logs:
   aiohttp.server: fatal
   pychromecast.socket_client: fatal
   plexwebsocket: fatal
+
+  homeassistant.components.python_script.shellies_discovery.py: fatal
