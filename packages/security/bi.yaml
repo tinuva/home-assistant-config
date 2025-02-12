@@ -8,9 +8,6 @@ mqtt:
       unique_id: camera.cam_alert_frontg
       object_id: cam_alert_frontg
       image_encoding: b64
-      json_attributes_topic: 
-      json_attributes_topic: BI/frontg/status
-      json_attributes_template: '{{ value_json | tojson }}'
 
     - topic: BI/back/alert-image-b64
       name: Cam Alert Back
@@ -26,8 +23,6 @@ mqtt:
       object_id: cam_alert_frontg
       state_topic: BI/frontg/status
       value_template: '{{ value_json.dbid }}'
-      json_attributes_topic: BI/frontg/status
-      json_attributes_template: '{{ value_json | tojson }}'
 
     - name: Cam Alert Back
       unique_id: camera.cam_alert_status_back
