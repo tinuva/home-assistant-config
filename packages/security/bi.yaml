@@ -8,12 +8,17 @@ mqtt:
       unique_id: camera.cam_alert_frontg
       object_id: cam_alert_frontg
       image_encoding: b64
+      json_attributes_topic: 
+      json_attributes_topic: BI/frontg/status
+      json_attributes_template: '{{ value_json | tojson }}'
 
     - topic: BI/back/alert-image-b64
       name: Cam Alert Back
       unique_id: camera.cam_alert_back
       object_id: cam_alert_back
       image_encoding: b64
+      json_attributes_topic: BI/back/status
+      json_attributes_template: '{{ value_json | tojson }}'
 
   sensor:
     - name: Cam Alert Front Garage
@@ -77,16 +82,42 @@ automation:
         value_template: >
           {{ should_notify }}
     action:
-      - service: script.alert
+      # - service: script.alert
+      #   data:
+      #     target: 'alerts-camera'
+      #     camera: >-
+      #       {{ cam_entity + cam }}
+      #     message: >-
+      #       Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+      #       *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+      #       <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+      #       <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+      # - service: camera.snapshot
+      #   data:
+      #     filename: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
+      #   target:
+      #     entity_id: "{{ cam }}"
+      - service: downloader.download_file
         data:
-          target: 'alerts-camera'
-          camera: >-
-            {{ cam_entity + cam }}
+          subdir: /config/www/cam_captures
+          filename: "script_log_{{ cam }}.jpg"
+          overwrite: true
+          url: "https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg"
+      - delay:
+          seconds: 1
+          milliseconds: 500
+      - service: notify.bezuidenhouts
+        data:
           message: >-
             Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
             *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
             <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
             <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+          target: '#alerts-camera'
+          title: '{{ cam  }}'
+          data:
+            file:
+              path: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
       # - service: notify.bezuidenhouts
       #   data:
       #     target: '#alerts-camera'
