@@ -3,14 +3,16 @@ import logging
 
 from pathlib import Path
 from enum import (
-    Enum,
     IntEnum,
 )
 
 LOGGER = logging.getLogger(__package__)
 
+PRINT_PROJECT_FILE_BUS_EVENT = 'bambu_lab_project_file'
+SEND_GCODE_BUS_EVENT = 'bambu_lab_send_gcode'
+SKIP_OBJECTS_BUS_EVENT = 'bambu_lab_skip_objects'
 
-class Features(Enum):
+class Features(IntEnum):
     AUX_FAN = 1,
     CHAMBER_LIGHT = 2,
     CHAMBER_FAN = 3,
@@ -34,14 +36,14 @@ class Features(Enum):
     TIMELAPSE = 22
 
 
-class FansEnum(Enum):
+class FansEnum(IntEnum):
     PART_COOLING = 1,
     AUXILIARY = 2,
     CHAMBER = 3,
     HEATBREAK = 4,
 
 
-class TempEnum(Enum):
+class TempEnum(IntEnum):
     HEATBED = 1,
     NOZZLE = 2
 
@@ -145,7 +147,7 @@ HMS_MODULES = {
     0x03: "mc"
 }
 
-class SdcardState(Enum):
+class SdcardState(IntEnum):
     NO_SDCARD                           = 0x00000000,
     HAS_SDCARD_NORMAL                   = 0x00000100,
     HAS_SDCARD_ABNORMAL                 = 0x00000200,
@@ -176,7 +178,7 @@ class Home_Flag_Values(IntEnum):
     SUPPORTED_PLUS                      = 0x08000000,
     # Gap
 
-class BambuUrl(Enum):
+class BambuUrl(IntEnum):
     LOGIN = 1,
     TFA_LOGIN = 2,
     EMAIL_CODE = 3,
