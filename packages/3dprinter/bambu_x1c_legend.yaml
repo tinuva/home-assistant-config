@@ -40,6 +40,17 @@ automation:
       - platform: state
         entity_id: sensor.x1c_00m09a363000342_current_stage
         not_to: ["unavailable", "unknown", "offline", "heatbed_preheating", "auto_bed_leveling", "cleaning_nozzle_tip", "calibrating_extrusion"]
+    condition:
+      - condition: not
+        conditions:
+          - condition: or
+            conditions:
+              - condition: template
+                value_template: >
+                  {{ trigger.from_state.state == 'offline' and trigger.to_state.state == 'idle' }}
+              - condition: template
+                value_template: >
+                  {{ trigger.from_state.state == 'idle' and trigger.to_state.state == 'idofflinele' }}
     action:
       - choose:
           # IF specific states, we skip the camera
@@ -75,7 +86,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.x1c_00m09a363000342_print_status
-        not_to: ["unavailable", "unknown", "prepare", "running", "idle"]
+        not_to: ["unavailable", "unknown", "prepare", "running", "idle", "offline"]
     action:
       - choose:
           # IF specific states, we skip the camera
