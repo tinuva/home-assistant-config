@@ -99,7 +99,7 @@ automation:
           overwrite: true
           url: "https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg"
       - delay:
-          seconds: 1
+          seconds: 2
           milliseconds: 500
       - service: notify.bezuidenhouts
         data:

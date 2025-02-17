@@ -8,7 +8,7 @@ adaptive_lighting:
     interval: 90
     min_brightness: 12
     max_brightness: 35
-    sleep_brightness: 11
+    sleep_brightness: 5
     sunrise_offset: 1800
     sunset_offset: -1800
     take_over_control: true
@@ -65,6 +65,23 @@ adaptive_lighting:
     take_over_control: true
     detect_non_ha_changes: true
     only_once: false
-    name: "small bedroom"
+    name: "girl bedroom"
     lights:
       - light.amy_bedroom_amy_bedroom
+
+  - prefer_rgb_color: false
+    transition: 45
+    initial_transition: 45
+    sleep_transition: 45
+    interval: 90
+    min_brightness: 15
+    max_brightness: 30
+    sleep_brightness: 15
+    sunrise_offset: 1800
+    sunset_offset: -1800
+    take_over_control: true
+    detect_non_ha_changes: true
+    only_once: false
+    name: "boy bedroom"
+    lights:
+      - light.andre_bedroom_andre_bedroom
