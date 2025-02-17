@@ -3,6 +3,7 @@ import requests
 import socket
 
 from datetime import datetime, timedelta
+from urllib3.exceptions import ReadTimeoutError
 
 from .const import (
     CURRENT_STAGE_IDS,
@@ -99,7 +100,7 @@ def get_HMS_error_text(code: str, language: str):
     """Return the human-readable description for an HMS error"""
     try:
         code = code.replace('_', '')
-        response = requests.get(f"https://e.bambulab.com/query.php?lang={language}&e={code}", timeout=5)
+        response = requests.get(f"https://e.bambulab.com/query.php?lang={language}&e={code}", timeout=10)
         json = response.json()
         if json['result'] == 0:
             # We successfuly got results.
@@ -108,6 +109,10 @@ def get_HMS_error_text(code: str, language: str):
                 if entry['ecode'] == code:
                     if "" != entry['intro']:
                         return entry['intro']
+    except TimeoutError as e:
+        pass    
+    except ReadTimeoutError as e:
+        LOGGER.debug("ERROR: Timeout trying t retrieve print error text")
     except:
         LOGGER.debug(f"ERROR: {response.text}")
 
@@ -123,7 +128,7 @@ def get_print_error_text(code: str, language: str):
 
     try:
         code = code.replace('_', '')
-        response = requests.get(f"https://e.bambulab.com/query.php?lang={language}&e={code}", timeout=5)
+        response = requests.get(f"https://e.bambulab.com/query.php?lang={language}&e={code}", timeout=10)
         json = response.json()
         if json['result'] == 0:
             # We successfuly got results.
@@ -132,6 +137,10 @@ def get_print_error_text(code: str, language: str):
                 if entry['ecode'] == code:
                     if "" != entry['intro']:
                         return entry['intro']
+    except TimeoutError as e:
+        pass    
+    except ReadTimeoutError as e:
+        LOGGER.debug("ERROR: Timeout trying t retrieve print error text")
     except:
         LOGGER.debug(f"ERROR: {response.text}")
 
@@ -229,6 +238,12 @@ def get_sw_version(modules, default):
         return ota.get("sw_ver")
     return default
 
+def compare_version(version_max, version_min):
+    maxver = list(map(int, version_max.split('.')))
+    minver = list(map(int, version_min.split('.')))
+
+    # Returns 1 if max > min, -1 if max < min, 0 if equal
+    return (maxver > minver) - (maxver < minver)
 
 def get_start_time(timestamp):
     """Return start time of a print"""

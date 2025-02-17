@@ -6,7 +6,7 @@ import re
 import threading
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from dateutil import parser, tz
 from packaging import version
 from zipfile import ZipFile
@@ -27,6 +27,7 @@ from .utils import (
     get_speed_name,
     get_hw_version,
     get_sw_version,
+    compare_version,
     get_start_time,
     get_end_time,
     get_HMS_error_text,
@@ -122,7 +123,7 @@ class Device:
         elif feature == Features.CHAMBER_LIGHT:
             return True
         elif feature == Features.CHAMBER_FAN:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "P1P" or self.info.device_type == "P1S"
+            return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
         elif feature == Features.CHAMBER_TEMPERATURE:
             return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E"
         elif feature == Features.CURRENT_STAGE:
@@ -160,9 +161,20 @@ class Device:
             return True
         elif feature == Features.TIMELAPSE:
             return False
+        elif feature == Features.AMS_SWITCH_COMMAND:
+            if self.info.device_type == "A1" or self.info.device_type == "A1MINI" or self.info.device_type == "X1E":
+                return True
+            elif (self.info.device_type == "P1S" or self.info.device_type == "P1P") and self.supports_sw_version("01.02.99.10"):
+                return True
+            elif (self.info.device_type == "X1" or self.info.device_type == "X1C") and self.supports_sw_version("01.05.06.01"):
+                return True
+            return False
 
         return False
     
+    def supports_sw_version(self, version: str) -> bool:
+        return compare_version(self.info.sw_ver, version) >= 0
+
     def get_active_tray(self):
         if self.supports_feature(Features.AMS):
             if self.ams.tray_now == 255:
@@ -184,6 +196,9 @@ class Device:
             return True
         return False
 
+    @property
+    def is_core_xy(self) -> bool:
+        return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
 
 @dataclass
 class Lights:
@@ -442,6 +457,7 @@ class PrintJob:
     _ams_print_lengths: float
     _skipped_objects: list
     _printable_objects: dict
+    _gcode_file_prepare_percent : int
 
     @property
     def get_printable_objects(self) -> json:
@@ -499,6 +515,7 @@ class PrintJob:
         self.print_type = ""
         self._printable_objects = {}
         self._skipped_objects = []
+        self._gcode_file_prepare_percent = 0
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -526,17 +543,24 @@ class PrintJob:
         previous_gcode_state = self.gcode_state
         self.gcode_state = data.get("gcode_state", self.gcode_state)
         if self.gcode_state.lower() not in GCODE_STATE_OPTIONS:
-            LOGGER.error(f"Unknown gcode_state. Please log an issue : '{self.gcode_state}'")
+            if self.gcode_state != '':
+                LOGGER.error(f"Unknown gcode_state. Please log an issue : '{self.gcode_state}'")
             self.gcode_state = "unknown"
         if previous_gcode_state != self.gcode_state:
             LOGGER.debug(f"GCODE_STATE: {previous_gcode_state} -> {self.gcode_state}")
+        old_gcode_file = self.gcode_file
         self.gcode_file = data.get("gcode_file", self.gcode_file)
+        if old_gcode_file != self.gcode_file:
+            LOGGER.debug(f"GCODE_FILE: {self.gcode_file}")
         self.print_type = data.get("print_type", self.print_type)
         if self.print_type.lower() not in PRINT_TYPE_OPTIONS:
             if self.print_type != "":
                 LOGGER.debug(f"Unknown print_type. Please log an issue : '{self.print_type}'")
             self.print_type = "unknown"
+        old_subtask_name = self.subtask_name
         self.subtask_name = data.get("subtask_name", self.subtask_name)
+        if old_subtask_name != self.subtask_name:
+            LOGGER.debug(f"SUBTASK_NAME: {self.subtask_name}")
         self.file_type_icon = "mdi:file" if self.print_type != "cloud" else "mdi:cloud-outline"
         self.current_layer = data.get("layer_num", self.current_layer)
         self.total_layers = data.get("total_layer_num", self.total_layers)
@@ -580,7 +604,27 @@ class PrintJob:
                 self.end_time = None
                 LOGGER.debug(f"GENERATED START TIME: {self.start_time}")
 
-            # Update task data
+            if not self._client.ftp_enabled:
+                # We can update task data from the cloud immediately. But ftp has to wait.
+                self._update_task_data()
+
+        old__gcode_file_prepare_percent = self._gcode_file_prepare_percent
+        self._gcode_file_prepare_percent = int(data.get("gcode_file_prepare_percent", str(self._gcode_file_prepare_percent)))
+        if self.gcode_state == "PREPARE":
+            LOGGER.debug(f"DOWNLOAD PERCENTAGE: {self._gcode_file_prepare_percent}")
+        if self._gcode_file_prepare_percent != old__gcode_file_prepare_percent:
+            if self._gcode_file_prepare_percent == 100:
+                LOGGER.debug(f"DOWNLOAD TO PRINTER IS COMPLETE")
+                if self._client.ftp_enabled:
+                    # Now we can update the model data by ftp. By this point the model has been successfully loaded to the printer.
+                    # and it's network stack is idle and shouldn't timeout or fail on us randomly.
+                    self._update_task_data()
+
+        if self.gcode_state == "RUNNING" and previous_gcode_state == "PREPARE" and self._gcode_file_prepare_percent == 0:
+            # This is a lan mode print where the gcode was pushed to the printer before the print ever started so
+            # there is no download to track. If we can find a definitive way to track true lan mode vs just a pure local
+            # only connection to a cloud connected printer, we can move this update to IDLE -> PREPARE instead.
+            LOGGER.debug("LAN MODE DOWNLOAD STARTED")
             self._update_task_data()
 
         # When a print is canceled by the user, this is the payload that's sent. A couple of seconds later
@@ -681,6 +725,7 @@ class PrintJob:
             pass
 
     def _find_file_in_cache(self, filename: str) -> Union[str, None]:
+        LOGGER.debug(f"Looking for '{filename}'")
         # Attempt to find a file in one of many known directories
         for search_path in self.ftp_search_paths:
             cached_files = self._client._device.ftp_cache.get(search_path, [])
@@ -702,26 +747,44 @@ class PrintJob:
     #
     # Known filepath configurations:
     # 
-    # X1C cloud print:
-    #   Bambu Studio 'print' of unsaved workspace
-    #     gcode_filename = data/metadata/plate_1.gcode (ramdisk - not accessible via ftp)
-    #     subtask_name = 3mf file without .3mf extensions - e.g FILENAME
-    #     FILE: /cache/FILENAME.3mf
+    # X1 lan mode print
+    #   Orca 2.2.0 'print' of 3mf file
+    #     "gcode_file": "/data/Metadata/plate_1.gcode",
+    #     "subtask_name": "Clamshell Parts Box",
+    #     FILE: /Clamshell Parts Box.gcode.3mf
     #
-    # P1S lan mode print:
+    # P1 lan mode print:
     #   Bambu Studio 'print' of 3mf file
     #     "gcode_file": "36mm.gcode.3mf",
     #     "subtask_name": "36mm",
-    #     FILE: ?
+    #     FILE: /36mm.gcode.3mf
+    #
+    # X1C cloud print:
+    #   Bambu Studio 'print' of unsaved workspace
+    #     gcode_filename = data/metadata/plate_1.gcode (ramdisk - not accessible via ftp)
+    #     subtask_name = FILENAME
+    #     FILE: /cache/FILENAME.3mf
+    #
+    # P1 cloud print:
+    #   Bambu Studio 'print' of unsaved workspace
+    #     gcode_filename = Cube + Cube + Cube + Cube + Cube.3mf
+    #     subtask_name = Cube + Cube + Cube + Cube + Cube
+    #     FILE: /cache/Cube + Cube + Cube + Cube + Cube.3mf
+    #
+    # X1 cloud print:
+    #   Makerworld print
+    #     gcode_filename = /data/metadata/plate_3.gcode
+    #     subtask_name = Lovers Valentine Day Shadowbox
+    #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
+    # 
+    # P1 cloud print:
+    #   Makerworld print
+    #     gcode_filename = Lovers Valentine Day Shadowbox.3mf
+    #     subtask_name = Lovers Valentine Day Shadowbox
+    #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
+    # 
 
     def _find_model_path(self, ftp) -> Union[str, None]:
-        if self.gcode_file == '' and self.subtask_name == '':
-            # Fall back to find the latest file by timestamp
-            model_path = self._find_latest_file(ftp, '/cache', ['.3mf'])
-            if model_path is not None:
-                return model_path
-            return None
-
         model_path = None
         for attempt in range(2):
             # If we fail to find it on the first pass, refresh the ftp file cache and try again
@@ -731,25 +794,40 @@ class PrintJob:
 
             # First test if the subtaskname exists as a 3mf
             if self.subtask_name != '':
-                filename = self.subtask_name if self.subtask_name.endswith('.3mf') else f"{self.subtask_name}.3mf"
+                model_path = self._find_file_in_cache(filename=self.subtask_name)
+                if model_path is not None:
+                    break
                 model_path = self._find_file_in_cache(filename=f"{self.subtask_name}.3mf")
+                if model_path is not None:
+                    break
+                model_path = self._find_file_in_cache(filename=f"{self.subtask_name}.gcode.3mf")
                 if model_path is not None:
                     break
 
             # If we didn't find it then try the gcode file
             if self.gcode_file != '':
-                filename = self.gcode_file if self.gcode_file.endswith('.3mf') else f"{self.gcode_file}.3mf"
-                model_path = self._find_file_in_cache(filename=filename)
+                model_path = self._find_file_in_cache(filename=self.gcode_file)
+                if model_path is not None:
+                    break
+                model_path = self._find_file_in_cache(filename=f"{self.gcode_file}.3mf")
+                if model_path is not None:
+                    break
+                model_path = self._find_file_in_cache(filename=f"{self.gcode_file}.gcode.3mf")
                 if model_path is not None:
                     break
 
+        if model_path is None:
+            # Fall back to find the latest file by timestamp
+            LOGGER.debug("Falling back to searching for latest 3mf file.")
+            model_path = self._find_latest_file(ftp, self.ftp_search_paths, ['.3mf'])
+
         return model_path
     
-    def _find_latest_file(self, ftp, path, extensions: list):
+    def _find_latest_file(self, ftp, search_paths, extensions: list):
         # Look for the newest file with extension in directory.
-        LOGGER.debug(f"Looking for latest {extensions} file in {path}")
+        LOGGER.debug(f"Looking for latest {extensions} file in {search_paths}")
         file_list = []
-        def parse_line(line):
+        def parse_line(path: str, line: str):
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 12:34 filename'
             pattern_with_time_no_year      = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+:\d+)\s+(.+)$'
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 2024 filename'
@@ -767,7 +845,7 @@ class PrintJob:
                     timestamp = timestamp.replace(year=utc_time_now.year)
                     if timestamp > utc_time_now:
                         timestamp = timestamp.replace(year=datetime.now().year - 1)
-                    return timestamp, filename
+                    return timestamp, f"{path}{filename}"
                 else:
                     return None
 
@@ -778,7 +856,7 @@ class PrintJob:
                 if extension in extensions:
                     timestamp = datetime.strptime(timestamp_str, '%b %d %Y')
                     timestamp = timestamp.replace(tzinfo=timezone.utc)
-                    return timestamp, filename
+                    return timestamp, f"{path}{filename}"
                 else:
                     return None
             
@@ -786,14 +864,15 @@ class PrintJob:
             return None
 
         # Attempt to find the model in one of many known directories
-        ftp.retrlines(f"LIST {path}", lambda line: file_list.append(file) if (file := parse_line(line)) is not None else None)
+        for path in search_paths:
+            ftp.retrlines(f"LIST {path}", lambda line: file_list.append(file) if (file := parse_line(path, line)) is not None else None)
         files = sorted(file_list, key=lambda file: file[0], reverse=True)
         for file in files:
-            _, extension = os.path.splitext(file[1])
-            if extension in extensions:
-                file_path = f"{path}/{file[1]}"
-                LOGGER.debug(f"Found latest file {file_path}")
-                return file_path
+            for extension in extensions:
+                if file[1].endswith(extension):
+                    if extension in extensions:
+                        LOGGER.debug(f"Found latest file {file[1]}")
+                        return file[1]
 
         return None
     
@@ -875,9 +954,7 @@ class PrintJob:
         ftp = self._client.ftp_connection()
         model_path = self._find_model_path(ftp)
 
-        if model_path is not None:
-            LOGGER.debug(f"Found model: '{model_path}'")
-        else:
+        if model_path is None:
             LOGGER.debug("No model file found.")
             return
 
@@ -885,9 +962,12 @@ class PrintJob:
         with tempfile.NamedTemporaryFile(delete=True) as f:
             try:
                 # Fetch the 3mf from FTP and close the connection
+                LOGGER.debug(f"Downloading model: '{model_path}'")
                 ftp.retrbinary(f"RETR {model_path}", f.write)
                 f.flush()
                 ftp.quit()
+                LOGGER.debug("Model download completed.")
+                LOGGER.debug(f"File size is {os.path.getsize(f.name)} bytes")
 
                 # Open the 3mf zip archive
                 with ZipFile(f) as archive:
@@ -965,15 +1045,19 @@ class PrintJob:
                     self.print_length = print_length
 
                     if plate_number is not None:
-                        self._client._device.pick_image.set_image(archive.read(f"Metadata/pick_{plate_number}.png"))
-
-                        # Process the pick image for objects
-                        pick_image = Image.open(archive.open(f"Metadata/pick_{plate_number}.png"))
-                        identify_ids = self._identify_objects_in_pick_image(image=pick_image)
-                        
-                        # Filter the printable objects from slice_info.config, removing
-                        # any that weren't detected in the pick image
-                        self._printable_objects = {k: _printable_objects[k] for k in identify_ids if k in _printable_objects}
+                        try:
+                            image = archive.read(f"Metadata/pick_{plate_number}.png")
+                            self._client._device.pick_image.set_image(image)
+                            # Process the pick image for objects
+                            pick_image = Image.open(archive.open(f"Metadata/pick_{plate_number}.png"))
+                            identify_ids = self._identify_objects_in_pick_image(image=pick_image)
+                            
+                            # Filter the printable objects from slice_info.config, removing
+                            # any that weren't detected in the pick image
+                            self._printable_objects = {k: _printable_objects[k] for k in identify_ids if k in _printable_objects}
+                        except:
+                            LOGGER.debug(f"Unable to load 'Metadata/pick_{plate_number}.png' from archive")
+                            self._client._device.pick_image.set_image(None)
 
                 archive.close()
 
@@ -1092,6 +1176,7 @@ class Info:
     serial: str
     device_type: str
     wifi_signal: int
+    wifi_sent: datetime
     device_type: str
     hw_ver: str
     sw_ver: str
@@ -1109,6 +1194,7 @@ class Info:
         self.serial = self._client._serial
         self.device_type = self._client._device_type
         self.wifi_signal = 0
+        self.wifi_sent = datetime.now()
         self.hw_ver = "unknown"
         self.sw_ver = "unknown"
         self.online = False
@@ -1174,8 +1260,6 @@ class Info:
         #         },
         #         "layer_num": 0,
         #         "total_layer_num": 0,
-
-        self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
 
         # "print": {
         #   "net": {
@@ -1261,9 +1345,23 @@ class Info:
         self.nozzle_diameter = float(data.get("nozzle_diameter", self.nozzle_diameter))
         self.nozzle_type = data.get("nozzle_type", self.nozzle_type)
 
-        #
+        # Compute if there's a delta before we check the wifi_signal value.
+        changed = (old_data != f"{self.__dict__}")
 
-        return (old_data != f"{self.__dict__}")
+        # Now test the wifi signal to minimize how frequently we sent data upates to home assistant. We want
+        # these changes to be done outside the delta test above so that we don't trigger an update every 2-3s
+        # due the noise in this value on A1/P1 printers.
+        old_wifi_signal = self.wifi_signal
+        self.wifi_signal = int(data.get("wifi_signal", str(self.wifi_signal)).replace("dBm", ""))
+        if (self.wifi_signal != old_wifi_signal) :
+            if (datetime.now() - self.wifi_sent) > timedelta(seconds=60):
+                # It's been long enough. We can send this one.
+                self.wifi_sent = datetime.now()
+                changed = True
+        
+        return changed
+
+
 
     @property
     def has_bambu_cloud_connection(self) -> bool:
@@ -1868,7 +1966,7 @@ class HomeFlag:
         return (old_data != f"{self.__dict__}")
 
     @property
-    def door_open(self) -> bool or None:
+    def door_open(self) -> bool | None:
         if not self.door_open_available:
             return None
 

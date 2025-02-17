@@ -11,6 +11,10 @@ from .pybambu.const import (
     PRINT_PROJECT_FILE_BUS_EVENT,
     SEND_GCODE_BUS_EVENT,
     SKIP_OBJECTS_BUS_EVENT,
+    MOVE_AXIS_BUS_EVENT,
+    EXTRUDE_RETRACT_BUS_EVENT,
+    LOAD_FILAMENT_BUS_EVENT,
+    UNLOAD_FILAMENT_BUS_EVENT,
 )
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -84,6 +88,57 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         skip_objects  # Handler function
     )
 
+    async def move_axis(call: ServiceCall):
+        """Handle the service call."""
+        if check_service_call_payload(call) is False:
+            return
+        hass.bus.fire(MOVE_AXIS_BUS_EVENT, call.data)
+
+    # Register the service with Home Assistant
+    hass.services.async_register(
+        DOMAIN,
+        "move_axis",  # Service name
+        move_axis  # Handler function
+    )
+
+    async def unload_filament(call: ServiceCall):
+        """Handle the service call."""
+        if check_service_call_payload(call) is False:
+            return
+        hass.bus.fire(UNLOAD_FILAMENT_BUS_EVENT, call.data)
+
+    # Register the service with Home Assistant
+    hass.services.async_register(
+        DOMAIN,
+        "unload_filament",  # Service name
+        unload_filament  # Handler function
+    )
+
+    async def load_filament(call: ServiceCall):
+        """Handle the service call."""
+        if check_service_call_payload(call) is False:
+            return
+        hass.bus.fire(LOAD_FILAMENT_BUS_EVENT, call.data)
+
+    # Register the service with Home Assistant
+    hass.services.async_register(
+        DOMAIN,
+        "load_filament",  # Service name
+        load_filament  # Handler function
+    )
+
+    async def extrude_retract(call: ServiceCall):
+        """Handle the service call."""
+        if check_service_call_payload(call) is False:
+            return
+        hass.bus.fire(EXTRUDE_RETRACT_BUS_EVENT, call.data)
+
+    # Register the service with Home Assistant
+    hass.services.async_register(
+        DOMAIN,
+        "extrude_retract",  # Service name
+        extrude_retract  # Handler function
+    )
 
     # Set up all platforms for this device/entry.
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -116,7 +171,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Delete existing config entry
     del hass.data[DOMAIN][entry.entry_id]
-
 
     cards = BambuLabCardRegistration(hass)
     await cards.async_unregister()
