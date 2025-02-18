@@ -142,7 +142,7 @@ automation:
             sequence:
               - service: switch.turn_on
                 data:
-                  entity_id: switch.adaptive_lighting_sleep_mode_small_bedroom
+                  entity_id: switch.adaptive_lighting_sleep_mode_girl_bedroom
           - conditions:
               - condition: state
                 entity_id: binary_sensor.either_parent_phones_charging
@@ -153,4 +153,4 @@ automation:
             sequence:
               - service: switch.turn_off
                 data:
-                  entity_id: switch.adaptive_lighting_sleep_mode_small_bedroom
+                  entity_id: switch.adaptive_lighting_sleep_mode_girl_bedroom

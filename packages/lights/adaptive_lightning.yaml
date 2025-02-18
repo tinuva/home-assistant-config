@@ -76,7 +76,7 @@ adaptive_lighting:
     interval: 90
     min_brightness: 15
     max_brightness: 30
-    sleep_brightness: 15
+    sleep_brightness: 6
     sunrise_offset: 1800
     sunset_offset: -1800
     take_over_control: true
