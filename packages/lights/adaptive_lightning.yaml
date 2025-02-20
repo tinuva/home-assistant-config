@@ -6,7 +6,7 @@ adaptive_lighting:
     initial_transition: 45
     sleep_transition: 45
     interval: 90
-    min_brightness: 12
+    min_brightness: 5
     max_brightness: 35
     sleep_brightness: 5
     sunrise_offset: 1800
@@ -74,9 +74,9 @@ adaptive_lighting:
     initial_transition: 45
     sleep_transition: 45
     interval: 90
-    min_brightness: 15
+    min_brightness: 5
     max_brightness: 30
-    sleep_brightness: 6
+    sleep_brightness: 5
     sunrise_offset: 1800
     sunset_offset: -1800
     take_over_control: true

@@ -18,6 +18,8 @@ logs:
   homeassistant.helpers.script: debug
   homeassistant.loader: error
 
+  custom_components.llama_conversation.conversation: info
+
   custom_components.localtuya: fatal
   custom_components.load_shedding: error  # ESP integration
 
