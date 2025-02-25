@@ -32,7 +32,44 @@ script:
             {% elif forecast_int >= 10 and forecast_int < 12 %}30
             {% elif forecast_int >= 8 and forecast_int < 10 %}20
             {% else %}16{% endif -%}
+          has_early_loadshedding: >
+            {%- set ns = namespace(has_morning_ls=false) -%}
+            {% if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
+              {%- for slot in state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast') %}
+                {%- set slot_time = as_timestamp(slot.start_time) | timestamp_custom('%H:%M') %}
+                {%- set slot_date = as_timestamp(slot.start_time) | timestamp_custom('%Y-%m-%d') %}
+                {%- set tomorrow = (now() + timedelta(days=1)).strftime('%Y-%m-%d') %}
+                {%- set today = now().strftime('%Y-%m-%d') %}
+                {%- if (slot_date == today or slot_date == tomorrow) %}
+                  {%- set slot_end_time = as_timestamp(slot.end_time) %}
+                  {%- set slot_start_time = as_timestamp(slot.start_time) %}
+                  {%- set duration_hours = (slot_end_time - slot_start_time) / 3600 %}
+                  {%- if (duration_hours >= 4 and duration_hours <= 4.5) and '04:00' <= slot_time <= '08:00' %}
+                    {%- set ns.has_morning_ls = true -%}
+                  {%- elif (duration_hours >= 2 and duration_hours <= 2.5) and '06:00' <= slot_time <= '08:00' %}
+                    {%- set ns.has_morning_ls = true -%}
+                  {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+            {%- endif %}
+            {{- ns.has_morning_ls|string }}
       - choose:
+          - conditions:
+              - condition: template
+                value_template: "{{ has_morning_loadshedding == true }}"
+            sequence:
+              - alias: "Limit DoD for morning loadshedding"
+                variables:
+                  dod: >
+                    {% set current_dod = dod|int %}
+                    {% if current_dod > 25 %}25{% else %}{{ current_dod }}{% endif %}
+              - alias: "Log morning loadshedding DoD adjustment"
+                service: script.log
+                data:
+                  icon: ':zap:'
+                  object: 'GoodWe'
+                  message: >
+                    Morning loadshedding detected. Limiting DoD to ensure battery reserve.
           # IF lots of sun and high battery skip
           - conditions:
               - condition: template
