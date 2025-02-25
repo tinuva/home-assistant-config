@@ -79,14 +79,17 @@ class CoverImage(ImageEntity, BambuLabEntity):
 
     def image(self) -> bytes | None:
         """Return bytes of image."""
-        return self.coordinator.get_model().cover_image.get_jpeg()
+        return self.coordinator.get_model().cover_image.get_image()
 
     @property
     def image_last_updated(self) -> datetime | None:
         """The time when the image was last updated."""
         return self.coordinator.get_model().cover_image.get_last_update_time()
 
-
+    @property
+    def available(self) -> bool:
+        return self.coordinator.get_model().cover_image.get_last_update_time() != None
+    
 class ChamberImage(ImageEntity, BambuLabEntity):
     """Representation of an image entity."""
     def __init__(
@@ -106,7 +109,7 @@ class ChamberImage(ImageEntity, BambuLabEntity):
 
     def image(self) -> bytes | None:
         """Return bytes of image."""
-        return self.coordinator.get_model().chamber_image.get_jpeg()
+        return self.coordinator.get_model().chamber_image.get_image()
     
     @property
     def image_last_updated(self) -> datetime | None:

@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+from asyncio import Lock
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.debounce import Debouncer
@@ -9,7 +10,7 @@ from homeassistant.helpers.update_coordinator import (CoordinatorEntity,
                                                       DataUpdateCoordinator)
 from msmart.device import AirConditioner as AC
 
-from .const import DOMAIN
+from .const import DOMAIN, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class MideaDeviceUpdateCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=DOMAIN,
-            update_interval=datetime.timedelta(seconds=15),
+            update_interval=datetime.timedelta(seconds=UPDATE_INTERVAL),
             request_refresh_debouncer=Debouncer(
                 hass,
                 _LOGGER,
@@ -31,18 +32,21 @@ class MideaDeviceUpdateCoordinator(DataUpdateCoordinator):
             )
         )
 
+        self._lock = Lock()
         self._device = device
         self._energy_sensors = 0
 
     async def _async_update_data(self) -> None:
         """Update the device data."""
-        await self._device.refresh()
+        async with self._lock:
+            await self._device.refresh()
 
     async def apply(self) -> None:
         """Apply changes to the device and update HA state."""
 
         # Apply changes to device
-        await self._device.apply()
+        async with self._lock:
+            await self._device.apply()
 
         # Update state
         await self.async_request_refresh()

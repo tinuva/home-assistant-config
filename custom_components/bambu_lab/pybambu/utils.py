@@ -1,9 +1,11 @@
 import math
 import requests
 import socket
+import re
 
 from datetime import datetime, timedelta
 from urllib3.exceptions import ReadTimeoutError
+from bs4 import BeautifulSoup
 
 from .const import (
     CURRENT_STAGE_IDS,
@@ -16,7 +18,7 @@ from .const import (
     FansEnum,
     TempEnum
 )
-from .commands import SEND_GCODE_TEMPLATE
+from .commands import SEND_GCODE_TEMPLATE, UPGRADE_CONFIRM_TEMPLATE
 from .const_hms_errors import HMS_ERRORS
 from .const_print_errors import PRINT_ERROR_ERRORS
 
@@ -272,3 +274,41 @@ def get_Url(url: str, region: str):
     if region == "China":
         urlstr = urlstr.replace('.com', '.cn')
     return urlstr
+
+
+def get_upgrade_url(name: str):
+    """Retrieve upgrade URL from BambuLab website"""
+    response = requests.get(f"https://bambulab.com/en/support/firmware-download/{name}")
+    soup = BeautifulSoup(response.text, 'html.parser')
+    selector = soup.select_one(
+        "#__next > div > div > div > "
+        "div.portal-css-npiem8 > "
+        "div.pageContent.MuiBox-root.portal-css-0 > "
+        "div > div > div.portal-css-1v0qi56 > "
+        "div.flex > div.detailContent > div > "
+        "div > div.portal-css-kyyjle > div.top > "
+        "div.versionContent > div > "
+        "div.linkContent.pc > a:nth-child(2)"
+    )
+    if selector:
+        return selector.get("href")
+    return None
+
+def upgrade_template(url: str) -> dict:
+    """Template for firmware upgrade"""
+    pattern = (
+        r"offline\/([\w-]+)\/([\d\.]+)\/([\w]+)\/"
+        r"offline-([\w\-\.]+)\.zip"
+    )
+    info = re.search(pattern, url).groups()
+    if not info:
+        LOGGER.warning(f"Could not parse firmware url: {url}")
+        return None
+    
+    model, version, hash, stamp = info
+    template = UPGRADE_CONFIRM_TEMPLATE.copy()
+    template["upgrade"]["url"] = template["upgrade"]["url"].format(
+        model=model, version=version, hash=hash, stamp=stamp
+    )
+    template["upgrade"]["version"] = version
+    return template

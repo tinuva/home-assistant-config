@@ -17,6 +17,11 @@ from homeassistant.const import (
     UnitOfTime
 )
 
+from homeassistant.components.update import (
+    UpdateDeviceClass,
+    UpdateEntityDescription
+)
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntityDescription,
@@ -35,6 +40,14 @@ from .pybambu.const import PRINT_TYPE_OPTIONS, SPEED_PROFILE, Features, FansEnum
 def fan_to_percent(speed):
     percentage = (int(speed) / 15) * 100
     return math.ceil(percentage / 10) * 10
+
+@dataclass
+class BambuLabUpdateEntityDescription(UpdateEntityDescription):
+    """Update entity description for Bambu Lab."""
+    device_class: UpdateDeviceClass = UpdateDeviceClass.FIRMWARE
+    entity_category: EntityCategory = EntityCategory.DIAGNOSTIC
+    latest_ver_fn: Callable[..., str] = lambda _: None
+    installed_ver_fn: Callable[..., str] = lambda _: None
 
 
 @dataclass
@@ -102,7 +115,8 @@ PRINTER_BINARY_SENSORS: tuple[BambuLabBinarySensorEntityDescription, ...] = (
         translation_key="firmware_update",
         device_class=BinarySensorDeviceClass.UPDATE,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.get_model().info.new_version_state == 1
+        is_on_fn=lambda self: self.coordinator.get_model().info.new_version_state == 1,
+        exists_fn=lambda coordinator: not coordinator.get_option_enabled(Options.FIRMWAREUPDATE),
     ),
     BambuLabBinarySensorEntityDescription(
         key="door_open",
@@ -391,6 +405,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "nozzle_temp_min": self.coordinator.get_model().get_active_tray().nozzle_temp_min,
             "nozzle_temp_max": self.coordinator.get_model().get_active_tray().nozzle_temp_max,
             **({"remain": self.coordinator.get_model().get_active_tray().remain} if self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) else {}),
+            "remain_enabled": self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) and self.coordinator.get_model().home_flag.ams_calibrate_remaining,
             "tag_uid": self.coordinator.get_model().get_active_tray().tag_uid,
             "tray_uuid": self.coordinator.get_model().get_active_tray().tray_uuid,
             "type": self.coordinator.get_model().get_active_tray().type,
@@ -474,6 +489,7 @@ AMS_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "nozzle_temp_min": self.coordinator.get_model().ams.data[self.index].tray[0].nozzle_temp_min,
             "nozzle_temp_max": self.coordinator.get_model().ams.data[self.index].tray[0].nozzle_temp_max,
             **({"remain": self.coordinator.get_model().ams.data[self.index].tray[0].remain} if self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) else {}),
+            "remain_enabled": self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) and self.coordinator.get_model().home_flag.ams_calibrate_remaining,
             "tag_uid": self.coordinator.get_model().ams.data[self.index].tray[0].tag_uid,
             "tray_uuid": self.coordinator.get_model().ams.data[self.index].tray[0].tray_uuid,
             "type": self.coordinator.get_model().ams.data[self.index].tray[0].type,
@@ -495,6 +511,7 @@ AMS_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "nozzle_temp_min": self.coordinator.get_model().ams.data[self.index].tray[1].nozzle_temp_min,
             "nozzle_temp_max": self.coordinator.get_model().ams.data[self.index].tray[1].nozzle_temp_max,
             **({"remain": self.coordinator.get_model().ams.data[self.index].tray[1].remain} if self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) else {}),
+            "remain_enabled": self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) and self.coordinator.get_model().home_flag.ams_calibrate_remaining,
             "tag_uid": self.coordinator.get_model().ams.data[self.index].tray[1].tag_uid,
             "tray_uuid": self.coordinator.get_model().ams.data[self.index].tray[1].tray_uuid,
             "type": self.coordinator.get_model().ams.data[self.index].tray[1].type,
@@ -516,6 +533,7 @@ AMS_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "nozzle_temp_min": self.coordinator.get_model().ams.data[self.index].tray[2].nozzle_temp_min,
             "nozzle_temp_max": self.coordinator.get_model().ams.data[self.index].tray[2].nozzle_temp_max,
             **({"remain": self.coordinator.get_model().ams.data[self.index].tray[2].remain} if self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) else {}),
+            "remain_enabled": self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) and self.coordinator.get_model().home_flag.ams_calibrate_remaining,
             "tag_uid": self.coordinator.get_model().ams.data[self.index].tray[2].tag_uid,
             "tray_uuid": self.coordinator.get_model().ams.data[self.index].tray[2].tray_uuid,
             "type": self.coordinator.get_model().ams.data[self.index].tray[2].type,
@@ -537,6 +555,7 @@ AMS_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "nozzle_temp_min": self.coordinator.get_model().ams.data[self.index].tray[3].nozzle_temp_min,
             "nozzle_temp_max": self.coordinator.get_model().ams.data[self.index].tray[3].nozzle_temp_max,
             **({"remain": self.coordinator.get_model().ams.data[self.index].tray[3].remain} if self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) else {}),
+            "remain_enabled": self.coordinator.get_model().supports_feature(Features.AMS_FILAMENT_REMAINING) and self.coordinator.get_model().home_flag.ams_calibrate_remaining,
             "tag_uid": self.coordinator.get_model().ams.data[self.index].tray[3].tag_uid,
             "tray_uuid": self.coordinator.get_model().ams.data[self.index].tray[3].tray_uuid,
             "type": self.coordinator.get_model().ams.data[self.index].tray[3].type,

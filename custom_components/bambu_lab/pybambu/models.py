@@ -35,6 +35,8 @@ from .utils import (
     get_HMS_severity,
     get_HMS_module,
     set_temperature_to_gcode,
+    get_upgrade_url,
+    upgrade_template,
 )
 from .const import (
     LOGGER,
@@ -61,6 +63,7 @@ class Device:
         self.temperature = Temperature(client = client)
         self.lights = Lights(client = client)
         self.info = Info(client = client)
+        self.upgrade = Upgrade(client = client)
         self.print_job = PrintJob(client = client)
         self.fans = Fans(client = client)
         self.speed = Speed(client = client)
@@ -81,6 +84,7 @@ class Device:
     def print_update(self, data) -> bool:
         send_event = False
         send_event = send_event | self.info.print_update(data = data)
+        send_event = send_event | self.upgrade.print_update(data = data)
         send_event = send_event | self.print_job.print_update(data = data)
         send_event = send_event | self.temperature.print_update(data = data)
         send_event = send_event | self.lights.print_update(data = data)
@@ -433,6 +437,161 @@ class Fans:
         elif fan == FansEnum.HEATBREAK:
             return self._heatbreak_fan_speed_percentage
 
+
+@dataclass
+class Upgrade:
+    """ Upgrade class """
+    printer_name: str
+    upgrade_progress: int
+    new_version_state: int
+    new_ver_list: list
+    cur_version: str
+    new_version: str
+
+    def __init__(self, client):
+        self._client = client
+        self.printer_name = None
+        self.upgrade_progress = 0
+        self.new_version_state = 0
+        self.new_ver_list = []
+        self.cur_version = None
+        self.new_version = None
+    
+    def release_url(self) -> str:
+        """Return the release url"""
+        device_mapping = {
+            "P1P": "p1",
+            "P1S": "p1",
+            "A1MINI": "a1-mini",
+            "A1": "a1",
+            "X1C": "x1",
+            "X1E": "x1e"
+        }
+        self.printer_name = device_mapping.get(self._client._device.info.device_type)
+        if self.printer_name is None:
+            return None
+        return f"https://bambulab.com/en/support/firmware-download/{self.printer_name}"
+    
+    def install(self):
+        """Install the update"""
+        if self.printer_name is None:
+            LOGGER.error("Printer name not found for firmware update.")
+            return
+
+        url = get_upgrade_url(self.printer_name)
+        if url is not None:
+            template = upgrade_template(url)
+            if template is not None:
+                LOGGER.debug(template)
+                self._client.publish(template)
+                self._client.callback("event_printer_data_update")
+                
+    def print_update(self, data) -> bool:
+        """Update the upgrade state"""
+        old_data = f"{self.__dict__}"
+        
+        # Example payload for P1 printer
+        # "upgrade_state": {
+        #   "sequence_id": 0,
+        #   "progress": "100",
+        #   "status": "UPGRADE_SUCCESS",
+        #   "consistency_request": false,
+        #   "dis_state": 1,
+        #   "err_code": 0,
+        #   "force_upgrade": false,
+        #   "message": "0%, 0B/s",
+        #   "module": "ota",
+        #   "new_version_state": 1,
+        #   "cur_state_code": 0,
+        #   "new_ver_list": [
+        #     {
+        #       "name": "ota",
+        #       "cur_ver": "01.06.01.02",
+        #       "new_ver": "01.07.00.00",
+        #       "cur_release_type": 3,
+        #       "new_release_type": 3
+        #     }
+        #   ]
+        # },
+        #
+        # Example payload for P1 printer with outstanding AMS firmware update:
+        # "upgrade_state": {
+        #   "sequence_id": 0,
+        #   "progress": "100",
+        #   "status": "UPGRADE_SUCCESS",
+        #   "consistency_request": false,
+        #   "dis_state": 1,
+        #   "err_code": 0,
+        #   "force_upgrade": false,
+        #   "message": "0%, 0B/s",
+        #   "module": "ota",
+        #   "new_version_state": 1,
+        #   "cur_state_code": 0,
+        #   "idx2": 2118490042,
+        #   "new_ver_list": [
+        #     {
+        #       "name": "ams/0",
+        #       "cur_ver": "00.00.06.44",
+        #       "new_ver": "00.00.06.49",
+        #       "cur_release_type": 0,
+        #       "new_release_type": 1
+        #      }
+        #   ]
+        # },
+        #
+        # Example payload for X1 printer
+        # "upgrade_state": {
+        #   "ahb_new_version_number": "",
+        #   "ams_new_version_number": "",
+        #   "consistency_request": false,
+        #   "dis_state": 3,
+        #   "err_code": 0,
+        #   "ext_new_version_number": "",
+        #   "force_upgrade": false,
+        #   "idx": 4,
+        #   "idx1": 3,
+        #   "message": "RK1126 start write flash success",
+        #   "module": "",
+        #   "new_version_state": 1,
+        #   "ota_new_version_number": "01.08.02.00",
+        #   "progress": "100",
+        #   "sequence_id": 0,
+        #   "sn": "**REDACTED**",
+        #   "status": "UPGRADE_SUCCESS"
+        # },
+        
+        # Cross-validation on the remaining series is required. 
+        # Data values ​​for the upgrade_state dictionary
+        state = data.get("upgrade_state", {})
+        try:
+            self.upgrade_progress = int(state.get("progress", self.upgrade_progress))
+        except ValueError:
+            # Prevents unexpected "" strings from being empty.
+            self.upgrade_progress = 0
+        self.new_version_state = state.get("new_version_state", self.new_version_state)
+        self.cur_version = self._client._device.info.sw_ver
+        self.new_version = self._client._device.info.sw_ver
+        self.new_ver_list = state.get("new_ver_list", self.new_ver_list)
+        if self.new_version_state == 1:
+            if len(self.new_ver_list) > 0:
+                ota_info = next(filter(
+                    lambda x: x["name"] == "ota", self.new_ver_list
+                ), {})
+                if ota_info:
+                    self.cur_version = ota_info["cur_ver"]
+                    self.new_version = ota_info["new_ver"]
+                if self.upgrade_progress == 100 and state.get("message") == "0%, 0B/s":
+                    self.upgrade_progress = 0
+            elif state.get("ota_new_version_number", None) != None:
+                self.new_version = state.get("ota_new_version_number")
+                if self.upgrade_progress == 100 and state.get("message") == "RK1126 start write flash success":
+                    self.upgrade_progress = 0
+            else:
+                LOGGER.error(f"Unable to interpret {state}")
+            
+        return (old_data != f"{self.__dict__}")
+
+
 @dataclass
 class PrintJob:
     """Return all information related content"""
@@ -611,24 +770,35 @@ class PrintJob:
             # Sometimes the download completes so fast we go from a prior print's 100% to 100% for the new print in one update.
             # Make sure we catch that case too.
             self._gcode_file_prepare_percent = 0
+            # Clear existing cover & pick image data before attempting the fresh download.
+            self._clear_model_data();
+            
         old_gcode_file_prepare_percent = self._gcode_file_prepare_percent
         self._gcode_file_prepare_percent = int(data.get("gcode_file_prepare_percent", str(self._gcode_file_prepare_percent)))
         if self.gcode_state == "PREPARE":
             LOGGER.debug(f"DOWNLOAD PERCENTAGE: {old_gcode_file_prepare_percent} -> {self._gcode_file_prepare_percent}")
         if (old_gcode_file_prepare_percent != -1) and (self._gcode_file_prepare_percent != old_gcode_file_prepare_percent):
-            if self._gcode_file_prepare_percent == 100:
+            if self._gcode_file_prepare_percent >= 99:
                 LOGGER.debug(f"DOWNLOAD TO PRINTER IS COMPLETE")
                 if self._client.ftp_enabled:
                     # Now we can update the model data by ftp. By this point the model has been successfully loaded to the printer.
                     # and it's network stack is idle and shouldn't timeout or fail on us randomly.
                     self._update_task_data()
 
+        if self.gcode_state == "RUNNING" and previous_gcode_state == "PREPARE" and self._gcode_file_prepare_percent != 0 and self._gcode_file_prepare_percent < 99:
+            if self._client.ftp_enabled:
+                # I've observed a bug where the download completes but the gcode_file_prepare_percent never reaches 100. If we transition to the
+                # running gcode_state without observing 100% we assume the download did actuall complete.
+                LOGGER.debug("PRINT STARTED BUT DOWNLOAD NEVER REACHED 99%")
+                self._update_task_data()
+
         if self.gcode_state == "RUNNING" and previous_gcode_state == "PREPARE" and self._gcode_file_prepare_percent == 0:
-            # This is a lan mode print where the gcode was pushed to the printer before the print ever started so
-            # there is no download to track. If we can find a definitive way to track true lan mode vs just a pure local
-            # only connection to a cloud connected printer, we can move this update to IDLE -> PREPARE instead.
-            LOGGER.debug("LAN MODE DOWNLOAD STARTED")
-            self._update_task_data()
+            if self._client.ftp_enabled:
+                # This is a lan mode print where the gcode was pushed to the printer before the print ever started so
+                # there is no download to track. If we can find a definitive way to track true lan mode vs just a pure local
+                # only connection to a cloud connected printer, we can move this update to IDLE -> PREPARE instead.
+                LOGGER.debug("LAN MODE DOWNLOAD STARTED")
+                self._update_task_data()
 
         # When a print is canceled by the user, this is the payload that's sent. A couple of seconds later
         # print_error will be reset to zero.
@@ -910,6 +1080,16 @@ class PrintJob:
         thread = threading.Thread(target=self._async_download_task_data_from_printer)
         thread.start()
 
+    def _clear_model_data(self):
+        LOGGER.debug("Clearing model data")
+        self._client._device.cover_image.set_image(None)
+        self._clear_pick_data();
+
+    def _clear_pick_data(self):
+        LOGGER.debug("Clearing pick data")
+        self._client._device.pick_image.set_image(None)
+        self._printable_objects = {}
+
     def _async_download_task_data_from_printer(self):
         current_thread = threading.current_thread()
         current_thread.setName(f"{self._client._device.info.device_type}-FTP-{threading.get_native_id()}")
@@ -969,7 +1149,7 @@ class PrintJob:
                         LOGGER.debug(f"Plate: {plate_number}")
                         
                         # Now we have the plate number, extract the cover image from the archive
-                        self._client._device.cover_image.set_jpeg(archive.read(f"Metadata/plate_{plate_number}.png"))
+                        self._client._device.cover_image.set_image(archive.read(f"Metadata/plate_{plate_number}.png"))
                         LOGGER.debug(f"Cover image: Metadata/plate_{plate_number}.png")
 
                         # And extract the plate type from the plate json.
@@ -1030,8 +1210,6 @@ class PrintJob:
                         self._printable_objects = {k: _printable_objects[k] for k in identify_ids if k in _printable_objects}
                     except:
                         LOGGER.debug(f"Unable to load 'Metadata/pick_{plate_number}.png' from archive")
-                        self._client._device.pick_image.set_image(None)
-                        self._printable_objects = {}
 
             archive.close()
 
@@ -1098,7 +1276,7 @@ class PrintJob:
         self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         if self._task_data is None:
             LOGGER.debug("No bambu cloud task data found for printer.")
-            self._client._device.cover_image.set_jpeg(None)
+            self._client._device.cover_image.set_image(None)
             self.print_weight = 0
             self.print_length = 0
             self.print_bed_type = "unknown"
@@ -1109,7 +1287,7 @@ class PrintJob:
             url = self._task_data.get('cover', '')
             if url != "":
                 data = self._client.bambu_cloud.download(url)
-                self._client._device.cover_image.set_jpeg(data)
+                self._client._device.cover_image.set_image(data)
 
             self.print_length = self._task_data.get('length', self.print_length * 100) / 100
             self.print_bed_type = self._task_data.get('bedType', self.print_bed_type)
@@ -1896,14 +2074,14 @@ class ChamberImage:
     def __init__(self, client):
         self._client = client
         self._bytes = bytearray()
-        self._image_last_updated = datetime.now()
+        self._image_last_updated = None
 
-    def set_jpeg(self, bytes):
+    def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
         self._client.callback("event_printer_chamber_image_update")
 
-    def get_jpeg(self) -> bytearray:
+    def get_image(self) -> bytearray:
         return self._bytes.copy()
     
     def get_last_update_time(self) -> datetime:
@@ -1920,14 +2098,15 @@ class CoverImage:
     def __init__(self, client):
         self._client = client
         self._bytes = bytearray()
-        self._image_last_updated = datetime.now()
+        self._image_last_updated = None
         self._client.callback("event_printer_cover_image_update")
 
-    def set_jpeg(self, bytes):
+    def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
+        self._client.callback("event_printer_cover_image_update")
     
-    def get_jpeg(self) -> bytearray:
+    def get_image(self) -> bytearray:
         return self._bytes
 
     def get_last_update_time(self) -> datetime:
@@ -1947,6 +2126,7 @@ class PickImage:
     def set_image(self, bytes):
         self._bytes = bytes
         self._image_last_updated = datetime.now()
+        self._client.callback("event_printer_pick_image_update")
     
     def get_image(self) -> bytearray:
         return self._bytes
