@@ -34,8 +34,9 @@ script:
             {% else %}16{% endif -%}
           has_early_loadshedding: >
             {%- set ns = namespace(has_morning_ls=false) -%}
-            {% if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
-              {%- for slot in state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast') %}
+            {% set area_forecast = state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast') %}
+            {% if area_forecast and area_forecast|count > 0 %}
+              {%- for slot in area_forecast %}
                 {%- set slot_time = as_timestamp(slot.start_time) | timestamp_custom('%H:%M') %}
                 {%- set slot_date = as_timestamp(slot.start_time) | timestamp_custom('%Y-%m-%d') %}
                 {%- set tomorrow = (now() + timedelta(days=1)).strftime('%Y-%m-%d') %}
