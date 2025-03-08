@@ -753,6 +753,12 @@ class PrintJob:
         if previously_idle and not currently_idle:
             self._client.callback("event_print_started")
 
+            # Sometimes the download completes so fast we go from a prior print's 100% to 100% for the new print in one update.
+            # Make sure we catch that case too. And Lan Mode never sets this - make sure we init it to 0.
+            self._gcode_file_prepare_percent = 0
+            # Clear existing cover & pick image data before attempting any fresh download.
+            self._clear_model_data();
+
             # Generate the start_time for P1P/S when printer moves from idle to another state. Original attempt with remaining time
             # becoming non-zero didn't work as it never bounced to zero in at least the scenario where a print was canceled.
             if self._client._device.supports_feature(Features.START_TIME_GENERATED):
@@ -766,13 +772,6 @@ class PrintJob:
                 # We can update task data from the cloud immediately. But ftp has to wait.
                 self._update_task_data()
 
-        if self.gcode_state == "PREPARE" and previous_gcode_state != "PREPARE":
-            # Sometimes the download completes so fast we go from a prior print's 100% to 100% for the new print in one update.
-            # Make sure we catch that case too.
-            self._gcode_file_prepare_percent = 0
-            # Clear existing cover & pick image data before attempting the fresh download.
-            self._clear_model_data();
-            
         old_gcode_file_prepare_percent = self._gcode_file_prepare_percent
         self._gcode_file_prepare_percent = int(data.get("gcode_file_prepare_percent", str(self._gcode_file_prepare_percent)))
         if self.gcode_state == "PREPARE":
@@ -792,7 +791,7 @@ class PrintJob:
                 LOGGER.debug("PRINT STARTED BUT DOWNLOAD NEVER REACHED 99%")
                 self._update_task_data()
 
-        if self.gcode_state == "RUNNING" and previous_gcode_state == "PREPARE" and self._gcode_file_prepare_percent == 0:
+        if self.gcode_state == "RUNNING" and (previously_idle or previous_gcode_state == "PREPARE") and self._gcode_file_prepare_percent == 0:
             if self._client.ftp_enabled:
                 # This is a lan mode print where the gcode was pushed to the printer before the print ever started so
                 # there is no download to track. If we can find a definitive way to track true lan mode vs just a pure local
@@ -1597,12 +1596,14 @@ class AMSList:
     """Return all AMS related info"""
     tray_now: int
     data: list[AMSInstance]
+    model: str
 
     def __init__(self, client):
         self._client = client
         self.tray_now = 0
         self.data = [None] * 4
         self._first_initialization_done = False
+        self.model = ""
 
     def info_update(self, data):
         old_data = f"{self.__dict__}"
@@ -1638,8 +1639,10 @@ class AMSList:
             name = module["name"]
             index = -1
             if name.startswith("ams/"):
+                self.model = "AMS"
                 index = int(name[4])
             elif name.startswith("ams_f1/"):
+                self.model = "AMS Lite"
                 index = int(name[7])
             
             if index != -1:
@@ -1768,7 +1771,7 @@ class AMSTray:
     k: float
     tag_uid: str
     tray_uuid: str
-
+    tray_weight: int
 
     def __init__(self, client):
         self._client = client
@@ -1784,7 +1787,7 @@ class AMSTray:
         self.k = 0
         self.tag_uid = ""
         self.tray_uuid = ""
-
+        self.tray_weight = 0
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
 
@@ -1802,6 +1805,7 @@ class AMSTray:
             self.tag_uid = ""
             self.tray_uuid = ""
             self.k = 0
+            self.tray_weight = 0
         else:
             self.empty = False
             self.idx = data.get('tray_info_idx', self.idx)
@@ -1815,7 +1819,7 @@ class AMSTray:
             self.tag_uid = data.get('tag_uid', self.tag_uid)
             self.tray_uuid = data.get('tray_uuid', self.tray_uuid)
             self.k = data.get('k', self.k)
-        
+            self.tray_weight = data.get('tray_weight', self.tray_weight)
         return (old_data != f"{self.__dict__}")
 
 

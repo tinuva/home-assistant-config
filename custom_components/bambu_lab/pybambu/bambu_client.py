@@ -55,7 +55,7 @@ class WatchdogThread(threading.Thread):
         self.setName(f"{self._client._device.info.device_type}-Watchdog-{threading.get_native_id()}")
         LOGGER.debug("Watchdog thread started.")
 
-        WATCHDOG_TIMER = 30
+        WATCHDOG_TIMER = 60
         while True:
             # Wait out the remainder of the watchdog delay or 1s, whichever is higher.
             interval = time.time() - self._last_received_data
@@ -701,10 +701,10 @@ class BambuClient:
                 LOGGER.debug("Connection test was successful")
                 return True
         except OSError as e:
-            LOGGER.error(f"Connection test failed with exception {type(e)} Args: {e}")
+            LOGGER.error(f"Connection test to '{host}' failed: {type(e)} Args: {e}")
             return False
         except queue.Empty:
-            LOGGER.error(f"Connection test failed with timeout")
+            LOGGER.error(f"Connection test to '{host}' failed with timeout")
             return False
         finally:
             self.disconnect()
