@@ -36,12 +36,13 @@ script:
             {%- set ns = namespace(has_morning_ls=false) -%}
             {% set area_forecast = state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast') %}
             {% if area_forecast and area_forecast|count > 0 %}
+              {%- set current_hour = now().hour %}
               {%- for slot in area_forecast %}
                 {%- set slot_time = as_timestamp(slot.start_time) | timestamp_custom('%H:%M') %}
                 {%- set slot_date = as_timestamp(slot.start_time) | timestamp_custom('%Y-%m-%d') %}
                 {%- set tomorrow = (now() + timedelta(days=1)).strftime('%Y-%m-%d') %}
                 {%- set today = now().strftime('%Y-%m-%d') %}
-                {%- if (slot_date == today or slot_date == tomorrow) %}
+                {%- if (slot_date == today and current_hour < 16) or (slot_date == tomorrow and current_hour >= 16) %}
                   {%- set slot_end_time = as_timestamp(slot.end_time) %}
                   {%- set slot_start_time = as_timestamp(slot.start_time) %}
                   {%- set duration_hours = (slot_end_time - slot_start_time) / 3600 %}
@@ -57,7 +58,7 @@ script:
       - choose:
           - conditions:
               - condition: template
-                value_template: "{{ has_morning_loadshedding == true }}"
+                value_template: "{{ has_early_loadshedding == true }}"
             sequence:
               - alias: "Limit DoD for morning loadshedding"
                 variables:
