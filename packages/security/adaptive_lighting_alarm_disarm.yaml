@@ -1,0 +1,26 @@
+---
+# Turn off adaptive lighting sleep mode when alarm is disarmed
+# This ensures normal lighting resumes when someone returns home or wakes up
+
+automation:
+  - alias: Turn off adaptive lighting sleep mode when alarm disarmed
+    description: Turns off sleep mode for kitchen and lounge adaptive lighting when alarm is disarmed
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.home_alarm
+        to: 'disarmed'
+    condition:
+      - condition: template
+        value_template: "{{ trigger.from_state.state != 'unavailable' }}"
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id:
+            - switch.adaptive_lighting_sleep_mode_kitchen
+            - switch.adaptive_lighting_sleep_mode_lounge
+      - service: script.log
+        data:
+          icon: ':bulb:'
+          object: 'Adaptive Lighting'
+          message: >
+            Turned off sleep mode for kitchen and lounge lighting due to alarm disarm
