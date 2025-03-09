@@ -65,6 +65,13 @@ script:
                   dod: >
                     {% set current_dod = dod|int %}
                     {% if current_dod > 25 %}25{% else %}{{ current_dod }}{% endif %}
+              - alias: "Set DoD on inverter"
+                service: number.set_value
+                data:
+                  value: >
+                    {{ dod }}
+                target:
+                  entity_id: number.goodwe_depth_of_discharge_on_grid
               - alias: "Log morning loadshedding DoD adjustment"
                 service: script.log
                 data:
