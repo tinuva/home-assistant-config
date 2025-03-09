@@ -28,7 +28,7 @@ sensor:
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
-          {% set battery_capacity = 14 %}
+          {% set battery_capacity = 10.5 %}
           {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
           {{ battery_current }}
       battery_available_dod:
@@ -38,7 +38,7 @@ sensor:
         icon_template: "mdi:battery-high"
         value_template: >-
           {% set soc = states('sensor.battery_state_of_charge')|int %}
-          {% set battery_capacity = 14 %}
+          {% set battery_capacity = 10.5 %}
           {% set battery_dod_ongrid = states('sensor.goodwe_depth_of_discharge_on_grid') %}
           {% set battery_dod_offgrid = 80 %}
           {% set battery_dod = iif(is_state('sensor.energy_mode', 'Normal (On-Grid)'), battery_dod_ongrid, battery_dod_offgrid) %}
@@ -53,7 +53,7 @@ sensor:
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
-          {% set battery_capacity = 14 %}
+          {% set battery_capacity = 10.5 %}
           {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
           {% set battery_to_charge = (battery_capacity - battery_current)|round(2) %}
           {{ battery_to_charge }}
