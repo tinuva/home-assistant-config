@@ -21,7 +21,7 @@ from homeassistant.helpers.selector import (CountrySelector,
                                             TextSelectorType)
 from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
-from msmart.discover import Discover
+from msmart.discover import CloudError, Discover
 from msmart.lan import AuthenticationError
 
 from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP,
@@ -100,11 +100,15 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 # Finish connection
-                if await Discover.connect(device):
-                    return await self._create_entry_from_device(device)
-                else:
-                    # Indicate a connection could not be made
-                    return self.async_abort(reason="cannot_connect")
+                try:
+                    if await Discover.connect(device):
+                        return await self.async_step_show_token_key(device=device)
+                    else:
+                        # Indicate a connection could not be made
+                        return self.async_abort(reason="cannot_connect")
+                except CloudError:
+                    # Catch cloud errors and report to user
+                    return self.async_abort(reason="cloud_connection_failed")
 
         data_schema = self.add_suggested_values_to_schema(
             vol.Schema({
@@ -139,11 +143,15 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._abort_if_unique_id_configured()
 
                 # Finish connection
-                if await Discover.connect(device):
-                    return await self._create_entry_from_device(device)
-                else:
-                    # Indicate a connection could not be made
-                    return self.async_abort(reason="cannot_connect")
+                try:
+                    if await Discover.connect(device):
+                        return await self.async_step_show_token_key(device=device)
+                    else:
+                        # Indicate a connection could not be made
+                        return self.async_abort(reason="cannot_connect")
+                except CloudError:
+                    # Catch cloud errors and report to user
+                    return self.async_abort(reason="cloud_connection_failed")
 
         # Create a set of already configured devices by ID
         configured_devices = {
@@ -181,6 +189,39 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         })
 
         return self.async_show_form(step_id="pick_device",
+                                    data_schema=data_schema)
+
+    async def async_step_show_token_key(
+        self, user_input: dict[str, Any] | None = None,
+        *,
+        device: AC = None
+    ) -> FlowResult:
+        """Handle the show token step of config flow."""
+
+        # V2 devices don't have a token and key to display
+        if device and device.version < 3:
+            return await self._create_entry_from_device(device)
+
+        if user_input is not None:
+            # User input is discarded and device entry is created from saved device
+            return await self._create_entry_from_device(self._device)
+
+        # Show the user the token and key so they can be copied down
+        data_schema = self.add_suggested_values_to_schema(
+            vol.Schema({
+                vol.Optional(CONF_ID): cv.string,
+                vol.Optional(CONF_TOKEN): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
+                vol.Optional(CONF_KEY): cv.string
+            }), {
+                CONF_ID: device.id,
+                CONF_TOKEN: device.token,
+                CONF_KEY: device.key
+            })
+
+        # Save incoming device
+        self._device = device
+
+        return self.async_show_form(step_id="show_token_key",
                                     data_schema=data_schema)
 
     async def async_step_manual(self, user_input) -> FlowResult:

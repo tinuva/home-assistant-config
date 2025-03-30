@@ -43,7 +43,7 @@
         "data": {
           "region": "Regió del compte:",
           "email": "Direcció de Correu Electrònic o Número de Telèfon",
-          "password": "Contrasenyaa",
+          "password": "Contrasenya",
           "newCode": "Sol·licita un codi nou",
           "verifyCode": "Codi de verificació per correu electrònic o telèfon",
           "tfaCode": "Codi d'autenticació de dos factors"
@@ -364,9 +364,9 @@
           "idle": "Inactiva",
           "offline": "Fora de línia",
           "prepare": "Preparant",
-          "running": "En curso",
+          "running": "En curs",
           "pause": "Pausa",
-          "slicing": "Tallant",
+          "slicing": "Laminant",
           "init": "Inicialitzant"
         }
       },
@@ -472,6 +472,21 @@
           },
           "type": {
             "name": "Tipus"
+          },
+          "remain": {
+            "name": "Filament restant"
+          },
+          "remain_enabled": {
+            "name": "L'estimació del filament restant ha activat"
+          },
+          "tag_uid": {
+            "name": "Número de sèrie de la bobina"
+          },
+          "filament_id": {
+            "name": "Identificador de filament"
+          },
+          "tray_weight": {
+            "name": "Pes màxim de filament"
           }
         }
       },
@@ -502,14 +517,20 @@
           "remain": {
             "name": "Filament restant"
           },
+          "remain_enabled": {
+            "name": "Estimació del filament restant activada"
+          },
           "tag_uid": {
             "name": "Número de sèrie de la bobina"
           },
           "type": {
             "name": "Tipus"
           },
-          "remain_enabled": {
-            "name": "L'estimació del filament restant ha activat"
+          "filament_id": {
+            "name": "ID del filament"
+          },
+          "tray_weight": {
+            "name": "Pes màxim del filament"
           }
         }
       },
@@ -545,6 +566,15 @@
           },
           "type": {
             "name": "Tipus"
+          },
+          "filament_id": {
+            "name": "ID del filament"
+          },
+          "tray_weight": {
+            "name": "Pes màxim del filament"
+          },
+          "remain_enabled": {
+            "name": "L'estimació del filament restant ha activat"
           }
         }
       },
@@ -580,6 +610,15 @@
           },
           "type": {
             "name": "Tipus"
+          },
+          "filament_id": {
+            "name": "ID del filament"
+          },
+          "tray_weight": {
+            "name": "Pes màxim del filament"
+          },
+          "remain_enabled": {
+            "name": "L'estimació del filament restant ha activat"
           }
         }
       },
@@ -615,17 +654,29 @@
           },
           "type": {
             "name": "Tipus"
+          },
+          "filament_id": {
+            "name": "ID del filament"
+          },
+          "tray_weight": {
+            "name": "Pes màxim del filament"
+          },
+          "remain_enabled": {
+            "name": "L'estimació del filament restant ha activat"
           }
         }
       },
       "ip_address": {
-        "name": "adreça IP"
+        "name": "Adreça IP"
       },
       "printable_objects": {
         "name": "Objectes imprimibles"
       },
       "skipped_objects": {
         "name": "Objectes saltats"
+      },
+      "gcode_file_downloaded": {
+        "name": "El fitxer GCode descarregat"
       }
     },
     "camera": {
@@ -651,11 +702,14 @@
       },
       "timelapse": {
         "name": "Carregueu el Timelapse més recent de la impressora"
+      },
+      "download_gcode_file": {
+        "name": "Deseu el fitxer de codis a HA"
       }
     },
     "update": {
       "firmware_update": {
-        "name": "Actualització de Firmware"
+        "name": "Actualització del Firmware"
       }
     }
   },
@@ -663,8 +717,14 @@
     "configuration_type": {
       "options": {
         "bambu": "Núvol Bambu Lab",
-        "lan": "Mode Lan"
+        "lan": "Mode LAN"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "L’autenticació ha fallat per {device}",
+      "description": "Intentant connectar -se al laboratori Bambu ha fallat. Reconfigureu la integració i proporcioneu credencials noves."
     }
   }
 }

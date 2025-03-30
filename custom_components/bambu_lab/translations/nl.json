@@ -478,6 +478,21 @@
           },
           "type": {
             "name": "Type"
+          },
+          "remain": {
+            "name": "Resterende gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
+          },
+          "tag_uid": {
+            "name": "Spoel serienummer"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
           }
         }
       },
@@ -516,6 +531,12 @@
           },
           "remain_enabled": {
             "name": "Resterende schatting van de gloeidraad ingeschakeld"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
           }
         }
       },
@@ -551,6 +572,15 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
@@ -586,6 +616,15 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
@@ -621,11 +660,23 @@
           },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament -ID"
+          },
+          "tray_weight": {
+            "name": "Maximaal gewicht van de gloeidraad"
+          },
+          "remain_enabled": {
+            "name": "Resterende schatting van de filament ingeschakeld"
           }
         }
       },
       "skipped_objects": {
         "name": "Objecten overgeslagen"
+      },
+      "gcode_file_downloaded": {
+        "name": "Gcode -bestand gedownload"
       }
     },
     "camera": {
@@ -651,6 +702,9 @@
       },
       "timelapse": {
         "name": "Nieuwste timelapse vanuit de printer inladen"
+      },
+      "download_gcode_file": {
+        "name": "Sla Gcode -bestand op in HA"
       }
     },
     "update": {
@@ -665,6 +719,12 @@
         "bambu": "Bambu Lab cloud",
         "lan": "Lan-modus"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Authenticatie mislukt voor {device}",
+      "description": "Proberen om verbinding te maken met Bambu Lab is mislukt. Configureer de integratie opnieuw en geef nieuwe referenties."
     }
   }
 }

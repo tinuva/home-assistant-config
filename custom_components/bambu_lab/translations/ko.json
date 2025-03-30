@@ -472,6 +472,21 @@
           },
           "type": {
             "name": "유형"
+          },
+          "remain": {
+            "name": "남은 필라멘트"
+          },
+          "remain_enabled": {
+            "name": "나머지 필라멘트 추정이 활성화되었습니다"
+          },
+          "tag_uid": {
+            "name": "스풀 일련 번호"
+          },
+          "filament_id": {
+            "name": "필라멘트 ID"
+          },
+          "tray_weight": {
+            "name": "필라멘트의 최대 무게"
           }
         }
       },
@@ -510,6 +525,12 @@
           },
           "remain_enabled": {
             "name": "나머지 필라멘트 추정이 활성화되었습니다"
+          },
+          "filament_id": {
+            "name": "필라멘트 ID"
+          },
+          "tray_weight": {
+            "name": "필라멘트의 최대 무게"
           }
         }
       },
@@ -545,6 +566,15 @@
           },
           "type": {
             "name": "유형"
+          },
+          "filament_id": {
+            "name": "필라멘트 ID"
+          },
+          "tray_weight": {
+            "name": "필라멘트의 최대 무게"
+          },
+          "remain_enabled": {
+            "name": "나머지 필라멘트 추정이 활성화되었습니다"
           }
         }
       },
@@ -580,6 +610,15 @@
           },
           "type": {
             "name": "유형"
+          },
+          "filament_id": {
+            "name": "필라멘트 ID"
+          },
+          "tray_weight": {
+            "name": "필라멘트의 최대 무게"
+          },
+          "remain_enabled": {
+            "name": "나머지 필라멘트 추정이 활성화되었습니다"
           }
         }
       },
@@ -615,6 +654,15 @@
           },
           "type": {
             "name": "유형"
+          },
+          "filament_id": {
+            "name": "필라멘트 ID"
+          },
+          "tray_weight": {
+            "name": "필라멘트의 최대 무게"
+          },
+          "remain_enabled": {
+            "name": "나머지 필라멘트 추정이 활성화되었습니다"
           }
         }
       },
@@ -626,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "건너 뛰는 물체"
+      },
+      "gcode_file_downloaded": {
+        "name": "GCODE 파일 다운로드"
       }
     },
     "camera": {
@@ -651,6 +702,9 @@
       },
       "timelapse": {
         "name": "프린터에서 최신 타임랩스 로드"
+      },
+      "download_gcode_file": {
+        "name": "HA에 GCODE 파일을 저장하십시오"
       }
     },
     "update": {
@@ -665,6 +719,12 @@
         "bambu": "뱀부랩 클라우드",
         "lan": "랜 모드"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "{device}에 대한 인증 실패",
+      "description": "Bambu Lab에 연결하려는 시도는 실패했습니다. 통합을 재구성하고 새로운 자격 증명을 제공하십시오."
     }
   }
 }

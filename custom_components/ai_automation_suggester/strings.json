@@ -1,0 +1,23 @@
+{
+  "title": "AI Automation Suggester",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure AI Automation Suggester",
+        "data": {
+          "provider": "AI Provider"
+        }
+      }
+    },
+    "error": {
+      "required": "This field is required.",
+      "invalid_api_key": "The API key is invalid."
+    }
+  },
+  "services": {
+    "generate_suggestions": {
+      "name": "Generate Suggestions",
+      "description": "Manually trigger AI automation suggestions."
+    }
+  }
+}

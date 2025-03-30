@@ -1,0 +1,30 @@
+{
+  "services": {
+    "generate_suggestions": {
+      "name": "Genereer Suggesties",
+      "description": "Handmatig AI-automatiseringssuggesties oproepen",
+      "fields": {
+        "provider_config": {
+          "name": "Aanbiederconfiguratie",
+          "description": "Welke aanbiederconfiguratie moet worden gebruikt (indien er meerdere zijn)?"
+        },
+        "custom_prompt": {
+          "name": "Aangepaste Prompt",
+          "description": "Optioneel een aangepaste prompt om de standaard systeemprompt te overschrijven of om de suggesties op specifieke thema's te richten (bijv. energiebesparing)"
+        },
+        "all_entities": {
+          "name": "Alle Entiteiten Beschouwen",
+          "description": "Indien waar, worden alle entiteiten in overweging genomen in plaats van alleen nieuwe entiteiten."
+        },
+        "domains": {
+          "name": "Domeinen",
+          "description": "Lijst met te beschouwen domeinen. Als deze leeg is, worden alle domeinen beschouwd."
+        },
+        "entity_limit": {
+          "name": "Entiteitenlimiet",
+          "description": "Maximaal aantal te beschouwen entiteiten (willekeurig geselecteerd)."
+        }
+      }
+    }
+  }
+}

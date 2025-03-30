@@ -472,6 +472,21 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "remain": {
+            "name": "Zostávajúce vlákno"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
+          },
+          "tag_uid": {
+            "name": "Sériové číslo cievky"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
           }
         }
       },
@@ -510,6 +525,12 @@
           },
           "remain_enabled": {
             "name": "Zostávajúci odhad vlákna povolený"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
           }
         }
       },
@@ -545,6 +566,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -580,6 +610,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -615,6 +654,15 @@
           },
           "type": {
             "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "tray_weight": {
+            "name": "Maximálna hmotnosť vlákna"
+          },
+          "remain_enabled": {
+            "name": "Zostávajúci odhad vlákna povolený"
           }
         }
       },
@@ -626,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "Preskočené predmety"
+      },
+      "gcode_file_downloaded": {
+        "name": "Stiahnutý súbor GCode"
       }
     },
     "camera": {
@@ -651,6 +702,9 @@
       },
       "timelapse": {
         "name": "Načítať najnovší časový čas z tlačiarne"
+      },
+      "download_gcode_file": {
+        "name": "Uložte súbor GCode v HA"
       }
     },
     "update": {
@@ -665,6 +719,12 @@
         "bambu": "Bambu Lab cloud",
         "lan": "Režim LAN"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Autentifikácia zlyhala pre {device}",
+      "description": "Pokus o pripojenie k laboratória Bambu zlyhal. Prekonfigurujte integráciu a poskytnite nové poverenia."
     }
   }
 }

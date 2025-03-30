@@ -472,6 +472,21 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "remain": {
+            "name": "Filamento rimanente"
+          },
+          "remain_enabled": {
+            "name": "Stima del filamento rimanente abilitato"
+          },
+          "tag_uid": {
+            "name": "Numero di serie spool"
+          },
+          "filament_id": {
+            "name": "Filamento id"
+          },
+          "tray_weight": {
+            "name": "Peso massimo del filamento"
           }
         }
       },
@@ -510,6 +525,12 @@
           },
           "remain_enabled": {
             "name": "Stima del filamento rimanente abilitato"
+          },
+          "filament_id": {
+            "name": "Filamento id"
+          },
+          "tray_weight": {
+            "name": "Peso massimo del filamento"
           }
         }
       },
@@ -545,6 +566,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "Filamento id"
+          },
+          "tray_weight": {
+            "name": "Peso massimo del filamento"
+          },
+          "remain_enabled": {
+            "name": "Stima del filamento rimanente abilitato"
           }
         }
       },
@@ -580,6 +610,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "Filamento id"
+          },
+          "tray_weight": {
+            "name": "Peso massimo del filamento"
+          },
+          "remain_enabled": {
+            "name": "Stima del filamento rimanente abilitato"
           }
         }
       },
@@ -615,6 +654,15 @@
           },
           "type": {
             "name": "Tipo"
+          },
+          "filament_id": {
+            "name": "Filamento id"
+          },
+          "tray_weight": {
+            "name": "Peso massimo del filamento"
+          },
+          "remain_enabled": {
+            "name": "Stima del filamento rimanente abilitato"
           }
         }
       },
@@ -626,6 +674,9 @@
       },
       "skipped_objects": {
         "name": "Oggetti saltati"
+      },
+      "gcode_file_downloaded": {
+        "name": "File GCode scaricato"
       }
     },
     "camera": {
@@ -651,6 +702,9 @@
       },
       "timelapse": {
         "name": "Carica l'ultimo timelapse dalla stampante"
+      },
+      "download_gcode_file": {
+        "name": "Salva il file GCode in HA"
       }
     },
     "update": {
@@ -665,6 +719,12 @@
         "bambu": "La nuvola di Bambu Lab",
         "lan": "Modalità Lan"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "L'autenticazione non è riuscita per {device}",
+      "description": "Tentare di connettersi al laboratorio di Bambu non è riuscito. Si prega di riconfigurare l'integrazione e fornire nuove credenziali."
     }
   }
 }

@@ -71,7 +71,7 @@ class WatchdogThread(threading.Thread):
             elif interval < WATCHDOG_TIMER:
                 self._watchdog_fired = False
 
-        LOGGER.info("Watchdog thread exited.")
+        LOGGER.debug("Watchdog thread exited.")
 
 
 class ChamberImageThread(threading.Thread):
@@ -344,6 +344,7 @@ class BambuClient:
         self._enable_ftp = config.get('enable_ftp', self._local_mqtt)
         self._enable_timelapse = config.get('enable_timelapse', False)
         self._disable_ssl_verify = config.get('disable_ssl_verify', False)
+        self._enable_download_gcode_file = config.get('enable_download_gcode_file', False)
 
         self._connected = False
         self._port = 1883
@@ -409,6 +410,13 @@ class BambuClient:
 
     def set_ftp_enabled(self, enable):
         self._enable_ftp = enable
+        
+    @property
+    def download_gcode_file_enabled(self):
+        return self._device.supports_feature(Features.DOWNLOAD_GCODE_FILE) and self._enable_download_gcode_file
+
+    def set_download_gcode_file_enabled(self, enable):
+        self._enable_download_gcode_file = enable
 
     @property
     def timelapse_enabled(self):

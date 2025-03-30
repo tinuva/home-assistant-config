@@ -77,9 +77,9 @@ def get_filament_name(idx, custom_filaments: dict):
     """Converts a filament idx to a human-readable name"""
     result = FILAMENT_NAMES.get(idx, "unknown")
     if result == "unknown" and idx != "":
-        result = custom_filaments.get(idx, "unknown")
-    # if result == "unknown" and idx != "":
-    #     LOGGER.debug(f"UNKNOWN FILAMENT IDX: '{idx}'")
+        custom = custom_filaments.get(idx, None)
+        if custom is not None:
+            result = custom.name
     return result
 
 
@@ -100,6 +100,7 @@ def get_current_stage(id) -> str:
 
 def get_HMS_error_text(code: str, language: str):
     """Return the human-readable description for an HMS error"""
+    code = code.replace("_", "")
     error = HMS_ERRORS.get(code, 'unknown')
     if '' == error:
         return 'unknown'
@@ -108,6 +109,7 @@ def get_HMS_error_text(code: str, language: str):
 
 def get_print_error_text(code: str, language: str):
     """Return the human-readable description for a print error"""
+    code = code.replace("_", "")
     error = PRINT_ERROR_ERRORS.get(code, 'unknown')
     if '' == error:
         return 'unknown'

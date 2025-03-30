@@ -1,0 +1,30 @@
+{
+  "services": {
+    "generate_suggestions": {
+      "name": "Genera Suggerimenti",
+      "description": "Lancia manualmente suggerimenti di automazione AI",
+      "fields": {
+        "provider_config": {
+          "name": "Configurazione Provider",
+          "description": "Quale configurazione provider utilizzare (se ne hai più di una)?"
+        },
+        "custom_prompt": {
+          "name": "Prompt Personalizzato",
+          "description": "Prompt personalizzato opzionale per sovrascrivere il prompt di sistema predefinito o per focalizzare i suggerimenti su temi specifici (ad es. risparmio energetico)"
+        },
+        "all_entities": {
+          "name": "Considera Tutte le Entità",
+          "description": "Se vero, considera tutte le entità invece di solo quelle nuove."
+        },
+        "domains": {
+          "name": "Domini",
+          "description": "Elenco dei domini da considerare. Se vuoto, considera tutti i domini."
+        },
+        "entity_limit": {
+          "name": "Limite di Entità",
+          "description": "Numero massimo di entità da considerare (scelte casualmente)."
+        }
+      }
+    }
+  }
+}

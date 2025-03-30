@@ -386,6 +386,9 @@
       "gcode_file": {
         "name": "Gcode filename"
       },
+      "gcode_file_downloaded": {
+        "name": "Gcode file downloaded"
+      },
       "print_bed_type": {
         "name": "Print bed type",
         "state": {
@@ -479,8 +482,23 @@
           "nozzle_temp_max": {
             "name": "Nozzle max temperature"
           },
+          "remain": {
+            "name": "Remaining filament"
+          },
+          "remain_enabled": {
+            "name": "Remaining filament estimation enabled"
+          },
+          "tag_uid": {
+            "name": "Spool serial number"
+          },
           "type": {
             "name": "Type"
+          },
+          "filament_id": {
+            "name": "Filament ID"
+          },
+          "tray_weight": {
+            "name": "Maximum weight of filament"
           }
         }
       },
@@ -555,6 +573,9 @@
           "remain": {
             "name": "Remaining filament"
           },
+          "remain_enabled": {
+            "name": "Remaining filament estimation enabled"
+          },
           "tag_uid": {
             "name": "Spool serial number"
           },
@@ -595,6 +616,9 @@
           },
           "remain": {
             "name": "Remaining filament"
+          },
+          "remain_enabled": {
+            "name": "Remaining filament estimation enabled"
           },
           "tag_uid": {
             "name": "Spool serial number"
@@ -637,6 +661,9 @@
           "remain": {
             "name": "Remaining filament"
           },
+          "remain_enabled": {
+            "name": "Remaining filament estimation enabled"
+          },
           "tag_uid": {
             "name": "Spool serial number"
           },
@@ -675,6 +702,9 @@
       },
       "timelapse": {
         "name": "Load latest timelapse from printer"
+      },
+      "download_gcode_file": {
+        "name": "Save GCode file in HA"
       }
     },
     "update": {
@@ -689,6 +719,12 @@
         "bambu": "Bambu Lab cloud",
         "lan": "Lan Mode"
       }
+    }
+  },
+  "issues": {
+    "authentication_failed": {
+      "title": "Authentication Failed for {device}",
+      "description": "Attempting to connect to Bambu Lab failed. Please reconfigure the integration and provide fresh credentials."
     }
   }
 }
