@@ -18,6 +18,8 @@ automation:
           entity_id:
             - switch.adaptive_lighting_sleep_mode_kitchen
             - switch.adaptive_lighting_sleep_mode_lounge
+            - switch.adaptive_lighting_sleep_mode_boy_bedroom
+            - switch.adaptive_lighting_sleep_mode_girl_bedroom
       - service: script.log
         data:
           icon: ':bulb:'
