@@ -1,0 +1,48 @@
+---
+automation:
+  - alias: "Turn off egg boiler when cooking is complete"
+    description: "Turns off the egg boiler when power drops, indicating cooking is done"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.egg_boiler_energy_power
+        below: 5  # Trigger when power drops below 5W
+        for:
+          seconds: 10  # Wait for 10 seconds to ensure it's not a momentary fluctuation
+    condition:
+      - condition: numeric_state
+        entity_id: sensor.egg_boiler_energy_power
+        above: 300  # Check if it was running at full power before
+        for:
+          minutes: 1  # Ensure it was running for at least a minute
+    action:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.egg_boiler_egg_boiler
+      - service: script.log
+        data:
+          icon: ':egg:'
+          object: 'Egg Boiler'
+          message: "Egg boiler turned off automatically after cooking completion."
+
+  - alias: "Turn on egg boiler when alarm disarmed in the morning"
+    description: "Turns on the egg boiler when the alarm is disarmed between 4am and 8am"
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.home_alarm
+        to: 'disarmed'
+    condition:
+      - condition: time
+        after: "04:00:00"
+        before: "08:00:00"
+      - condition: state
+        entity_id: switch.egg_boiler_egg_boiler
+        state: 'off'
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.egg_boiler_egg_boiler
+      - service: script.log
+        data:
+          icon: ':egg:'
+          object: 'Egg Boiler'
+          message: "Egg boiler turned on automatically after alarm disarmed in the morning."
