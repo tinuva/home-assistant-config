@@ -84,7 +84,7 @@ automation:
               - condition: not
                 conditions:
                   - condition: state
-                    entity_id: input_boolean.floor_disaster_zone
+                    entity_id: input_boolean.rockrobo_floor_disaster_zone
                     state: "on"
             sequence:
               - service: vacuum.start
@@ -100,14 +100,14 @@ automation:
               message: >
                 Not cleaning, no conditions met
           - condition: state
-            entity_id: input_boolean.floor_disaster_zone
+            entity_id: input_boolean.rockrobo_floor_disaster_zone
             state: "on"
           - service: script.log
             data:
               icon: ':robot_face:'
               object: 'Vacuum Robot'
               message: >
-                Floor disaster zone set
+                Rockrobo Floor disaster zone set
 
   ### Notify state change
   - alias: Notify when Robot State Change
