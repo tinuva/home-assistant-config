@@ -8,12 +8,6 @@ automation:
         below: 5  # Trigger when power drops below 5W
         for:
           seconds: 10  # Wait for 10 seconds to ensure it's not a momentary fluctuation
-    condition:
-      - condition: numeric_state
-        entity_id: sensor.egg_boiler_energy_power
-        above: 300  # Check if it was running at full power before
-        for:
-          minutes: 1  # Ensure it was running for at least a minute
     action:
       - service: switch.turn_off
         target:
