@@ -24,7 +24,7 @@ automation:
                   #   state: 'on'
                   - condition: numeric_state
                     entity_id: sensor.x1c_00m09a363000342_bed_temperature
-                    above: 41
+                    above: 39
             sequence:
               - service: switch.turn_on
                 data:
