@@ -5,7 +5,7 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.egg_boiler_energy_power
-        below: 5  # Trigger when power drops below 5W
+        below: 50  # Trigger when power drops below 5W
         for:
           seconds: 10  # Wait for 10 seconds to ensure it's not a momentary fluctuation
     action:
