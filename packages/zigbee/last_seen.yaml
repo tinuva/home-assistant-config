@@ -24,7 +24,6 @@ binary_sensor:
             {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
               {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
                 {%- set ns.break = true %}
-                true
               {%- endif -%}
             {%- endif -%}
           {%- endfor %}
@@ -70,10 +69,13 @@ automation:
                 data:
                   title: "Some Zigbee devices haven't been seen lately... "
                   message: >
-                    {%- for state in (expand(states.sensor,states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-                    {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) %}
-                    {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
-                    {%- endif -%} {%- endfor %}
+                    {%- for state in (expand(states.sensor, states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+                      {%- if state.state is string and state.state not in ['on', 'off', 'unavailable', 'unknown'] and state.state | regex_match('^[0-9]{4}-[0-9]{2}-[0-9]{2}.*') -%}
+                        {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) %}
+                          {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor %}
                   notification_id: "last_seen_zigbee_devices"
           # IF 'zigbee_last_seen_problem' to 'off'
           - conditions:
