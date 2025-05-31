@@ -392,6 +392,15 @@
       "gcode_file_downloaded": {
         "name": "Gcode file downloaded"
       },
+      "remaining_drying_time": {
+        "name": "Remaining drying time"
+      },
+      "ams_temp": {
+        "name": "Temperature"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
       "print_bed_type": {
         "name": "Print bed type",
         "state": {
@@ -457,9 +466,6 @@
       },
       "humidity_index": {
         "name": "Humidity index"
-      },
-      "ams_temp": {
-        "name": "AMS temperature"
       },
       "external_spool": {
         "name": "External spool",

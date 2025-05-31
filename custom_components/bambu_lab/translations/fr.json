@@ -446,9 +446,6 @@
       "humidity_index": {
         "name": "Indice d'humidité"
       },
-      "ams_temp": {
-        "name": "Température de la AMS"
-      },
       "external_spool": {
         "name": "Bobine externe",
         "state_attributes": {
@@ -680,6 +677,15 @@
       },
       "gcode_file_downloaded": {
         "name": "Fichier G-code téléchargé"
+      },
+      "remaining_drying_time": {
+        "name": "Temps de chauffage restant"
+      },
+      "ams_temp": {
+        "name": "Température"
+      },
+      "humidity": {
+        "name": "Humidité"
       }
     },
     "camera": {

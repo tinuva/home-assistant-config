@@ -446,9 +446,6 @@
       "humidity_index": {
         "name": "Index vlhkosti"
       },
-      "ams_temp": {
-        "name": "Teplota AMS"
-      },
       "external_spool": {
         "name": "Vonkajšia cievka",
         "state_attributes": {
@@ -680,6 +677,15 @@
       },
       "gcode_file_downloaded": {
         "name": "Stiahnutý súbor GCode"
+      },
+      "remaining_drying_time": {
+        "name": "Zostávajúci čas sušenia"
+      },
+      "ams_temp": {
+        "name": "Teplota"
+      },
+      "humidity": {
+        "name": "Vlhkosť"
       }
     },
     "camera": {

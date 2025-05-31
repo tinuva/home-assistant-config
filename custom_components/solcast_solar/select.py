@@ -5,23 +5,14 @@ import logging
 from typing import Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
-from homeassistant.const import (
-    ATTR_CONFIGURATION_URL,
-    ATTR_IDENTIFIERS,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_NAME,
-    ATTR_SW_VERSION,
-    EntityCategory,
-)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import ATTR_ENTRY_TYPE, ATTRIBUTION, DOMAIN, KEY_ESTIMATE, MANUFACTURER
+from .const import ATTRIBUTION, DOMAIN, KEY_ESTIMATE, MANUFACTURER
 from .coordinator import SolcastUpdateCoordinator
-from .util import SolcastConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,14 +46,14 @@ ESTIMATE_MODE = SelectEntityDescription(
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SolcastConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up a Solcast select.
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance, contains the configuration.
+        entry (ConfigEntry): The integration entry instance, contains the configuration.
         async_add_entities (AddEntitiesCallback): The Home Assistant callback to add entities.
 
     """
@@ -71,7 +62,7 @@ async def async_setup_entry(
     entity = EstimateModeEntity(
         coordinator,
         ESTIMATE_MODE,
-        [v for k, v in _MODE_TO_OPTION.items()],
+        list(_MODE_TO_OPTION.values()),
         coordinator.solcast.options.key_estimate,
         entry,
     )
@@ -91,7 +82,7 @@ class EstimateModeEntity(SelectEntity):
         entity_description: SelectEntityDescription,
         supported_options: list[str],
         current_option: str,
-        entry: SolcastConfigEntry,
+        entry: ConfigEntry,
     ) -> None:
         """Initialise the sensor.
 
@@ -100,7 +91,7 @@ class EstimateModeEntity(SelectEntity):
             entity_description (SensorEntityDescription): The details of the entity.
             supported_options (list[str]): All select options available.
             current_option (str): The currently selected option.
-            entry (SolcastConfigEntry): The integration entry instance, contains the configuration.
+            entry (ConfigEntry): The integration entry instance, contains the configuration.
 
         """
 
@@ -114,15 +105,15 @@ class EstimateModeEntity(SelectEntity):
         self._attr_entity_category = EntityCategory.CONFIG
         self._attributes: dict[str, Any] = {}
         self._attr_extra_state_attributes: dict[str, Any] = {}
-        self._attr_device_info: DeviceInfo = {
-            ATTR_IDENTIFIERS: {(DOMAIN, entry.entry_id)},
-            ATTR_NAME: "Solcast PV Forecast",
-            ATTR_MANUFACTURER: MANUFACTURER,
-            ATTR_MODEL: "Solcast PV Forecast",
-            ATTR_ENTRY_TYPE: DeviceEntryType.SERVICE,
-            ATTR_SW_VERSION: coordinator.version,
-            ATTR_CONFIGURATION_URL: "https://toolkit.solcast.com.au/",
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name="Solcast PV Forecast",
+            manufacturer=MANUFACTURER,
+            model="Solcast PV Forecast",
+            entry_type=DeviceEntryType.SERVICE,
+            sw_version=coordinator.version,
+            configuration_url="https://toolkit.solcast.com.au/",
+        )
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option.

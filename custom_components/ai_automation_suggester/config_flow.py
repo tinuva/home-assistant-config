@@ -1,24 +1,33 @@
 # custom_components/ai_automation_suggester/config_flow.py
+"""Config flow for AI Automation Suggester."""
+from __future__ import annotations
 
-"""Config flow for AI Automation Suggester integration."""
 import logging
-import voluptuous as vol
 from typing import Any, Dict, Optional
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
-from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import (
+from .const import (  # noqa: E501  (long import list)
     DOMAIN,
     CONF_PROVIDER,
+    # NEW token knobs
+    CONF_MAX_INPUT_TOKENS,
+    CONF_MAX_OUTPUT_TOKENS,
+    DEFAULT_MAX_INPUT_TOKENS,
+    DEFAULT_MAX_OUTPUT_TOKENS,
+    # Legacy fallback (kept for migration)
     CONF_MAX_TOKENS,
     DEFAULT_MAX_TOKENS,
+    DEFAULT_MODELS,
+    # Provider‑specific
     CONF_OPENAI_API_KEY,
     CONF_OPENAI_MODEL,
     CONF_ANTHROPIC_API_KEY,
     CONF_ANTHROPIC_MODEL,
+    VERSION_ANTHROPIC,
     CONF_GOOGLE_API_KEY,
     CONF_GOOGLE_MODEL,
     CONF_GROQ_API_KEY,
@@ -34,211 +43,126 @@ from .const import (
     CONF_CUSTOM_OPENAI_ENDPOINT,
     CONF_CUSTOM_OPENAI_API_KEY,
     CONF_CUSTOM_OPENAI_MODEL,
-    DEFAULT_MODELS,
-    VERSION_ANTHROPIC,
-    # Mistral AI additions:
     CONF_MISTRAL_API_KEY,
     CONF_MISTRAL_MODEL,
+    CONF_PERPLEXITY_API_KEY,
+    CONF_PERPLEXITY_MODEL,
+    ENDPOINT_PERPLEXITY,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-
+# ─────────────────────────────────────────────────────────────
+# Lightweight provider validators (unchanged)
+# ─────────────────────────────────────────────────────────────
 class ProviderValidator:
-    """Validate provider configurations."""
+    """Ping each provider with a dummy request to validate credentials."""
 
     def __init__(self, hass):
-        self.hass = hass
         self.session = async_get_clientsession(hass)
 
     async def validate_openai(self, api_key: str) -> Optional[str]:
-        headers = {
-            'Authorization': f"Bearer {api_key}",
-            'Content-Type': 'application/json',
-        }
+        hdr = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         try:
-            _LOGGER.debug("Validating OpenAI API key")
-            response = await self.session.get("https://api.openai.com/v1/models", headers=headers)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"OpenAI validation error response: {error_text}")
-                try:
-                    error_json = await response.json()
-                    error_message = error_json.get("error", {}).get("message", error_text)
-                except Exception:
-                    error_message = error_text
-                return error_message
-        except Exception as err:
-            _LOGGER.error(f"OpenAI validation exception: {err}")
+            resp = await self.session.get("https://api.openai.com/v1/models", headers=hdr)
+            return None if resp.status == 200 else await resp.text()
+        except Exception as err:  # noqa: BLE001
             return str(err)
 
     async def validate_anthropic(self, api_key: str, model: str) -> Optional[str]:
-        headers = {
-            'x-api-key': api_key,
-            'anthropic-version': VERSION_ANTHROPIC,
-            'content-type': 'application/json'
+        hdr = {
+            "x-api-key": api_key,
+            "anthropic-version": VERSION_ANTHROPIC,
+            "content-type": "application/json",
+        }
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": [{"type": "text", "text": "ping"}]}],
+            "max_tokens": 1,
         }
         try:
-            _LOGGER.debug("Validating Anthropic API key")
-            response = await self.session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers=headers,
-                json={
-                    "model": model,
-                    "messages": [{
-                        "role": "user",
-                        "content": [{"type": "text", "text": "Hello"}]
-                    }],
-                    "max_tokens": 1,
-                    "temperature": 0.5
-                }
-            )
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"Anthropic validation error response: {error_text}")
-                try:
-                    error_json = await response.json()
-                    error_message = error_json.get("error", {}).get("message", error_text)
-                except Exception:
-                    error_message = error_text
-                return error_message
+            resp = await self.session.post("https://api.anthropic.com/v1/messages", headers=hdr, json=payload)
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"Anthropic validation exception: {err}")
             return str(err)
 
     async def validate_google(self, api_key: str, model: str) -> Optional[str]:
-        headers = {'Content-Type': 'application/json'}
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-        payload = {
-            "contents": [{"parts": [{"text": "Hello"}]}],
-            "generationConfig": {"temperature": 0.5, "maxOutputTokens": 100, "topK": 40, "topP": 0.95}
-        }
+        payload = {"contents": [{"parts": [{"text": "ping"}]}], "generationConfig": {"maxOutputTokens": 1}}
         try:
-            _LOGGER.debug(f"Validating Google API key with model: {model}")
-            response = await self.session.post(url, headers=headers, json=payload)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"Google validation error response: {error_text}")
-                try:
-                    error_json = await response.json()
-                    error_message = error_json.get("error", {}).get("message", error_text)
-                except Exception:
-                    error_message = error_text
-                return error_message
+            resp = await self.session.post(url, json=payload)
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"Google validation exception: {err}")
             return str(err)
 
     async def validate_groq(self, api_key: str) -> Optional[str]:
-        headers = {'Authorization': f"Bearer {api_key}", 'Content-Type': 'application/json'}
+        hdr = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
         try:
-            _LOGGER.debug("Validating Groq API key")
-            response = await self.session.get("https://api.groq.com/openai/v1/models", headers=headers)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"Groq validation error response: {error_text}")
-                try:
-                    error_json = await response.json()
-                    error_message = error_json.get("error", {}).get("message", error_text)
-                except Exception:
-                    error_message = error_text
-                return error_message
+            resp = await self.session.get("https://api.groq.com/openai/v1/models", headers=hdr)
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"Groq validation exception: {err}")
             return str(err)
 
-    async def validate_localai(self, ip_address: str, port: int, https: bool = False) -> Optional[str]:
-        protocol = "https" if https else "http"
-        url = f"{protocol}://{ip_address}:{port}/v1/models"
+    async def validate_localai(self, ip: str, port: int, https: bool) -> Optional[str]:
+        proto = "https" if https else "http"
         try:
-            _LOGGER.debug(f"Validating LocalAI connection to {url}")
-            response = await self.session.get(url)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"LocalAI validation error response: {error_text}")
-                return f"HTTP {response.status}: {error_text}"
+            resp = await self.session.get(f"{proto}://{ip}:{port}/v1/models")
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"LocalAI validation exception: {err}")
             return str(err)
 
-    async def validate_ollama(self, ip_address: str, port: int, https: bool = False) -> Optional[str]:
-        protocol = "https" if https else "http"
-        url = f"{protocol}://{ip_address}:{port}/api/tags"
+    async def validate_ollama(self, ip: str, port: int, https: bool) -> Optional[str]:
+        proto = "https" if https else "http"
         try:
-            _LOGGER.debug(f"Validating Ollama connection to {url}")
-            response = await self.session.get(url)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"Ollama validation error response: {error_text}")
-                return f"HTTP {response.status}: {error_text}"
+            resp = await self.session.get(f"{proto}://{ip}:{port}/api/tags")
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"Ollama validation exception: {err}")
             return str(err)
 
-    async def validate_custom_openai(self, endpoint: str, api_key: Optional[str]) -> Optional[str]:
-        headers = {'Content-Type': 'application/json'}
+    async def validate_custom_openai(self, endpoint: str, api_key: str | None) -> Optional[str]:
+        hdr = {"Content-Type": "application/json"}
         if api_key:
-            headers['Authorization'] = f"Bearer {api_key}"
+            hdr["Authorization"] = f"Bearer {api_key}"
         try:
-            _LOGGER.debug(f"Validating Custom OpenAI endpoint {endpoint}")
-            response = await self.session.get(f"{endpoint}/v1/models", headers=headers)
-            if response.status == 200:
-                return None  # Success
-            else:
-                error_text = await response.text()
-                _LOGGER.error(f"Custom OpenAI validation error response: {error_text}")
-                try:
-                    error_json = await response.json()
-                    error_message = error_json.get("error", {}).get("message", error_text)
-                except Exception:
-                    error_message = error_text
-                return error_message
+            resp = await self.session.get(f"{endpoint}/v1/models", headers=hdr)
+            return None if resp.status == 200 else await resp.text()
         except Exception as err:
-            _LOGGER.error(f"Custom OpenAI validation exception: {err}")
+            return str(err)
+
+    async def validate_perplexity(self, api_key: str, model: str) -> Optional[str]:
+        hdr = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+        payload = {"model": model, "messages": [{"role": "user", "content": "ping"}], "max_tokens": 1}
+        try:
+            resp = await self.session.post(ENDPOINT_PERPLEXITY, headers=hdr, json=payload)
+            return None if resp.status == 200 else await resp.text()
+        except Exception as err:
             return str(err)
 
 
+# ─────────────────────────────────────────────────────────────
+# Config‑flow main class
+# ─────────────────────────────────────────────────────────────
 class AIAutomationConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for AI Automation Suggester integration."""
+    """Handle integration setup via the UI."""
 
     VERSION = 1
 
-    def __init__(self):
-        self.provider = None
-        self.data = {}
-        self.validator = None
+    def __init__(self) -> None:
+        self.provider: str | None = None
+        self.data: Dict[str, Any] = {}
+        self.validator: ProviderValidator | None = None
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry):
-        """Get the options flow for this handler."""
-        return AIAutomationOptionsFlowHandler()
-
-    async def async_step_user(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        if user_input is not None:
+    # ───────── Initial provider choice ─────────
+    async def async_step_user(self, user_input: Dict[str, Any] | None = None):
+        errors: Dict[str, str] = {}
+        if user_input:
             self.provider = user_input[CONF_PROVIDER]
             self.data.update(user_input)
-            # Check if provider is already configured
-            existing_entries = self._async_current_entries()
-            for entry in existing_entries:
-                if entry.data.get(CONF_PROVIDER) == self.provider:
-                    errors["base"] = "already_configured"
-                    break
-            if not errors:
-                provider_steps = {
+
+            if any(ent.data.get(CONF_PROVIDER) == self.provider for ent in self._async_current_entries()):
+                errors["base"] = "already_configured"
+            else:
+                return await {
                     "OpenAI": self.async_step_openai,
                     "Anthropic": self.async_step_anthropic,
                     "Google": self.async_step_google,
@@ -247,257 +171,319 @@ class AIAutomationConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     "Ollama": self.async_step_ollama,
                     "Custom OpenAI": self.async_step_custom_openai,
                     "Mistral AI": self.async_step_mistral,
-                }
-                return await provider_steps[self.provider]()
-        providers = ["OpenAI", "Anthropic", "Google", "Groq", "LocalAI", "Ollama", "Custom OpenAI", "Mistral AI"]
+                    "Perplexity AI": self.async_step_perplexity,
+                }[self.provider]()
+
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({vol.Required(CONF_PROVIDER): vol.In(providers)}),
-            errors=errors
-        )
-
-    async def async_step_openai(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            error_message = await self.validator.validate_openai(user_input[CONF_OPENAI_API_KEY])
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (OpenAI)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="openai",
-            data_schema=vol.Schema({
-                vol.Required(CONF_OPENAI_API_KEY): str,
-                vol.Optional(CONF_OPENAI_MODEL, default=DEFAULT_MODELS["OpenAI"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_PROVIDER): vol.In(
+                        [
+                            "OpenAI",
+                            "Anthropic",
+                            "Google",
+                            "Groq",
+                            "LocalAI",
+                            "Ollama",
+                            "Custom OpenAI",
+                            "Mistral AI",
+                            "Perplexity AI",
+                        ]
+                    )
+                }
+            ),
             errors=errors,
-            description_placeholders=description_placeholders
         )
 
-    async def async_step_anthropic(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
+    # ───────── helper to reduce repetition ─────────
+    async def _provider_form(
+        self,
+        step_id: str,
+        schema: vol.Schema,
+        validate_fn,
+        title: str,
+        errors: Dict[str, str],
+        placeholders: Dict[str, str],
+        user_input: Dict[str, Any] | None,
+    ):
+        if user_input:
             self.validator = ProviderValidator(self.hass)
-            model = user_input.get(CONF_ANTHROPIC_MODEL, DEFAULT_MODELS["Anthropic"])
-            error_message = await self.validator.validate_anthropic(api_key=user_input[CONF_ANTHROPIC_API_KEY], model=model)
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (Anthropic)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="anthropic",
-            data_schema=vol.Schema({
-                vol.Required(CONF_ANTHROPIC_API_KEY): str,
-                vol.Optional(CONF_ANTHROPIC_MODEL, default=DEFAULT_MODELS["Anthropic"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
+            err = await validate_fn(user_input)
+            if err is None:
+                self.data.update({
+                **user_input,
+                CONF_MAX_INPUT_TOKENS: user_input.get(CONF_MAX_INPUT_TOKENS, DEFAULT_MAX_INPUT_TOKENS),
+                CONF_MAX_OUTPUT_TOKENS: user_input.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS),
+            })
+                return self.async_create_entry(title=title, data=self.data)
+            errors["base"] = "api_error"
+            placeholders["error_message"] = err
+
+        return self.async_show_form(step_id=step_id, data_schema=schema, errors=errors, description_placeholders=placeholders)
+
+    # ───────── provider‑specific steps (OpenAI shown; others similar) ─────────
+    def _add_token_fields(self, base: Dict[Any, Any]) -> Dict[Any, Any]:
+        """Append the two token sliders to the schema."""
+        base[vol.Optional(CONF_MAX_INPUT_TOKENS, default=DEFAULT_MAX_INPUT_TOKENS)] = vol.All(
+            vol.Coerce(int), vol.Range(min=100)
+        )
+        base[vol.Optional(CONF_MAX_OUTPUT_TOKENS, default=DEFAULT_MAX_OUTPUT_TOKENS)] = vol.All(
+            vol.Coerce(int), vol.Range(min=100)
+        )
+        return base
+
+    async def async_step_openai(self, user_input=None):
+        schema = {
+            vol.Required(CONF_OPENAI_API_KEY): str,
+            vol.Optional(CONF_OPENAI_MODEL, default=DEFAULT_MODELS["OpenAI"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "openai",
+            vol.Schema(schema),
+            lambda ui: self.validator.validate_openai(ui[CONF_OPENAI_API_KEY]),
+            "AI Automation Suggester (OpenAI)",
+            {},
+            {},
+            user_input,
         )
 
-    async def async_step_google(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            model = user_input.get(CONF_GOOGLE_MODEL, DEFAULT_MODELS["Google"])
-            error_message = await self.validator.validate_google(api_key=user_input[CONF_GOOGLE_API_KEY], model=model)
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (Google)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="google",
-            data_schema=vol.Schema({
-                vol.Required(CONF_GOOGLE_API_KEY): str,
-                vol.Optional(CONF_GOOGLE_MODEL, default=DEFAULT_MODELS["Google"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
-        )
-
-    async def async_step_groq(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            error_message = await self.validator.validate_groq(user_input[CONF_GROQ_API_KEY])
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (Groq)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="groq",
-            data_schema=vol.Schema({
-                vol.Required(CONF_GROQ_API_KEY): str,
-                vol.Optional(CONF_GROQ_MODEL, default=DEFAULT_MODELS["Groq"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
-        )
-
-    async def async_step_localai(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            error_message = await self.validator.validate_localai(
-                user_input[CONF_LOCALAI_IP_ADDRESS],
-                user_input[CONF_LOCALAI_PORT],
-                user_input[CONF_LOCALAI_HTTPS]
+    async def async_step_anthropic(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_anthropic(
+                ui[CONF_ANTHROPIC_API_KEY], ui.get(CONF_ANTHROPIC_MODEL, DEFAULT_MODELS["Anthropic"])
             )
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (LocalAI)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="localai",
-            data_schema=vol.Schema({
-                vol.Required(CONF_LOCALAI_IP_ADDRESS): str,
-                vol.Required(CONF_LOCALAI_PORT, default=8080): int,
-                vol.Required(CONF_LOCALAI_HTTPS, default=False): bool,
-                vol.Optional(CONF_LOCALAI_MODEL, default=DEFAULT_MODELS["LocalAI"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
+
+        schema = {
+            vol.Required(CONF_ANTHROPIC_API_KEY): str,
+            vol.Optional(CONF_ANTHROPIC_MODEL, default=DEFAULT_MODELS["Anthropic"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "anthropic",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (Anthropic)",
+            {},
+            {},
+            user_input,
         )
 
-    async def async_step_ollama(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            error_message = await self.validator.validate_ollama(
-                user_input[CONF_OLLAMA_IP_ADDRESS],
-                user_input[CONF_OLLAMA_PORT],
-                user_input[CONF_OLLAMA_HTTPS]
+    async def async_step_google(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_google(
+                ui[CONF_GOOGLE_API_KEY], ui.get(CONF_GOOGLE_MODEL, DEFAULT_MODELS["Google"])
             )
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (Ollama)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="ollama",
-            data_schema=vol.Schema({
-                vol.Required(CONF_OLLAMA_IP_ADDRESS): str,
-                vol.Required(CONF_OLLAMA_PORT, default=11434): int,
-                vol.Required(CONF_OLLAMA_HTTPS, default=False): bool,
-                vol.Optional(CONF_OLLAMA_MODEL, default=DEFAULT_MODELS["Ollama"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
+
+        schema = {
+            vol.Required(CONF_GOOGLE_API_KEY): str,
+            vol.Optional(CONF_GOOGLE_MODEL, default=DEFAULT_MODELS["Google"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "google",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (Google)",
+            {},
+            {},
+            user_input,
         )
 
-    async def async_step_custom_openai(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        description_placeholders = {}
-        if user_input is not None:
-            self.validator = ProviderValidator(self.hass)
-            api_key = user_input.get(CONF_CUSTOM_OPENAI_API_KEY)
-            endpoint = user_input[CONF_CUSTOM_OPENAI_ENDPOINT]
-            error_message = await self.validator.validate_custom_openai(endpoint=endpoint, api_key=api_key)
-            if error_message is None:
-                self.data.update(user_input)
-                return self.async_create_entry(title="AI Automation Suggester (Custom OpenAI)", data=self.data)
-            else:
-                errors["base"] = "api_error"
-                description_placeholders["error_message"] = error_message
-        return self.async_show_form(
-            step_id="custom_openai",
-            data_schema=vol.Schema({
-                vol.Required(CONF_CUSTOM_OPENAI_ENDPOINT): str,
-                vol.Optional(CONF_CUSTOM_OPENAI_API_KEY): str,
-                vol.Optional(CONF_CUSTOM_OPENAI_MODEL, default=DEFAULT_MODELS["Custom OpenAI"]): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors,
-            description_placeholders=description_placeholders
+    async def async_step_groq(self, user_input=None):
+        schema = {
+            vol.Required(CONF_GROQ_API_KEY): str,
+            vol.Optional(CONF_GROQ_MODEL, default=DEFAULT_MODELS["Groq"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "groq",
+            vol.Schema(schema),
+            lambda ui: self.validator.validate_groq(ui[CONF_GROQ_API_KEY]),
+            "AI Automation Suggester (Groq)",
+            {},
+            {},
+            user_input,
         )
 
-    async def async_step_mistral(self, user_input: Optional[Dict[str, Any]] = None):
-        errors = {}
-        if user_input is not None:
+    async def async_step_localai(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_localai(ui[CONF_LOCALAI_IP_ADDRESS], ui[CONF_LOCALAI_PORT], ui[CONF_LOCALAI_HTTPS])
+
+        schema = {
+            vol.Required(CONF_LOCALAI_IP_ADDRESS): str,
+            vol.Required(CONF_LOCALAI_PORT, default=8080): int,
+            vol.Required(CONF_LOCALAI_HTTPS, default=False): bool,
+            vol.Optional(CONF_LOCALAI_MODEL, default=DEFAULT_MODELS["LocalAI"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "localai",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (LocalAI)",
+            {},
+            {},
+            user_input,
+        )
+
+    async def async_step_ollama(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_ollama(ui[CONF_OLLAMA_IP_ADDRESS], ui[CONF_OLLAMA_PORT], ui[CONF_OLLAMA_HTTPS])
+
+        schema = {
+            vol.Required(CONF_OLLAMA_IP_ADDRESS): str,
+            vol.Required(CONF_OLLAMA_PORT, default=11434): int,
+            vol.Required(CONF_OLLAMA_HTTPS, default=False): bool,
+            vol.Optional(CONF_OLLAMA_MODEL, default=DEFAULT_MODELS["Ollama"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "ollama",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (Ollama)",
+            {},
+            {},
+            user_input,
+        )
+
+    async def async_step_custom_openai(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_custom_openai(ui[CONF_CUSTOM_OPENAI_ENDPOINT], ui.get(CONF_CUSTOM_OPENAI_API_KEY))
+
+        schema = {
+            vol.Required(CONF_CUSTOM_OPENAI_ENDPOINT): str,
+            vol.Optional(CONF_CUSTOM_OPENAI_API_KEY): str,
+            vol.Optional(CONF_CUSTOM_OPENAI_MODEL, default=DEFAULT_MODELS["Custom OpenAI"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "custom_openai",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (Custom OpenAI)",
+            {},
+            {},
+            user_input,
+        )
+
+    # Mistral: no live validation needed
+    async def async_step_mistral(self, user_input=None):
+        if user_input:
             self.data.update(user_input)
             return self.async_create_entry(title="AI Automation Suggester (Mistral AI)", data=self.data)
-        return self.async_show_form(
-            step_id="mistral",
-            data_schema=vol.Schema({
-                vol.Required(CONF_MISTRAL_API_KEY): str,
-                vol.Required(CONF_MISTRAL_MODEL, default="mistral-large-latest"): str,
-                vol.Optional(CONF_MAX_TOKENS, default=DEFAULT_MAX_TOKENS):
-                    vol.All(vol.Coerce(int), vol.Range(min=100)),
-            }),
-            errors=errors
+
+        schema = {
+            vol.Required(CONF_MISTRAL_API_KEY): str,
+            vol.Optional(CONF_MISTRAL_MODEL, default=DEFAULT_MODELS["Mistral AI"]): str,
+        }
+        self._add_token_fields(schema)
+        return self.async_show_form(step_id="mistral", data_schema=vol.Schema(schema))
+
+    async def async_step_perplexity(self, user_input=None):
+        async def _v(ui):
+            return await self.validator.validate_perplexity(
+                ui[CONF_PERPLEXITY_API_KEY], ui.get(CONF_PERPLEXITY_MODEL, DEFAULT_MODELS["Perplexity AI"])
+            )
+
+        schema = {
+            vol.Required(CONF_PERPLEXITY_API_KEY): str,
+            vol.Optional(CONF_PERPLEXITY_MODEL, default=DEFAULT_MODELS["Perplexity AI"]): str,
+        }
+        self._add_token_fields(schema)
+        return await self._provider_form(
+            "perplexity",
+            vol.Schema(schema),
+            _v,
+            "AI Automation Suggester (Perplexity)",
+            {},
+            {},
+            user_input,
         )
+
+    # ───────── Options flow (edit after setup) ─────────
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return AIAutomationOptionsFlowHandler(config_entry)
 
 
 class AIAutomationOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options for the AI Automation Suggester."""
+    """Allow post‑setup tweaking of models, keys, token budgets."""
 
-    async def async_step_init(self, user_input: Optional[Dict[str, Any]] = None):
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+    def __init__(self, config_entry):
+        self.config_entry = config_entry
+
+    async def async_step_init(self, user_input=None):
+        if user_input:
+            new_data = {
+                **self.config_entry.options,
+                **user_input,  
+                CONF_MAX_INPUT_TOKENS: user_input.get(
+                    CONF_MAX_INPUT_TOKENS, 
+                    self.config_entry.options.get(
+                        CONF_MAX_INPUT_TOKENS,
+                        self.config_entry.data.get(CONF_MAX_INPUT_TOKENS, DEFAULT_MAX_INPUT_TOKENS)
+                    )
+                ),
+                CONF_MAX_OUTPUT_TOKENS: user_input.get(
+                    CONF_MAX_OUTPUT_TOKENS,
+                    self.config_entry.options.get(
+                        CONF_MAX_OUTPUT_TOKENS,
+                        self.config_entry.data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)
+                    )
+                ),
+            }
+            return self.async_create_entry(title="", data=new_data)
+
         provider = self.config_entry.data.get(CONF_PROVIDER)
-        options = {
+        schema: Dict[Any, Any] = {
             vol.Optional(
-                CONF_MAX_TOKENS,
-                default=self.config_entry.data.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
-            ): vol.All(vol.Coerce(int), vol.Range(min=100))
+                CONF_MAX_INPUT_TOKENS,
+                default=self.config_entry.options.get(
+                    CONF_MAX_INPUT_TOKENS,
+                    self.config_entry.data.get(CONF_MAX_INPUT_TOKENS, DEFAULT_MAX_INPUT_TOKENS)
+                )
+            ): vol.All(vol.Coerce(int), vol.Range(min=100)),
+            vol.Optional(
+                CONF_MAX_OUTPUT_TOKENS,
+                default=self.config_entry.options.get(
+                    CONF_MAX_OUTPUT_TOKENS, 
+                    self.config_entry.data.get(CONF_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS)
+                )
+            ): vol.All(vol.Coerce(int), vol.Range(min=100)),
         }
-        if provider == "OpenAI":
-            options[vol.Optional(CONF_OPENAI_API_KEY)] = str
-            options[vol.Optional(CONF_OPENAI_MODEL, default=self.config_entry.data.get(CONF_OPENAI_MODEL, DEFAULT_MODELS["OpenAI"]))] = str
-        elif provider == "Anthropic":
-            options[vol.Optional(CONF_ANTHROPIC_API_KEY)] = str
-            options[vol.Optional(CONF_ANTHROPIC_MODEL, default=self.config_entry.data.get(CONF_ANTHROPIC_MODEL, DEFAULT_MODELS["Anthropic"]))] = str
-        elif provider == "Google":
-            options[vol.Optional(CONF_GOOGLE_API_KEY)] = str
-            options[vol.Optional(CONF_GOOGLE_MODEL, default=self.config_entry.data.get(CONF_GOOGLE_MODEL, DEFAULT_MODELS["Google"]))] = str
-        elif provider == "Groq":
-            options[vol.Optional(CONF_GROQ_API_KEY)] = str
-            options[vol.Optional(CONF_GROQ_MODEL, default=self.config_entry.data.get(CONF_GROQ_MODEL, DEFAULT_MODELS["Groq"]))] = str
-        elif provider == "LocalAI":
-            options[vol.Optional(CONF_LOCALAI_HTTPS)] = bool
-            options[vol.Optional(CONF_LOCALAI_MODEL, default=self.config_entry.data.get(CONF_LOCALAI_MODEL, DEFAULT_MODELS["LocalAI"]))] = str
-        elif provider == "Ollama":
-            options[vol.Optional(CONF_OLLAMA_HTTPS)] = bool
-            options[vol.Optional(CONF_OLLAMA_MODEL, default=self.config_entry.data.get(CONF_OLLAMA_MODEL, DEFAULT_MODELS["Ollama"]))] = str
-        elif provider == "Custom OpenAI":
-            options[vol.Optional(CONF_CUSTOM_OPENAI_ENDPOINT)] = str
-            options[vol.Optional(CONF_CUSTOM_OPENAI_API_KEY)] = str
-            options[vol.Optional(CONF_CUSTOM_OPENAI_MODEL, default=self.config_entry.data.get(CONF_CUSTOM_OPENAI_MODEL, DEFAULT_MODELS["Custom OpenAI"]))] = str
-        elif provider == "Mistral AI":
-            options[vol.Required(CONF_MISTRAL_API_KEY)] = str
-            options[vol.Required(CONF_MISTRAL_MODEL, default=self.config_entry.data.get(CONF_MISTRAL_MODEL, "mistral-large-latest"))] = str
 
-        return self.async_show_form(
-            step_id="init",
-            data_schema=vol.Schema(options)
-        )
+        # provider‑specific editable fields (unchanged from previous version, but legacy tokens removed)
+        if provider == "OpenAI":
+            schema[vol.Optional(CONF_OPENAI_API_KEY)] = str
+            schema[vol.Optional(CONF_OPENAI_MODEL, default=self.config_entry.data.get(CONF_OPENAI_MODEL, DEFAULT_MODELS["OpenAI"]))] = str
+        elif provider == "Anthropic":
+            schema[vol.Optional(CONF_ANTHROPIC_API_KEY)] = str
+            schema[vol.Optional(CONF_ANTHROPIC_MODEL, default=self.config_entry.data.get(CONF_ANTHROPIC_MODEL, DEFAULT_MODELS["Anthropic"]))] = str
+        elif provider == "Google":
+            schema[vol.Optional(CONF_GOOGLE_API_KEY)] = str
+            schema[vol.Optional(CONF_GOOGLE_MODEL, default=self.config_entry.data.get(CONF_GOOGLE_MODEL, DEFAULT_MODELS["Google"]))] = str
+        elif provider == "Groq":
+            schema[vol.Optional(CONF_GROQ_API_KEY)] = str
+            schema[vol.Optional(CONF_GROQ_MODEL, default=self.config_entry.data.get(CONF_GROQ_MODEL, DEFAULT_MODELS["Groq"]))] = str
+        elif provider == "LocalAI":
+            schema[vol.Optional(CONF_LOCALAI_HTTPS)] = bool
+            schema[vol.Optional(CONF_LOCALAI_MODEL, default=self.config_entry.data.get(CONF_LOCALAI_MODEL, DEFAULT_MODELS["LocalAI"]))] = str
+        elif provider == "Ollama":
+            schema[vol.Optional(CONF_OLLAMA_HTTPS)] = bool
+            schema[vol.Optional(CONF_OLLAMA_MODEL, default=self.config_entry.data.get(CONF_OLLAMA_MODEL, DEFAULT_MODELS["Ollama"]))] = str
+        elif provider == "Custom OpenAI":
+            schema[vol.Optional(CONF_CUSTOM_OPENAI_ENDPOINT)] = str
+            schema[vol.Optional(CONF_CUSTOM_OPENAI_API_KEY)] = str
+            schema[vol.Optional(CONF_CUSTOM_OPENAI_MODEL, default=self.config_entry.data.get(CONF_CUSTOM_OPENAI_MODEL, DEFAULT_MODELS["Custom OpenAI"]))] = str
+        elif provider == "Mistral AI":
+            schema[vol.Optional(CONF_MISTRAL_API_KEY)] = str
+            schema[vol.Optional(CONF_MISTRAL_MODEL, default=self.config_entry.data.get(CONF_MISTRAL_MODEL, DEFAULT_MODELS["Mistral AI"]))] = str
+        elif provider == "Perplexity AI":
+            schema[vol.Optional(CONF_PERPLEXITY_API_KEY)] = str
+            schema[vol.Optional(CONF_PERPLEXITY_MODEL, default=self.config_entry.data.get(CONF_PERPLEXITY_MODEL, DEFAULT_MODELS["Perplexity AI"]))] = str
+
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))

@@ -446,9 +446,6 @@
       "humidity_index": {
         "name": "Índex d'humitat"
       },
-      "ams_temp": {
-        "name": "Temperatura de l'AMS"
-      },
       "external_spool": {
         "name": "Bobina externa",
         "state_attributes": {
@@ -680,6 +677,15 @@
       },
       "gcode_file_downloaded": {
         "name": "El fitxer GCode descarregat"
+      },
+      "remaining_drying_time": {
+        "name": "Temps d'assecat restant"
+      },
+      "ams_temp": {
+        "name": "Temperatura"
+      },
+      "humidity": {
+        "name": "Humitat"
       }
     },
     "camera": {

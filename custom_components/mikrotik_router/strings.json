@@ -10,7 +10,8 @@
                     "port": "Port",
                     "username": "Username",
                     "password": "Password",
-                    "ssl": "Use SSL"
+                    "ssl": "Use SSL",
+                    "verify_ssl": "Verify SSL"
                 }
             }
         },
@@ -18,6 +19,7 @@
             "name_exists": "Name already exists.",
             "cannot_connect": "Cannot connect to Mikrotik.",
             "ssl_handshake_failure": "SSL handshake failure",
+            "ssl_verify_failure": "Certificate verify failed",
             "connection_timeout": "Mikrotik connection timeout.",
             "wrong_login": "Invalid user name or password."
         }
@@ -39,6 +41,7 @@
                 "data": {
                     "track_network_hosts": "Track network devices",
                     "sensor_port_tracker": "Port tracker sensors",
+                    "sensor_netwatch_tracker": "Netwatch tracker sensors",
                     "sensor_port_traffic": "Port traffic sensors",
                     "sensor_client_traffic": "Client traffic sensors",
                     "sensor_client_captive": "Captive portal data",

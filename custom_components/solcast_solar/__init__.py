@@ -1,16 +1,20 @@
 """Solcast PV forecast, initialisation."""
 
+from collections.abc import Awaitable, Callable
 import contextlib
+from contextvars import ContextVar
+from datetime import datetime as dt, timedelta
 import json
 import logging
 import random
 from typing import Any, Final
+import zoneinfo
 
 import aiofiles
 import voluptuous as vol
 
 from homeassistant import loader
-from homeassistant.config_entries import ConfigType
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import (
@@ -19,7 +23,12 @@ from homeassistant.exceptions import (
     ConfigEntryNotReady,
     ServiceValidationError,
 )
-from homeassistant.helpers import aiohttp_client, config_validation as cv
+from homeassistant.helpers import (
+    aiohttp_client,
+    config_validation as cv,
+    entity_registry as er,
+)
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.util import dt as dt_util
 
 from .const import (
@@ -38,6 +47,7 @@ from .const import (
     DOMAIN,
     EVENT_END_DATETIME,
     EVENT_START_DATETIME,
+    EXCLUDE_SITES,
     HARD_LIMIT,
     HARD_LIMIT_API,
     KEY_ESTIMATE,
@@ -55,7 +65,7 @@ from .const import (
     UNDAMPENED,
 )
 from .coordinator import SolcastUpdateCoordinator
-from .solcastapi import ConnectionOptions, SolcastApi, SolcastConfigEntry
+from .solcastapi import ConnectionOptions, SolcastApi
 from .util import SitesStatus, SolcastApiStatus, SolcastData, UsageStatus
 
 PLATFORMS: Final = [
@@ -89,11 +99,13 @@ SERVICE_QUERY_SCHEMA: Final = vol.All(
 
 _LOGGER = logging.getLogger(__name__)
 
+current_entry: ContextVar[ConfigEntry] = ContextVar("current_entry", default=NotImplemented)
 
-def __log_init_message(entry: SolcastConfigEntry, version: str, solcast: SolcastApi) -> None:
+
+def __log_init_message(entry: ConfigEntry, version: str, solcast: SolcastApi) -> None:
     _LOGGER.debug("UTC times are converted to %s", solcast.options.tz)
     _LOGGER.debug("Successful init")
-    _LOGGER.info("Solcast integration version: %s", version)
+    _LOGGER.info("Solcast integration version %s", version)
 
 
 async def get_version(hass: HomeAssistant) -> str:
@@ -106,12 +118,12 @@ def __setup_storage(hass: HomeAssistant) -> None:
         hass.data[DOMAIN] = {}
 
 
-async def __get_time_zone(hass: HomeAssistant) -> dt_util.dt.tzinfo:
+async def __get_time_zone(hass: HomeAssistant) -> zoneinfo.ZoneInfo:
     tz = await dt_util.async_get_time_zone(hass.config.time_zone)
-    return tz if tz is not None else dt_util.UTC
+    return tz if tz is not None else zoneinfo.ZoneInfo("UTC")
 
 
-async def __get_options(hass: HomeAssistant, entry: SolcastConfigEntry) -> ConnectionOptions:
+async def __get_options(hass: HomeAssistant, entry: ConfigEntry) -> ConnectionOptions:
     __log_entry_options(entry)
 
     try:
@@ -143,30 +155,27 @@ async def __get_options(hass: HomeAssistant, entry: SolcastConfigEntry) -> Conne
         entry.options.get(BRK_HALFHOURLY, True),
         entry.options.get(BRK_HOURLY, True),
         entry.options.get(BRK_SITE_DETAILED, False),
+        entry.options.get(EXCLUDE_SITES, []),
     )
 
 
-def __log_entry_options(entry: SolcastConfigEntry) -> None:
-    _LOGGER.debug(
-        "Auto-update options: %s",
-        {k: v for k, v in entry.options.items() if k.startswith("auto_")},
-    )
-    _LOGGER.debug(
-        "Estimate to use options: %s",
-        {k: v for k, v in entry.options.items() if k.startswith("key_est")},
-    )
-    _LOGGER.debug(
-        "Attribute options: %s",
-        {k: v for k, v in entry.options.items() if k.startswith("attr_")},
-    )
-    _LOGGER.debug(
-        "Custom sensor options: %s",
-        {k: v for k, v in entry.options.items() if k.startswith("custom")},
-    )
-    _LOGGER.debug(
-        "Hard limit: %s",
-        {k: v for k, v in entry.options.items() if k.startswith("hard_")},
-    )
+def __log_entry_options(entry: ConfigEntry) -> None:
+    display_options: dict[str, str] = {
+        "Options attributes": "attr_",
+        "Options custom": "custom",
+        "Options estimate": "key_est",
+        "Options exclude": "exclude_",
+        "Options limit": "hard_",
+        "Options schema": "VERSION",
+        "Options update": "auto_",
+        "Options update_max": "api_quota",
+    }
+    for display, starts in display_options.items():
+        _LOGGER.debug(
+            "%s: %s",
+            display,
+            {k: v for k, v in entry.options.items() if k.startswith(starts)} if starts != "VERSION" else "v" + str(entry.version),
+        )
 
 
 def __log_hard_limit_set(solcast: SolcastApi) -> None:
@@ -183,13 +192,13 @@ def get_session_headers(version: str) -> dict[str, str]:
     raw_version = version.replace("v", "")
     headers = {
         "Accept": "application/json",
-        "User-Agent": "ha-solcast-solar-integration/" + raw_version[: raw_version.rfind(".")],
+        "User-Agent": "ha-solcast-solar-integration/" + raw_version,
     }
-    _LOGGER.debug("Session headers: %s", headers)
+    _LOGGER.debug("Session headers %s", headers)
     return headers
 
 
-async def __get_granular_dampening(hass: HomeAssistant, entry: SolcastConfigEntry, solcast: SolcastApi) -> None:
+async def __get_granular_dampening(hass: HomeAssistant, entry: ConfigEntry, solcast: SolcastApi) -> None:
     opt = {**entry.options}
     # Set internal per-site dampening set flag. This is a hidden option until True.
     opt[SITE_DAMP] = await solcast.granular_dampening_data()
@@ -210,11 +219,12 @@ async def __check_stale_start(coordinator: SolcastUpdateCoordinator) -> bool:
     stale = False
     if coordinator.solcast.is_stale_data():
         _LOGGER.warning("The update automation has not been running, updating forecast")
-        await coordinator.service_event_update(
-            ignore_auto_enabled=True,
-            completion="Completed task stale_update",
-            need_history_hours=__need_history_hours(coordinator),
-        )
+        kwargs: dict[str, Any] = {
+            "ignore_auto_enabled": True,
+            "completion": "Completed task stale_update",
+            "need_history_hours": __need_history_hours(coordinator),
+        }
+        await coordinator.service_event_update(**kwargs)
         stale = True
     else:
         _LOGGER.debug("Start is not stale")
@@ -240,18 +250,19 @@ async def __check_auto_update_missed(coordinator: SolcastUpdateCoordinator) -> b
                     coordinator.solcast.get_data()["last_attempt"].astimezone(coordinator.solcast.options.tz).strftime(DATE_FORMAT),
                     coordinator.interval_just_passed.astimezone(coordinator.solcast.options.tz).strftime(DATE_FORMAT),
                 )
-                await coordinator.service_event_update(
-                    ignore_auto_enabled=True,
-                    completion="Completed task update_missed",
-                    need_history_hours=__need_history_hours(coordinator),
-                )
+                kwargs: dict[str, Any] = {
+                    "ignore_auto_enabled": True,
+                    "completion": "Completed task update_missed",
+                    "need_history_hours": __need_history_hours(coordinator),
+                }
+                await coordinator.service_event_update(**kwargs)
                 stale = True
             else:
                 _LOGGER.debug("Auto update forecast is fresh")
     return stale
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> bool:  # noqa: C901
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:  # noqa: C901
     """Set up the integration.
 
     * Get and sanitise options.
@@ -266,7 +277,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance, contains the options and other information.
+        entry (ConfigEntry): The integration entry instance, contains the options and other information.
 
     Raises:
         ConfigEntryNotReady: Instructs Home Assistant that the integration is not yet ready when a load failure occurs.
@@ -275,16 +286,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
         bool: Whether setup has completed successfully.
 
     """
+
     random.seed()
 
+    current_entry.set(entry)
     version = await get_version(hass)
     options = await __get_options(hass, entry)
     __setup_storage(hass)
-    hass.data[DOMAIN]["presumed_dead"] = True
+
+    prior_crash = hass.data[DOMAIN].get("presumed_dead", False)
+    prior_crash_allow_sites: dt | None = hass.data[DOMAIN].get("prior_crash_allow_sites")
+    if prior_crash:
+        if prior_crash_allow_sites is None:
+            _LOGGER.debug("Prior crash detected, set the time of crash")
+            hass.data[DOMAIN]["prior_crash_allow_sites"] = dt_util.now(dt_util.UTC)  # Set the time of the crash.
+        elif prior_crash_allow_sites < dt_util.now(dt_util.UTC) - timedelta(minutes=30):
+            _LOGGER.info("Prior crash was more than 30 minutes ago, allowing sites to be reloaded")
+            hass.data[DOMAIN]["prior_crash_allow_sites"] = dt_util.now(dt_util.UTC)
+            prior_crash = False
+
+    hass.data[DOMAIN]["presumed_dead"] = True  # Presumption that init will not be successful.
     solcast = SolcastApi(aiohttp_client.async_get_clientsession(hass), options, hass, entry)
 
     solcast.headers = get_session_headers(version)
-    await solcast.get_sites_and_usage()
+    await solcast.get_sites_and_usage(prior_crash=prior_crash)
     match solcast.sites_status:
         case SitesStatus.BAD_KEY:
             raise ConfigEntryAuthFailed(translation_domain=DOMAIN, translation_key="init_key_invalid")
@@ -303,10 +328,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
     match solcast.usage_status:
         case UsageStatus.ERROR:
             raise ConfigEntryError(translation_domain=DOMAIN, translation_key="init_usage_corrupt")
-        case UsageStatus.OK:
+        case _:
             pass
 
     await __get_granular_dampening(hass, entry, solcast)
+    hass.data[DOMAIN]["solcast"] = solcast
     hass.data[DOMAIN]["entry_options"] = {**entry.options}
 
     if (status := await solcast.load_saved_data()) != "":
@@ -315,7 +341,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
     match solcast.status:
         case SolcastApiStatus.DATA_INCOMPATIBLE:
             raise ConfigEntryError(translation_domain=DOMAIN, translation_key="init_incompatible")
-        case SolcastApiStatus.OK:
+        case _:
             pass
 
     coordinator = SolcastUpdateCoordinator(hass, solcast, version)
@@ -330,7 +356,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
 
     __log_hard_limit_set(solcast)
 
-    hass.data[DOMAIN]["presumed_dead"] = False
+    _LOGGER.debug("Clear presumed dead flag")
+    hass.data[DOMAIN]["presumed_dead"] = False  # Initialisation was successful, so we're not dead.
+    if hass.data[DOMAIN].get("prior_crash_allow_sites") is not None:
+        del hass.data[DOMAIN]["prior_crash_allow_sites"]
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = True
 
     if not await __check_auto_update_missed(coordinator):
@@ -402,8 +431,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
         """
         _LOGGER.info("Action: Set dampening")
 
-        factors = call.data.get(DAMP_FACTOR, None)
-        site = call.data.get(SITE, None)  # Optional site.
+        factors = call.data.get(DAMP_FACTOR, "")
+        site = call.data.get(SITE)  # Optional site.
 
         factors = factors.strip().replace(" ", "")
         factors = factors.split(",")
@@ -433,7 +462,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
         opt = {**entry.options}
 
         if site is None:
-            damp_factors = {}
+            damp_factors: dict[str, float] = {}
             for i in range(24):
                 factor = float(factors[i])
                 damp_factors.update({f"{i}": factor})
@@ -470,7 +499,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
         """
         _LOGGER.info("Action: Get dampening")
 
-        data = await solcast.get_dampening(call.data.get(SITE, None))  # Optional site.
+        data = await solcast.get_dampening(call.data.get(SITE))  # Optional site.
         return {"data": data}
 
     async def action_call_set_hard_limit(call: ServiceCall) -> None:
@@ -487,7 +516,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
         _LOGGER.info("Action: Set hard limit")
 
         hard_limit = call.data.get(HARD_LIMIT, "100.0")
-        to_set = []
+        to_set: list[str] = []
         for limit in hard_limit.split(","):
             limit = limit.strip()
             if not limit.replace(".", "", 1).isdigit():
@@ -539,7 +568,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> b
     }
 
     for action, call in service_actions.items():
-        _LOGGER.debug("Register action: %s.%s", DOMAIN, action)
+        _LOGGER.debug("Register action %s.%s", DOMAIN, action)
         hass.services.async_remove(DOMAIN, action)  # Remove the error action
         if call.get("supports_response"):
             hass.services.async_register(DOMAIN, action, call["action"], call["schema"], call["supports_response"])
@@ -594,14 +623,14 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload config entry.
 
     This also removes the actions available and terminates running tasks.
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance.
+        entry (ConfigEntry): The integration entry instance.
 
     Returns:
         bool: Whether the unload completed successfully.
@@ -614,17 +643,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> 
     if unload_ok:
         # Remove all actions
         for action in hass.services.async_services_for_domain(DOMAIN):
-            _LOGGER.debug("Remove action: %s.%s", DOMAIN, action)
+            _LOGGER.debug("Remove action %s.%s", DOMAIN, action)
             hass.services.async_remove(DOMAIN, action)
             hass.services.async_register(DOMAIN, action, stub_action)  # Switch to an error action
 
-    if hass.data[DOMAIN].get("presumed_dead") is not None:
-        _LOGGER.debug("Removing presumed dead flag")
-        hass.data[DOMAIN].pop("presumed_dead")
+    current_entry.set(NotImplemented)
+
     return unload_ok
 
 
-async def tasks_cancel(hass: HomeAssistant, entry: SolcastConfigEntry) -> bool:
+async def tasks_cancel(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Cancel all tasks, both coordinator and solcast.
 
     Returns:
@@ -639,16 +667,16 @@ async def tasks_cancel(hass: HomeAssistant, entry: SolcastConfigEntry) -> bool:
     return True
 
 
-async def async_update_options(hass: HomeAssistant, entry: SolcastConfigEntry) -> None:
+async def async_update_options(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reconfigure the integration when options get updated.
 
-    * Changing API key or limit, auto-update or turning detailed site breakdown on results in a restart.
-    * Changing dampening results in forecast recalculation.
+    * Changing API key or limit, auto-update, hard limit or the custom hour sensor results in a restart.
+    * Changing dampening results in forecast recalculation and sensor refresh.
     * Other alterations simply refresh sensor values and attributes.
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance.
+        entry (ConfigEntry): The integration entry instance.
 
     """
     coordinator = entry.runtime_data.coordinator
@@ -657,23 +685,44 @@ async def async_update_options(hass: HomeAssistant, entry: SolcastConfigEntry) -
     recalculate_and_refresh = False
     recalculate_splines = False
 
-    def changed(config) -> bool:
+    def changed(config: str) -> bool:
         return hass.data[DOMAIN]["entry_options"].get(config) != entry.options.get(config)
 
-    # Config changes, which when changed will cause a reload.
+    # Old API key tracking.
     if changed(CONF_API_KEY):
         if hass.data[DOMAIN].get("reset_old_key"):
             hass.data[DOMAIN].pop("reset_old_key")
             hass.data[DOMAIN]["old_api_key"] = entry.options.get(CONF_API_KEY)
         else:
             hass.data[DOMAIN]["old_api_key"] = hass.data[DOMAIN]["entry_options"].get(CONF_API_KEY)
+
+    # Multi-API key hard limit tracking and clean up.
+    if hass.data[DOMAIN].get("old_hard_limit", coordinator.solcast.hard_limit) != entry.options[HARD_LIMIT_API]:
+        old_multi_key = len(hass.data[DOMAIN].get("old_hard_limit", coordinator.solcast.hard_limit).split(",")) > 1
+        new_multi_key = len(entry.options[HARD_LIMIT_API].split(",")) > 1
+        if old_multi_key != new_multi_key:  # Changing from single to multi or vice versa
+            entity_registry = er.async_get(hass)
+            entities = er.async_entries_for_config_entry(entity_registry, entry.entry_id)
+            if old_multi_key:
+                _LOGGER.debug("Hard limit changed from multi to single")
+                clean_up = [f"hard_limit_{api_key[-6:]}" for api_key in entry.options[CONF_API_KEY].split(",")]
+            else:
+                _LOGGER.debug("Hard limit changed from single to multi")
+                clean_up = ["hard_limit"]
+            for entity in entities:
+                if entity.unique_id in clean_up:
+                    _LOGGER.warning("Cleaning up orphaned %s", entity.entity_id)
+                    entity_registry.async_remove(entity.entity_id)
+    hass.data[DOMAIN]["old_hard_limit"] = entry.options[HARD_LIMIT_API]
+
+    # Config changes, which when changed will cause a reload.
     reload = changed(CONF_API_KEY) or changed(API_QUOTA) or changed(AUTO_UPDATE) or changed(HARD_LIMIT_API) or changed(CUSTOM_HOUR_SENSOR)
 
     # Config changes, which when changed will cause a forecast recalculation only, without reload.
     # Dampening must be the first check with the code as-is...
     if not reload:
         damp_changed = False
-        damp_factors = {}
+        damp_factors: dict[str, float] = {}
         for i in range(24):
             damp_factors.update({f"{i}": entry.options[f"damp{i:02}"]})
             if changed(f"damp{i:02}"):
@@ -681,6 +730,10 @@ async def async_update_options(hass: HomeAssistant, entry: SolcastConfigEntry) -
                 damp_changed = True
         if recalculate_and_refresh:
             coordinator.solcast.damp = damp_factors
+
+        # Site exclusion changes
+        if changed(EXCLUDE_SITES):
+            recalculate_and_refresh = True
 
         # Attribute changes, which will need a recalculation of splines
         if not recalculate_and_refresh:
@@ -724,7 +777,7 @@ async def async_update_options(hass: HomeAssistant, entry: SolcastConfigEntry) -
         await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) -> bool:
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Upgrade configuration.
 
     v4:  (ancient)  Remove option for auto-poll
@@ -738,6 +791,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
     v12: (4.1.8)    Auto-update as 0=off, 1=sunrise/sunset, 2=24-hour, plus add missing hard limit
     v13:            Unlucky for some, skipped
     v14: (4.2.4)    Hard limit adjustable by Solcast account
+    v15: (4.3.3)    Exclude sites from core forecast
 
     An upgrade of the integration will sequentially upgrade options to the current
     version, with this function needing to consider all upgrade history and new defaults.
@@ -752,7 +806,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance, contains the options and other information.
+        entry (ConfigEntry): The integration entry instance, contains the options and other information.
 
     Returns:
         bool: Whether the config upgrade completed successfully.
@@ -762,31 +816,34 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
     with contextlib.suppress(Exception):
         _LOGGER.debug("Options version %s", entry.version)
 
-    async def upgrade_to(version, entry, upgrade_function) -> None:
+    async def upgrade_to(
+        version: int, entry: ConfigEntry, upgrade_function: Callable[[HomeAssistant, dict[str, Any]], Awaitable[None]]
+    ) -> None:
         def upgraded() -> None:
             _LOGGER.info("Upgraded to options version %s", entry.version)
 
         if entry.version < version:
-            new_options = {**entry.options}
-            await upgrade_function(hass, new_options)
-            hass.config_entries.async_update_entry(entry, options=new_options, version=version)
-            upgraded()
+            if upgrade_function is not None:
+                new_options = {**entry.options}
+                await upgrade_function(hass, new_options)
+                hass.config_entries.async_update_entry(entry, options=new_options, version=version)
+                upgraded()
 
-    async def __v4(hass: HomeAssistant, new_options) -> None:
+    async def __v4(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         with contextlib.suppress(Exception):
             new_options.pop("const_disableautopoll", None)
 
-    async def __v5(hass: HomeAssistant, new_options) -> None:
+    async def __v5(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         for a in range(24):
             new_options[f"damp{str(a).zfill(2)}"] = 1.0
 
-    async def __v6(hass: HomeAssistant, new_options) -> None:
+    async def __v6(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         new_options[CUSTOM_HOUR_SENSOR] = 1
 
-    async def __v7(hass: HomeAssistant, new_options) -> None:
+    async def __v7(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         new_options[KEY_ESTIMATE] = "estimate"
 
-    async def __v8(hass: HomeAssistant, new_options):
+    async def __v8(hass: HomeAssistant, new_options: dict[str, Any]):
         new_options[BRK_ESTIMATE] = True
         new_options[BRK_ESTIMATE10] = True
         new_options[BRK_ESTIMATE90] = True
@@ -794,9 +851,9 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
         new_options[BRK_HALFHOURLY] = True
         new_options[BRK_HOURLY] = True
 
-    async def __v9(hass: HomeAssistant, new_options) -> None:
+    async def __v9(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         try:
-            default_list = []
+            default_list: list[str] = []
             for api_key in new_options[CONF_API_KEY].split(","):
                 api_cache_filename = f"{hass.config.config_dir}/solcast-usage{'' if len(new_options[CONF_API_KEY].split(',')) < 2 else '-' + api_key.strip()}.json"
                 async with aiofiles.open(api_cache_filename) as f:
@@ -811,17 +868,20 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
             default = "10"
         new_options[API_QUOTA] = default
 
-    async def __v12(hass: HomeAssistant, new_options) -> None:
+    async def __v12(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         new_options[AUTO_UPDATE] = int(new_options.get(AUTO_UPDATE, 0))
         new_options[BRK_SITE_DETAILED] = False
         if new_options.get(HARD_LIMIT) is None:  # May already exist.
             new_options[HARD_LIMIT] = 100000
 
-    async def __v14(hass: HomeAssistant, new_options) -> None:
+    async def __v14(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
         hard_limit = new_options.get(HARD_LIMIT, 100000) / 1000
         new_options[HARD_LIMIT_API] = f"{hard_limit:.1f}"
         with contextlib.suppress(Exception):
             new_options.pop(HARD_LIMIT)
+
+    async def __v15(hass: HomeAssistant, new_options: dict[str, Any]) -> None:
+        new_options[EXCLUDE_SITES] = []
 
     upgrades: list[dict[str, Any]] = [
         {"version": 4, "function": __v4},
@@ -832,6 +892,7 @@ async def async_migrate_entry(hass: HomeAssistant, entry: SolcastConfigEntry) ->
         {"version": 9, "function": __v9},
         {"version": 12, "function": __v12},
         {"version": 14, "function": __v14},
+        {"version": 15, "function": __v15},
     ]
     for upgrade in upgrades:
         if entry.version < upgrade["version"]:

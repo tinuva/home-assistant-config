@@ -8,38 +8,24 @@ import logging
 import traceback
 from typing import Any
 
+from propcache.api import cached_property
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import (
-    ATTR_CONFIGURATION_URL,
-    ATTR_IDENTIFIERS,
-    ATTR_MANUFACTURER,
-    ATTR_MODEL,
-    ATTR_NAME,
-    ATTR_SW_VERSION,
-    # MATCH_ALL,
-    UnitOfEnergy,
-    UnitOfPower,
-)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory, UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import (
-    ATTR_ENTRY_TYPE,
-    ATTRIBUTION,
-    DOMAIN,
-    MANUFACTURER,
-    SENSOR_UPDATE_LOGGING,
-)
+from .const import ATTRIBUTION, DOMAIN, MANUFACTURER, SENSOR_UPDATE_LOGGING
 from .coordinator import SolcastUpdateCoordinator
-from .util import SolcastConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -300,14 +286,14 @@ def get_sensor_update_policy(key: str) -> SensorUpdatePolicy:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: SolcastConfigEntry,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up a Solcast sensor.
 
     Arguments:
         hass (HomeAssistant): The Home Assistant instance.
-        entry (SolcastConfigEntry): The integration entry instance, contains the configuration.
+        entry (ConfigEntry): The integration entry instance, contains the configuration.
         async_add_entities (AddEntitiesCallback): The Home Assistant callback to add entities.
 
     """
@@ -329,6 +315,7 @@ async def async_setup_entry(
         )
         sen = SolcastSensor(coordinator, k, entry)
         entities.append(sen)
+        expecting_limits = ["hard_limit"]
     else:
         for api_key in coordinator.solcast.options.api_key.split(","):
             k = SensorEntityDescription(
@@ -341,6 +328,15 @@ async def async_setup_entry(
             )
             sen = SolcastSensor(coordinator, k, entry)
             entities.append(sen)
+        expecting_limits = [f"hard_limit_{api_key[-6:]}" for api_key in coordinator.solcast.options.api_key.split(",")]
+    # Clean up any orphaned hard limit sensors.
+    # Clean up should only occur here once for any install, as operational cleanup is done when the entry options are changed.
+    entity_registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(entity_registry, entry.entry_id):
+        if "hard_limit" in entity.unique_id and entity.unique_id not in expecting_limits:
+            entity_registry.async_remove(entity.entity_id)
+            _LOGGER.warning("Cleaning up orphaned %s", entity.entity_id)
+
     for site in coordinator.get_solcast_sites():
         k = SensorEntityDescription(
             key=site["resource_id"],
@@ -372,7 +368,7 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
         self,
         coordinator: SolcastUpdateCoordinator,
         entity_description: SensorEntityDescription,
-        entry: SolcastConfigEntry,
+        entry: ConfigEntry,
         enabled_by_default: bool = True,
     ) -> None:
         """Initialise the sensor.
@@ -380,7 +376,7 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
         Arguments:
             coordinator (SolcastUpdateCoordinator): The integration coordinator instance.
             entity_description (SensorEntityDescription): The details of the entity.
-            entry (SolcastConfigEntry): The integration entry instance, contains the configuration.
+            entry (ConfigEntry): The integration entry instance, contains the configuration.
             enabled_by_default (bool): The default state of the sensor.
 
         """
@@ -401,15 +397,15 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_available = self._sensor_data is not None
 
-        self._attr_device_info = {
-            ATTR_IDENTIFIERS: {(DOMAIN, entry.entry_id)},
-            ATTR_NAME: "Solcast PV Forecast",
-            ATTR_MANUFACTURER: MANUFACTURER,
-            ATTR_MODEL: "Solcast PV Forecast",
-            ATTR_ENTRY_TYPE: DeviceEntryType.SERVICE,
-            ATTR_SW_VERSION: coordinator.version,
-            ATTR_CONFIGURATION_URL: "https://toolkit.solcast.com.au/",
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name="Solcast PV Forecast",
+            manufacturer=MANUFACTURER,
+            model="Solcast PV Forecast",
+            entry_type=DeviceEntryType.SERVICE,
+            sw_version=coordinator.version,
+            configuration_url="https://toolkit.solcast.com.au/",
+        )
 
     async def async_added_to_hass(self) -> None:
         """Entity about to be added to hass, so set recorder excluded attributes."""
@@ -429,12 +425,12 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
             self._state_info["unrecorded_attributes"] = self._state_info["unrecorded_attributes"] | frozenset(exclude)
 
     @property
-    def available(self) -> bool:
+    def available(self) -> bool:  # type: ignore[explicit-override]  # Explicitly overridden because parent is a cached property
         """Return the availability of the sensor linked to the source sensor."""
         return self._attr_available
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
+    def extra_state_attributes(self) -> dict[str, Any] | None:  # type: ignore[explicit-override]
         """Return the state extra attributes of the sensor.
 
         Returns:
@@ -444,7 +440,7 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
         return self._coordinator.get_sensor_extra_attributes(self.entity_description.key)
 
     @property
-    def native_value(self) -> int | dt | float | str | bool | None:
+    def native_value(self) -> int | dt | float | str | bool | None:  # type: ignore[explicit-override]
         """Return the current value of the sensor.
 
         Returns:
@@ -453,7 +449,7 @@ class SolcastSensor(CoordinatorEntity, SensorEntity):
         """
         return self._sensor_data
 
-    @property
+    @cached_property
     def should_poll(self) -> bool:
         """Return whether the sensor should poll.
 
@@ -501,7 +497,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
         key: str,
         coordinator: SolcastUpdateCoordinator,
         entity_description: SensorEntityDescription,
-        entry: SolcastConfigEntry,
+        entry: ConfigEntry,
         rooftop_id: str,
     ) -> None:
         """Initialise the sensor.
@@ -510,7 +506,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
             key (str): The sensor name.
             coordinator (SolcastUpdateCoordinator): The integration coordinator instance.
             entity_description (SensorEntityDescription): The details of the entity.
-            entry (SolcastConfigEntry): The integration entry instance, contains the configuration.
+            entry (ConfigEntry): The integration entry instance, contains the configuration.
             rooftop_id (str): The site name to use as the senor name.
 
         """
@@ -531,24 +527,24 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
 
         self._attr_available = self._sensor_data is not None
 
-        self._attr_device_info = {
-            ATTR_IDENTIFIERS: {(DOMAIN, entry.entry_id)},
-            ATTR_NAME: "Solcast PV Forecast",
-            ATTR_MANUFACTURER: MANUFACTURER,
-            ATTR_MODEL: "Solcast PV Forecast",
-            ATTR_ENTRY_TYPE: DeviceEntryType.SERVICE,
-            ATTR_SW_VERSION: coordinator.version,
-            ATTR_CONFIGURATION_URL: "https://toolkit.solcast.com.au/",
-        }
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, entry.entry_id)},
+            name="Solcast PV Forecast",
+            manufacturer=MANUFACTURER,
+            model="Solcast PV Forecast",
+            entry_type=DeviceEntryType.SERVICE,
+            sw_version=coordinator.version,
+            configuration_url="https://toolkit.solcast.com.au/",
+        )
 
         self._unique_id = f"solcast_api_{entity_description.name}"
 
     @property
-    def available(self) -> bool:
+    def available(self) -> bool:  # type: ignore[explicit-override]  # Explicitly overridden because parent is a cached property
         """Return the availability of the sensor linked to the source sensor."""
         return self._attr_available
 
-    @property
+    @cached_property
     def name(self) -> str:
         """Return the name of the device.
 
@@ -559,7 +555,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
         return f"{self.entity_description.name}"
 
     @property
-    def unique_id(self) -> str | None:
+    def unique_id(self) -> str | None:  # type: ignore[explicit-override]
         """Return the unique ID of the sensor.
 
         Returns:
@@ -569,7 +565,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
         return f"solcast_{self._unique_id}"
 
     @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
+    def extra_state_attributes(self) -> dict[str, Any] | None:  # type: ignore[explicit-override]
         """Return the state extra attributes of the sensor.
 
         Returns:
@@ -579,7 +575,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
         return self._coordinator.get_site_sensor_extra_attributes(self._rooftop_id, self._key)
 
     @property
-    def native_value(self) -> int | dt | float | str | bool | None:
+    def native_value(self) -> int | dt | float | str | bool | None:  # type: ignore[explicit-override]
         """Return the current value of the sensor.
 
         Returns:
@@ -588,7 +584,7 @@ class RooftopSensor(CoordinatorEntity, SensorEntity):
         """
         return self._sensor_data
 
-    @property
+    @cached_property
     def should_poll(self) -> bool:
         """Return whether the sensor should poll.
 

@@ -45,6 +45,7 @@ from .const import (
     Features,
     FansEnum,
     Home_Flag_Values,
+    Printers,
     SdcardState,
     SPEED_PROFILE,
     GCODE_STATE_OPTIONS,
@@ -54,6 +55,8 @@ from .const import (
 from .commands import (
     CHAMBER_LIGHT_ON,
     CHAMBER_LIGHT_OFF,
+    CHAMBER_LIGHT_2_ON,
+    CHAMBER_LIGHT_2_OFF,
     PROMPT_SOUND_ENABLE,
     PROMPT_SOUND_DISABLE,
     SPEED_PROFILE_TEMPLATE,
@@ -117,20 +120,20 @@ class Device:
         if self.info.mqtt_mode == "bambu_cloud":
             return True
         # X1* have not yet blocked setting the temperatures when in nybrid connection mode.
-        if self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "H2D":
+        if self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D:
             return True
         # What's left is P1 and A1 printers that we are connecting by local mqtt. These are supported only in pure Lan Mode.
         return not self._client.bambu_cloud.bambu_connected
 
     def supports_feature(self, feature):
         if feature == Features.AUX_FAN:
-            return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
+            return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
         elif feature == Features.CHAMBER_LIGHT:
             return True
         elif feature == Features.CHAMBER_FAN:
-            return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
+            return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
         elif feature == Features.CHAMBER_TEMPERATURE:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "H2D"
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
         elif feature == Features.CURRENT_STAGE:
             return True
         elif feature == Features.PRINT_LAYERS:
@@ -140,43 +143,64 @@ class Device:
         elif feature == Features.EXTERNAL_SPOOL:
             return True
         elif feature == Features.K_VALUE:
-            return self.info.device_type == "P1P" or self.info.device_type == "P1S" or self.info.device_type == "A1" or self.info.device_type == "A1MINI"
+            return self.info.device_type == Printers.P1P or self.info.device_type == Printers.P1S or self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI
         elif feature == Features.START_TIME:
             return False
         elif feature == Features.START_TIME_GENERATED:
             return True
         elif feature == Features.AMS_TEMPERATURE:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "H2D"
+            if (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D):
+                return True
+            elif (self.info.device_type == Printers.P1S or self.info.device_type == Printers.P1P) and self.supports_sw_version("01.07.50.18"):
+                return True
+            return False
         elif feature == Features.CAMERA_RTSP:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "H2D"
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
         elif feature == Features.CAMERA_IMAGE:
-            return self.info.device_type == "P1P" or self.info.device_type == "P1S" or self.info.device_type == "A1" or self.info.device_type == "A1MINI"
+            return self.info.device_type == Printers.P1P or self.info.device_type == Printers.P1S or self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI
         elif feature == Features.DOOR_SENSOR:
-            return self.info.device_type == "X1" or self.info.device_type == "X1C" or self.info.device_type == "X1E" or self.info.device_type == "H2D"
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
         elif feature == Features.MANUAL_MODE:
             return False
         elif feature == Features.AMS_FILAMENT_REMAINING:
             # Technically this is not the AMS Lite but that's currently tied to only these printer types.
-            return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
+            return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
         elif feature == Features.SET_TEMPERATURE:
             return self._supports_temperature_set()
         elif feature == Features.PROMPT_SOUND:
-            return self.info.device_type == "A1" or self.info.device_type == "A1MINI"
+            return self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI
         elif feature == Features.FTP:
             return True
         elif feature == Features.TIMELAPSE:
             return False
         elif feature == Features.AMS_SWITCH_COMMAND:
-            if self.info.device_type == "A1" or self.info.device_type == "A1MINI" or self.info.device_type == "X1E" or self.info.device_type == "H2D":
+            if self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D:
                 return True
-            elif (self.info.device_type == "P1S" or self.info.device_type == "P1P") and self.supports_sw_version("01.02.99.10"):
+            elif (self.info.device_type == Printers.P1S or self.info.device_type == Printers.P1P) and self.supports_sw_version("01.02.99.10"):
                 return True
-            elif (self.info.device_type == "X1" or self.info.device_type == "X1C") and self.supports_sw_version("01.05.06.01"):
+            elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.05.06.01"):
                 return True
             return False
         elif feature == Features.DOWNLOAD_GCODE_FILE:
             return True
-
+        elif feature == Features.AMS_HUMIDITY:
+            if (self.info.device_type == Printers.H2D):
+                return True
+            elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.08.50.18"):
+                return True
+            elif (self.info.device_type == Printers.P1S or self.info.device_type == Printers.P1P) and self.supports_sw_version("01.07.50.18"):
+                return True
+            return False
+        elif feature == Features.AMS_DRYING:
+            if (self.info.device_type == Printers.H2D):
+                return True
+            elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.08.50.18"):
+                return True
+            elif (self.info.device_type == Printers.P1S or self.info.device_type == Printers.P1P) and self.supports_sw_version("01.07.50.18"):
+                return True
+            return False
+        elif feature == Features.CHAMBER_LIGHT_2:
+            return (self.info.device_type == Printers.H2D)
         return False
     
     def supports_sw_version(self, version: str) -> bool:
@@ -205,20 +229,28 @@ class Device:
 
     @property
     def is_core_xy(self) -> bool:
-        return self.info.device_type != "A1" and self.info.device_type != "A1MINI"
+        return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
 
 @dataclass
 class Lights:
     """Return all light related info"""
     chamber_light: str
+    chamber_light2: str
     chamber_light_override: str
+    chamber_light2_override: str
     work_light: str
 
     def __init__(self, client):
         self._client = client
         self.chamber_light = "unknown"
+        self.chamber_light2 = "unknown"
         self.work_light = "unknown"
         self.chamber_light_override = ""
+        self.chamber_light2_override = ""
+
+    @property
+    def is_chamber_light_on(self):
+        return self.chamber_light == "on" or self.chamber_light2 == "on"
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -242,6 +274,16 @@ class Lights:
                 self.chamber_light_override = ""
         else:
             self.chamber_light = chamber_light
+
+        chamber_light2 = \
+            search(data.get("lights_report", []), lambda x: x.get('node', "") == "chamber_light2",
+                   {"mode": self.chamber_light2}).get("mode")
+        if self.chamber_light2_override != "":
+            if self.chamber_light2_override == chamber_light2:
+                self.chamber_light2_override = ""
+        else:
+            self.chamber_light2 = chamber_light2
+
         self.work_light = \
             search(data.get("lights_report", []), lambda x: x.get('node', "") == "work_light",
                    {"mode": self.work_light}).get("mode")
@@ -253,12 +295,16 @@ class Lights:
         self.chamber_light_override = "on"
         self._client.callback("event_light_update")
         self._client.publish(CHAMBER_LIGHT_ON)
+        if self._client._device.supports_feature(Features.CHAMBER_LIGHT_2):
+            self._client.publish(CHAMBER_LIGHT_2_ON)
 
     def TurnChamberLightOff(self):
         self.chamber_light = "off"
         self.chamber_light_override = "off"
         self._client.callback("event_light_update")
         self._client.publish(CHAMBER_LIGHT_OFF)
+        if self._client._device.supports_feature(Features.CHAMBER_LIGHT_2):
+            self._client.publish(CHAMBER_LIGHT_2_OFF)
 
 
 @dataclass
@@ -464,12 +510,12 @@ class Upgrade:
     def release_url(self) -> str:
         """Return the release url"""
         device_mapping = {
-            "P1P": "p1",
-            "P1S": "p1",
-            "A1MINI": "a1-mini",
-            "A1": "a1",
-            "X1C": "x1",
-            "X1E": "x1e"
+            Printers.P1P: "p1",
+            Printers.P1S: "p1",
+            Printers.A1MINI: "a1-mini",
+            Printers.A1: "a1",
+            Printers.X1C: "x1",
+            Printers.X1E: "x1e"
         }
         self.printer_name = device_mapping.get(self._client._device.info.device_type)
         if self.printer_name is None:
@@ -1152,7 +1198,7 @@ class PrintJob:
             if model_file is not None:
                 break
 
-            if self._client._device.info.device_type == "X1" or self._client._device.info.device_type == "X1C" or self._client._device.info.device_type == "X1E":
+            if self._client._device.info.device_type == Printers.X1 or self._client._device.info.device_type == Printers.X1C or self._client._device.info.device_type == Printers.X1E:
                 # The X1 has a weird behavior where the downloaded file doesn't exist for several seconds into the RUNNING phase and even
                 # then it is still being downloaded in place so we might try to grab it mid-download and get a corrupt file. Try 13 times
                 # 5 seconds apart over 60s.
@@ -1341,7 +1387,7 @@ class PrintJob:
     #     "mode": "cloud_file",
     #     "isPublicProfile": false,
     #     "isPrintable": true,
-    #     "deviceModel": "P1P",
+    #     "deviceModel": Printers.P1P,
     #     "deviceName": "Bambu P1P",
     #     "bedType": "textured_plate"
     #     },
@@ -1664,15 +1710,21 @@ class AMSInstance:
     sw_version: str
     hw_version: str
     humidity_index: int
+    humidity: int
     temperature: int
+    model: str
+    remaining_drying_time: int
     tray: list["AMSTray"]
 
-    def __init__(self, client):
+    def __init__(self, client, model):
         self.serial = ""
         self.sw_version = ""
         self.hw_version = ""
         self.humidity_index = 0
+        self.humidity = 0
         self.temperature = 0
+        self.model = model
+        self.remaining_drying_time = 0
         self.tray = [None] * 4
         self.tray[0] = AMSTray(client)
         self.tray[1] = AMSTray(client)
@@ -1685,14 +1737,12 @@ class AMSList:
     """Return all AMS related info"""
     tray_now: int
     data: list[AMSInstance]
-    model: str
 
     def __init__(self, client):
         self._client = client
         self.tray_now = 0
         self.data = [None] * 4
         self._first_initialization_done = False
-        self.model = ""
 
     def info_update(self, data):
         old_data = f"{self.__dict__}"
@@ -1727,14 +1777,15 @@ class AMSList:
         for module in module_list:
             name = module["name"]
             index = -1
+            model = ""
             if name.startswith("ams/"):
-                self.model = "AMS"
+                model = "AMS"
                 index = int(name[4])
             elif name.startswith("ams_f1/"):
-                self.model = "AMS Lite"
+                model = "AMS Lite"
                 index = int(name[7])
             elif name.startswith("n3f/"):
-                self.model = "AMS 2 Pro"
+                model = "AMS 2 Pro"
                 index = int(name[4])
             
             if index != -1:
@@ -1743,8 +1794,11 @@ class AMSList:
                 if not module['sn'] == '':
                     # May get data before info so create entries if necessary
                     if self.data[index] is None:
-                        self.data[index] = AMSInstance(self._client)
-
+                        data_changed = True
+                        self.data[index] = AMSInstance(self._client, model)
+                    if self.data[index].model != model:
+                        data_changed = True
+                        self.data[index].model = model
                     if self.data[index].serial != module['sn']:
                         data_changed = True
                         self.data[index].serial = module['sn']
@@ -1833,12 +1887,18 @@ class AMSList:
                 index = int(ams['id'])
                 # May get data before info so create entry if necessary
                 if self.data[index] is None:
-                    self.data[index] = AMSInstance(self._client)
-
+                    self.data[index] = AMSInstance(self._client, "Unknown")
                 if self.data[index].humidity_index != int(ams['humidity']):
                     self.data[index].humidity_index = int(ams['humidity'])
+
+                if self.data[index].humidity != int(ams.get("humidity_raw", 0)):
+                    self.data[index].humidity = int(ams.get("humidity_raw", 0))
+
                 if self.data[index].temperature != float(ams['temp']):
                     self.data[index].temperature = float(ams['temp'])
+
+                if self.data[index].remaining_drying_time != int(ams.get('dry_time', 0)):
+                    self.data[index].remaining_drying_time = int(ams.get('dry_time', 0))
 
                 tray_list = ams['tray']
                 for tray in tray_list:
@@ -2288,7 +2348,7 @@ class HomeFlag:
         if not self._client._device.supports_feature(Features.DOOR_SENSOR):
             return False
         
-        if (self._device_type in ["X1", "X1C"] and version.parse(self._sw_ver) < version.parse("01.07.00.00")):
+        if (self._device_type in [Printers.X1, Printers.X1C] and version.parse(self._sw_ver) < version.parse("01.07.00.00")):
             return False
 
         return True
@@ -2399,7 +2459,7 @@ class SlicerSettings:
         return self.custom_filaments
 
     def _load_custom_filaments(self, slicer_settings: dict):
-        if 'private' in slicer_settings["filament"]:
+        if 'private' in slicer_settings.get("filament", {}):
             for filament in slicer_settings['filament']['private']:
                 if filament.get("filament_id", "") != "":
                     name = filament["name"]

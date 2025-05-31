@@ -455,9 +455,6 @@
       "humidity_index": {
         "name": "ดัชนีความชื้น"
       },
-      "ams_temp": {
-        "name": "อุณหภูมิ AMS"
-      },
       "external_spool": {
         "name": "สปูลภายนอก",
         "state_attributes": {
@@ -680,6 +677,15 @@
       },
       "gcode_file_downloaded": {
         "name": "ดาวน์โหลดไฟล์ gcode"
+      },
+      "remaining_drying_time": {
+        "name": "เวลาอบแห้งที่เหลืออยู่"
+      },
+      "ams_temp": {
+        "name": "อุณหภูมิ"
+      },
+      "humidity": {
+        "name": "ความชื้น"
       }
     },
     "camera": {
