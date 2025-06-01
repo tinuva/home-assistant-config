@@ -1,15 +1,15 @@
-# ---
+---
 
-# timer:
-#   morning_routine:
-#     name: Morning Routine
-#     duration: '02:45:00'
-#   morning_main_bedroom:
-#     name: Morning fix main bedroom light
-#     duration: '00:01:00'
-#   morning_small_bedroom:
-#     name: Morning fix small bedroom light
-#     duration: '00:01:00'
+timer:
+  morning_routine:
+    name: Morning Routine
+    duration: '02:45:00'
+  morning_main_bedroom:
+    name: Morning fix main bedroom light
+    duration: '00:01:00'
+  morning_small_bedroom:
+    name: Morning fix small bedroom light
+    duration: '00:01:00'
 
 # automation:
 #   - alias: Turn off main_bathroom lights after timer finish
