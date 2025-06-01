@@ -72,9 +72,9 @@ automation:
       - choose:
         # Work day mornings when not holiday
           - conditions:
-              - condition: state
-                entity_id: binary_sensor.workday_sensor
-                state: "on"
+              # - condition: state
+              #   entity_id: binary_sensor.workday_sensor
+              #   state: "on"
               - condition: state
                 entity_id: input_boolean.holiday
                 state: "off"
@@ -92,13 +92,28 @@ automation:
                   entity_id: vacuum.rockrobo
         # No conditions met so log and do nothing
         default:
-          - alias: "Log action taken"
+          - alias: "Log why cleaning didn't start"
             service: script.log
             data:
               icon: ':robot_face:'
               object: 'Vacuum Robot'
               message: >
-                Not cleaning, no conditions met
+                Not cleaning. Conditions not met:
+                {% if is_state('binary_sensor.workday_sensor', 'off') %}
+                - Not a workday
+                {% endif %}
+                {% if is_state('input_boolean.holiday', 'on') %}
+                - Holiday mode is on
+                {% endif %}
+                {% if is_state('input_boolean.guest', 'on') %}
+                - Guest mode is on
+                {% endif %}
+                {% if is_state('input_boolean.rockrobo_floor_disaster_zone', 'on') %}
+                - Floor disaster zone is set
+                {% endif %}
+                {% if is_state('binary_sensor.workday_sensor', 'on') and is_state('input_boolean.holiday', 'off') and is_state('input_boolean.guest', 'off') and is_state('input_boolean.rockrobo_floor_disaster_zone', 'off') %}
+                - Unknown reason (all conditions seem to be met)
+                {% endif %}
           - condition: state
             entity_id: input_boolean.rockrobo_floor_disaster_zone
             state: "on"
