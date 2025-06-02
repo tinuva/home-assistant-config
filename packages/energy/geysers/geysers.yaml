@@ -33,15 +33,10 @@ sensor:
         icon_template: "mdi:timer-outline"
         value_template: >-
             {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
-            {% if average_temp_int >= 19 %}15
-            {% elif average_temp_int >= 18 and average_temp_int < 19 %}20
-            {% elif average_temp_int >= 17 and average_temp_int < 18 %}25
-            {% elif average_temp_int >= 16 and average_temp_int < 17 %}30
-            {% elif average_temp_int >= 15 and average_temp_int < 16 %}35
-            {% elif average_temp_int >= 14 and average_temp_int < 15 %}40
-            {% elif average_temp_int >= 13 and average_temp_int < 14 %}45
-            {% elif average_temp_int >= 12 and average_temp_int < 13 %}50
-            {% else %}60{% endif -%}
+            {% if average_temp_int >= 20 %}120
+            {% elif average_temp_int >= 18 and average_temp_int < 20 %}150
+            {% elif average_temp_int >= 12 and average_temp_int < 18 %}150
+            {% else %}180{% endif -%}
 
 script:
   ######################################################################
