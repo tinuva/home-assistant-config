@@ -1,13 +1,5 @@
 ---
 
-# binary_sensor:
-#   - platform: workday
-#     country: ZA
-#     workdays: [mon, tue, wed, thu, fri]
-#     excludes: [sat, sun, holiday]
-#     add_holidays:
-#       - '2021-12-25'
-
 timer:
   88e9fe88abfe:
     duration: '00:05:00'
@@ -109,22 +101,6 @@ automation:
                   entity_id: timer.88e9fe88abfe
                   duration: >
                     {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
-      # - choose:
-      #   # If the AC on this plug is on, first turn it off then wait before turning off plug
-      #     - conditions:
-      #         - condition: template
-      #           value_template: "{{ not is_state('climate.midea_ac_32985348871179', 'off') }}"
-      #       sequence:
-      #         # climate.turn_off doesn't seem to work, so using hvac_mode
-      #         - service: climate.set_hvac_mode
-      #           data:
-      #             hvac_mode: "off"
-      #           target:
-      #             entity_id: climate.midea_ac_32985348871179
-      #         - delay: '00:00:30' # Wait
-      #         - service: switch.turn_off
-      #           data:
-      #             entity_id: switch.aircon_office
 
   # start timer when turned off
   - alias: Start timer after Turn off network access
@@ -163,6 +139,3 @@ automation:
       - service: switch.turn_on
         data:
           entity_id: switch.office_feed_2_office_feed_2
-      # - service: switch.turn_on
-      #   data:
-      #     entity_id: switch.aircon_office
