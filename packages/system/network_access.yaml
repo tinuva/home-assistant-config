@@ -139,3 +139,24 @@ automation:
       - service: switch.turn_on
         data:
           entity_id: switch.office_feed_2_office_feed_2
+
+  - alias: Turn on office feed 2 when available outside specific hours
+    trigger:
+      - platform: state
+        entity_id: switch.office_feed_2_office_feed_2
+        from: 'unavailable'
+        to: 'off'
+    condition:
+      - condition: time
+        after: "21:00:00"
+        before: "18:00:00"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.office_feed_2_office_feed_2
+      - service: system_log.write
+        data:
+          level: info
+          message: >
+            Office feed 2 switch was turned on automatically after becoming available
+            outside the 6 PM to 9 PM timeframe.
