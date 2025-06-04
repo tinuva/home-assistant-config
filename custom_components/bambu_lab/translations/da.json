@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Værktøjsmodul",
+        "state": {
+          "none": "Ikke monteret",
+          "laser": "Laser",
+          "cutter": "Skærer"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi signal"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Fugtighed"
+      },
+      "left_nozzle_temp": {
+        "name": "Efterladt dysetemperatur"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Efterladt dyse måltemperatur"
+      },
+      "right_nozzle_temp": {
+        "name": "Højre dysetemperatur"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Højre dysemåltemperatur"
+      },
+      "sdcard_status": {
+        "name": "SD -kortstatus",
+        "state": {
+          "missing": "Manglende",
+          "normal": "Normal",
+          "abnormal": "Abnorm",
+          "readonly": "Læs kun"
+        }
       }
     },
     "camera": {

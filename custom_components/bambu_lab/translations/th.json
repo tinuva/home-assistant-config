@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "โมดูลเครื่องมือ",
+        "state": {
+          "none": "ไม่ได้ติดตั้ง",
+          "laser": "เลเซอร์",
+          "cutter": "เครื่องตัด"
+        }
+      },
       "wifi_signal": {
         "name": "สัญญาณ Wi-Fi"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "ความชื้น"
+      },
+      "left_nozzle_temp": {
+        "name": "อุณหภูมิหัวฉีดซ้าย"
+      },
+      "left_target_nozzle_temp": {
+        "name": "อุณหภูมิเป้าหมายหัวฉีดซ้าย"
+      },
+      "right_nozzle_temp": {
+        "name": "อุณหภูมิหัวฉีดขวา"
+      },
+      "right_target_nozzle_temp": {
+        "name": "อุณหภูมิเป้าหมายหัวฉีดขวา"
+      },
+      "sdcard_status": {
+        "name": "สถานะการ์ด SD",
+        "state": {
+          "missing": "หายไป",
+          "normal": "ปกติ",
+          "abnormal": "ผิดปกติ",
+          "readonly": "อ่านเท่านั้น"
+        }
       }
     },
     "camera": {

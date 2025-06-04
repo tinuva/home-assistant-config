@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Tool module",
+        "state": {
+          "none": "Not mounted",
+          "laser": "Laser",
+          "cutter": "Cutter"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi signal"
       },
@@ -284,6 +292,18 @@
       },
       "nozzle_temp": {
         "name": "Nozzle temperature"
+      },
+      "left_nozzle_temp": {
+        "name": "Left nozzle temperature"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Left nozzle target temperature"
+      },
+      "right_nozzle_temp": {
+        "name": "Right nozzle temperature"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Right nozzle target temperature"
       },
       "aux_fan_speed": {
         "name": "Aux fan speed"
@@ -354,6 +374,15 @@
           "paused_first_layer_error": "Paused due to first layer error",
           "paused_nozzle_clog": "Paused due to nozzle clog",
           "idle": "Idle"
+        }
+      },
+      "sdcard_status": { 
+        "name": "SD card status",
+        "state": {
+          "missing": "Missing",
+          "normal": "Normal",
+          "abnormal": "Abnormal",
+          "readonly": "Read only"
         }
       },
       "print_progress": {

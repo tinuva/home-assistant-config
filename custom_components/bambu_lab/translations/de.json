@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Werkzeugmodul",
+        "state": {
+          "none": "Nicht montiert",
+          "laser": "Laser",
+          "cutter": "Schneider"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi-Signalqualität"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Luftfeuchtigkeit"
+      },
+      "left_nozzle_temp": {
+        "name": "Linke Düsentemperatur"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Linksdüsenzieltemperatur"
+      },
+      "right_nozzle_temp": {
+        "name": "Rechte Düsentemperatur"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Rechte Düsenzieltemperatur"
+      },
+      "sdcard_status": {
+        "name": "SD -Kartenstatus",
+        "state": {
+          "missing": "Fehlen",
+          "normal": "Normal",
+          "abnormal": "Abnormal",
+          "readonly": "Nur lesen"
+        }
       }
     },
     "camera": {

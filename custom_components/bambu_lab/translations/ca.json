@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Mòdul d'eines",
+        "state": {
+          "none": "No muntat",
+          "laser": "Làser",
+          "cutter": "Tallador"
+        }
+      },
       "wifi_signal": {
         "name": "Senyal Wi-Fi"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Humitat"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura de la boquilla esquerra"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura objectiu de la boquilla esquerra"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura de la boquilla dreta"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura objectiu de la boquilla dreta"
+      },
+      "sdcard_status": {
+        "name": "Estat de la targeta SD",
+        "state": {
+          "missing": "Perduda",
+          "normal": "Normal",
+          "abnormal": "Anormal",
+          "readonly": "Llegiu només"
+        }
       }
     },
     "camera": {

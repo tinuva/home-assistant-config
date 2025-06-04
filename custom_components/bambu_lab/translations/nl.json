@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Gereedschapsmodule",
+        "state": {
+          "none": "Niet gemonteerd",
+          "laser": "Laser",
+          "cutter": "Snijder"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi-signaal"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Vochtigheid"
+      },
+      "left_nozzle_temp": {
+        "name": "Linker mondstuktemperatuur"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Verlof mondstuk doeltemperatuur"
+      },
+      "right_nozzle_temp": {
+        "name": "Juiste mondstuktemperatuur"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Rechter mondstuk doeltemperatuur"
+      },
+      "sdcard_status": {
+        "name": "SD -kaartstatus",
+        "state": {
+          "missing": "Ontbrekend",
+          "normal": "Normaal",
+          "abnormal": "Abnormaal",
+          "readonly": "Alleen lezen"
+        }
       }
     },
     "camera": {

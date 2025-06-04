@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Module d’outil",
+        "state": {
+          "none": "Non monté",
+          "laser": "Laser",
+          "cutter": "Découpeur"
+        }
+      },
       "wifi_signal": {
         "name": "Signal Wi-Fi"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Humidité"
+      },
+      "left_nozzle_temp": {
+        "name": "Température de la buse gauche"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Température cible de la buse gauche"
+      },
+      "right_nozzle_temp": {
+        "name": "Température de la buse droite"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Température cible de la buse droite"
+      },
+      "sdcard_status": {
+        "name": "Statut de carte SD",
+        "state": {
+          "missing": "Manquant",
+          "normal": "Normale",
+          "abnormal": "Anormal",
+          "readonly": "Lire uniquement"
+        }
       }
     },
     "camera": {

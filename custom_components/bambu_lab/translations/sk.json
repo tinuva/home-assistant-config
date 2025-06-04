@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Nástrojový modul",
+        "state": {
+          "none": "Nenamontovaný",
+          "laser": "Laser",
+          "cutter": "Rezačka"
+        }
+      },
       "wifi_signal": {
         "name": "Wi-Fi signál"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Vlhkosť"
+      },
+      "left_nozzle_temp": {
+        "name": "Teplota ľavej dýzy"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Ľavá dýza cieľová teplota"
+      },
+      "right_nozzle_temp": {
+        "name": "Pravá dýza teplota"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Pravá dýza cieľová teplota"
+      },
+      "sdcard_status": {
+        "name": "Stav karty SD",
+        "state": {
+          "missing": "Chýbajúci",
+          "normal": "Normálny",
+          "abnormal": "Neobvyklý",
+          "readonly": "Čítať"
+        }
       }
     },
     "camera": {

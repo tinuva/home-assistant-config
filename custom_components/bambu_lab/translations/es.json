@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Módulo de herramienta",
+        "state": {
+          "none": "No montado",
+          "laser": "Láser",
+          "cutter": "Cortador"
+        }
+      },
       "wifi_signal": {
         "name": "Señal Wi-Fi"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Humedad"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura de la boquilla izquierda"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura objetivo de la boquilla izquierda"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura de la boquilla derecha"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura objetivo de la boquilla derecha"
+      },
+      "sdcard_status": {
+        "name": "Estado de la tarjeta SD",
+        "state": {
+          "missing": "Desaparecido",
+          "normal": "Normal",
+          "abnormal": "Anormal",
+          "readonly": "Solo lectura"
+        }
       }
     },
     "camera": {

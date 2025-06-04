@@ -267,6 +267,14 @@
       }
     },
     "sensor": {
+      "tool_module": {
+        "name": "Modulo strumento",
+        "state": {
+          "none": "Non montato",
+          "laser": "Laser",
+          "cutter": "Taglierina"
+        }
+      },
       "wifi_signal": {
         "name": "Segnale Wi-Fi"
       },
@@ -686,6 +694,27 @@
       },
       "humidity": {
         "name": "Umidità"
+      },
+      "left_nozzle_temp": {
+        "name": "Temperatura dell'ugello sinistro"
+      },
+      "left_target_nozzle_temp": {
+        "name": "Temperatura target dell'ugello sinistro"
+      },
+      "right_nozzle_temp": {
+        "name": "Temperatura dell'ugello giusto"
+      },
+      "right_target_nozzle_temp": {
+        "name": "Temperatura target dell'ugello destro"
+      },
+      "sdcard_status": {
+        "name": "Stato della scheda SD",
+        "state": {
+          "missing": "Mancante",
+          "normal": "Normale",
+          "abnormal": "Anormale",
+          "readonly": "Solo lettura"
+        }
       }
     },
     "camera": {
