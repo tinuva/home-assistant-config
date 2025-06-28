@@ -9,7 +9,18 @@ sensor:
         unit_of_measurement: "hours"
         icon_template: "mdi:clock"
         value_template: >
-          {{ 8|float }}
+          {{ 25|float }}
+      zigbee_last_seen_problem_detail:
+        friendly_name: "Zigbee Last Seen Problem Detail"
+        icon_template: "mdi:clock"
+        value_template: >
+          {%- for state in (expand(states.sensor, states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if state.state is string and state.state not in ['on', 'off', 'unavailable', 'unknown'] and state.state | regex_match('^[0-9]{4}-[0-9]{2}-[0-9]{2}.*') -%}
+              {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float(0))) %}
+                {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor %}
 
 binary_sensor:
   # Used to trigger the automation. Using this, we can automatically create and dismiss the notification if the problem is resolved
