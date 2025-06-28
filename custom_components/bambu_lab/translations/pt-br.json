@@ -82,7 +82,8 @@
           "serial": "Número de Série:",
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
-          "usage_hours": "Horas de utilização atuais (opcional):"
+          "usage_hours": "Horas de utilização atuais (opcional):",
+          "developer_lan_mode": "Modo LAN do desenvolvedor ativado:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Endereço IP Local da Impressora:",
           "access_code": "Código de Acesso:",
-          "usage_hours": "Horas de utilização atuais (opcional):"
+          "usage_hours": "Horas de utilização atuais (opcional):",
+          "developer_lan_mode": "Modo LAN do desenvolvedor ativado:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Estado do filamento da extrusora"
+      },
+      "developer_lan_mode": {
+        "name": "Modo LAN do desenvolvedor"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware de criptografia MQTT"
+      },
+      "active_ams": {
+        "name": "Ativo"
       }
     },
     "button": {
@@ -397,7 +408,8 @@
           "textured_plate": "Placa texturizada",
           "cool_plate": "Placa Fria / Placa PLA",
           "hot_plate": "Placa PEI lisa / placa de alta temperatura",
-          "eng_plate": "Placa de Engenharia"
+          "eng_plate": "Placa de Engenharia",
+          "supertack_plate": "Supertack de placa legal"
         }
       },
       "print_length": {
@@ -437,9 +449,6 @@
       },
       "active_tray": {
         "name": "Bandeja ativa"
-      },
-      "active_tray_index": {
-        "name": "Índice de bandeja ativa"
       },
       "nozzle_diameter": {
         "name": "Diâmetro do bico"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Modo de atualização manual"
-      },
       "camera": {
         "name": "Ativar câmera"
       },

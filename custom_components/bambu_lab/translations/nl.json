@@ -82,7 +82,8 @@
           "serial": "Serienummer:",
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
-          "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+          "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
+          "developer_lan_mode": "Ontwikkelaar LAN -modus ingeschakeld:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
-          "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+          "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
+          "developer_lan_mode": "Ontwikkelaar LAN -modus ingeschakeld:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Extruder Filament State"
+      },
+      "developer_lan_mode": {
+        "name": "Ontwikkelaar LAN -modus"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT -coderingsfirmware"
+      },
+      "active_ams": {
+        "name": "Actief"
       }
     },
     "button": {
@@ -400,7 +411,8 @@
           "textured_plate": "Textured plate",
           "cool_plate": "Cool Plate / PLA Plate",
           "hot_plate": "Smooth PEI Plate / High Temp Plate",
-          "eng_plate": "Engineering Plate"
+          "eng_plate": "Engineering Plate",
+          "supertack_plate": "Coole plaat supertack"
         }
       },
       "print_length": {
@@ -440,9 +452,6 @@
       },
       "active_tray": {
         "name": "Actieve tray"
-      },
-      "active_tray_index": {
-        "name": "Actieve tray-index"
       },
       "nozzle_diameter": {
         "name": "Nozzle-grootte"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Handmatige vernieuwingsmodus"
-      },
       "camera": {
         "name": "Camera inschakelen"
       },

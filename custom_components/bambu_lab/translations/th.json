@@ -82,7 +82,8 @@
           "serial": "หมายเลขซีเรียล:",
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "สถานะไส้กรอง"
+      },
+      "developer_lan_mode": {
+        "name": "นักพัฒนาโหมด LAN"
+      },
+      "mqtt_encryption": {
+        "name": "เฟิร์มแวร์การเข้ารหัส MQTT"
+      },
+      "active_ams": {
+        "name": "คล่องแคล่ว"
       }
     },
     "button": {
@@ -403,7 +414,8 @@
           "textured_plate": "แผ่นพื้นผิว",
           "cool_plate": "จานเย็น / แผ่น PLA",
           "hot_plate": "แผ่น PEI เรียบ / แผ่นอุณหภูมิสูง",
-          "eng_plate": "แผ่นวิศวกรรม"
+          "eng_plate": "แผ่นวิศวกรรม",
+          "supertack_plate": "Supertack จานเย็น"
         }
       },
       "print_length": {
@@ -443,9 +455,6 @@
       },
       "active_tray": {
         "name": "ถาดที่ใช้งานอยู่"
-      },
-      "active_tray_index": {
-        "name": "ดัชนีถาดที่ใช้งานอยู่"
       },
       "nozzle_diameter": {
         "name": "ขนาดหัวฉีด"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "โหมดรีเฟรชด้วยตนเอง"
-      },
       "camera": {
         "name": "เปิดใช้งานกล้อง"
       },

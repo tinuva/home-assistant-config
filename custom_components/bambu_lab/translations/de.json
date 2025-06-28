@@ -82,7 +82,8 @@
           "serial": "Seriennummer:",
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Extruder Filament Status"
+      },
+      "developer_lan_mode": {
+        "name": "Entwickler LAN -Modus"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT -Verschlüsselungsfirmware"
+      },
+      "active_ams": {
+        "name": "Aktiv"
       }
     },
     "button": {
@@ -400,7 +411,8 @@
           "textured_plate": "Strukturierte Platte",
           "cool_plate": "Kühlplatte / PLA-Platte",
           "hot_plate": "Glatte PEI-Platte/Hochtemperaturplatte",
-          "eng_plate": "Technische Platte"
+          "eng_plate": "Technische Platte",
+          "supertack_plate": "Cool Plate Supertack"
         }
       },
       "print_length": {
@@ -440,9 +452,6 @@
       },
       "active_tray": {
         "name": "Aktiver Slot"
-      },
-      "active_tray_index": {
-        "name": "Aktiver Slotindex"
       },
       "nozzle_diameter": {
         "name": "Düsengröße"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Manueller Aktualisierungsmodus"
-      },
       "camera": {
         "name": "Kamera aktivieren"
       },

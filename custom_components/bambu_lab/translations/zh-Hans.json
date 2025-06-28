@@ -82,7 +82,8 @@
           "serial": "序号：",
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "developer_lan_mode": "启用了开发人员LAN模式："
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "本地打印机 IP 地址：",
           "access_code": "访问码",
-          "usage_hours": "当前使用时间（可选）："
+          "usage_hours": "当前使用时间（可选）：",
+          "developer_lan_mode": "启用了开发人员LAN模式："
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "挤出机耗材状态"
+      },
+      "developer_lan_mode": {
+        "name": "开发人员LAN模式"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT加密固件"
+      },
+      "active_ams": {
+        "name": "积极的"
       }
     },
     "button": {
@@ -397,7 +408,8 @@
           "textured_plate": "纹理PEI打印版",
           "cool_plate": "低温打印板/PLA打印板",
           "hot_plate": "光面PEI打印板/高温打印板",
-          "eng_plate": "工程材料打印板"
+          "eng_plate": "工程材料打印板",
+          "supertack_plate": "凉爽的板supertack"
         }
       },
       "print_length": {
@@ -437,9 +449,6 @@
       },
       "active_tray": {
         "name": "激活料盘"
-      },
-      "active_tray_index": {
-        "name": "激活料盘索引"
       },
       "nozzle_diameter": {
         "name": "喷嘴直径"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "手动刷新模式"
-      },
       "camera": {
         "name": "启用相机"
       },

@@ -82,7 +82,8 @@
           "serial": "Numéro de série",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "developer_lan_mode": "Mode LAN développeur activé:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "developer_lan_mode": "Mode LAN développeur activé:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "État de filament extrudeur"
+      },
+      "developer_lan_mode": {
+        "name": "Mode LAN développeur"
+      },
+      "mqtt_encryption": {
+        "name": "Firmware de cryptage MQTT"
+      },
+      "active_ams": {
+        "name": "Actif"
       }
     },
     "button": {
@@ -392,12 +403,13 @@
         "name": "Ficher G-code"
       },
       "print_bed_type": {
-        "name": "Type de lit d’impression",
+        "name": "Type de plaque",
         "state": {
-          "textured_plate": "Plaque texturée",
-          "cool_plate": "Plaque froide / Plaque PLA",
-          "hot_plate": "Plaque PEI lisse / Plaque haute température",
-          "eng_plate": "Plaque d'ingénierie"
+          "textured_plate": "Plaque PEI texturée",
+          "cool_plate": "Plaque froide",
+          "hot_plate": "Plaque PEI lisse",
+          "eng_plate": "Plaque d'ingénierie",
+          "supertack_plate": "Plaque froide SuperTack"
         }
       },
       "print_length": {
@@ -437,9 +449,6 @@
       },
       "active_tray": {
         "name": "Emplacement actif"
-      },
-      "active_tray_index": {
-        "name": "Emplacement actif (index)"
       },
       "nozzle_diameter": {
         "name": "Taille de la buse"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Actualisation manuelle"
-      },
       "camera": {
         "name": "Activer la caméra"
       },

@@ -82,7 +82,8 @@
           "serial": "Serienummer:",
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
-          "usage_hours": "Aktuelle brugstimer (valgfrit):"
+          "usage_hours": "Aktuelle brugstimer (valgfrit):",
+          "developer_lan_mode": "Udvikler LAN -tilstand aktiveret:"
         },
         "sections": {
           "advanced": {
@@ -161,7 +162,8 @@
         "data": {
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
-          "usage_hours": "Aktuelle brugstimer (valgfrit):"
+          "usage_hours": "Aktuelle brugstimer (valgfrit):",
+          "developer_lan_mode": "Udvikler LAN -tilstand aktiveret:"
         },
         "sections": {
           "advanced": {
@@ -198,6 +200,15 @@
       },
       "extruder_filament_state": {
         "name": "Ekstruderfilamentstilstand"
+      },
+      "developer_lan_mode": {
+        "name": "Udvikler LAN -tilstand"
+      },
+      "mqtt_encryption": {
+        "name": "MQTT Encryption Firmware"
+      },
+      "active_ams": {
+        "name": "Aktiv"
       }
     },
     "button": {
@@ -397,7 +408,8 @@
           "textured_plate": "Tekstureret plade",
           "cool_plate": "Køleplade / PLA plade",
           "hot_plate": "Glat PEI plade / Højtemperatur plade",
-          "eng_plate": "Ingeniørplade"
+          "eng_plate": "Ingeniørplade",
+          "supertack_plate": "Cool Plate Supertack"
         }
       },
       "print_length": {
@@ -437,9 +449,6 @@
       },
       "active_tray": {
         "name": "Aktiv bakke"
-      },
-      "active_tray_index": {
-        "name": "Indeks for aktiv bakke"
       },
       "nozzle_diameter": {
         "name": "Dyse størrelse"
@@ -723,9 +732,6 @@
       }
     },
     "switch": {
-      "manual": {
-        "name": "Manuel opdateringstilstand"
-      },
       "camera": {
         "name": "Aktiver kamera"
       },
