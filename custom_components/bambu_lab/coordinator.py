@@ -72,8 +72,9 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             name=DOMAIN
         )
 
-        self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
-        self.hass.bus.async_listen(SERVICE_CALL_EVENT, self._handle_service_call_event)
+        # Store event listener removal callbacks
+        self._ha_stop_listener = self.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, self._async_shutdown)
+        self._service_call_listener = self.hass.bus.async_listen(SERVICE_CALL_EVENT, self._handle_service_call_event)
 
     @callback
     def _async_shutdown(self, event: Event) -> None:
@@ -158,6 +159,12 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
     def shutdown(self) -> None:
         """ Halt the MQTT listener thread """
         self._shutdown = True
+        
+        # Remove event listeners
+        self._ha_stop_listener()
+        self._service_call_listener()
+        
+        # Disconnect client - this will handle its own thread cleanup
         self.client.disconnect()
 
     async def _publish(self, msg):
@@ -698,13 +705,13 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             sw_version=self.get_model().ams.data[index].sw_version
         )
 
-    def get_virtual_tray_device(self):
+    def get_virtual_tray_device(self, index: int):
         printer_serial = self.config_entry.data["serial"]
         device_type = self.config_entry.data["device_type"]
-        device_name=f"{device_type}_{printer_serial}_ExternalSpool"
+        device_name=f"{device_type}_{printer_serial}_ExternalSpool{'2' if index==1 else ''}"
 
         return DeviceInfo(
-            identifiers={(DOMAIN, f"{printer_serial}_ExternalSpool")},
+            identifiers={(DOMAIN, f"{printer_serial}_ExternalSpool{'2' if index==1 else ''}")},
             via_device=(DOMAIN, printer_serial),
             name=device_name,
             model="External Spool",

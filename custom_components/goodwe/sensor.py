@@ -10,16 +10,23 @@ import logging
 from typing import Any
 
 from goodwe import Inverter, Sensor, SensorKind
+from goodwe.sensor import (
+    Enum,
+    Enum2,
+    EnumBitmap4,
+    EnumBitmap22,
+    EnumCalculated,
+    EnumH,
+    EnumL,
+)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
-    POWER_VOLT_AMPERE_REACTIVE,
     EntityCategory,
     UnitOfApparentPower,
     UnitOfElectricCurrent,
@@ -27,19 +34,20 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfReactivePower,
     UnitOfTemperature,
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.event import async_track_point_in_time
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-import homeassistant.util.dt as dt_util
+from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, KEY_COORDINATOR, KEY_DEVICE_INFO, KEY_INVERTER
-from .coordinator import GoodweUpdateCoordinator
+from .const import DOMAIN
+from .coordinator import GoodweConfigEntry, GoodweUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -119,12 +127,14 @@ _DESCRIPTIONS: dict[str, GoodweSensorEntityDescription] = {
         device_class=SensorDeviceClass.APPARENT_POWER,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfApparentPower.VOLT_AMPERE,
+        entity_registry_enabled_default=False,
     ),
     "var": GoodweSensorEntityDescription(
         key="var",
         device_class=SensorDeviceClass.REACTIVE_POWER,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=POWER_VOLT_AMPERE_REACTIVE,
+        native_unit_of_measurement=UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
+        entity_registry_enabled_default=False,
     ),
     "C": GoodweSensorEntityDescription(
         key="C",
@@ -143,6 +153,7 @@ _DESCRIPTIONS: dict[str, GoodweSensorEntityDescription] = {
         device_class=SensorDeviceClass.DURATION,
         state_class=SensorStateClass.MEASUREMENT,
         native_unit_of_measurement=UnitOfTime.HOURS,
+        entity_registry_enabled_default=False,
     ),
     "%": GoodweSensorEntityDescription(
         key="%",
@@ -157,18 +168,22 @@ DIAG_SENSOR = GoodweSensorEntityDescription(
 TEXT_SENSOR = GoodweSensorEntityDescription(
     key="text",
 )
+ENUM_SENSOR = GoodweSensorEntityDescription(
+    key="enum",
+    device_class=SensorDeviceClass.ENUM,
+)
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+    config_entry: GoodweConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the GoodWe inverter from a config entry."""
     entities: list[InverterSensor] = []
-    inverter = hass.data[DOMAIN][config_entry.entry_id][KEY_INVERTER]
-    coordinator = hass.data[DOMAIN][config_entry.entry_id][KEY_COORDINATOR]
-    device_info = hass.data[DOMAIN][config_entry.entry_id][KEY_DEVICE_INFO]
+    inverter = config_entry.runtime_data.inverter
+    coordinator = config_entry.runtime_data.coordinator
+    device_info = config_entry.runtime_data.device_info
 
     # Individual inverter sensors entities
     entities.extend(
@@ -202,7 +217,13 @@ class InverterSensor(CoordinatorEntity[GoodweUpdateCoordinator], SensorEntity):
         try:
             self.entity_description = _DESCRIPTIONS[sensor.unit]
         except KeyError:
-            if "Enum" in type(sensor).__name__ or sensor.id_ == "timestamp":
+            if isinstance(sensor, (Enum, EnumH, EnumL, Enum2, EnumCalculated)):
+                self.entity_description = ENUM_SENSOR
+                self._attr_options = list(sensor._labels.values())
+            elif (
+                isinstance(sensor, (EnumBitmap4, EnumBitmap22))
+                or sensor.id_ == "timestamp"
+            ):
                 self.entity_description = TEXT_SENSOR
             else:
                 self.entity_description = DIAG_SENSOR
