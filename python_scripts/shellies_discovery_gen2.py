@@ -1,6 +1,6 @@
 """Adds MQTT discovery support for Shellies Gen2+ devices."""
 
-VERSION = "3.18.0"
+VERSION = "3.18.1"
 
 ATTR_BATTERY_POWERED = "battery_powered"
 ATTR_BINARY_SENSORS = "binary_sensors"
@@ -5384,13 +5384,14 @@ if "components" in device_config:
         if f"blutrv:{btdevice_id}" in blutrv_devices:
             continue
 
-        if not (model_id := config.get("model_id")):
+        if not (model := config["meta"]["ui"].get("local_name")):
+            model = BTH_DEV_MAP.get(config.get("model_id"))
+
+        if not model:
             logger.warning(  # noqa: F821
                 "device %s doesn't present MODEL ID, update device's firmware", device
             )
             continue
-
-        model = BTH_DEV_MAP.get(model_id)
 
         if model not in SUPPORTED_MODELS:
             logger.warning(  # noqa: F821
