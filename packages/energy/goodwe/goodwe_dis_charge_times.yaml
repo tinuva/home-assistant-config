@@ -28,7 +28,7 @@ sensor:
         unit_of_measurement: 'kWh'
         icon_template: "mdi:battery-high"
         value_template: >-
-          {% set battery_capacity = 10.5 %}
+          {% set battery_capacity = 14 %}
           {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
           {{ battery_current }}
       battery_available_dod:
