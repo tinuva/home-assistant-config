@@ -82,11 +82,11 @@ automation:
               15
             {% elif '20:00' <= time  <= '23:59' %}
               {{10*60|int}}
+            {% elif '04:40' <= time <= '05:30' and is_state('binary_sensor.either_parent_phones_charging','off') %}
+              {{15*60|int}}
             {% elif '00:00' <= time <= '05:29' %}
               {{1*60|int}}
             {% elif '05:30' <= time <= '07:29' %}
-              {{15*60|int}}
-            {% elif '04:40' <= time <= '05:30' and is_state('binary_sensor.either_parent_phones_charging','off') %}
               {{15*60|int}}
             {% else %}
               {{2*60|int}}
