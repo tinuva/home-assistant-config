@@ -1,0 +1,16 @@
+{
+  "config": {
+    "step": {
+      "init": {
+        "sections": {
+          "agents": "mdi:robot"
+        }
+      }
+    }
+  },
+  "services": {
+    "generate_image": {
+      "service": "mdi:image-sync"
+    }
+  }
+}
