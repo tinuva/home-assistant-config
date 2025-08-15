@@ -80,7 +80,7 @@ class CustomLLMAPI(llm.API):
             api_prompt=self._async_get_api_prompt(llm_context, exposed_entities),
             llm_context=llm_context,
             tools=self._async_get_tools(llm_context, exposed_entities),
-            custom_serializer=llm._selector_serializer,
+            custom_serializer=llm.selector_serializer,
         )
 
     @callback
