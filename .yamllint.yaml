@@ -2,17 +2,18 @@
 extends: default
 
 rules:
-  line-length: disable
-  comments: disable
-  comments-indentation: disable
+    line-length: disable
+    comments: disable
+    comments-indentation: disable
 
 ignore: |
-  lovelace-ui.yaml
-  custom_components/
-  blueprints/
-  rhasspy/
-  notebooks/
-  .git
-  scripts.yaml
-  .github/workflows/yaml-lint.yml
-  scenes.yaml
+    lovelace-ui.yaml
+    custom_components/
+    blueprints/
+    rhasspy/
+    notebooks/
+    .git
+    scripts.yaml
+    .github/workflows/yaml-lint.yml
+    scenes.yaml
+    .bmad-core
