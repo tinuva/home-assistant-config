@@ -100,12 +100,6 @@ automation:
                             entity_id: timer.88e9fe88abfe
                             duration: >
                                 {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
-          - service: switch.turn_off
-            data:
-                entity_id: switch.pixel_7a
-          - service: switch.turn_off
-            data:
-                entity_id: switch.pixel_7a_2
 
     # start timer when turned off
     - alias: Start timer after Turn off network access
