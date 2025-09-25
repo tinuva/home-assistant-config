@@ -1,5 +1,5 @@
-version: 4.40.0
-installed_at: '2025-08-25T05:36:30.594Z'
+version: 4.43.1
+installed_at: '2025-09-25T12:03:53.005Z'
 install_type: full
 agent: null
 ides_setup:
@@ -7,34 +7,37 @@ ides_setup:
 expansion_packs: []
 files:
   - path: .bmad-core/working-in-the-brownfield.md
-    hash: 2bf3551cbc498b47
+    hash: 07cc8eb6fc664bb8
     modified: false
   - path: .bmad-core/user-guide.md
-    hash: e633affe88d4ff20
+    hash: fa8776b4e0bfa3f7
+    modified: false
+  - path: .bmad-core/install-manifest.yaml
+    hash: c72090ba660a02cf
     modified: false
   - path: .bmad-core/enhanced-ide-development-workflow.md
     hash: 39beb3516c070e2b
     modified: false
   - path: .bmad-core/core-config.yaml
-    hash: 073cf6d2527c545d
+    hash: 94ce5b2faad48235
     modified: false
   - path: .bmad-core/workflows/greenfield-ui.yaml
-    hash: defde5d6bdcedd49
+    hash: 2b595f235c095790
     modified: false
   - path: .bmad-core/workflows/greenfield-service.yaml
-    hash: adf12981103693fb
+    hash: 1ea8b8d218f8caef
     modified: false
   - path: .bmad-core/workflows/greenfield-fullstack.yaml
-    hash: ba1bca46aae0486f
+    hash: df34e60ccfac2624
     modified: false
   - path: .bmad-core/workflows/brownfield-ui.yaml
-    hash: d8d63286af13181c
+    hash: 8a8068093272d00f
     modified: false
   - path: .bmad-core/workflows/brownfield-service.yaml
-    hash: e3e8029216c47391
+    hash: a3cd68897852876e
     modified: false
   - path: .bmad-core/workflows/brownfield-fullstack.yaml
-    hash: 60a703d65da43d27
+    hash: 9716ad5956a37037
     modified: false
   - path: .bmad-core/utils/workflow-management.md
     hash: c2196880f2281f84
@@ -73,7 +76,7 @@ files:
     hash: 5b89b783cd2cacdb
     modified: false
   - path: .bmad-core/templates/brownfield-architecture-tmpl.yaml
-    hash: be2b8c7fa9e5864d
+    hash: ce6e86071a204d43
     modified: false
   - path: .bmad-core/templates/brainstorming-output-tmpl.yaml
     hash: ba806c97165c8178
@@ -82,7 +85,7 @@ files:
     hash: e66f63be1af30585
     modified: false
   - path: .bmad-core/tasks/validate-next-story.md
-    hash: a5a382fe9a8d9443
+    hash: 75e84133d364d973
     modified: false
   - path: .bmad-core/tasks/trace-requirements.md
     hash: cb3e06cc0b957948
@@ -166,7 +169,7 @@ files:
     hash: 62b0bf50648906b0
     modified: false
   - path: .bmad-core/data/bmad-kb.md
-    hash: 57f0e9ae0e54b8e3
+    hash: 1d38eeee61c55bf9
     modified: false
   - path: .bmad-core/checklists/story-draft-checklist.md
     hash: 0bc8a90678dba318
@@ -202,13 +205,13 @@ files:
     hash: f72074f1f1354871
     modified: false
   - path: .bmad-core/agents/dev.md
-    hash: 15aba110e47a73f0
+    hash: 3e87f6291e5525ff
     modified: false
   - path: .bmad-core/agents/bmad-orchestrator.md
     hash: 374701173ce61d73
     modified: false
   - path: .bmad-core/agents/bmad-master.md
-    hash: 4fb18b343f59ce3e
+    hash: d344fb86fc65643c
     modified: false
   - path: .bmad-core/agents/architect.md
     hash: 4e7b28055a522dea
