@@ -16,6 +16,7 @@ class Printers(StrEnum):
     P1P = "P1P"
     P1S = "P1S"
     H2D = "H2D"
+    H2S = "H2S"
     A1MINI = "A1MINI"
     A1 = "A1"
 
@@ -39,9 +40,7 @@ class Features(IntEnum):
     SET_TEMPERATURE = 19,
     PROMPT_SOUND = 20,
     FTP = 21,
-    TIMELAPSE = 22,
     AMS_SWITCH_COMMAND = 23,
-    DOWNLOAD_GCODE_FILE = 24,
     AMS_HUMIDITY = 25,
     AMS_DRYING = 26,
     CHAMBER_LIGHT_2 = 27,
@@ -49,6 +48,8 @@ class Features(IntEnum):
     EXTRUDER_TOOL = 29,
     MQTT_ENCRYPTION_FIRMWARE = 30,
     MQTT_ENCRYPTION_ENABLED = 31,
+    FIRE_ALARM_BUZZER = 32,
+    HEATBED_LIGHT = 33,
 
 
 class FansEnum(IntEnum):
@@ -208,6 +209,11 @@ class Home_Flag_Values(IntEnum):
     INSTALLED_PLUS                      = 0x04000000,
     SUPPORTED_PLUS                      = 0x08000000,
     # Gap
+
+class Print_Fun_Values(IntEnum):
+    # {"print":{"fun":"3EC1AFFF9CFF"}} <- dev mode disabled
+    # {"print":{"fun":"3EC18FFF9CFF"}} <- dev mode enabled
+    MQTT_SIGNATURE_REQUIRED             = 0x20000000
 
 class BambuUrl(IntEnum):
     LOGIN = 1,

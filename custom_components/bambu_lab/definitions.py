@@ -168,7 +168,8 @@ PRINTER_BINARY_SENSORS: tuple[BambuLabBinarySensorEntityDescription, ...] = (
         translation_key="developer_lan_mode",
         device_class=BinarySensorDeviceClass.RUNNING,
         entity_category=EntityCategory.DIAGNOSTIC,
-        is_on_fn=lambda self: self.coordinator.get_model().info.developer_lan_mode,
+        is_on_fn=lambda self: self.coordinator.get_model().supports_feature(Features.MQTT_ENCRYPTION_FIRMWARE)
+                          and not self.coordinator.get_model().supports_feature(Features.MQTT_ENCRYPTION_ENABLED),
     ),
     BambuLabBinarySensorEntityDescription(
         key="mqtt_encryption",
@@ -193,7 +194,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="tool_module",
         icon="mdi:printer-3d-nozzle",
         device_class=SensorDeviceClass.ENUM,
-        options=["none", "laser", "cutter"],
+        options=["none", "laser10", "laser40", "cutter"],
         value_fn=lambda self: self.coordinator.get_model().extruder_tool.state,
         exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.EXTRUDER_TOOL),
     ),

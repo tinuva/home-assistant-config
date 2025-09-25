@@ -62,7 +62,9 @@
           "local_mqtt": "Conectar localmente a la impresora:",
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
-          "usage_hours": "Cantidad de horas de uso (opcional):"
+          "usage_hours": "Cantidad de horas de uso (opcional):",
+          "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
           "usage_hours": "Cantidad de horas de uso (opcional):",
-          "developer_lan_mode": "Modo LAN de desarrollador habilitado:"
+          "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Dirección IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
           "local_mqtt": "Conéctese directamente a la impresora en lugar de hacerlo a través de la nube de Bambu Lab:",
-          "usage_hours": "Cantidad de horas de uso (opcional):"
+          "usage_hours": "Cantidad de horas de uso (opcional):",
+          "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Dirección de IP Local de la Impresora:",
           "access_code": "Código de Acceso:",
           "usage_hours": "Cantidad de horas de uso (opcional):",
-          "developer_lan_mode": "Modo LAN de desarrollador habilitado:"
+          "print_cache_count": "Número de modelos para almacenar en caché al asistente de inicio (-1 para ilimitado):",
+          "timelapse_cache_count": "Número de videos de tiempo de tiempo para almacenar en caché al asistente de inicio (-1 para ilimitado):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Depurar"
+      },
+      "buzzer_silence": {
+        "name": "Timbre - silencio"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - Alarma de incendio"
+      },
+      "buzzer_beeping": {
+        "name": "Timbre - pitido"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Luz de cámara"
+      },
+      "heatbed_light": {
+        "name": "Luz de lecho de calor"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Cargar datos del modelo de la impresora"
-      },
-      "timelapse": {
-        "name": "Cargue el último timelapse de la impresora"
-      },
-      "download_gcode_file": {
-        "name": "Guardar el archivo Gcode en HA"
       }
     },
     "update": {

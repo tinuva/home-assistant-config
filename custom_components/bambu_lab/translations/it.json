@@ -62,7 +62,9 @@
           "local_mqtt": "Connettiti direttamente alla stampante invece che tramite Bambu Cloud:",
           "host": "Indirizzo IP locale della stampante:",
           "access_code": "Codice d'accesso",
-          "usage_hours": "Orari di utilizzo attuali (facoltativo):"
+          "usage_hours": "Orari di utilizzo attuali (facoltativo):",
+          "print_cache_count": "Numero di modelli da cache per Home Assistant (-1 per illimitato):",
+          "timelapse_cache_count": "Numero di video di timelapse per la cache per Home Assistant (-1 per illimitato):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Indirizzo IP della stampante:",
           "access_code": "Codice d'accesso",
           "usage_hours": "Orari di utilizzo attuali (facoltativo):",
-          "developer_lan_mode": "Modalità LAN sviluppatore abilitata:"
+          "print_cache_count": "Numero di modelli da cache per Home Assistant (-1 per illimitato):",
+          "timelapse_cache_count": "Numero di video di timelapse per la cache per Home Assistant (-1 per illimitato):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Indirizzo IP della stampante:",
           "access_code": "Codice di accesso:",
           "local_mqtt": "Connettiti direttamente alla stampante anziché al cloud Bambu Lab:",
-          "usage_hours": "Orari di utilizzo attuali (facoltativo):"
+          "usage_hours": "Orari di utilizzo attuali (facoltativo):",
+          "print_cache_count": "Numero di modelli da cache per Home Assistant (-1 per illimitato):",
+          "timelapse_cache_count": "Numero di video di timelapse per la cache per Home Assistant (-1 per illimitato):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Indirizzo IP della stampante:",
           "access_code": "Codice d'accesso",
           "usage_hours": "Orari di utilizzo attuali (facoltativo):",
-          "developer_lan_mode": "Modalità LAN sviluppatore abilitata:"
+          "print_cache_count": "Numero di modelli da cache per Home Assistant (-1 per illimitato):",
+          "timelapse_cache_count": "Numero di video di timelapse per la cache per Home Assistant (-1 per illimitato):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Debug"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - Silenzio"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - Allarme antincendio"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - segnale acustico"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Luce Fotocamera"
+      },
+      "heatbed_light": {
+        "name": "Luce del letto riscaldante"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Carica i dati del modello dalla stampante"
-      },
-      "timelapse": {
-        "name": "Carica l'ultimo timelapse dalla stampante"
-      },
-      "download_gcode_file": {
-        "name": "Salva il file GCode in HA"
       }
     },
     "update": {

@@ -62,7 +62,9 @@
           "local_mqtt": "Forbind lokalt til printeren:",
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
-          "usage_hours": "Aktuelle brugstimer (valgfrit):"
+          "usage_hours": "Aktuelle brugstimer (valgfrit):",
+          "print_cache_count": "Antal modeller til cache til hjemmeassistent (-1 for ubegrænset):",
+          "timelapse_cache_count": "Antal Timelapse-videoer til cache til hjemmeassistent (-1 for ubegrænset):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
           "usage_hours": "Aktuelle brugstimer (valgfrit):",
-          "developer_lan_mode": "Udvikler LAN -tilstand aktiveret:"
+          "print_cache_count": "Antal modeller til cache til hjemmeassistent (-1 for ubegrænset):",
+          "timelapse_cache_count": "Antal Timelapse-videoer til cache til hjemmeassistent (-1 for ubegrænset):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
           "local_mqtt": "Tilslut direkte til printeren i stedet for via Bambu Lab-skyen:",
-          "usage_hours": "Aktuelle brugstimer (valgfrit):"
+          "usage_hours": "Aktuelle brugstimer (valgfrit):",
+          "print_cache_count": "Antal modeller til cache til hjemmeassistent (-1 for ubegrænset):",
+          "timelapse_cache_count": "Antal Timelapse-videoer til cache til hjemmeassistent (-1 for ubegrænset):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Lokal printer-IP-adresse:",
           "access_code": "Adgangskode:",
           "usage_hours": "Aktuelle brugstimer (valgfrit):",
-          "developer_lan_mode": "Udvikler LAN -tilstand aktiveret:"
+          "print_cache_count": "Antal modeller til cache til hjemmeassistent (-1 for ubegrænset):",
+          "timelapse_cache_count": "Antal Timelapse-videoer til cache til hjemmeassistent (-1 for ubegrænset):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Debug"
+      },
+      "buzzer_silence": {
+        "name": "Summer - stilhed"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Summer - brandalarm"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - Biping"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Kameralys"
+      },
+      "heatbed_light": {
+        "name": "Varmebed lys"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Indlæsningsmodeldata fra printer"
-      },
-      "timelapse": {
-        "name": "Indlæs den seneste tidslap fra printer"
-      },
-      "download_gcode_file": {
-        "name": "Gem gcode -fil i ha"
       }
     },
     "update": {

@@ -1,4 +1,5 @@
 import ftplib
+import glob
 import json
 import math
 import os
@@ -11,12 +12,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from dateutil import parser, tz
 from packaging import version
+from pathlib import Path
 from zipfile import ZipFile
-from typing import Union
+from typing import List, Union
 import io
 import tempfile
 import xml.etree.ElementTree as ElementTree
 from PIL import Image, ImageDraw, ImageFont
+import asyncio
 
 from .utils import (
     search,
@@ -49,7 +52,7 @@ from .const import (
     SPEED_PROFILE,
     GCODE_STATE_OPTIONS,
     PRINT_TYPE_OPTIONS,
-    TempEnum,
+    TempEnum, Print_Fun_Values,
 )
 from .commands import (
     CHAMBER_LIGHT_ON,
@@ -58,7 +61,8 @@ from .commands import (
     CHAMBER_LIGHT_2_OFF,
     PROMPT_SOUND_ENABLE,
     PROMPT_SOUND_DISABLE,
-    SPEED_PROFILE_TEMPLATE,
+    SPEED_PROFILE_TEMPLATE, BUZZER_SET_SILENT, BUZZER_SET_ALARM, BUZZER_SET_BEEPING, HEATBED_LIGHT_ON,
+    HEATBED_LIGHT_OFF,
 )
 
 class Device:
@@ -86,6 +90,7 @@ class Device:
             self.chamber_image = ChamberImage(client = client)
         self.cover_image = CoverImage(client = client)
         self.pick_image = PickImage(client = client)
+        self.print_fun = PrintFun(client = client)
 
     def print_update(self, data) -> bool:
         send_event = False
@@ -105,6 +110,7 @@ class Device:
         send_event = send_event | self.print_error.print_update(data = data)
         send_event = send_event | self.camera.print_update(data = data)
         send_event = send_event | self.home_flag.print_update(data = data)
+        send_event = send_event | self.print_fun.print_update(data = data)
         send_event = send_event | self.extruder_tool.print_update(data = data)
 
         self._client.callback("event_printer_data_update")
@@ -119,12 +125,16 @@ class Device:
         if data.get("command") == "get_version":
             self.get_version_data = data
 
+    def observe_system_command(self, data):
+        if data.get("command") == "ledctrl" and data.get("led_node") == "heatbed_light":
+            self.lights.observe_system_command(data)
+
     def _supports_temperature_set(self):
         # When talking to the Bambu cloud mqtt, setting the temperatures is allowed.
         if self.info.mqtt_mode == "bambu_cloud":
             return True
         # X1* have not yet blocked setting the temperatures when in nybrid connection mode.
-        if self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D:
+        if self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S:
             return True
         # What's left is P1 and A1 printers that we are connecting by local mqtt. These are supported only in pure Lan Mode.
         return not self._client.bambu_cloud.bambu_connected
@@ -137,7 +147,7 @@ class Device:
         elif feature == Features.CHAMBER_FAN:
             return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
         elif feature == Features.CHAMBER_TEMPERATURE:
-            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S
         elif feature == Features.CURRENT_STAGE:
             return True
         elif feature == Features.PRINT_LAYERS:
@@ -159,28 +169,26 @@ class Device:
                 LOGGER.error("Features.AMS_TEMPERATURE queried before version is known.")
                 return False
 
-            if (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D):
+            if (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S):
                 return True
             elif (self.info.device_type == Printers.P1S or self.info.device_type == Printers.P1P) and self.supports_sw_version("01.07.50.18"):
                 return True
             return False
         elif feature == Features.CAMERA_RTSP:
-            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S
         elif feature == Features.CAMERA_IMAGE:
             return self.info.device_type == Printers.P1P or self.info.device_type == Printers.P1S or self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI
         elif feature == Features.DOOR_SENSOR:
-            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D
+            return self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S
         elif feature == Features.AMS_FILAMENT_REMAINING:
             # Technically this is not the AMS Lite but that's currently tied to only these printer types.
             return self.info.device_type != Printers.A1 and self.info.device_type != Printers.A1MINI
         elif feature == Features.SET_TEMPERATURE:
             return self._supports_temperature_set()
         elif feature == Features.PROMPT_SOUND:
-            return self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI
+            return self.info.device_type == Printers.A1 or self.info.device_type == Printers.A1MINI or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S
         elif feature == Features.FTP:
             return True
-        elif feature == Features.TIMELAPSE:
-            return False
         elif feature == Features.AMS_SWITCH_COMMAND:
             # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
             # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
@@ -195,8 +203,6 @@ class Device:
             elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.05.06.01"):
                 return True
             return False
-        elif feature == Features.DOWNLOAD_GCODE_FILE:
-            return True
         elif feature == Features.AMS_HUMIDITY:
             # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
             # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
@@ -204,7 +210,7 @@ class Device:
                 LOGGER.error("Features.AMS_HUMIDITY queried before version is known.")            
                 return False
 
-            if (self.info.device_type == Printers.H2D):
+            if (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S):
                 return True
             elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.08.50.18"):
                 return True
@@ -218,7 +224,7 @@ class Device:
                 LOGGER.error("Features.AMS_DRYING queried before version is known.")
                 return False
             
-            if (self.info.device_type == Printers.H2D):
+            if (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S):
                 return True
             elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.08.50.18"):
                 return True
@@ -226,11 +232,11 @@ class Device:
                 return True
             return False
         elif feature == Features.CHAMBER_LIGHT_2:
-            return (self.info.device_type == Printers.H2D)
+            return (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S)
         elif feature == Features.DUAL_NOZZLES:
             return (self.info.device_type == Printers.H2D)
         elif feature == Features.EXTRUDER_TOOL:
-            return (self.info.device_type == Printers.H2D)
+            return (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S)
         elif feature == Features.MQTT_ENCRYPTION_FIRMWARE:
             # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
             # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
@@ -238,6 +244,8 @@ class Device:
                 return True
             
             if (self.info.device_type == Printers.H2D) and self.supports_sw_version("01.01.01.00"):
+                return True
+            if (self.info.device_type == Printers.H2S):
                 return True
             elif (self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C) and self.supports_sw_version("01.08.50.32"):
                 return True
@@ -247,9 +255,11 @@ class Device:
                 return True
             return False
         elif feature == Features.MQTT_ENCRYPTION_ENABLED:
-            if self.supports_feature(Features.MQTT_ENCRYPTION_FIRMWARE):
-                return not self.info.developer_lan_mode
-            return False
+            return self.print_fun.mqtt_signature_required
+        elif feature == Features.FIRE_ALARM_BUZZER:
+            return (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S)
+        elif feature == Features.HEATBED_LIGHT:
+            return (self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S)
         return False
     
     def supports_sw_version(self, version: str) -> bool:
@@ -266,12 +276,14 @@ class Lights:
     chamber_light2: str
     chamber_light_override: str
     chamber_light2_override: str
+    heatbed_light: str
     work_light: str
 
     def __init__(self, client):
         self._client = client
         self.chamber_light = "unknown"
         self.chamber_light2 = "unknown"
+        self.heatbed_light = "unknown"
         self.work_light = "unknown"
         self.chamber_light_override = ""
         self.chamber_light2_override = ""
@@ -279,6 +291,12 @@ class Lights:
     @property
     def is_chamber_light_on(self):
         return self.chamber_light == "on" or self.chamber_light2 == "on"
+
+    @property
+    def is_heatbed_light_on(self) -> bool | None:
+        if self.heatbed_light == "unknown":
+            return None
+        return self.heatbed_light == "on"
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -315,8 +333,18 @@ class Lights:
         self.work_light = \
             search(data.get("lights_report", []), lambda x: x.get('node', "") == "work_light",
                    {"mode": self.work_light}).get("mode")
-        
+
+        # Currently, the status of headbed light is not available (even switching it using printer UI shows an
+        #   error in MQTT: "did not find the valid led: heatbed_light"). Therefore, it is initially in an unknown state.
+
         return (old_data != f"{self.__dict__}")
+
+    def observe_system_command(self, data):
+        # State can be inferred from system->command = ledctrl, but the initial state is still not known.
+        # Even printer UI causes such a message to be sent as the "command execution result".
+        if data.get("led_node") == "heatbed_light":
+            self.heatbed_light = data.get("led_mode")
+        # Should be replaced with proper reading in print_update once fixed in the actual firmware
 
     def TurnChamberLightOn(self):
         self.chamber_light = "on"
@@ -333,6 +361,16 @@ class Lights:
         self._client.publish(CHAMBER_LIGHT_OFF)
         if self._client._device.supports_feature(Features.CHAMBER_LIGHT_2):
             self._client.publish(CHAMBER_LIGHT_2_OFF)
+
+    def TurnHeatbedLightOn(self):
+        self.heatbed_light = "on"
+        self._client.callback("event_light_update")
+        self._client.publish(HEATBED_LIGHT_ON)
+
+    def TurnHeatbedLightOff(self):
+        self.heatbed_light = "off"
+        self._client.callback("event_light_update")
+        self._client.publish(HEATBED_LIGHT_OFF)
 
 
 @dataclass
@@ -1065,19 +1103,77 @@ class PrintJob:
     #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
     # 
 
-    ftp_search_paths = ['/', '/cache/']
-    def _attempt_ftp_download_of_file(self, ftp, file_path):
+    ftp_search_paths = ['/cache/', '/']
+    def _attempt_ftp_download_of_file(self, ftp, file_path, progress_callback=None):
         if 'Metadata' in file_path:
             # This is a ram drive on the X1 and is not accessible via FTP
             return None
 
-        file = tempfile.NamedTemporaryFile(delete=True)
         try:
-            LOGGER.debug(f"Attempting download of '{file_path}'")
-            ftp.retrbinary(f"RETR {file_path}", file.write)
-            file.flush()
-            LOGGER.debug(f"Successfully downloaded '{file_path}'.")
-            return file
+            LOGGER.debug(f"Looking for '{file_path}'")
+            size = ftp.size(file_path)
+            LOGGER.debug(f"File exists. Size: {size} bytes.")
+            
+            cache_dir = f"/config/www/media/ha-bambulab/{self._client._serial}/prints"
+            relative_path = file_path.lstrip('/')
+            cache_file_path = os.path.join(cache_dir, relative_path)
+
+            # Ensure the directory exists
+            os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
+
+            # Check if file already exists in cache with same size
+            try:
+                cache_file_size = os.path.getsize(cache_file_path)
+                if cache_file_size == size:
+                    LOGGER.debug(f"File already in cache with same size.")
+                    # Update last edited time to refresh it's cache lifetime.
+                    os.utime(cache_file_path, None)
+                    return cache_file_path
+            except FileNotFoundError:
+                # File doesn't exist in the cache.
+                pass
+
+            # Download to cache with progress tracking
+            total_downloaded = 0
+            filename = os.path.basename(file_path)
+            start_time = time.time()
+            last_log_time = start_time
+            
+            def download_progress_callback(data):
+                nonlocal total_downloaded, last_log_time
+                try:
+                    total_downloaded += len(data)
+                    percentage = (total_downloaded / size) * 100
+                    
+                    # Only log every 10 seconds
+                    current_time = time.time()
+                    if current_time - last_log_time >= 2:
+                        LOGGER.debug(f"FTP download progress: {percentage:.0f}% ({total_downloaded//1024}/{size//1024} KB)")
+                        last_log_time = current_time
+                    
+                    if progress_callback:
+                        progress_callback(percentage)
+                except Exception as e:
+                    LOGGER.debug(f"Error in progress callback: {e}")
+                    # Don't let progress callback errors break the download
+
+            with open(cache_file_path, 'wb') as f:
+                # Create a wrapper function that combines file writing and progress tracking
+                def write_with_progress(data):
+                    f.write(data)
+                    download_progress_callback(data)
+                
+                ftp.retrbinary(f"RETR {file_path}", write_with_progress)
+                f.flush()
+            
+            # Calculate download statistics
+            end_time = time.time()
+            download_time = end_time - start_time
+            download_speed = size / download_time if download_time > 0 else 0
+            
+            LOGGER.debug(f"Successfully downloaded '{file_path}' to cache. Time: {download_time:.0f}s, Speed: {download_speed/1024:.0f} KB/s")
+            return cache_file_path
+                    
         except ftplib.error_perm as e:
              if '550' not in str(e.args): # 550 is unavailable.
                  LOGGER.debug(f"Failed to download model at '{file_path}': {e}")
@@ -1085,56 +1181,52 @@ class PrintJob:
             LOGGER.debug(f"Unexpected exception at '{file_path}': {type(e)} Args: {e}")
             # Optionally add retry logic here
             pass
-        file.close()
         return None
 
     def _attempt_ftp_download_of_file_from_search_path(self, ftp, filename):
         for path in self.ftp_search_paths:
             file_path = f"{path}{filename.lstrip('/')}"
-            file = self._attempt_ftp_download_of_file(ftp, file_path)
-            if file is not None:
-                return file
+            result = self._attempt_ftp_download_of_file(ftp, file_path)
+            if result is not None:
+                return result
         return None
 
     def _attempt_ftp_download(self, ftp) -> Union[str, None]:
-        model_file = None
+
+        filenames_to_try = []
 
         # First test if the subtaskname exists as a 3mf
         if self.subtask_name != '':
             if self.subtask_name.endswith('.3mf'):
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=self.subtask_name)
-                if model_file is not None:
-                    return model_file
+                filenames_to_try.append(self.subtask_name)
             else:
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.subtask_name}.3mf")
-                if model_file is not None:
-                    return model_file
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.subtask_name}.gcode.3mf")
-                if model_file is not None:
-                    return model_file
+                filenames_to_try.append(f"{self.subtask_name}.3mf")
+                filenames_to_try.append(f"{self.subtask_name}.gcode.3mf")
+
 
         # If we didn't find it then try the gcode file
         if (self.gcode_file != '') and (self.subtask_name != self.gcode_file):
             if self.gcode_file.endswith('.3mf'):
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=self.gcode_file)
-                if model_file is not None:
-                    return model_file
+                filenames_to_try.append(self.gcode_file)
             else:
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.gcode_file}.3mf")
-                if model_file is not None:
-                    return model_file
-                model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=f"{self.gcode_file}.gcode.3mf")
-                if model_file is not None:
-                    return model_file
+                filenames_to_try.append(f"{self.gcode_file}.3mf")
+                filenames_to_try.append(f"{self.gcode_file}.gcode.3mf")
+
+        # Try each candidate filename in order
+        for filename in filenames_to_try:
+            model_file = self._attempt_ftp_download_of_file_from_search_path(ftp, filename=filename)
+            if model_file is not None:
+                return model_file
 
         if self.subtask_name == "":
             # Fall back to find the latest file by timestamp but only if we don't have a subtask name set - printer must have been rebooted.
             LOGGER.debug("Falling back to searching for latest 3mf file.")
             model_path = self._find_latest_file(ftp, self.ftp_search_paths, ['.3mf'])
             if model_path is not None:
-                model_file = self._attempt_ftp_download_of_file(ftp, model_path)
+                model_file_path = self._attempt_ftp_download_of_file(ftp, model_path)
+                return model_file_path
 
-        return model_file
+        return None
     
     def _find_latest_file(self, ftp, search_paths, extensions: list):
         # Look for the newest file with extension in directory.
@@ -1157,7 +1249,7 @@ class PrintJob:
                     timestamp = timestamp.replace(year=utc_time_now.year)
                     if timestamp > utc_time_now:
                         timestamp = timestamp.replace(year=datetime.now().year - 1)
-                    return timestamp, f"{path}{filename}"
+                    return timestamp, f"{path}/{filename}" if path != '/' else f"/{filename}"
                 else:
                     return None
 
@@ -1168,7 +1260,7 @@ class PrintJob:
                 if extension in extensions:
                     timestamp = datetime.strptime(timestamp_str, '%b %d %Y')
                     timestamp = timestamp.replace(tzinfo=timezone.utc)
-                    return timestamp, f"{path}{filename}"
+                    return timestamp, f"{path}/{filename}" if path != '/' else f"/{filename}"
                 else:
                     return None
             
@@ -1195,14 +1287,86 @@ class PrintJob:
 
         return None
     
+    def prune_print_history_files(self):
+        if self._client._test_mode:
+            return
+        LOGGER.debug("Pruning print history")
+        cache_file_path = f"/config/www/media/ha-bambulab/{self._client._serial}/prints"
+        self._prune_old_files(directory=cache_file_path,
+                              extensions=['.3mf'],
+                              keep=self._client._print_cache_count,
+                              extra_extensions=['.jpg', '.png', '.slice_info.config', '.gcode'])
+
+    def prune_timelapse_files(self):
+        if self._client._test_mode:
+            return
+        LOGGER.debug("Pruning timelapse history")
+        cache_file_path = f"/config/www/media/ha-bambulab/{self._client._serial}/timelapse"
+        self._prune_old_files(directory=cache_file_path,
+                              extensions=['.mp4','.avi'],
+                              keep=self._client._timelapse_cache_count,
+                              extra_extensions=['.jpg', '.png'])
+            
+    def _prune_old_files(self, directory: str, extensions: List[str], keep: int, extra_extensions=[]):
+
+        if keep == -1:
+            # Cache pruning is disabled.
+            LOGGER.debug("Skipping as pruning is disabled.")
+            return
+
+        dir_path = Path(directory)
+        if not dir_path.is_dir():
+            LOGGER.debug(f"{directory} is not a valid directory")
+            return
+        
+        LOGGER.debug(f"{dir_path}")
+        
+        # Get list of files matching the provided list of extensions
+        matching_files = [
+            f for f in dir_path.rglob('*')            
+            if f.is_file() and f.suffix in extensions
+        ]
+        
+        # Sort files by last modification time, newest first
+        matching_files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+
+        # Files to delete: those beyond the 'keep' most recent
+        old_files = matching_files[keep:]
+
+        LOGGER.debug(f"{matching_files} {old_files}")
+        LOGGER.debug(f"Keeping {keep} files. Deleting {len(old_files)} files.")
+        
+        for primary_file in old_files:
+            try:
+                os.remove(primary_file )
+                LOGGER.debug(f"Deleted: {primary_file }")
+            except Exception as e:
+                LOGGER.error(f"Failed to delete {primary_file}: {e}")
+                continue
+
+            # Get base name without extension
+            base_name = os.path.splitext(primary_file)[0]
+
+            # Delete associated files with alternate extensions
+            for ext in extra_extensions:
+                assoc_file = base_name + ext
+                if os.path.exists(assoc_file):
+                    try:
+                        os.remove(assoc_file)
+                        LOGGER.debug(f"Deleted associated: {assoc_file}")
+                    except Exception as e:
+                        LOGGER.error(f"Failed to delete associated {assoc_file}: {e}")
+    
     def _download_timelapse(self):
         # If we are running in connection test mode, skip updating the last print task data.
         if self._client._test_mode:
             return
-        if not self._client.timelapse_enabled:
+        if not self._client.ftp_enabled:
+            return
+        if self._client._timelapse_cache_count == 0:
             return
         thread = threading.Thread(target=self._async_download_timelapse)
-        thread.start()       
+        thread.start()
         
     def _async_download_timelapse(self):
         current_thread = threading.current_thread()
@@ -1212,41 +1376,63 @@ class PrintJob:
 
         # Open the FTP connection
         ftp = self._client.ftp_connection()
-        file_path = self._find_latest_file(ftp, '/timelapse', ['.mp4','.avi'])
+        video_extensions = ['.mp4','.avi']
+        file_path = self._find_latest_file(ftp, ['/timelapse'], video_extensions)
         if file_path is not None:
             # timelapse_path is of form '/timelapse/foo.mp4'
-            local_file_path = os.path.join(f"/config/www/media/ha-bambulab/{self._client._serial}", file_path.lstrip('/'))
+            cache_file_path = f"/config/www/media/ha-bambulab/{self._client._serial}"
+            local_file_path = os.path.join(cache_file_path, file_path.lstrip('/'))
             directory_path = os.path.dirname(local_file_path)
             os.makedirs(directory_path, exist_ok=True)
 
-            if os.path.exists(local_file_path):
-                LOGGER.debug("Timelapse already downloaded.")
-            else:
-                with open(local_file_path, 'wb') as f:
-                    # Fetch the video from FTP and close the connection
-                    LOGGER.info(f"Downloading '{file_path}'")
-                    ftp.retrbinary(f"RETR {file_path}", f.write)
-                    f.flush()
-
-            # Convert to the thumbnail path.
-            directory = os.path.dirname(file_path)
-            filename = os.path.basename(file_path)
-            filename_without_extension, _ = os.path.splitext(filename)
-            filename = f"{filename_without_extension}.jpg"
-            file_path = os.path.join(directory, 'thumbnail', filename)
-            local_file_path = os.path.join(f"/config/www/media/ha-bambulab/{self._client._serial}/timelapse", filename)
-            if os.path.exists(local_file_path):
-                LOGGER.debug("Thumbnail already downloaded.")
-            else:
-                with open(local_file_path, 'wb') as f:
-                    # Fetch the video from FTP and close the connection
-                    LOGGER.info(f"Downloading '{file_path}'")
-                    ftp.retrbinary(f"RETR {file_path}", f.write)
-                    f.flush()
+            try:
+                # Get the file size from FTP
+                size = ftp.size(file_path)
+                LOGGER.debug(f"Timelapse file exists. Size: {size} bytes.")
+                
+                # Check if file already exists with same size
+                should_download = False
+                if os.path.exists(local_file_path):
+                    local_file_size = os.path.getsize(local_file_path)
+                    if local_file_size == size:
+                        LOGGER.debug(f"Timelapse file found in cache.")
+                    else:
+                        LOGGER.debug(f"Timelapse file size differs (local: {local_file_size}, remote: {size}). Re-downloading.")
+                        should_download = True
+                else:
+                    LOGGER.debug(f"Timelapse file doesn't exist locally. Downloading.")
+                    should_download = True
+                
+                if should_download:
+                    # Download video
+                    with open(local_file_path, 'wb') as f:
+                        LOGGER.info(f"Downloading '{file_path}'")
+                        ftp.retrbinary(f"RETR {file_path}", f.write)
+                        f.flush()
+                    
+                    # Download thumbnail
+                    filename = os.path.basename(file_path)
+                    filename_without_extension, _ = os.path.splitext(filename)
+                    thumbnail_filename = f"{filename_without_extension}.jpg"
+                    thumbnail_path = os.path.join(os.path.dirname(file_path), 'thumbnail', thumbnail_filename)
+                    thumbnail_local_path = os.path.join(os.path.dirname(local_file_path), thumbnail_filename)
+                    with open(thumbnail_local_path, 'wb') as f:
+                        LOGGER.info(f"Downloading '{thumbnail_path}'")
+                        ftp.retrbinary(f"RETR {thumbnail_path}", f.write)
+                        f.flush()
+                    
+            except ftplib.error_perm as e:
+                if '550' not in str(e.args): # 550 is unavailable.
+                    LOGGER.debug(f"Failed to download timelapse at '{file_path}': {e}")
+            except Exception as e:
+                LOGGER.debug(f"Unexpected exception downloading timelapse at '{file_path}': {type(e)} Args: {e}")
 
         ftp.quit()
 
         end_time = datetime.now()
+
+        self.prune_timelapse_files()
+
         LOGGER.info(f"Done downloading timelapse by FTP. Elapsed time = {(end_time-start_time).seconds}s") 
 
     def _update_task_data(self):
@@ -1256,10 +1442,9 @@ class PrintJob:
         if self._client._test_mode:
             return
         
+        self._download_task_data_from_cloud()
         if self._client.ftp_enabled:
             self._download_task_data_from_printer()
-        else:
-            self._download_task_data_from_cloud()
 
     def _download_task_data_from_printer(self):
         if self._ftpThread is None:
@@ -1308,36 +1493,40 @@ class PrintJob:
         ftp = self._client.ftp_connection()
 
         for i in range(1,13):
-            model_file = self._attempt_ftp_download(ftp)
-            if model_file is not None:
+            model_file_path = self._attempt_ftp_download(ftp)
+            if model_file_path is not None:
                 break
 
             if (self._client._device.info.device_type == Printers.X1 or 
                 self._client._device.info.device_type == Printers.X1C or
                 self._client._device.info.device_type == Printers.X1E or
-                self._client._device.info.device_type == Printers.H2D):
+                self._client._device.info.device_type == Printers.H2D or
+                self._client._device.info.device_type == Printers.H2S):
                 # The X1 has a weird behavior where the downloaded file doesn't exist for several seconds into the RUNNING phase and even
                 # then it is still being downloaded in place so we might try to grab it mid-download and get a corrupt file. Try 13 times
                 # 5 seconds apart over 60s.
                 if i != 12:
-                    LOGGER.debug(f"Sleeping 5s for X1/H2D retry")
+                    LOGGER.debug(f"Sleeping 5s for X1/H2 retry")
                     time.sleep(5)
-                    LOGGER.debug(f"Try #{i+1} for X1/H2D")
+                    LOGGER.debug(f"Try #{i+1} for X1/H2")
             else:
                 break
 
         ftp.quit()
 
-        if model_file is None:
+        if model_file_path is None:
             LOGGER.debug("No model file found.")
             return
 
         result = False
+        
         try:
-            LOGGER.debug(f"File size is {os.path.getsize(model_file.name)} bytes")
+            LOGGER.debug(f"File size is {os.path.getsize(model_file_path)} bytes")
+
+            model_dir = os.path.dirname(model_file_path)
 
             # Open the 3mf zip archive
-            with ZipFile(model_file) as archive:
+            with ZipFile(model_file_path) as archive:
                 # Extract the slicer XML config and parse the plate tree
                 plate = ElementTree.fromstring(archive.read('Metadata/slice_info.config')).find('plate')
                 
@@ -1379,23 +1568,27 @@ class PrintJob:
                         self._client._device.cover_image.set_image(archive.read(f"Metadata/plate_{plate_number}.png"))
                         LOGGER.debug(f"Cover image: Metadata/plate_{plate_number}.png")
 
-                        #Extract gcode file from archive to HA www folder if download_gcode_file is enabled
-                        if self._client.download_gcode_file_enabled:
-                            try:
-                                local_gcode_dir = f"/config/www/media/ha-bambulab/{self._client._serial}/tmp_gcode"
-                                local_gcode_filename = f"{os.path.basename(os.path.realpath(model_file.name))}.gcode"
-                                if not os.path.exists(local_gcode_dir):
-                                    os.makedirs(local_gcode_dir)
-                                for name in os.listdir(local_gcode_dir):
-                                    path = os.path.join(local_gcode_dir, name)
-                                    if os.path.isfile(path):
-                                        os.remove(path)
-                                with archive.open(f"Metadata/plate_{plate_number}.gcode") as gcode_entry, open(os.path.join(local_gcode_dir, local_gcode_filename), "wb") as target_path:
-                                    shutil.copyfileobj(gcode_entry, target_path)
-                                    self.gcode_file_downloaded = local_gcode_filename
-                            except Exception as e:
-                                self.gcode_file_downloaded = "ERROR"
-                                LOGGER.error(f"Error while extracting gcode zip entry to target path. {repr(e)}")
+                        # Save the cover image to the cache
+                        try:
+                            # Save the cover image directly to the cache
+                            cover_filename = os.path.splitext(os.path.basename(model_file_path))[0] + '.png'
+                            cover_path = os.path.join(model_dir, cover_filename)
+                            with archive.open(f"Metadata/plate_{plate_number}.png") as cover_entry, open(cover_path, "wb") as target_path:
+                                shutil.copyfileobj(cover_entry, target_path)
+                            LOGGER.debug(f"Cover image saved to: {cover_path}")
+                        except Exception as e:
+                            LOGGER.error(f"Failed to save cover image: {e}")
+
+                        try:
+                            # Save the gcode file to the cache
+                            gcode_filename = os.path.splitext(os.path.basename(model_file_path))[0] + '.gcode'
+                            gcode_path = os.path.join(model_dir, gcode_filename)
+                            with archive.open(f"Metadata/plate_{plate_number}.gcode") as gcode_entry, open(gcode_path, "wb") as target_path:
+                                shutil.copyfileobj(gcode_entry, target_path)
+                                self.gcode_file_downloaded = gcode_filename
+                        except Exception as e:
+                            self.gcode_file_downloaded = "ERROR"
+                            LOGGER.error(f"Error while extracting gcode zip entry to target path. {repr(e)}")
                         
                         # And extract the plate type from the plate json.
                         self.print_bed_type = json.loads(archive.read(f"Metadata/plate_{plate_number}.json")).get('bed_type')
@@ -1456,6 +1649,17 @@ class PrintJob:
                     except:
                         LOGGER.debug(f"Unable to load 'Metadata/pick_{plate_number}.png' from archive")
 
+                # Save the slice_info.config file only if file cache is enabled
+                try:
+                    slice_info_bytes = archive.read('Metadata/slice_info.config')
+                    # Save the slice_info.config in the same directory as the model file
+                    slice_info_filename = os.path.splitext(os.path.basename(model_file_path))[0] + '.slice_info.config'
+                    slice_info_path = os.path.join(model_dir, slice_info_filename)
+                    with open(slice_info_path, "wb") as f:
+                        f.write(slice_info_bytes)
+                except Exception as e:
+                    LOGGER.error(f"Failed to save slice_info.config: {e}")
+
             archive.close()
 
             self._client.callback("event_printer_data_update")
@@ -1463,8 +1667,8 @@ class PrintJob:
         except Exception as e:
             LOGGER.error(f"Unexpected error parsing model data: {e}")
         
-        # Close and delete temporary file
-        model_file.close();
+        self.prune_print_history_files()
+
         return result
 
     # The task list is of the following form with a 'hits' array with typical 20 entries.
@@ -1609,6 +1813,103 @@ class PrintJob:
         LOGGER.debug(f"Finished proccessing pick image, found {object_count} object{'s'[:object_count^1]}")
         return seen_identify_ids
 
+    async def async_ftp_file_check(self, file_path: str, expected_size: int) -> bool:
+        """Async check if a file exists on the printer via FTP and matches the expected size."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._sync_ftp_check, file_path, expected_size)
+
+    def _sync_ftp_check(self, file_path: str, expected_size: int) -> bool:
+        """Synchronous FTP check method to run in executor."""
+        ftp = None
+        try:
+            # Use the connection helper from bambu_client
+            ftp = self._client.ftp_connection()
+            
+            LOGGER.debug(f"FTP file check: Getting file size for {file_path}")
+            # Get file size
+            size = ftp.size(file_path)
+            LOGGER.debug(f"FTP file check: File size is {size}, expected {expected_size}")
+            
+            return int(size) == expected_size
+            
+        except Exception as e:
+            LOGGER.debug(f"FTP file check failed for {file_path}: {e}")
+            return False
+        finally:
+            if ftp:
+                try:
+                    ftp.quit()
+                except Exception:
+                    pass
+
+    async def async_ftp_upload_file(self, local_path: str, remote_path: str, progress_callback=None) -> bool:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, self._sync_ftp_upload, local_path, remote_path, progress_callback)
+
+    def _sync_ftp_upload(self, local_path: str, remote_path: str, progress_callback=None) -> bool:
+        ftp = None
+        try:
+            ftp = self._client.ftp_connection()
+
+            # Ensure remote directory exists
+            dirs = remote_path.strip('/').split('/')[:-1]
+            current = ''
+            for d in dirs:
+                current += f'/{d}'
+                try:
+                    LOGGER.debug(f"FTP upload: Creating directory {current}")
+                    ftp.mkd(current)
+                except Exception:
+                    LOGGER.debug(f"FTP upload: Directory {current} may already exist")
+                    pass  # Directory may already exist
+
+            LOGGER.debug(f"FTP upload: Starting file upload")
+            file_size = os.path.getsize(local_path)
+            filename = os.path.basename(local_path)
+            total_sent = 0
+            chunk_size = 8192
+
+            def internal_progress_callback(data):
+                nonlocal total_sent
+                total_sent += len(data)
+                if progress_callback:
+                    progress_callback({
+                        "serial": self._client._serial,
+                        "filename": filename,
+                        "bytes_sent": total_sent,
+                        "total": file_size,
+                    })
+
+            with open(local_path, 'rb') as f:
+                # Use storbinary_no_unwrap with the progress callback
+                ftp.storbinary_no_unwrap(f'STOR {remote_path}', f, blocksize=chunk_size, callback=internal_progress_callback)
+
+            LOGGER.debug(f"FTP upload: Upload completed successfully")
+
+            # After successful upload, copy to cache path
+            # Remove leading slash from remote_path for relative path
+            relative_path = remote_path.lstrip('/')
+            cache_dir = f"/config/www/media/ha-bambulab/{self._client._serial}/prints"
+            cache_file_path = os.path.join(cache_dir, relative_path)
+            os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
+            try:
+                shutil.copy2(local_path, cache_file_path)
+                LOGGER.debug(f"Copied uploaded file to cache: {cache_file_path}")
+            except Exception as e:
+                LOGGER.error(f"Failed to copy uploaded file to cache: {e}")
+
+            return True
+
+        except Exception as e:
+            LOGGER.debug(f"FTP upload failed for {local_path} to {remote_path}: {e}")
+            return False
+        finally:
+            if ftp:
+                try:
+                    ftp.quit()
+                except Exception:
+                    pass
+
 @dataclass
 class Info:
     """Return all device related content"""
@@ -1630,7 +1931,6 @@ class Info:
     extruder_filament_state: bool
     _ip_address: str
     _force_ip: bool
-    _developer_lan_mode: bool
 
     def __init__(self, client):
         self._client = client
@@ -1650,7 +1950,6 @@ class Info:
         self.extruder_filament_state = False
         self._ip_address = client.host
         self._force_ip = client.settings.get('force_ip', False)
-        self._developer_lan_mode = client.settings.get('developer_lan_mode', False)
 
     def set_online(self, online):
         if self.online != online:
@@ -1817,10 +2116,6 @@ class Info:
         return self._client._local_mqtt
 
     @property
-    def developer_lan_mode(self):
-        return self._developer_lan_mode
-
-    @property
     def has_bambu_cloud_connection(self) -> bool:
         return self._client.bambu_cloud.auth_token != ""
     
@@ -1833,6 +2128,16 @@ class Info:
             self._client.publish(PROMPT_SOUND_ENABLE)
         else:
             self._client.publish(PROMPT_SOUND_DISABLE)
+
+    def buzzer_silence(self):
+        self._client.publish(BUZZER_SET_SILENT)
+
+    def buzzer_fire_alarm(self):
+        self._client.publish(BUZZER_SET_ALARM)
+
+    def buzzer_attention_beep(self):
+        self._client.publish(BUZZER_SET_SILENT) # need to reset first for it to work properly
+        self._client.publish(BUZZER_SET_BEEPING)
        
 
 @dataclass
@@ -2362,6 +2667,10 @@ class StageAction:
         self._print_type = data.get("print_type", self._print_type)
         if self._print_type.lower() not in PRINT_TYPE_OPTIONS:
             self._print_type = "unknown"
+
+        # New way it is presented
+        self._id = int(data.get("stage", {}).get("_id", self._id))
+        # Old way it's presented
         self._id = int(data.get("stg_cur", self._id))
         if (self._print_type == "idle") and (self._id == 0):
             # On boot the printer reports stg_cur == 0 incorrectly instead of 255. Attempt to correct for this.
@@ -2688,6 +2997,30 @@ class HomeFlag:
     def p1s_upgrade_installed(self) -> bool:
         return (self._value & Home_Flag_Values.INSTALLED_PLUS) !=  0
 
+
+@dataclass
+class PrintFun:
+    """Contains parsed _values from the print->fun sensor"""
+    _value: str
+    _int_value: int
+    _encryption_enabled: bool
+    
+    def __init__(self, client):
+        self._value = ""
+        self._client = client
+        self._encryption_enabled = False
+        self._int_value: int = 0
+
+    def print_update(self, data: dict) -> bool:
+        old_data = f"{self.__dict__}"
+        self._value = data.get("fun", str(self._value))
+        self._int_value = int(self._value, 16) if self._value else 0
+        return (old_data != f"{self.__dict__}")
+
+    @property
+    def mqtt_signature_required(self) -> bool:
+        return (self._int_value & Print_Fun_Values.MQTT_SIGNATURE_REQUIRED) != 0
+    
 
 @dataclass
 class FilamentInfo:

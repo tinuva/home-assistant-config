@@ -62,7 +62,9 @@
           "local_mqtt": "Lokaal verbinden met de printer:",
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
-          "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+          "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
+          "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
-          "developer_lan_mode": "Ontwikkelaar LAN -modus ingeschakeld:"
+          "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Local Printer IP Address:",
           "access_code": "Toegangscode:",
           "local_mqtt": "Lokaal verbinden met de printer in plaats van via Bambu Lab Cloud:",
-          "usage_hours": "Huidige gebruiksduur in uren (optioneel):"
+          "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
+          "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Lokaal IP-adres van printer:",
           "access_code": "Toegangscode:",
           "usage_hours": "Huidige gebruiksduur in uren (optioneel):",
-          "developer_lan_mode": "Ontwikkelaar LAN -modus ingeschakeld:"
+          "print_cache_count": "Aantal modellen om te cache naar Home Assistant (-1 voor onbeperkt):",
+          "timelapse_cache_count": "Aantal Timelapse-video's om te cache naar Home Assistant (-1 voor onbeperkt):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Debug"
+      },
+      "buzzer_silence": {
+        "name": "Zoemer - stilte"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Zoemer - brandalarm"
+      },
+      "buzzer_beeping": {
+        "name": "Zoemer - piepend"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Cameralicht"
+      },
+      "heatbed_light": {
+        "name": "Heatbed licht"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "prompt_sound": {
         "name": "Toestaan van bevestigingsgeluiden"
-      },
-      "timelapse": {
-        "name": "Nieuwste timelapse vanuit de printer inladen"
-      },
-      "download_gcode_file": {
-        "name": "Sla Gcode -bestand op in HA"
       }
     },
     "update": {

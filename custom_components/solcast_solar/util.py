@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import datetime as dt
 from enum import Enum
 import json
+import logging
 import math
 from typing import TYPE_CHECKING, Any
 
@@ -16,6 +17,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 if TYPE_CHECKING:
     from . import coordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @dataclass
@@ -71,6 +74,22 @@ class Api(Enum):
     ADVANCED = 1
 
 
+class AutoUpdate(int, Enum):
+    """The type of history data."""
+
+    NONE = 0
+    DAYLIGHT = 1
+    ALL_DAY = 2
+
+
+class HistoryType(int, Enum):
+    """The type of history data."""
+
+    FORECASTS = 0
+    ESTIMATED_ACTUALS = 1
+    ESTIMATED_ACTUALS_ADJUSTED = 2
+
+
 class DateTimeEncoder(json.JSONEncoder):
     """Helper to convert datetime dict values to ISO format."""
 
@@ -119,25 +138,43 @@ class JSONDecoder(json.JSONDecoder):
         return result
 
 
+def find_percentile(data: list[float], percentile: float) -> float:
+    """Find the given percentile in a sorted list of values."""
+
+    if not data:
+        return 0.0
+    k = (len(data) - 1) * (percentile / 100)
+    f = math.floor(k)
+    c = math.ceil(k)
+    if f == c:
+        return data[int(k)]
+    d0 = data[int(f)] * (c - k)
+    d1 = data[int(c)] * (k - f)
+    return d0 + d1
+
+
+def diff(lst: list[Any], non_negative: bool = True) -> list[Any]:
+    """Build a numpy-like diff."""
+
+    size = len(lst) - 1
+    r: list[int | float] = [0] * size
+    for i in range(size):
+        r[i] = max(0, lst[i + 1] - lst[i]) if non_negative else lst[i + 1] - lst[i]
+    return r
+
+
 def cubic_interp(x0: list[Any], x: list[Any], y: list[Any]) -> list[Any]:
     """Build a cubic spline.
 
     Arguments:
-        x0 (list): List of floats to interpolate at
-        x (list): List of floats in increasing order
+        x0 (list): List of numbers to interpolate at
+        x (list): List of numbers in increasing order
         y (list): List of floats to interpolate
 
     Returns:
         list: Array of interpolated values.
 
     """
-
-    def diff(lst: list[Any]) -> list[Any]:  # numpy-like diff
-        size = len(lst) - 1
-        r: list[int | float] = [0] * size
-        for i in range(size):
-            r[i] = lst[i + 1] - lst[i]
-        return r
 
     def clip(lst: list[Any], min_val: float, max_val: float, in_place: bool = False) -> list[Any]:  # numpy-like clip
         if not in_place:
@@ -150,7 +187,7 @@ def cubic_interp(x0: list[Any], x: list[Any], y: list[Any]) -> list[Any]:
         return lst
 
     def search_sorted(list_to_insert: list[Any], insert_into: list[Any]) -> list[Any]:  # numpy-like search_sorted
-        def float_search_sorted(float_to_insert: float, insert_into: list[Any]) -> int:
+        def float_search_sorted(float_to_insert: Any, insert_into: list[Any]) -> int:
             for i in range(len(insert_into)):
                 if float_to_insert <= insert_into[i]:
                     return i
@@ -162,8 +199,8 @@ def cubic_interp(x0: list[Any], x: list[Any], y: list[Any]) -> list[Any]:
         return a - b
 
     size: int = len(x)
-    x_diff: list[Any] = diff(x)
-    y_diff: list[Any] = diff(y)
+    x_diff: list[Any] = diff(x, non_negative=False)
+    y_diff: list[Any] = diff(y, non_negative=False)
 
     li: list[Any] = [0] * size
     li_1: list[Any] = [0] * (size - 1)

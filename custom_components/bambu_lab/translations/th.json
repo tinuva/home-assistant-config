@@ -62,7 +62,9 @@
           "local_mqtt": "เชื่อมต่อกับเครื่องพิมพ์:",
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "print_cache_count": "จำนวนรุ่นที่จะแคชให้กับผู้ช่วยที่บ้าน (-1 สำหรับไม่ จำกัด ):",
+          "timelapse_cache_count": "จำนวนวิดีโอ Timelapse สำหรับ Cache to Home Assistant (-1 สำหรับไม่ จำกัด ):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
           "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
-          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
+          "print_cache_count": "จำนวนรุ่นที่จะแคชให้กับผู้ช่วยที่บ้าน (-1 สำหรับไม่ จำกัด ):",
+          "timelapse_cache_count": "จำนวนวิดีโอ Timelapse สำหรับ Cache to Home Assistant (-1 สำหรับไม่ จำกัด ):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
           "local_mqtt": "เชื่อมต่อโดยตรงกับเครื่องพิมพ์แทนโดย Bambu Lab Cloud:",
-          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):"
+          "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
+          "print_cache_count": "จำนวนรุ่นที่จะแคชให้กับผู้ช่วยที่บ้าน (-1 สำหรับไม่ จำกัด ):",
+          "timelapse_cache_count": "จำนวนวิดีโอ Timelapse สำหรับ Cache to Home Assistant (-1 สำหรับไม่ จำกัด ):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "ที่อยู่ IP เครื่องพิมพ์ท้องถิ่น:",
           "access_code": "รหัสการเข้าถึง:",
           "usage_hours": "ชั่วโมงการใช้งานปัจจุบัน (ไม่บังคับ):",
-          "developer_lan_mode": "เปิดใช้งานโหมด LAN ของนักพัฒนา:"
+          "print_cache_count": "จำนวนรุ่นที่จะแคชให้กับผู้ช่วยที่บ้าน (-1 สำหรับไม่ จำกัด ):",
+          "timelapse_cache_count": "จำนวนวิดีโอ Timelapse สำหรับ Cache to Home Assistant (-1 สำหรับไม่ จำกัด ):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "การดีบัก"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - ความเงียบ"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - สัญญาณเตือนไฟไหม้"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - ส่งเสียงบี๊บ"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "ไฟกล้อง"
+      },
+      "heatbed_light": {
+        "name": "แสงที่มีความร้อน"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "prompt_sound": {
         "name": "ปล่อยให้เสียงที่รวดเร็ว"
-      },
-      "timelapse": {
-        "name": "โหลด Timelapse ล่าสุดจากเครื่องพิมพ์"
-      },
-      "download_gcode_file": {
-        "name": "บันทึกไฟล์ gcode ใน HA"
       }
     },
     "update": {

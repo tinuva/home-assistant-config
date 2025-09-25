@@ -62,7 +62,9 @@
           "local_mqtt": "Connectar localmente a la impresora:",
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
-          "usage_hours": "Quantitat d'hores d'ús (opcional):"
+          "usage_hours": "Quantitat d'hores d'ús (opcional):",
+          "print_cache_count": "Nombre de models a la memòria cau a l'assistent domèstic (-1 per a il·limitada):",
+          "timelapse_cache_count": "Nombre de vídeos de Timelapse a Cache to Home Assistant (-1 per a il·limitats):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
           "usage_hours": "Quantitat d'hores d'ús (opcional):",
-          "developer_lan_mode": "Mode LAN desenvolupador activat:"
+          "print_cache_count": "Nombre de models a la memòria cau a l'assistent domèstic (-1 per a il·limitada):",
+          "timelapse_cache_count": "Nombre de vídeos de Timelapse a Cache to Home Assistant (-1 per a il·limitats):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
           "local_mqtt": "Connecteu-vos directament a la impressora en lloc del núvol de Bambu Lab:",
-          "usage_hours": "Quantitat d'hores d'ús (opcional):"
+          "usage_hours": "Quantitat d'hores d'ús (opcional):",
+          "print_cache_count": "Nombre de models a la memòria cau a l'assistent domèstic (-1 per a il·limitada):",
+          "timelapse_cache_count": "Nombre de vídeos de Timelapse a Cache to Home Assistant (-1 per a il·limitats):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Adreça IP Local de la Impressora:",
           "access_code": "Codi d'accés:",
           "usage_hours": "Quantitat d'hores d'ús (opcional):",
-          "developer_lan_mode": "Mode LAN desenvolupador activat:"
+          "print_cache_count": "Nombre de models a la memòria cau a l'assistent domèstic (-1 per a il·limitada):",
+          "timelapse_cache_count": "Nombre de vídeos de Timelapse a Cache to Home Assistant (-1 per a il·limitats):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Anterioritat"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - Silenci"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer: alarma d'incendi"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer: beeping"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Llum de la càmera"
+      },
+      "heatbed_light": {
+        "name": "Llum de calor"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Carregueu les dades del model de la impressora"
-      },
-      "timelapse": {
-        "name": "Carregueu el Timelapse més recent de la impressora"
-      },
-      "download_gcode_file": {
-        "name": "Deseu el fitxer de codis a HA"
       }
     },
     "update": {

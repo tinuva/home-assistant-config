@@ -2,18 +2,6 @@
     "config": {
         "abort": {
             "already_spooked": "Sim... bem... não. Obrigado, tchau!"
-        },
-        "step": {
-            "user": {
-                "description": "Você leu o leia-me? Você leu a licença? Você tem certeza?"
-            },
-            "choice_restart": {
-                "menu_options": {
-                    "restart_now": "Reiniciar agora",
-                    "restart_later": "Reinicie mais tarde"
-                },
-                "description": "A fim de Spook terminar a configuração, Home Assistant precisa ser reiniciado.\n\nVocê quer reiniciar Home Assistant agora?"
-            }
         }
     },
     "issues": {

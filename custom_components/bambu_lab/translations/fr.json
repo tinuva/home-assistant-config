@@ -62,7 +62,9 @@
           "local_mqtt": "Connectez-vous directement à l’imprimante au lieu de passer par Bambu Cloud :",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
-          "developer_lan_mode": "Mode LAN développeur activé:"
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès :",
           "local_mqtt": "Connectez-vous directement à l'imprimante plutôt que via le Cloud Bambu Lab :",
-          "usage_hours": "Heures d'utilisation actuelles (facultatif) :"
+          "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
-          "developer_lan_mode": "Mode LAN développeur activé:"
+          "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Déboguer"
+      },
+      "buzzer_silence": {
+        "name": "Buzzer - silence"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Buzzer - Alarme incendie"
+      },
+      "buzzer_beeping": {
+        "name": "Buzzer - bip"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Lumière de la caméra"
+      },
+      "heatbed_light": {
+        "name": "Léger"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Charger le modèle depuis l'imprimante"
-      },
-      "timelapse": {
-        "name": "Charger le dernier timelapse depuis l'imprimante"
-      },
-      "download_gcode_file": {
-        "name": "Enregistrer le fichier GCode dans HA"
       }
     },
     "update": {

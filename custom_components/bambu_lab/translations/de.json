@@ -62,7 +62,9 @@
           "local_mqtt": "Verbinden Sie sich direkt mit dem Drucker statt über die Bambu Cloud:",
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
         },
         "sections": {
           "advanced": {
@@ -83,7 +85,8 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):",
-          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
+          "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
         },
         "sections": {
           "advanced": {
@@ -143,7 +146,9 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "local_mqtt": "Stellen Sie eine direkte Verbindung zum Drucker statt über die Bambu Lab-Cloud her:",
-          "usage_hours": "Aktuelle Nutzungsstunden (optional):"
+          "usage_hours": "Aktuelle Nutzungsstunden (optional):",
+          "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
         },
         "sections": {
           "advanced": {
@@ -163,7 +168,8 @@
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):",
-          "developer_lan_mode": "Entwickler LAN -Modus aktiviert:"
+          "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
         },
         "sections": {
           "advanced": {
@@ -226,6 +232,15 @@
       },
       "dev": {
         "name": "Debuggen"
+      },
+      "buzzer_silence": {
+        "name": "Summer - Stille"
+      },
+      "buzzer_fire_alarm": {
+        "name": "Summer - Feueralarm"
+      },
+      "buzzer_beeping": {
+        "name": "Summer - Beeping"
       }
     },
     "fan": {
@@ -256,6 +271,9 @@
       },
       "camera_light": {
         "name": "Kamerabeleuchtung"
+      },
+      "heatbed_light": {
+        "name": "Heizbett Licht"
       }
     },
     "number": {
@@ -760,12 +778,6 @@
       },
       "ftp": {
         "name": "Modelldaten vom Drucker laden"
-      },
-      "timelapse": {
-        "name": "Neuste Zeitraffer-Aufnahme vom Drucker laden"
-      },
-      "download_gcode_file": {
-        "name": "GCode Datei in HA speichern"
       }
     },
     "update": {
