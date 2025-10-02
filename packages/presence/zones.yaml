@@ -9,184 +9,105 @@
 #
 #- from github.com/tinuva/home-assistant-config
 zone:
-  - name: Home
-    latitude: !secret latitude_home
-    longitude: !secret longitude_home
-    radius: 50
-    icon: mdi:home
+    - name: Home
+      latitude: !secret latitude_home
+      longitude: !secret longitude_home
+      radius: 50
+      icon: mdi:home
 
-  - name: Work
-    latitude: !secret latitude_work
-    longitude: !secret longitude_work
-    radius: 310
-    icon: mdi:work
+    - name: Work
+      latitude: !secret latitude_work
+      longitude: !secret longitude_work
+      radius: 310
+      icon: mdi:work
 
-  - name: Smith Residence
-    latitude: !secret latitude_smith_residence
-    longitude: !secret longitude_smith_residence
-    radius: 50
-    icon: mdi:map-marker
+    - name: Smith Residence
+      latitude: !secret latitude_smith_residence
+      longitude: !secret longitude_smith_residence
+      radius: 50
+      icon: mdi:map-marker
 
-  - name: Curro Rosen Castle
-    latitude: -33.870495724293235
-    longitude: 18.64191055297852
-    radius: 125
-    icon: mdi:school
+    - name: Curro Rosen Castle
+      latitude: -33.870495724293235
+      longitude: 18.64191055297852
+      radius: 125
+      icon: mdi:school
 
-  - name: Kleuterland
-    latitude: -33.81517682555813
-    longitude: 18.66156377094001
-    radius: 50
-    icon: mdi:school
+    - name: Kleuterland
+      latitude: -33.81517682555813
+      longitude: 18.66156377094001
+      radius: 50
+      icon: mdi:school
 
-  - name: DurbanvillePrep
-    latitude: -33.837977074259335
-    longitude: 18.652743908220234
-    radius: 50
-    icon: mdi:school
+    - name: DurbanvillePrep
+      latitude: -33.837977074259335
+      longitude: 18.652743908220234
+      radius: 50
+      icon: mdi:school
 
 # David = device_tracker.pixel_8
 # Karen = device_tracker.pixel_7a
 
 binary_sensor:
-  platform: template
-  sensors:
-    anyone_home:
-      friendly_name: "Anyone Home"
-      value_template: >-
-        {{ is_state('device_tracker.pixel_7a', 'home')
-           or is_state('device_tracker.pixel_8', 'home') }}
+    platform: template
+    sensors:
+        anyone_home:
+            friendly_name: "Anyone Home"
+            value_template: >-
+                {{ is_state('device_tracker.pixel_7a', 'home')
+                   or is_state('device_tracker.pixel_8', 'home') }}
 
 automation:
-  - alias: zone arrived at
-    description: zone arrived at
-    trigger:
-      - entity_id: device_tracker.pixel_8
-        platform: state
-        from: 'not_home'
-        not_to: ["unavailable", "unknown"]
-      - entity_id: device_tracker.pixel_7a
-        platform: state
-        from: 'not_home'
-        not_to: ["unavailable", "unknown"]
-    action:
-      - alias: "Set variables"
-        variables:
-          person: >
-            {% if (trigger.entity_id == "device_tracker.pixel_8") %}David{% endif %}
-            {% if (trigger.entity_id == "device_tracker.pixel_7a") %}Karen{% endif %}
-          location: >
-            {{ trigger.to_state.state }}
-      - service: script.alert
-        data:
-          target: 'logs' #'general'
-          icon: ':car: '
-          object: 'Tracking'
-          message: >
-            {{ person }} arrived at {{ location }}
+    - alias: zone arrived at
+      description: zone arrived at
+      trigger:
+          - entity_id: device_tracker.pixel_8
+            platform: state
+            from: "not_home"
+            not_to: ["unavailable", "unknown"]
+          - entity_id: device_tracker.pixel_7a
+            platform: state
+            from: "not_home"
+            not_to: ["unavailable", "unknown"]
+      action:
+          - alias: "Set variables"
+            variables:
+                person: >
+                    {% if (trigger.entity_id == "device_tracker.pixel_8") %}David{% endif %}
+                    {% if (trigger.entity_id == "device_tracker.pixel_7a") %}Karen{% endif %}
+                location: >
+                    {{ trigger.to_state.state }}
+          - service: script.alert
+            data:
+                target: "logs" #'general'
+                icon: ":car: "
+                object: "Tracking"
+                message: >
+                    {{ person }} arrived at {{ location }}
 
-  - alias: zone left
-    description: zone left
-    trigger:
-      - entity_id: device_tracker.pixel_8
-        platform: state
-        to: 'not_home'
-        not_from: ["unavailable", "unknown"]
-      - entity_id: device_tracker.pixel_7a
-        platform: state
-        to: 'not_home'
-        not_from: ["unavailable", "unknown"]
-    action:
-      - alias: "Set variables"
-        variables:
-          person: >
-            {% if (trigger.entity_id == "device_tracker.pixel_8") %}David{% endif %}
-            {% if (trigger.entity_id == "device_tracker.pixel_7a") %}Karen{% endif %}
-          location: >
-            {{ trigger.from_state.state }}
-      - service: script.alert
-        data:
-          target: 'logs' #'general'
-          icon: ':car: '
-          object: 'Tracking'
-          message: >
-            {{ person }} left {{ location }}
-
-
-  # - alias: Parent arrived at School
-  #   description: Parent arrived at School
-  #   trigger:
-  #     - entity_id: device_tracker.pixel_8
-  #       platform: state
-  #       to: 'Curro Rosen Castle'
-  #     - entity_id: device_tracker.pixel_7a
-  #       platform: state
-  #       to: 'Curro Rosen Castle'
-  #   action:
-  #     - service: script.alert
-  #       data:
-  #         target: 'logs' #'general'
-  #         icon: ':car: '
-  #         object: 'Tracking'
-  #         message: >
-  #           {% if (states.device_tracker.pixel_8.state == "Curro Rosen Castle") %}David{% endif %}
-  #           {% if (states.device_tracker.pixel_7a.state == "Curro Rosen Castle") %}Karen{% endif %}
-  #           arrived at Curro Rosen Castle
-  #           Trigger:
-  #           ```{{ trigger }}```
-
-  # - alias: Parent left School
-  #   description: Parent left School
-  #   trigger:
-  #     - entity_id: device_tracker.pixel_8
-  #       platform: state
-  #       from: 'Curro Rosen Castle'
-  #     - entity_id: device_tracker.pixel_7a
-  #       platform: state
-  #       from: 'Curro Rosen Castle'
-  #   action:
-  #     - service: script.alert
-  #       data:
-  #         target: 'logs' #'general'
-  #         icon: ':car: '
-  #         object: 'Tracking'
-  #         message: >
-  #           {% if (trigger.from_state.object_id == 'pixel_8') %}David{% endif %}
-  #           {% if (trigger.from_state.object_id == 'nokia_6_1' ) %}Karen{% endif %}
-  #           left Curro Rosen Castle
-  #           Trigger:
-  #           ```{{ trigger }}```
-  #     # - service: script.alert
-  #     #   data:
-  #     #     target: 'logs' #'general'
-  #     #     icon: ':car: '
-  #     #     object: 'Tracking'
-  #     #     message: >
-  #     #       {{ trigger }}
-
-  # Start robot vacuum when Dave leave the house in the morning
-  # - alias: Dave left the house in the morning - start vacuum
-  #   description: Dave left the house in the morning - start vacuum
-  #   trigger:
-  #     - entity_id: device_tracker.pixel_8
-  #       platform: state
-  #       from: 'home'
-  #   condition:
-  #     - condition: and
-  #       conditions:
-  #         - condition: time
-  #           after: '07:00:00'
-  #           before: '08:00:00'
-  #           weekday:
-  #             - mon
-  #             - tue
-  #             - wed
-  #             - thu
-  #             - fri
-  #         - condition: state
-  #           entity_id: vacuum.rockrobo
-  #           state: 'docked'
-  #   action:
-  #     - service: vacuum.start
-  #       data:
-  #         entity_id: vacuum.rockrobo
+    - alias: zone left
+      description: zone left
+      trigger:
+          - entity_id: device_tracker.pixel_8
+            platform: state
+            to: "not_home"
+            not_from: ["unavailable", "unknown"]
+          - entity_id: device_tracker.pixel_7a
+            platform: state
+            to: "not_home"
+            not_from: ["unavailable", "unknown"]
+      action:
+          - alias: "Set variables"
+            variables:
+                person: >
+                    {% if (trigger.entity_id == "device_tracker.pixel_8") %}David{% endif %}
+                    {% if (trigger.entity_id == "device_tracker.pixel_7a") %}Karen{% endif %}
+                location: >
+                    {{ trigger.from_state.state }}
+          - service: script.alert
+            data:
+                target: "logs" #'general'
+                icon: ":car: "
+                object: "Tracking"
+                message: >
+                    {{ person }} left {{ location }}
