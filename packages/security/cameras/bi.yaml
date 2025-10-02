@@ -1,130 +1,134 @@
 ---
 # BI Cameras
 mqtt:
-    camera:
-        - topic: BI/frontg/alert-image-b64
-          name: Cam Alert Front Garage
-          unique_id: camera.cam_alert_frontg
-          image_encoding: b64
+  camera:
+    - topic: BI/frontg/alert-image-b64
+      name: Cam Alert Front Garage
+      unique_id: camera.cam_alert_frontg
+      default_entity_id: camera.cam_alert_frontg
+      image_encoding: b64
 
-        - topic: BI/back/alert-image-b64
-          name: Cam Alert Back
-          unique_id: camera.cam_alert_back
-          image_encoding: b64
-          json_attributes_topic: BI/back/status
-          json_attributes_template: "{{ value_json | tojson }}"
+    - topic: BI/back/alert-image-b64
+      name: Cam Alert Back
+      unique_id: camera.cam_alert_back
+      default_entity_id: camera.cam_alert_back
+      image_encoding: b64
+      json_attributes_topic: BI/back/status
+      json_attributes_template: "{{ value_json | tojson }}"
 
-    sensor:
-        - name: Cam Alert Front Garage
-          unique_id: camera.cam_alert_status_frontg
-          state_topic: BI/frontg/status
-          value_template: "{{ value_json.dbid }}"
+  sensor:
+    - name: Cam Alert Front Garage
+      unique_id: camera.cam_alert_status_frontg
+      default_entity_id: sensor.cam_alert_frontg
+      state_topic: BI/frontg/status
+      value_template: "{{ value_json.dbid }}"
 
-        - name: Cam Alert Back
-          unique_id: camera.cam_alert_status_back
-          state_topic: BI/back/status
-          value_template: "{{ value_json.dbid }}"
-          json_attributes_topic: BI/back/status
-          json_attributes_template: "{{ value_json | tojson }}"
+    - name: Cam Alert Back
+      unique_id: camera.cam_alert_status_back
+      default_entity_id: sensor.cam_alert_back
+      state_topic: BI/back/status
+      value_template: "{{ value_json.dbid }}"
+      json_attributes_topic: BI/back/status
+      json_attributes_template: "{{ value_json | tojson }}"
 
 automation:
-    - alias: "Blue Iris: Camera Alert Notification"
-      id: bi-cam-alert
-      description: ""
-      mode: queued
-      trigger:
-          - entity_id: sensor.cam_alert_frontg
-            platform: state
-          - entity_id: sensor.cam_alert_back
-            platform: state
-      variables:
-          cam: "{{           trigger.to_state.attributes.cam                }}"
-          cam_name: "{{      trigger.to_state.attributes.cam_name           }}"
-          img_time: "{{      trigger.to_state.attributes.time               }}"
-          bi_dbid: "{{       trigger.to_state.attributes.dbid               }}"
-          bi_clip: "{{       trigger.to_state.attributes.clipid             }}"
-          ai_memo: "{{       trigger.to_state.attributes.memo               }}"
-          ai_object: "{{     trigger.to_state.attributes.memo.split(':')[0] }}"
-          ai_confidence: "{{ trigger.to_state.attributes.memo.split(':')[1] }}"
-          cam_entity: "camera.cam_alert_"
-          is_back_camera: "{{ cam == 'back' }}"
-          is_front_camera: "{{ cam == 'frontg' }}"
-          is_person: "{{ ai_object == 'person' }}"
-          is_car: "{{ ai_object == 'car' }}"
-          alarm_armed: >
-              {{ is_state('alarm_control_panel.home_alarm', 'armed_home') or is_state('alarm_control_panel.home_alarm', 'armed_away') }}
-          front_gate_open: "{{ is_state('cover.front_gate', 'open') }}"
-          should_notify: >
-              {% if is_back_camera %}
-                {{ alarm_armed }}
-              {% else %}
-                {{ is_person or (is_car and front_gate_open) }}
-              {% endif %}
-      condition:
-          - condition: template
-            value_template: >
-                {{ trigger.from_state.state != trigger.to_state.state }}
-          - condition: template
-            value_template: >
-                {{ trigger.from_state is not none and
-                  trigger.from_state.state not in ['unknown','unavailable'] }}
-          - condition: template
-            value_template: >
-                {{ should_notify }}
-      action:
-          # - service: script.alert
-          #   data:
-          #     target: 'alerts-camera'
-          #     camera: >-
-          #       {{ cam_entity + cam }}
-          #     message: >-
-          #       Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
-          #       *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
-          #       <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
-          #       <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
-          # - service: camera.snapshot
-          #   data:
-          #     filename: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
-          #   target:
-          #     entity_id: "{{ cam }}"
-          - service: downloader.download_file
-            data:
-                subdir: /config/www/cam_captures
-                filename: "script_log_{{ cam }}.jpg"
-                overwrite: true
-                url: "https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg"
-          - delay:
-                seconds: 2
-                milliseconds: 500
-          - service: notify.bezuidenhouts
-            data:
-                message: >-
-                    Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
-                    *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
-                    <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
-                    <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
-                target: "#alerts-camera"
-                title: "{{ cam  }}"
-                data:
-                    file:
-                        path: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
-          # - service: notify.bezuidenhouts
-          #   data:
-          #     target: '#alerts-camera'
-          #     message: >-
-          #       Motion on {{ cam_name }} camera at {{ img_time }} {{- '\n' -}}
-          #       Type: {{ ai_object }} Confidence: {{ ai_confidence }}
-          #     title: Camera Alert
-          #     data:
-          #       blocks:
-          #         - type: section
-          #           text:
-          #             type: mrkdwn
-          #             text: >-
-          #               Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
-          #               *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
-          #               <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
-          #               <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
-          #         - type: image
-          #           image_url: https://ha.heaven.za.net{{ state_attr( cam_entity + cam , "entity_picture") }}
-          #           alt_text: Image preview
+  - alias: "Blue Iris: Camera Alert Notification"
+    id: bi-cam-alert
+    description: ""
+    mode: queued
+    trigger:
+      - entity_id: sensor.cam_alert_frontg
+        platform: state
+      - entity_id: sensor.cam_alert_back
+        platform: state
+    variables:
+      cam: "{{           trigger.to_state.attributes.cam                }}"
+      cam_name: "{{      trigger.to_state.attributes.cam_name           }}"
+      img_time: "{{      trigger.to_state.attributes.time               }}"
+      bi_dbid: "{{       trigger.to_state.attributes.dbid               }}"
+      bi_clip: "{{       trigger.to_state.attributes.clipid             }}"
+      ai_memo: "{{       trigger.to_state.attributes.memo               }}"
+      ai_object: "{{     trigger.to_state.attributes.memo.split(':')[0] }}"
+      ai_confidence: "{{ trigger.to_state.attributes.memo.split(':')[1] }}"
+      cam_entity: "camera.cam_alert_"
+      is_back_camera: "{{ cam == 'back' }}"
+      is_front_camera: "{{ cam == 'frontg' }}"
+      is_person: "{{ ai_object == 'person' }}"
+      is_car: "{{ ai_object == 'car' }}"
+      alarm_armed: >
+        {{ is_state('alarm_control_panel.home_alarm', 'armed_home') or is_state('alarm_control_panel.home_alarm', 'armed_away') }}
+      front_gate_open: "{{ is_state('cover.front_gate', 'open') }}"
+      should_notify: >
+        {% if is_back_camera %}
+          {{ alarm_armed }}
+        {% else %}
+          {{ is_person or (is_car and front_gate_open) }}
+        {% endif %}
+    condition:
+      - condition: template
+        value_template: >
+          {{ trigger.from_state.state != trigger.to_state.state }}
+      - condition: template
+        value_template: >
+          {{ trigger.from_state is not none and
+            trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: template
+        value_template: >
+          {{ should_notify }}
+    action:
+      # - service: script.alert
+      #   data:
+      #     target: 'alerts-camera'
+      #     camera: >-
+      #       {{ cam_entity + cam }}
+      #     message: >-
+      #       Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+      #       *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+      #       <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+      #       <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+      # - service: camera.snapshot
+      #   data:
+      #     filename: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
+      #   target:
+      #     entity_id: "{{ cam }}"
+      - service: downloader.download_file
+        data:
+          subdir: /config/www/cam_captures
+          filename: "script_log_{{ cam }}.jpg"
+          overwrite: true
+          url: "https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg"
+      - delay:
+          seconds: 2
+          milliseconds: 500
+      - service: notify.bezuidenhouts
+        data:
+          message: >-
+            Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+            *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+            <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+            <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+          target: "#alerts-camera"
+          title: "{{ cam  }}"
+          data:
+            file:
+              path: "/config/www/cam_captures/script_log_{{ cam }}.jpg"
+      # - service: notify.bezuidenhouts
+      #   data:
+      #     target: '#alerts-camera'
+      #     message: >-
+      #       Motion on {{ cam_name }} camera at {{ img_time }} {{- '\n' -}}
+      #       Type: {{ ai_object }} Confidence: {{ ai_confidence }}
+      #     title: Camera Alert
+      #     data:
+      #       blocks:
+      #         - type: section
+      #           text:
+      #             type: mrkdwn
+      #             text: >-
+      #               Motion on *{{ cam_name }}* camera at *{{ img_time }}* {{- '\n' -}}
+      #               *Type*: {{ ai_object }} *Confidence*: {{ ai_confidence }} {{- '\n' -}}
+      #               <https://bi.heaven.za.net/alerts/{{ bi_dbid }}?fulljpeg|Image>
+      #               <https://bi.heaven.za.net/ui3.htm?maximize=1&tab=alerts&cam={{ cam }}&rec={{ bi_dbid }}&timeout=0|Video> {{- '\n' -}}
+      #         - type: image
+      #           image_url: https://ha.heaven.za.net{{ state_attr( cam_entity + cam , "entity_picture") }}
+      #           alt_text: Image preview
