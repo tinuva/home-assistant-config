@@ -1,5 +1,4 @@
 ---
-
 input_boolean:
   kitchenwork:
     name: Kitchen Work
@@ -12,9 +11,11 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   kitchenlight:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
   kitchenwork:
-    duration: '01:00:00'
+    duration: "01:00:00"
+    restore: true
 
 automation:
   ### Kitchen Lights
@@ -28,7 +29,7 @@ automation:
     condition:
       - condition: state
         entity_id: input_boolean.kitchenwork
-        state: 'off'
+        state: "off"
     action:
       - service: light.turn_off
         data:
@@ -41,16 +42,16 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.kitchen_pir
-        to: 'on'
+        to: "on"
     condition:
       - condition: and
         conditions:
-          - condition: state  # 'night' condition: from sunset until sunrise
+          - condition: state # 'night' condition: from sunset until sunrise
             entity_id: sun.sun
-            state: 'below_horizon'
+            state: "below_horizon"
           - condition: state
             entity_id: input_boolean.kitchenwork
-            state: 'off'
+            state: "off"
           #- condition: numeric_state
           #  entity_id: sensor.illumination_7811dcb90d53
           #  below: 200
@@ -76,7 +77,7 @@ automation:
           #   {%- endif -%}
       - condition: state
         entity_id: alarm_control_panel.home_alarm
-        state: 'armed_home'
+        state: "armed_home"
       - service: timer.start
         data:
           entity_id: timer.kitchenlight
@@ -98,7 +99,7 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.kitchenwork
-        to: 'on'
+        to: "on"
     action:
       - service: timer.start
         data:
@@ -124,7 +125,7 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.kitchenwork
-        to: 'off'
+        to: "off"
     action:
       - service: light.turn_off
         data:

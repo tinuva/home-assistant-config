@@ -3,6 +3,7 @@
 timer:
   front_garage_light:
     duration: '00:05:00'
+    restore: true
 
 automation:
 ### front garage entrance is through the garage door itself and door to house

@@ -18,10 +18,12 @@ input_datetime:
 timer:
   main_geyser:
     name: Geyser(M) Timer
-    duration: '02:00:00'
+    duration: "02:00:00"
+    restore: true
   front_geyser:
     name: Geyser(F) Timer
-    duration: '02:00:00'
+    duration: "02:00:00"
+    restore: true
 
 sensor:
   - platform: template
@@ -29,14 +31,14 @@ sensor:
       # Template sensor to display input value only
       geyser_morning_runtime:
         friendly_name: "Geyser Morning run-time"
-        unit_of_measurement: 'minutes'
+        unit_of_measurement: "minutes"
         icon_template: "mdi:timer-outline"
         value_template: >-
-            {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
-            {% if average_temp_int >= 20 %}120
-            {% elif average_temp_int >= 18 and average_temp_int < 20 %}150
-            {% elif average_temp_int >= 12 and average_temp_int < 18 %}150
-            {% else %}180{% endif -%}
+          {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
+          {% if average_temp_int >= 20 %}120
+          {% elif average_temp_int >= 18 and average_temp_int < 20 %}150
+          {% elif average_temp_int >= 12 and average_temp_int < 18 %}150
+          {% else %}180{% endif -%}
 
 script:
   ######################################################################
@@ -54,7 +56,7 @@ script:
           while:
             - condition: state
               entity_id: switch.main_bathroom_geyser
-              state: 'unavailable'
+              state: "unavailable"
           sequence:
             - delay:
                 seconds: 30
@@ -89,7 +91,7 @@ script:
         data_template:
           entity_id: timer.main_geyser
           duration: "{{ duration }}"
-      - delay: '00:00:01' # Waits 1 seconds
+      - delay: "00:00:01" # Waits 1 seconds
       - service: switch.turn_on
         data:
           entity_id: switch.main_bathroom_geyser
@@ -113,7 +115,7 @@ script:
           while:
             - condition: state
               entity_id: switch.front_bathroom_geyser
-              state: 'unavailable'
+              state: "unavailable"
           sequence:
             - delay:
                 seconds: 30
@@ -130,12 +132,12 @@ script:
         data_template:
           entity_id: timer.front_geyser
           duration: "{{ duration }}"
-      - delay: '00:00:01' # Waits 1 seconds
+      - delay: "00:00:01" # Waits 1 seconds
       - service: switch.turn_on
         data:
           entity_id: switch.front_bathroom_geyser
       # Turn off main geyser
-      - delay: '00:00:01' # Waits 1 seconds
+      - delay: "00:00:01" # Waits 1 seconds
       - service: timer.finish
         target:
           entity_id: timer.main_geyser
@@ -148,10 +150,10 @@ automation:
       - platform: template
         value_template: "{{ states('sensor.time') == (state_attr('input_datetime.main_geyser_on_time', 'timestamp') | int | timestamp_custom('%H:%M', False)) }}"
       - platform: time
-        at: '12:45:00'
+        at: "12:45:00"
       - platform: numeric_state
         entity_id: sensor.front_bathroom_geyser_energy_power
-        below: '100'
+        below: "100"
         for:
           seconds: 60
     condition:
@@ -159,7 +161,7 @@ automation:
         conditions:
           - condition: state
             entity_id: timer.front_geyser
-            state: 'paused'
+            state: "paused"
     #   - condition: or
     #     conditions:
     #       - condition: template
@@ -179,15 +181,15 @@ automation:
       #       main bedroom geyser trigger - before conditions
       #       Trigger:
       #       ```{{ trigger }}```
-      - delay: '00:00:10' # Waits 10 seconds
+      - delay: "00:00:10" # Waits 10 seconds
       - condition: or
         conditions:
           - condition: numeric_state
             entity_id: sensor.front_bathroom_geyser_energy_power
-            below: '100'
+            below: "100"
           - condition: state
             entity_id: switch.front_bathroom_geyser
-            state: 'unavailable'
+            state: "unavailable"
       # - alias: "Log action taken"
       #   service: script.log
       #   data:
@@ -208,7 +210,7 @@ automation:
                         value_template: "{{ ('09:00' <= states('sensor.time') < '16:00') }}"
                       - condition: state
                         entity_id: timer.main_geyser
-                        state: 'idle'
+                        state: "idle"
                         for:
                           minutes: 75
             sequence:
@@ -216,8 +218,8 @@ automation:
               - alias: "Log action taken"
                 service: script.log
                 data:
-                  icon: ':zap:'
-                  object: 'Geyser - main bedroom'
+                  icon: ":zap:"
+                  object: "Geyser - main bedroom"
                   message: >
                     Turning on main bedroom geyser
                     (Turn on between 11am and 2pm for sun times)
@@ -227,7 +229,7 @@ automation:
           - conditions:
               - condition: state
                 entity_id: timer.main_geyser
-                state: 'idle'
+                state: "idle"
                 for:
                   hours: 6
               - condition: template
@@ -237,8 +239,8 @@ automation:
               - alias: "Log action taken"
                 service: script.log
                 data:
-                  icon: ':zap:'
-                  object: 'Geyser - main bedroom'
+                  icon: ":zap:"
+                  object: "Geyser - main bedroom"
                   message: >
                     Turning on main bedroom geyser
                     (Turn on late PM only if haven't been on in previous 6 hours)
@@ -249,7 +251,7 @@ automation:
           - conditions:
               - condition: state
                 entity_id: timer.main_geyser
-                state: 'idle'
+                state: "idle"
                 for:
                   hours: 6
               - condition: or
@@ -258,22 +260,22 @@ automation:
                     conditions:
                       - condition: numeric_state
                         entity_id: sensor.average_temperature_outside_last_1_day
-                        below: '19.4'
+                        below: "19.4"
                       - condition: state
                         entity_id: input_boolean.morning_geyser_main
-                        state: 'on'
+                        state: "on"
                   # IF lots of sun and high battery also turn on
                   - condition: and
                     conditions:
                       - condition: numeric_state
                         entity_id: sensor.average_temperature_outside_last_1_day
-                        below: '24.5'
+                        below: "24.5"
                       - condition: numeric_state
                         entity_id: sensor.solcast_pv_forecast_forecast_today
-                        above: '26.1'
+                        above: "26.1"
                       - condition: numeric_state
                         entity_id: sensor.battery_state_of_charge
-                        above: '50'
+                        above: "50"
               - condition: template
                 value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
               - condition: template
@@ -283,8 +285,8 @@ automation:
               - alias: "Log action taken"
                 service: script.log
                 data:
-                  icon: ':zap:'
-                  object: 'Geyser - main bedroom'
+                  icon: ":zap:"
+                  object: "Geyser - main bedroom"
                   message: >
                     Turning on main bedroom geyser
                     (Turn on early AM and late PM)
@@ -299,8 +301,8 @@ automation:
           - alias: "Log action taken"
             service: script.log
             data:
-              icon: ':zap:'
-              object: 'Geyser - main bedroom'
+              icon: ":zap:"
+              object: "Geyser - main bedroom"
               message: >
                 Not turning on main bedroom geyser because no conditions met
                 Trigger:
@@ -311,14 +313,14 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.main_bathroom_geyser
-        to: 'on'
+        to: "on"
     condition:
       - condition: state
         entity_id: input_boolean.homeassistant_recently_started
-        state: 'off'
+        state: "off"
       - condition: state
         entity_id: timer.main_geyser
-        state: 'idle'
+        state: "idle"
     action:
       - choose:
           # Turn on only 1 hour if before 6am
@@ -363,8 +365,8 @@ automation:
       #   at: '18:59:00'
       - platform: state
         entity_id: switch.main_bathroom_geyser
-        to: 'on'
-        for: '04:00:00'
+        to: "on"
+        for: "04:00:00"
     action:
       - service: switch.turn_off
         data:
@@ -374,7 +376,7 @@ automation:
     trigger:
       - platform: numeric_state
         entity_id: sensor.main_bathroom_geyser_energy_power
-        below: '100'
+        below: "100"
         for:
           seconds: 60
     condition:
@@ -388,7 +390,7 @@ automation:
       - service: timer.finish
         data_template:
           entity_id: timer.main_geyser
-      - delay: '00:00:01' # Waits 1 seconds
+      - delay: "00:00:01" # Waits 1 seconds
       - service: switch.turn_off
         data:
           entity_id: switch.main_bathroom_geyser
@@ -420,10 +422,10 @@ automation:
         conditions:
           - condition: numeric_state
             entity_id: sensor.main_bathroom_geyser_energy_power
-            below: '100'
+            below: "100"
           - condition: state
             entity_id: switch.main_bathroom_geyser
-            state: 'unavailable'
+            state: "unavailable"
     action:
       - choose:
           # Turn on between 9am and 11am for sun times using forecast
@@ -454,7 +456,7 @@ automation:
           - conditions:
               - condition: state
                 entity_id: timer.front_geyser
-                state: 'idle'
+                state: "idle"
                 for:
                   hours: 6
               - condition: or
@@ -463,7 +465,7 @@ automation:
                     conditions:
                       - condition: numeric_state
                         entity_id: sensor.average_temperature_outside_last_1_day
-                        below: '19.4'
+                        below: "19.4"
                       # - condition: state
                       #   entity_id: input_boolean.morning_geyser_front
                       #   state: 'on'
@@ -472,13 +474,13 @@ automation:
                     conditions:
                       - condition: numeric_state
                         entity_id: sensor.average_temperature_outside_last_1_day
-                        below: '24.5'
+                        below: "24.5"
                       - condition: numeric_state
                         entity_id: sensor.solcast_pv_forecast_forecast_today
-                        above: '26.1'
+                        above: "26.1"
                       - condition: numeric_state
                         entity_id: sensor.battery_state_of_charge
-                        above: '50'
+                        above: "50"
               - condition: template
                 value_template: "{{ ('02:00' <= states('sensor.time') <= '06:00')  }}"
               - condition: template
@@ -494,8 +496,8 @@ automation:
           - alias: "Log action taken"
             service: script.log
             data:
-              icon: ':zap:'
-              object: 'Geyser - front'
+              icon: ":zap:"
+              object: "Geyser - front"
               message: >
                 Not turning on front geyser because no conditions met
 
@@ -504,14 +506,14 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.front_bathroom_geyser
-        to: 'on'
+        to: "on"
     condition:
       - condition: state
         entity_id: input_boolean.homeassistant_recently_started
-        state: 'off'
+        state: "off"
       - condition: state
         entity_id: timer.front_geyser
-        state: 'idle'
+        state: "idle"
     action:
       - service: timer.start
         data_template:
@@ -540,8 +542,8 @@ automation:
       #   at: '18:59:00'
       - platform: state
         entity_id: switch.front_bathroom_geyser
-        to: 'on'
-        for: '04:00:00'
+        to: "on"
+        for: "04:00:00"
     action:
       - service: script.switch_retry_off
         data:
@@ -553,29 +555,29 @@ automation:
       - id: main-geyser-un-to-off
         platform: state
         entity_id: switch.main_bathroom_geyser
-        from: 'unavailable'
-        to: 'off'
+        from: "unavailable"
+        to: "off"
         for:
           seconds: 30
       - id: main-geyser-un-to-on
         platform: state
         entity_id: switch.main_bathroom_geyser
-        from: 'unavailable'
-        to: 'on'
+        from: "unavailable"
+        to: "on"
         for:
           seconds: 30
       - id: front-geyser-un-to-off
         platform: state
         entity_id: switch.front_bathroom_geyser
-        from: 'unavailable'
-        to: 'off'
+        from: "unavailable"
+        to: "off"
         for:
           seconds: 30
       - id: front-geyser-un-to-on
         platform: state
         entity_id: switch.front_bathroom_geyser
-        from: 'unavailable'
-        to: 'on'
+        from: "unavailable"
+        to: "on"
         for:
           seconds: 30
     action:
@@ -590,7 +592,7 @@ automation:
                     id: main-geyser-un-to-off
               - condition: state
                 entity_id: timer.main_geyser
-                state: 'paused'
+                state: "paused"
             sequence:
               - service: timer.start
                 data:
@@ -609,7 +611,7 @@ automation:
                     id: front-geyser-un-to-off
               - condition: state
                 entity_id: timer.front_geyser
-                state: 'paused'
+                state: "paused"
             sequence:
               - service: timer.start
                 data:
@@ -624,13 +626,13 @@ automation:
       - id: main-geyser-un
         platform: state
         entity_id: switch.main_bathroom_geyser
-        to: 'unavailable'
+        to: "unavailable"
         for:
           seconds: 30
       - id: front-geyser-un
         platform: state
         entity_id: switch.front_bathroom_geyser
-        to: 'unavailable'
+        to: "unavailable"
         for:
           seconds: 30
     action:
@@ -646,7 +648,7 @@ automation:
                 id: main-geyser-un
               - condition: state
                 entity_id: timer.main_geyser
-                state: 'active'
+                state: "active"
             sequence:
               - service: timer.pause
                 data:
@@ -661,7 +663,7 @@ automation:
                 id: front-geyser-un
               - condition: state
                 entity_id: timer.front_geyser
-                state: 'active'
+                state: "active"
             sequence:
               - service: timer.pause
                 data:
@@ -669,7 +671,6 @@ automation:
               - service: switch.turn_off
                 data:
                   entity_id: switch.front_bathroom_geyser
-
 
   - alias: "Front Geyser Morning Schedule"
     description: "Schedule front geyser based on loadshedding status"
@@ -682,10 +683,10 @@ automation:
         conditions:
           - condition: state
             entity_id: input_boolean.morning_geyser_front
-            state: 'on'
+            state: "on"
           - condition: state
             entity_id: input_boolean.guest
-            state: 'on'
+            state: "on"
     action:
       - choose:
           # If loadshedding is active or imminent (within ~1 hour)
@@ -697,7 +698,7 @@ automation:
               - wait_for_trigger:
                   - platform: state
                     entity_id: timer.loadshedding_slot
-                    to: 'idle'
+                    to: "idle"
                     for:
                       minutes: 20
               - service: script.goodwe_set_dod
@@ -779,7 +780,7 @@ automation:
         default:
           - service: script.alert
             data:
-              target: 'alerts'
-              icon: ':warning:'
-              object: 'Front Geyser'
+              target: "alerts"
+              icon: ":warning:"
+              object: "Front Geyser"
               message: "Front geyser morning schedule failed to run. Please check the automation."

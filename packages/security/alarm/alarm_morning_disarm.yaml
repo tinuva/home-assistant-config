@@ -4,6 +4,7 @@ timer:
   disarm_window:
     name: Alarm Disarm Window
     duration: '00:00:15'
+    restore: true
 
 automation:
   # Motion = Turn on

@@ -2,6 +2,7 @@
 timer:
     88e9fe88abfe:
         duration: "00:05:00"
+        restore: true
 
 input_number:
     88e9fe88abfe_off_time_duration:

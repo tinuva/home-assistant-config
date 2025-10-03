@@ -1,5 +1,4 @@
 ---
-
 timer:
   # When calling the start service on a timer that is already running, it resets
   # the duration it will need to finish and restart the timer without triggering
@@ -8,10 +7,11 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   smallbedroomlight:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
 
 automation:
-   # Timer end = Turn off
+  # Timer end = Turn off
   - alias: Turn off smallbedroom lights after timer finish
     trigger:
       platform: event
@@ -29,23 +29,23 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.babyroom_pir
-        to: 'on'
+        to: "on"
     condition:
       - condition: and
         conditions:
-          - condition: state  # 'night' condition: from sunset until sunrise
+          - condition: state # 'night' condition: from sunset until sunrise
             entity_id: sun.sun
-            state: 'below_horizon'
+            state: "below_horizon"
       - condition: or
         conditions:
           - condition: state
             entity_id: light.amy_bedroom_amy_bedroom
-            state: 'off'
+            state: "off"
             for:
               seconds: 15
           - condition: state
             entity_id: light.amy_bedroom_amy_bedroom
-            state: 'on'
+            state: "on"
     action:
       - service: timer.start
         data:
@@ -86,13 +86,13 @@ automation:
     trigger:
       - platform: state
         entity_id: light.amy_bedroom_amy_bedroom
-        to: 'on'
+        to: "on"
     condition:
       - condition: and
         conditions:
           - condition: state
             entity_id: timer.smallbedroomlight
-            state: 'idle'
+            state: "idle"
     action:
       - service: light.turn_on
         data_template:
@@ -131,14 +131,14 @@ automation:
                 conditions:
                   - condition: state
                     entity_id: binary_sensor.either_parent_phones_charging
-                    state: 'on'
+                    state: "on"
                   - condition: state
                     entity_id: alarm_control_panel.home_alarm
-                    state: 'armed_home'
+                    state: "armed_home"
                   - condition: time
-                    after: '20:29:59'
+                    after: "20:29:59"
                   - condition: time
-                    before: '6:00:00'
+                    before: "6:00:00"
             sequence:
               - service: switch.turn_on
                 data:
@@ -146,10 +146,10 @@ automation:
           - conditions:
               - condition: state
                 entity_id: binary_sensor.either_parent_phones_charging
-                state: 'off'
+                state: "off"
               - condition: state
                 entity_id: alarm_control_panel.home_alarm
-                state: 'disarmed'
+                state: "disarmed"
             sequence:
               - service: switch.turn_off
                 data:

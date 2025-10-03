@@ -12,10 +12,12 @@ input_datetime:
 timer:
   pool_pump:
     name: Pool pump
-    duration: '04:00:00'
+    duration: "04:00:00"
+    restore: true
   pool_pump_grid_pause:
     name: Pool pump - grid pause
-    duration: '00:05:00'
+    duration: "00:05:00"
+    restore: true
 
 automation:
   # Pool pump on based on input time
@@ -48,16 +50,16 @@ automation:
           # Morning
           - conditions:
               - condition: time
-                after: '9:00:00'
-                before: '16:00:00'
+                after: "9:00:00"
+                before: "16:00:00"
               - condition: numeric_state
                 entity_id: sensor.solcast_pv_forecast_forecast_remaining_today
-                above: '17'
+                above: "17"
               - condition: or
                 conditions:
                   - condition: numeric_state
                     entity_id: sensor.solcast_pv_forecast_forecast_remaining_today
-                    above: '19'
+                    above: "19"
                   #- condition: numeric_state
                   #  entity_id: sensor.battery_state_of_charge
                   #  above: '43'
@@ -86,11 +88,11 @@ automation:
           # Afternoon after geyser
           - conditions:
               - condition: time
-                after: '11:10:00'
-                before: '16:00:00'
+                after: "11:10:00"
+                before: "16:00:00"
               - condition: numeric_state
                 entity_id: sensor.solcast_pv_forecast_forecast_remaining_today
-                above: '3'
+                above: "3"
             sequence:
               - service: timer.start
                 data_template:
@@ -114,15 +116,15 @@ automation:
     trigger:
       - platform: state
         entity_id: switch.pool_pump_pool_pump
-        from: 'off'
-        to: 'on'
+        from: "off"
+        to: "on"
     condition:
       - condition: state
         entity_id: input_boolean.homeassistant_recently_started
-        state: 'off'
+        state: "off"
       - condition: state
         entity_id: timer.pool_pump
-        state: 'idle'
+        state: "idle"
     action:
       - service: timer.start
         data_template:

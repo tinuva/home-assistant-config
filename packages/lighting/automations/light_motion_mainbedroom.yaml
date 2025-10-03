@@ -7,10 +7,11 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   mainbedroomlight:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
 
 automation:
-   # Timer end = Turn off
+  # Timer end = Turn off
   - alias: Turn off mainbedroom lights after timer finish
     trigger:
       platform: event
@@ -28,23 +29,23 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.main_bedroom_pir
-        to: 'on'
+        to: "on"
     condition:
       - condition: and
         conditions:
-          - condition: state  # 'night' condition: from sunset until sunrise
+          - condition: state # 'night' condition: from sunset until sunrise
             entity_id: sun.sun
-            state: 'below_horizon'
+            state: "below_horizon"
       - condition: or
         conditions:
           - condition: state
             entity_id: light.main_bedroom_main_bedroom
-            state: 'off'
+            state: "off"
             for:
               seconds: 15
           - condition: state
             entity_id: light.main_bedroom_main_bedroom
-            state: 'on'
+            state: "on"
     action:
       - service: light.turn_on
         data_template:
@@ -72,7 +73,7 @@ automation:
           #   {%- endif -%}
       - condition: state
         entity_id: timer.morning_routine
-        state: 'idle'
+        state: "idle"
       - service: timer.start
         data:
           entity_id: timer.mainbedroomlight
@@ -106,13 +107,13 @@ automation:
                 conditions:
                   - condition: state
                     entity_id: binary_sensor.either_parent_phones_charging
-                    state: 'on'
+                    state: "on"
                   - condition: state
                     entity_id: alarm_control_panel.home_alarm
-                    state: 'armed_home'
+                    state: "armed_home"
               - condition: state
                 entity_id: timer.morning_routine
-                state: 'idle'
+                state: "idle"
             sequence:
               - service: switch.turn_on
                 data:
@@ -120,10 +121,10 @@ automation:
           - conditions:
               - condition: state
                 entity_id: binary_sensor.either_parent_phones_charging
-                state: 'off'
+                state: "off"
               - condition: state
                 entity_id: alarm_control_panel.home_alarm
-                state: 'disarmed'
+                state: "disarmed"
             sequence:
               - service: switch.turn_off
                 data:

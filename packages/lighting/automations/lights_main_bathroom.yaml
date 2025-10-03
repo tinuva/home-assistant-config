@@ -9,6 +9,7 @@ timer:
   # restarted event.
   main_bathroom:
     duration: '00:10:00'
+    restore: true
 
 binary_sensor:
   - platform: trend

@@ -7,7 +7,8 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   loungelight:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
 
 automation:
   ### Lounge Lights
@@ -30,19 +31,19 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.lounge_pir
-        to: 'on'
+        to: "on"
     condition:
       - condition: and
         conditions:
-          - condition: state  # 'night' condition: from sunset until sunrise
+          - condition: state # 'night' condition: from sunset until sunrise
             entity_id: sun.sun
-            state: 'below_horizon'
+            state: "below_horizon"
           - condition: template # if plex is in playing mode, do not start this automation
-            value_template: "{{ not is_state('media_player.plex_plex_for_android_tv_bravia_vu1', 'playing') }}"
+            value_template: '{{ not is_state("media_player.plex_plex_for_android_tv_bravia_vu1", "playing") }}'
           - condition: template # if plex is in playing mode, do not start this automation
-            value_template: "{{ not is_state('media_player.plex_plex_for_kodi_sonytv', 'playing') }}"
+            value_template: '{{ not is_state("media_player.plex_plex_for_kodi_sonytv", "playing") }}'
           - condition: template # if plex is in playing mode, do not start this automation
-            value_template: "{{ not is_state('media_player.plex_plex_for_android_tv_shield_android_tv', 'playing') }}"
+            value_template: '{{ not is_state("media_player.plex_plex_for_android_tv_shield_android_tv", "playing") }}'
     action:
       - service: light.turn_on
         data_template:
@@ -56,7 +57,7 @@ automation:
           #   {%- endif -%}
       - condition: state
         entity_id: alarm_control_panel.home_alarm
-        state: 'armed_home'
+        state: "armed_home"
       - service: timer.start
         data:
           entity_id: timer.loungelight

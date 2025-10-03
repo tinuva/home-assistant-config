@@ -6,6 +6,7 @@ input_boolean:
 timer:
   camera_alerts_disabled:
     duration: '00:60:00'
+    restore: true
 
 automation:
   # camera alerts disabled - start timer to re-enable

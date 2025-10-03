@@ -25,19 +25,19 @@
 #           {{ event.summary }}
 #           {%- if event.start.dateTime %}{{ event.start.dateTime }}{%- endif %}
 #           {%- endfor %}
-        # value_template: >
-        #   {{ value_json }}
-        # value_template: >
-        #   {{ value_json[0].summary }}
-        #   # {% for event in value_json %}
-        #   # {{ event.start }}
-        #   # {% endfor %}
-        #     {% if event.start.dateTime %}
-        #       {{ (event.start.dateTime | as_datetime).strftime('%Y-%m-%d %H:%M') }}: {{ event.summary }}
-        #     {% else %}
-        #       {{ event.start.date }}: {{ event.summary }}
-        #     {% endif %}
-        #   {% endfor %}
+# value_template: >
+#   {{ value_json }}
+# value_template: >
+#   {{ value_json[0].summary }}
+#   # {% for event in value_json %}
+#   # {{ event.start }}
+#   # {% endfor %}
+#     {% if event.start.dateTime %}
+#       {{ (event.start.dateTime | as_datetime).strftime('%Y-%m-%d %H:%M') }}: {{ event.summary }}
+#     {% else %}
+#       {{ event.start.date }}: {{ event.summary }}
+#     {% endif %}
+#   {% endfor %}
 
 # rest:
 #   - resource: !secret solcast_forecast_resource
@@ -138,45 +138,46 @@ sensor:
         unique_id: Time_Until_Next_Loadshedding
         unit_of_measurement: mins
         value_template: >
-            {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
-            {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int - as_timestamp(now()) | int ) / 60,-1] | max }}
-            {%else%}
-            Unknown
-            {%endif%}
+          {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
+          {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int - as_timestamp(now()) | int ) / 60,-1] | max }}
+          {%else%}
+          Unknown
+          {%endif%}
       next_loadshedding_duration:
         friendly_name: Calculated Next Loadshedding Duration
         unique_id: actual_next_loadshedding_duration
         unit_of_measurement: mins
         value_template: >
-            {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
-            {% set area_schedule = state_attr(area_sensor, "forecast") %}
-            {% set duration = 0 %}
-            {% if area_schedule %}
-              {% set next_slot_end = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
-              {% set second_slot_end = as_timestamp(area_schedule[:3][1].end_time) - as_timestamp(area_schedule[:3][1].start_time) %}
-              {% set diff = as_timestamp(area_schedule[:3][1].start_time) - as_timestamp(area_schedule[:3][0].start_time) %}
-              {% set duration = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
-              {% if diff == 7200 %}
-                {% set duration = next_slot_end + second_slot_end %}
-              {% endif%}
-              {{ duration // 60 }}
+          {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
+          {% set area_schedule = state_attr(area_sensor, "forecast") %}
+          {% set duration = 0 %}
+          {% if area_schedule %}
+            {% set next_slot_end = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+            {% set second_slot_end = as_timestamp(area_schedule[:3][1].end_time) - as_timestamp(area_schedule[:3][1].start_time) %}
+            {% set diff = as_timestamp(area_schedule[:3][1].start_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+            {% set duration = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+            {% if diff == 7200 %}
+              {% set duration = next_slot_end + second_slot_end %}
             {% endif%}
+            {{ duration // 60 }}
+          {% endif%}
 
 timer:
   loadshedding_slot:
-    duration: '02:35:00'
+    duration: "02:35:00"
+    restore: true
 
 automation:
   - alias: start_loadshedding_slot_timer
     trigger:
       - platform: state
         entity_id: sensor.load_shedding_area_capetown_6_durbanville
-        to: 'on'
+        to: "on"
     condition:
       # make sure timer not already active
       - condition: state
         entity_id: timer.loadshedding_slot
-        state: 'idle'
+        state: "idle"
     action:
       - service: timer.start
         data:
@@ -187,7 +188,7 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.grid_mode
-        to: '1' #stable after checking power
+        to: "1" #stable after checking power
         for:
           seconds: 30
     condition:
@@ -197,14 +198,14 @@ automation:
             trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: state
         entity_id: timer.loadshedding_slot
-        state: 'active'
+        state: "active"
     action:
       - service: timer.finish
         data:
           entity_id: timer.loadshedding_slot
 
   - alias: Loadshedding forecast notification
-    initial_state: 'on'
+    initial_state: "on"
     trigger:
       - entity_id: sensor.loadshedding_slot_forecast
         platform: state
@@ -224,29 +225,29 @@ automation:
       - alias: "Alert change"
         service: script.alert
         data:
-          icon: ':zap:'
-          object: 'Loadshedding forecast'
-          target: 'power-alerts'
+          icon: ":zap:"
+          object: "Loadshedding forecast"
+          target: "power-alerts"
           message: >
             {{ states.sensor.loadshedding_slot_forecast.state }}
 
   - alias: Upcoming slot notification
-    initial_state: 'on'
+    initial_state: "on"
     trigger:
       - entity_id: sensor.time_till_loadshedding
         platform: state
-        to: '15'
+        to: "15"
     condition:
       - condition: time
-        before: '18:00:00'
-        after: '14:00:00'
+        before: "18:00:00"
+        after: "14:00:00"
     action:
       - alias: "Alert change"
         service: script.alert
         data:
-          icon: ':zap:'
-          object: 'Loadshedding slot'
-          target: 'power-alerts'
+          icon: ":zap:"
+          object: "Loadshedding slot"
+          target: "power-alerts"
           message: >
             Loadshedding slot in 15 minutes
 
@@ -258,7 +259,7 @@ automation:
     condition: []
     actions:
       - variables:
-          config_entry: "{{ config_entry_id(integration_entities(\"Load Shedding\") | first) }}"
+          config_entry: '{{ config_entry_id(integration_entities("Load Shedding") | first) }}'
       - alias: Config entry found?
         if:
           - condition: template

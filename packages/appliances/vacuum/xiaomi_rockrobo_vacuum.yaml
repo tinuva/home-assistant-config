@@ -1,5 +1,4 @@
 ---
-
 # If your robot is not auto detected you might need this for manual setup
 #vacuum:
 #  - platform: mqtt
@@ -12,19 +11,20 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   vacuumautoresume:
-    duration: '00:15:00'
+    duration: "00:15:00"
+    restore: true
 
 sensor:
   - platform: template
     sensors:
       vacuum_error_code:
-        friendly_name: 'Vacuum Error Code'
+        friendly_name: "Vacuum Error Code"
         unique_id: vacuum_error_code
         value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
   - platform: template
     sensors:
       vacuum_error_message:
-        friendly_name: 'Vacuum Error Message'
+        friendly_name: "Vacuum Error Message"
         unique_id: vacuum_error_message
         value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
   - platform: template
@@ -67,10 +67,10 @@ automation:
   - alias: Start vacuum cleaning
     trigger:
       - platform: time
-        at: '05:45:00'
+        at: "05:45:00"
     action:
       - choose:
-        # Work day mornings when not holiday
+          # Work day mornings when not holiday
           - conditions:
               # - condition: state
               #   entity_id: binary_sensor.workday_sensor
@@ -95,8 +95,8 @@ automation:
           - alias: "Log why cleaning didn't start"
             service: script.log
             data:
-              icon: ':robot_face:'
-              object: 'Vacuum Robot'
+              icon: ":robot_face:"
+              object: "Vacuum Robot"
               message: >
                 Not cleaning. Conditions not met:
                 {% if is_state('binary_sensor.workday_sensor', 'off') %}
@@ -119,8 +119,8 @@ automation:
             state: "on"
           - service: script.log
             data:
-              icon: ':robot_face:'
-              object: 'Vacuum Robot'
+              icon: ":robot_face:"
+              object: "Vacuum Robot"
               message: >
                 Rockrobo Floor disaster zone set
 
@@ -130,10 +130,10 @@ automation:
     trigger:
       - entity_id: vacuum.rockrobo
         platform: state
-        to: 'cleaning'
+        to: "cleaning"
       - entity_id: vacuum.rockrobo
         platform: state
-        to: 'paused'
+        to: "paused"
       #- entity_id: vacuum.rockrobo
       #  platform: state
       #  to: 'docked'
@@ -147,9 +147,9 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'logs'
-          icon: ':robot_face: '
-          object: 'Vacuum Robot'
+          target: "logs"
+          icon: ":robot_face: "
+          object: "Vacuum Robot"
           #camera: 'camera.rockrobo_map'
           message: "Vacuum Robot is now {{ states.vacuum.rockrobo.state }}"
 
@@ -159,8 +159,8 @@ automation:
     trigger:
       - entity_id: vacuum.rockrobo
         platform: state
-        from: 'cleaning'
-        to: 'paused'
+        from: "cleaning"
+        to: "paused"
     condition: []
     action:
       - service: timer.start
@@ -184,7 +184,7 @@ automation:
     trigger:
       - entity_id: sensor.vacuum_error_code
         platform: state
-        from: '0'
+        from: "0"
     condition:
       - condition: template
         value_template: >-
@@ -195,9 +195,9 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'logs'
-          icon: ':robot_face: '
-          object: 'Vacuum Robot'
+          target: "logs"
+          icon: ":robot_face: "
+          object: "Vacuum Robot"
           #camera: 'camera.rockrobo_map'
           message: "Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }}"
 
@@ -207,15 +207,15 @@ automation:
     trigger:
       - entity_id: vacuum.rockrobo
         platform: state
-        from: 'returning'
-        to: 'idle'
+        from: "returning"
+        to: "idle"
     condition: []
     action:
       - service: script.alert
         data:
-          target: 'logs'
-          icon: ':robot_face: '
-          object: 'Vacuum Robot'
+          target: "logs"
+          icon: ":robot_face: "
+          object: "Vacuum Robot"
           #camera: 'camera.rockrobo_map'
           message: "Vacuum Robot failed to dock!"
 
@@ -225,7 +225,7 @@ automation:
     trigger:
       - entity_id: sensor.vacuum_valetudo_state
         platform: state
-        to: 'Error'
+        to: "Error"
     #condition:
     #  - condition: template
     #    value_template: >-
@@ -236,9 +236,9 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'logs'
-          icon: ':robot_face: '
-          object: 'Vacuum Robot'
+          target: "logs"
+          icon: ":robot_face: "
+          object: "Vacuum Robot"
           #camera: 'camera.rockrobo_map'
           message: >
             Vacuum Robot Error - Check out why!
@@ -254,7 +254,7 @@ automation:
       #  to: 'returning'
       - entity_id: binary_sensor.vacuum_finished_cleaning
         platform: state
-        to: 'on'
+        to: "on"
     #condition:
     #  - condition:
     #    value_template: >-
@@ -262,8 +262,8 @@ automation:
     action:
       - service: script.alert
         data:
-          target: 'logs'
-          icon: ':robot_face: '
-          object: 'Vacuum Robot'
-          camera: 'camera.rockrobo_map'
+          target: "logs"
+          icon: ":robot_face: "
+          object: "Vacuum Robot"
+          camera: "camera.rockrobo_map"
           message: "{{ states.sensor.vacuum_last_clean_stats.state }}"

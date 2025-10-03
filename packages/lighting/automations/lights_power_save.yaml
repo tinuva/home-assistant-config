@@ -7,9 +7,11 @@ timer:
   # started event unless the timer is paused, in that case, it triggers a
   # restarted event.
   scullery:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
   main_ensuite:
-    duration: '00:10:00'
+    duration: "00:10:00"
+    restore: true
 
 automation:
   # Timer end = Turn off
@@ -36,9 +38,9 @@ automation:
     trigger:
       - platform: state
         entity_id: light.main_ensuite, light.scullery_scullery
-        to: 'on'
+        to: "on"
     action:
       - service: timer.start
         data_template:
           entity_id: "{{ trigger.entity_id|replace('light.', 'timer.') }}"
-          duration: '00:10:00'
+          duration: "00:10:00"

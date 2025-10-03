@@ -9,8 +9,10 @@ timer:
   # restarted event.
   dining:
     duration: '00:15:00'
+    restore: true
   braai_room_lights:
     duration: '00:15:00'
+    restore: true
 
 automation:
   # Timer end = Turn off
