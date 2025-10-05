@@ -1,7 +1,8 @@
 """Support for South African Pollen Count sensors."""
+
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 from typing import Any
 
@@ -25,6 +26,7 @@ from homeassistant.helpers.update_coordinator import (
 from .const import (
     ATTR_GRASS_POLLEN,
     ATTR_MOULD_SPORES,
+    ATTR_REPORT_DATE,
     ATTR_SUMMARY,
     ATTR_TREE_POLLEN,
     ATTR_WEED_POLLEN,
@@ -34,6 +36,7 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -46,19 +49,21 @@ async def async_setup_entry(
 
     async_add_entities([PollenSensor(coordinator, entry)], True)
 
+
 def determine_level(class_name: str) -> str:
     """Determine pollen level from CSS class."""
-    if 'pollen-green' in class_name:
-        return 'Very Low'
-    elif 'pollen-yellow' in class_name:
-        return 'Low'
-    elif 'pollen-lightorange' in class_name:
-        return 'Moderate'
-    elif 'pollen-darkorange' in class_name:
-        return 'High'
-    elif 'pollen-red' in class_name:
-        return 'Very High'
-    return 'N/A'
+    if "pollen-green" in class_name:
+        return "Very Low"
+    elif "pollen-yellow" in class_name:
+        return "Low"
+    elif "pollen-lightorange" in class_name:
+        return "Moderate"
+    elif "pollen-darkorange" in class_name:
+        return "High"
+    elif "pollen-red" in class_name:
+        return "Very High"
+    return "N/A"
+
 
 class PollenDataUpdateCoordinator(DataUpdateCoordinator):
     """Class to manage fetching Pollen data."""
@@ -83,50 +88,66 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
 
     def _get_pollen_data(self) -> dict[str, Any] | None:
         """Get the latest data from pollencount.co.za."""
-        base_url = 'https://pollencount.co.za/report/'
-        
+        base_url = "https://pollencount.co.za/report/"
+
         # Get the latest report URL
         response = requests.get(base_url)
         response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        report_links = soup.find_all('a', href=re.compile(r'/report/\d{1,2}-\w+-\d{4}/'))
-        
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        report_links = soup.find_all(
+            "a", href=re.compile(r"/report/\d{1,2}-\w+-\d{4}/")
+        )
+
         if not report_links:
             raise ValueError("No report links found")
-            
-        latest_report_url = report_links[0]['href']
-        if not latest_report_url.startswith('http'):
+
+        latest_report_url = report_links[0]["href"]
+        if not latest_report_url.startswith("http"):
             latest_report_url = f"https://pollencount.co.za{latest_report_url}"
+
+        # Extract report date from URL (format: /report/DD-Month-YYYY/)
+        date_match = re.search(r"/report/(\d{1,2}-\w+-\d{4})/", latest_report_url)
+        report_date = None
+        if date_match:
+            date_str = date_match.group(1)
+            try:
+                # Parse date string (e.g., "03-october-2024") to datetime
+                parsed_date = datetime.strptime(date_str, "%d-%B-%Y")
+                # Convert to ISO 8601 format with timezone info
+                report_date = parsed_date.isoformat()
+            except ValueError as err:
+                _LOGGER.warning("Could not parse report date '%s': %s", date_str, err)
+                report_date = date_str  # Fallback to string if parsing fails
 
         # Get the report page
         response = requests.get(latest_report_url)
         response.raise_for_status()
 
         # Parse the data
-        soup = BeautifulSoup(response.text, 'html.parser')
-        rows = soup.find_all('div', class_='row', style='text-align:center;')
+        soup = BeautifulSoup(response.text, "html.parser")
+        rows = soup.find_all("div", class_="row", style="text-align:center;")
 
         for row in rows:
-            if 'exclude-border' in row.get('class', []):
+            if "exclude-border" in row.get("class", []):
                 continue
 
-            city_div = row.find('div', class_='hidden-xs')
+            city_div = row.find("div", class_="hidden-xs")
             if not city_div:
                 continue
 
             if city_div.text.strip() == self.city:
-                pollen_divs = row.find_all('div', class_=lambda x: x and 'pollen-' in x)
+                pollen_divs = row.find_all("div", class_=lambda x: x and "pollen-" in x)
                 if len(pollen_divs) >= 5:
-                    levels = [determine_level(div['class'][0]) for div in pollen_divs]
-                    
+                    levels = [determine_level(div["class"][0]) for div in pollen_divs]
+
                     # Get city summary
                     summary = ""
-                    paragraphs = soup.find_all('p')
+                    paragraphs = soup.find_all("p")
                     for p in paragraphs:
                         if p.get_text().strip().startswith(self.city):
-                            if p.find_next_sibling('p'):
-                                summary = p.find_next_sibling('p').get_text().strip()
+                            if p.find_next_sibling("p"):
+                                summary = p.find_next_sibling("p").get_text().strip()
                             break
 
                     return {
@@ -135,9 +156,11 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
                         "grass_pollen": levels[2],
                         "weed_pollen": levels[3],
                         "mould_spores": levels[4],
-                        "summary": summary
+                        "summary": summary,
+                        "report_date": report_date,
                     }
         return None
+
 
 class PollenSensor(CoordinatorEntity, SensorEntity):
     """Implementation of a South African Pollen Count sensor."""
@@ -174,4 +197,5 @@ class PollenSensor(CoordinatorEntity, SensorEntity):
             ATTR_WEED_POLLEN: self.coordinator.data["weed_pollen"],
             ATTR_MOULD_SPORES: self.coordinator.data["mould_spores"],
             ATTR_SUMMARY: self.coordinator.data["summary"],
+            ATTR_REPORT_DATE: self.coordinator.data["report_date"],
         }
