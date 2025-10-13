@@ -16,10 +16,12 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from .dreame import DreameVacuumDevice, DreameVacuumProperty
+
+from .dreame import DreameVacuumDevice, DreameVacuumProperty, VERSION
 from .dreame.resources import (
     CONSUMABLE_IMAGE,
     DRAINAGE_STATUS_SUCCESS,
@@ -32,8 +34,14 @@ from .const import (
     CONF_COUNTRY,
     CONF_MAC,
     CONF_DID,
+    CONF_AUTH_KEY,
     CONF_ACCOUNT_TYPE,
     CONF_PREFER_CLOUD,
+    CONF_MAP_OBJECTS,
+    CONF_HIDDEN_MAP_OBJECTS,
+    CONF_DONATED,
+    CONF_VERSION,
+    MAP_OBJECTS,
     CONTENT_TYPE,
     NOTIFICATION_CLEANUP_COMPLETED,
     NOTIFICATION_DUST_COLLECTION_NOT_PERFORMED,
@@ -41,9 +49,9 @@ from .const import (
     NOTIFICATION_RESUME_CLEANING_NOT_PERFORMED,
     NOTIFICATION_REPLACE_MULTI_MAP,
     NOTIFICATION_REPLACE_MAP,
-    NOTIFICATION_2FA_LOGIN,
     NOTIFICATION_DRAINAGE_COMPLETED,
     NOTIFICATION_DRAINAGE_FAILED,
+    NOTIFICATION_SPONSOR,
     NOTIFICATION_ID_DUST_COLLECTION,
     NOTIFICATION_ID_CLEANING_PAUSED,
     NOTIFICATION_ID_REPLACE_MAIN_BRUSH,
@@ -57,13 +65,15 @@ from .const import (
     NOTIFICATION_ID_REPLACE_SQUEEGEE,
     NOTIFICATION_ID_CLEAN_ONBOARD_DIRTY_WATER_TANK,
     NOTIFICATION_ID_CLEAN_DIRTY_WATER_TANK,
+    NOTIFICATION_ID_REPLACE_DEODORIZER,
+    NOTIFICATION_ID_CLEAN_WHEEL,
+    NOTIFICATION_ID_REPLACE_SCALE_INHIBITOR,
     NOTIFICATION_ID_CLEANUP_COMPLETED,
     NOTIFICATION_ID_WARNING,
     NOTIFICATION_ID_ERROR,
     NOTIFICATION_ID_INFORMATION,
     NOTIFICATION_ID_CONSUMABLE,
     NOTIFICATION_ID_REPLACE_TEMPORARY_MAP,
-    NOTIFICATION_ID_2FA_LOGIN,
     NOTIFICATION_ID_LOW_WATER,
     NOTIFICATION_ID_DRAINAGE_STATUS,
     EVENT_TASK_STATUS,
@@ -71,7 +81,6 @@ from .const import (
     EVENT_WARNING,
     EVENT_ERROR,
     EVENT_INFORMATION,
-    EVENT_2FA_LOGIN,
     EVENT_LOW_WATER,
     EVENT_DRAINAGE_STATUS,
     CONSUMABLE_MAIN_BRUSH,
@@ -85,6 +94,9 @@ from .const import (
     CONSUMABLE_SQUEEGEE,
     CONSUMABLE_ONBOARD_DIRTY_WATER_TANK,
     CONSUMABLE_DIRTY_WATER_TANK,
+    CONSUMABLE_DEODORIZER,
+    CONSUMABLE_WHEEL,
+    CONSUMABLE_SCALE_INHIBITOR,
 )
 
 
@@ -102,6 +114,7 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
         self._token = entry.data[CONF_TOKEN]
         self._host = entry.data[CONF_HOST]
         self._notify = entry.options.get(CONF_NOTIFY, True)
+        self._auth_key = entry.data.get(CONF_AUTH_KEY)
         self._entry = entry
         self._ready = False
         self._available = False
@@ -110,9 +123,30 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
         self._low_water = False
         self._drainage_status = None
         self._washing = None
-        self._two_factor_url = None
 
         LOGGER.info("Integration loading: %s", entry.data[CONF_NAME])
+
+        if entry.options.get(CONF_VERSION) != VERSION:
+            options = entry.options.copy()
+            
+            ## Migration: Convert map objects to hidden map objects
+            if CONF_MAP_OBJECTS in entry.options and CONF_HIDDEN_MAP_OBJECTS not in options:
+                options[CONF_HIDDEN_MAP_OBJECTS] = []
+                for key in list(MAP_OBJECTS.keys()):
+                    if key not in options[CONF_MAP_OBJECTS] and key != "curtain" and key != "ramp":
+                        options[CONF_HIDDEN_MAP_OBJECTS].append(key)
+                del options[CONF_MAP_OBJECTS]
+
+            options[CONF_VERSION] = VERSION
+            if not options.get(CONF_DONATED):
+                persistent_notification.create(
+                    hass=hass,
+                    message=NOTIFICATION_SPONSOR,
+                    title="Dreame Vacuum",
+                    notification_id=f"{DOMAIN}_sponsor",
+                )
+            hass.config_entries.async_update_entry(entry=entry, options=options)
+
         self._device = DreameVacuumDevice(
             entry.data[CONF_NAME],
             self._host,
@@ -124,6 +158,7 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
             entry.options.get(CONF_PREFER_CLOUD, False),
             entry.data.get(CONF_ACCOUNT_TYPE, "mi"),
             entry.data.get(CONF_DID),
+            self._auth_key,
         )
 
         self._device.listen(self._dust_collection_changed, DreameVacuumProperty.DUST_COLLECTION)
@@ -358,14 +393,28 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
                 NOTIFICATION_ID_REPLACE_DETERGENT,
                 DreameVacuumProperty.DETERGENT_LEFT,
             )
+        if self._device.capability.deodorizer:
+            self._check_consumable(
+                CONSUMABLE_DEODORIZER,
+                NOTIFICATION_ID_REPLACE_DEODORIZER,
+                DreameVacuumProperty.DEODORIZER_LEFT,
+            )
+        if self._device.capability.wheel:
+            self._check_consumable(
+                CONSUMABLE_WHEEL,
+                NOTIFICATION_ID_CLEAN_WHEEL,
+                DreameVacuumProperty.WHEEL_DIRTY_LEFT,
+            )
+        if self._device.capability.scale_inhibitor:
+            self._check_consumable(
+                CONSUMABLE_SCALE_INHIBITOR,
+                NOTIFICATION_ID_REPLACE_SCALE_INHIBITOR,
+                DreameVacuumProperty.SCALE_INHIBITOR_LEFT,
+            )
 
     def _create_persistent_notification(self, content, notification_id) -> None:
-        if (
-            not self.device.disconnected
-            and self.device.device_connected
-            and (self._notify or notification_id == NOTIFICATION_ID_2FA_LOGIN)
-        ):
-            if isinstance(self._notify, list) and notification_id != NOTIFICATION_ID_2FA_LOGIN:
+        if not self.device.disconnected and self.device.device_connected and self._notify:
+            if isinstance(self._notify, list):
                 if notification_id == NOTIFICATION_ID_CLEANUP_COMPLETED:
                     if NOTIFICATION_ID_CLEANUP_COMPLETED not in self._notify:
                         return
@@ -408,10 +457,6 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
                         self._device.clear_warning()
                     self._has_warning = self._device.status.has_warning
 
-            if self._two_factor_url:
-                if f"{DOMAIN}_{self._device.mac}_{NOTIFICATION_ID_2FA_LOGIN}" not in notifications:
-                    self._two_factor_url = None
-
             if self._low_water:
                 if f"{DOMAIN}_{self._device.mac}_{NOTIFICATION_ID_LOW_WATER}" not in notifications:
                     if NOTIFICATION_ID_WARNING in self._notify:
@@ -436,10 +481,17 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
             LOGGER.info("Integration starting...")
             await self.hass.async_add_executor_job(self._device.update)
             if self._device and not self._device.disconnected:
+                if self._device.auth_failed:
+                    self._device.listen(None)
+                    self._device.disconnect()
+                    raise ConfigEntryAuthFailed() from None
                 self._device.schedule_update()
                 self.async_set_updated_data()
                 return self._device
         except Exception as ex:
+            if self._device.auth_failed:
+                raise ConfigEntryAuthFailed("Authentication Failed!") from ex
+
             LOGGER.warning("Integration start failed: %s", traceback.format_exc())
             if self._device is not None:
                 self._device.listen(None)
@@ -460,6 +512,8 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
 
     @callback
     def async_set_updated_data(self, device=None) -> None:
+        if not self._device or not self._device.status:
+            return
         if self._has_temporary_map != self._device.status.has_temporary_map:
             self._has_temporary_map_changed(self._has_temporary_map)
             self._has_temporary_map = self._device.status.has_temporary_map
@@ -477,17 +531,15 @@ class DreameVacuumDataUpdateCoordinator(DataUpdateCoordinator[DreameVacuumDevice
                 LOGGER.info("Update Host Config: %s", self._host)
                 self.hass.config_entries.async_update_entry(self._entry, data=data)
 
-        if self._device.two_factor_url:
-            self._create_persistent_notification(
-                f"{NOTIFICATION_2FA_LOGIN}[Click for 2FA Login]({self._device.two_factor_url})",
-                NOTIFICATION_ID_2FA_LOGIN,
-            )
-            if self._two_factor_url != self._device.two_factor_url:
-                self._fire_event(EVENT_2FA_LOGIN, {"url": self._device.two_factor_url})
-        else:
-            self._remove_persistent_notification(NOTIFICATION_ID_2FA_LOGIN)
-
-        self._two_factor_url = self._device.two_factor_url
+            if self._device._protocol.cloud and self._device._protocol.cloud.auth_key != self._auth_key:
+                self._auth_key = self._device._protocol.cloud.auth_key
+                data = self._entry.data.copy()
+                data[CONF_AUTH_KEY] = self._auth_key
+                self.hass.config_entries.async_update_entry(self._entry, data=data)
+        elif self._device.auth_failed:
+            ## Reload entry to trigger reauth and unload
+            self._entry.async_schedule_reload(self._entry.entry_id)
+            return
 
         self._available = self._device and self._device.available
         super().async_set_updated_data(self._device)
