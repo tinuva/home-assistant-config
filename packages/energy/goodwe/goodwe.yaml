@@ -407,9 +407,8 @@ automation:
             value_template: "{{ states('sensor.time') == ( '86399' | int | timestamp_custom('%H:%M', False)) }}"
       # for now we want it monthly to reduce message spam
       condition:
-          - condition: state
-            entity_id: binary_sensor.last_day_of_the_month
-            state: "on"
+          - condition: template
+            value_template: "{{ (now() + timedelta(days=1)).day == 1 }}"
       action:
           - service: notify.bezuidenhouts
             data_template:
