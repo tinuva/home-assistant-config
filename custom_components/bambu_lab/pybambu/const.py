@@ -15,6 +15,7 @@ class Printers(StrEnum):
     X1 = "X1"
     P1P = "P1P"
     P1S = "P1S"
+    P2S = "P2S"
     H2D = "H2D"
     H2S = "H2S"
     A1MINI = "A1MINI"
@@ -47,7 +48,6 @@ class Features(IntEnum):
     DUAL_NOZZLES = 28,
     EXTRUDER_TOOL = 29,
     MQTT_ENCRYPTION_FIRMWARE = 30,
-    MQTT_ENCRYPTION_ENABLED = 31,
     FIRE_ALARM_BUZZER = 32,
     HEATBED_LIGHT = 33,
 
