@@ -20,7 +20,6 @@
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć. Sprawdź dane logowania.",
-      "cannot_connect_local_all": "Nie udało się połączyć. Sprawdź podane ustawienia.",
       "invalid_auth": "Nieprawidłowe uwierzytelnienie.",
       "unknown": "Nieoczekiwany błąd.",
       "code_needed": "Wymagany jest kod weryfikacyjny.",
@@ -32,7 +31,13 @@
       "cannot_connect_local_access_denied": "Nie udało się połączyć. Odmowa dostępu - sprawdź kod dostępu.",
       "cannot_connect_local_incorrect_serial": "Nie udało się połączyć. Połączenie zostało zamknięte przez drukarkę - sprawdź numer seryjny.",
       "cannot_connect_local_incorrect_address": "Nie udało się połączyć. Połączenie odrzucone – sprawdź adres IP.",
-      "cannot_connect_local_address_unreachable": "Nie udało się połączyć. Adres nieosiągalny - sprawdź połączenie sieciowe."
+      "cannot_connect_local_address_unreachable": "Nie udało się połączyć. Adres nieosiągalny - sprawdź połączenie sieciowe.",
+      "cannot_connect_cloud_timeout": "Upłynął limit czasu próby połączenia z chmurą Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Odmowa dostępu przez chmurę Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Połączenie odrzucone przez chmurę Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Adres chmury Bambu Lab jest nieosiągalny.",
+      "cannot_connect_cloud_unknown": "Nieznany błąd podczas łączenia z chmurą Bambu Lab.",
+      "cannot_connect_local_unknown": "Nie udało się połączyć. Sprawdź podane ustawienia."
     },
     "step": {
       "user": {
@@ -61,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Konfiguracja połączenia lokalnego",
-        "description": "Możesz wybrać bezpośrednie połączenie z drukarką zamiast używania chmury Bambu Lab. Zapewnia to odporność na awarie chmury, ale w trybie hybrydowym niektóre funkcje mogą być niedostępne.",
+        "description": "Możesz połączyć się bezpośrednio z mqtt drukarki zamiast z chmurą Bambu Lab. Zapewnia to odporność na awarie chmury Bambu Lab, ale Bambu Lab ograniczyło kontrolę nad drukarką w trybie hybrydowym, więc niektóre elementy sterujące będą niedostępne.\n\rNiezależnie od tego wyboru, integracja pobierze adres IP drukarki z chmury Bambu Lab i potwierdzi, że może się z nią połączyć, ponieważ jest to wymagane do obsługi aparatu, historii wydruków i obsługi timelapse. Jeśli Twoja drukarka jest niedostępna dla Home Assistant, możesz wyłączyć to sprawdzanie, ale utracisz te funkcje.",
         "data": {
-          "local_mqtt": "Połącz lokalnie z drukarką:",
+          "local_mqtt": "Połącz się bezpośrednio z mqtt drukarki:",
           "host": "Lokalny adres IP drukarki:",
           "access_code": "Kod dostępu:",
           "usage_hours": "Aktualny czas pracy (opcjonalnie):",
           "print_cache_count": "Bufor modeli do Home Assistant (-1 = bez limitu):",
-          "timelapse_cache_count": "Bufor filmów timelapse do Home Assistant (-1 = bez limitu):"
+          "timelapse_cache_count": "Bufor filmów timelapse do Home Assistant (-1 = bez limitu):",
+          "skip_local_mqtt": "Pomiń test połączenia lokalnego mqtt (niezalecane):"
         },
         "sections": {
           "advanced": {
@@ -112,7 +118,6 @@
     },
     "error": {
       "cannot_connect": "Nie udało się połączyć",
-      "cannot_connect_local_all": "Nie udało się połączyć. Sprawdź podane ustawienia.",
       "invalid_auth": "Nieprawidłowe uwierzytelnienie.",
       "unknown": "Nieoczekiwany błąd.",
       "code_needed": "Wymagany jest kod weryfikacyjny.",
@@ -124,7 +129,13 @@
       "cannot_connect_local_access_denied": "Nie udało się połączyć. Odmowa dostępu - sprawdź kod dostępu.",
       "cannot_connect_local_incorrect_serial": "Nie udało się połączyć. Połączenie zostało zamknięte przez drukarkę - sprawdź numer seryjny.",
       "cannot_connect_local_incorrect_address": "Nie udało się połączyć. Połączenie odrzucone – sprawdź adres IP.",
-      "cannot_connect_local_address_unreachable": "Nie udało się połączyć. Adres nieosiągalny - sprawdź połączenie sieciowe."
+      "cannot_connect_local_address_unreachable": "Nie udało się połączyć. Adres nieosiągalny - sprawdź połączenie sieciowe.",
+      "cannot_connect_cloud_timeout": "Upłynął limit czasu próby połączenia z chmurą Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Odmowa dostępu przez chmurę Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Połączenie odrzucone przez chmurę Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Adres chmury Bambu Lab jest nieosiągalny.",
+      "cannot_connect_cloud_unknown": "Nieznany błąd podczas łączenia z chmurą Bambu Lab.",
+      "cannot_connect_local_unknown": "Nie udało się połączyć. Sprawdź podane ustawienia."
     },
     "step": {
       "init": {
@@ -148,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Dostosuj konfigurację drukarki",
-        "description": "Możesz wybrać bezpośrednie połączenie z drukarką zamiast używania chmury Bambu Lab. Zapewnia to odporność na awarie chmury, ale w trybie hybrydowym niektóre funkcje mogą być niedostępne.",
+        "description": "Możesz połączyć się bezpośrednio z mqtt drukarki zamiast z chmurą Bambu Lab. Zapewnia to odporność na awarie chmury Bambu Lab, ale Bambu Lab ograniczyło kontrolę nad drukarką w trybie hybrydowym, więc niektóre elementy sterujące będą niedostępne.\n\rNiezależnie od tego wyboru, integracja pobierze adres IP drukarki z chmury Bambu Lab i potwierdzi, że może się z nią połączyć, ponieważ jest to wymagane do obsługi aparatu, historii wydruków i obsługi timelapse. Jeśli Twoja drukarka jest niedostępna dla Home Assistant, możesz wyłączyć to sprawdzanie, ale utracisz te funkcje.",
         "data": {
           "serial": "Dostosuj ustawienia dla:",
           "host": "Lokalny adres IP drukarki:",
           "access_code": "Kod dostępu:",
-          "local_mqtt": "Połącz bezpośrednio z drukarką zamiast przez chmurę:",
+          "local_mqtt": "Połącz się bezpośrednio z mqtt drukarki:",
           "usage_hours": "Aktualny czas pracy (opcjonalnie):",
           "print_cache_count": "Liczba modeli do buforowania asystenta domowego (-1 dla nieograniczonego):",
-          "timelapse_cache_count": "Liczba filmów Timelapse do buforowania asystenta domowego (-1 dla nieograniczonego):"
+          "timelapse_cache_count": "Liczba filmów Timelapse do buforowania asystenta domowego (-1 dla nieograniczonego):",
+          "skip_local_mqtt": "Pomiń test połączenia lokalnego mqtt (niezalecane):"
         },
         "sections": {
           "advanced": {
@@ -223,6 +235,9 @@
       },
       "active_ams": {
         "name": "Aktywny"
+      },
+      "airduct_mode": {
+        "name": "Tryb przewodu powietrznego"
       }
     },
     "button": {
@@ -799,6 +814,9 @@
           "high_flow_stainless_steel": "stal nierdzewna z dużym przepływem",
           "high_flow_tungsten_carbide": "Węglenie wolframowe z dużym przepływem"
         }
+      },
+      "model_download_percentage": {
+        "name": "Pobieranie modelu"
       }
     },
     "camera": {
@@ -818,6 +836,9 @@
       },
       "prompt_sound": {
         "name": "Włącz dźwięk powiadomień"
+      },
+      "airduct_mode": {
+        "name": "Tryb chłodzenia lub tryb ogrzewania/filtrowania"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "Błąd uwierzytelnienia dla {device}",
-      "description": "Próba połączenia z Bambu Lab nie powiodła się. Skonfiguruj integrację ponownie i podaj aktualne dane logowania."
+      "title": "Uwierzytelnienie nie powiodło się",
+      "description": "Próba połączenia z Bambu Lab nie powiodła się dla {device}. Proszę ponownie skonfigurować integrację i podać nowe dane uwierzytelniające."
+    },
+    "no_external_storage": {
+      "title": "Nie wykryto USB ani karty SD",
+      "description": "{device} nie ma podłączonego USB ani karty SD. Jest to potrzebne w przypadku wszystkich funkcji zależnych od połączenia FTP z drukarką, takich jak obraz okładki, pomijanie obiektów i historia drukowania."
+    },
+    "live_view_disabled": {
+      "title": "Podgląd na żywo wyłączony",
+      "description": "{device} ma wyłączony podgląd na żywo w ustawieniach drukarki. Włącz tę opcję, aby móc korzystać z funkcji aparatu."
     }
   }
 }

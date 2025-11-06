@@ -11,6 +11,7 @@ from .const import (
     FILAMENT_DATA,
 )
 import asyncio
+import functools
 import re
 import time
 import os
@@ -63,6 +64,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         config = entry.data.copy()
         config.update(entry.options.items())
         config['user_language'] = hass.config.language
+        config['file_cache_path'] = self.get_file_cache_directory(config['serial'])
         self.client = BambuClient(config)
             
         self._updatedDevice = False
@@ -101,6 +103,12 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         
         if event == "event_printer_bambu_authentication_failed":
             self._report_authentication_issue();
+        
+        if event == "event_printer_no_external_storage":
+            self._report_no_external_storage_issue();
+
+        if event == "event_printer_live_view_disabled":
+            self._report_live_view_disabled_issue();
 
         if event == "event_printer_info_update":
             self._update_device_info()
@@ -294,7 +302,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             return { "Success": False,
                      "Error": "Invalid type specified: '{move}'." }
 
-        nozzle_temp = self.get_model().temperature.nozzle_temp
+        nozzle_temp = self.get_model().temperature.active_nozzle_temperature
         if force is not True and nozzle_temp < 170:
             LOGGER.error(f"Nozzle temperature too low to perform extrusion: {nozzle_temp}ºC")
             return { "Success": False,
@@ -543,7 +551,8 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         command["print"]["vibration_cali"] = vibration_cali
         command["print"]["layer_inspect"] = layer_inspect
         command["print"]["use_ams"] = use_ams
-        command["print"]["ams_mapping"] = [int(x) for x in ams_mapping.split(',')]
+        if use_ams:
+            command["print"]["ams_mapping"] = [int(x) for x in ams_mapping.split(',')]
         command["print"]["subtask_name"] = os.path.basename(filepath)
 
         self.client.publish(command)
@@ -749,33 +758,38 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             case Options.CAMERA:
                 default = True
             case Options.FTP:
-                default = options.get('local_mqtt', False)
+                return True  # Always enabled, no option to disable
 
         return options.get(OPTION_NAME[option], default)
         
     async def set_option_enabled(self, option: Options, enable: bool):
         LOGGER.debug(f"Setting {OPTION_NAME[option]} to {enable}")
         options = dict(self.config_entry.options)
-                
-        options[OPTION_NAME[option]] = enable
-        self._hass.config_entries.async_update_entry(
-            entry=self.config_entry,
-            title=self.get_model().info.serial,
-            data=self.config_entry.data,
-            options=options)
-        
-        force_reload = False
-        match option:
-            case Options.CAMERA:
-                force_reload = True
-            case Options.IMAGECAMERA:
-                force_reload = True
-            case Options.FTP:
-                force_reload = True
 
-        if force_reload:
-            # Force reload of sensors.
-            return await self.hass.config_entries.async_reload(self._entry.entry_id)
+        # First make sure we have at least a default value present to compare against.
+        if not OPTION_NAME[option] in options:
+            options[OPTION_NAME[option]] = self.get_option_enabled(option)
+
+        LOGGER.debug(f"options: {options}")
+        # Only apply the change if it differs from the current setting.
+        if options[OPTION_NAME[option]] != enable:
+            options[OPTION_NAME[option]] = enable
+            self._hass.config_entries.async_update_entry(
+                entry=self.config_entry,
+                title=self.get_model().info.serial,
+                data=self.config_entry.data,
+                options=options)
+            
+            force_reload = False
+            match option:
+                case Options.CAMERA:
+                    force_reload = True
+                case Options.IMAGECAMERA:
+                    force_reload = True
+
+            if force_reload:
+                # Force reload of sensors.
+                return await self.hass.config_entries.async_reload(self._entry.entry_id)
 
     def get_option_value(self, option: Options) -> int:
         options = dict(self.config_entry.options)
@@ -785,16 +799,46 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
     async def set_option_value(self, option: Options, value: int):
         LOGGER.debug(f"Setting {OPTION_NAME[option]} to {value}")
         options = dict(self.config_entry.options)
-                
-        options[OPTION_NAME[option]] = value
-        self._hass.config_entries.async_update_entry(
-            entry=self.config_entry,
-            title=self.get_model().info.serial,
-            data=self.config_entry.data,
-            options=options)
 
-        # Force reload of integration to effect cache update.
-        return await self.hass.config_entries.async_reload(self._entry.entry_id)
+        # First make sure we have at least a default value present to compare against.
+        if not OPTION_NAME[option] in options:
+            options[OPTION_NAME[option]] = self.get_option_enabled(option)
+
+        if options[OPTION_NAME[option]] != value:
+            options[OPTION_NAME[option]] = value
+            self._hass.config_entries.async_update_entry(
+                entry=self.config_entry,
+                title=self.get_model().info.serial,
+                data=self.config_entry.data,
+                options=options)
+
+            # Force reload of integration to effect cache update.
+            return await self.hass.config_entries.async_reload(self._entry.entry_id)
+
+    def _report_no_external_storage_issue(self):
+        issue_id = f"no_external_storage_{self.get_model().info.serial}"
+
+        # Check if the issue already exists
+        registry = issue_registry.async_get(self._hass)
+        existing_issue = registry.async_get_issue(
+            domain=DOMAIN,
+            issue_id=issue_id,
+        )
+        if existing_issue is not None:
+            # Issue already exists, no need to create it again
+            return
+
+        # Report the issue
+        LOGGER.debug("Creating issue for no external storage")
+        issue_registry.async_create_issue(
+            hass=self._hass,
+            domain=DOMAIN,
+            issue_id=issue_id,
+            is_fixable=False,
+            severity=issue_registry.IssueSeverity.WARNING,
+            translation_key="no_external_storage",
+            translation_placeholders = {"device": f"'{self.config_entry.options.get('name', '')}'"},
+        )
 
     def _report_authentication_issue(self):
         # issue_id's are permanent - once ignore they will never show again so we need a unique id 
@@ -813,14 +857,52 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             is_fixable=False,
             severity=issue_registry.IssueSeverity.ERROR,
             translation_key="authentication_failed",
-            translation_placeholders = {"device": self.config_entry.options.get('name', '')},
+            translation_placeholders = {"device": f"'{self.config_entry.options.get('name', '')}'"},
         )
 
-    def get_file_cache_directory(self) -> Optional[str]:
+    def _report_live_view_disabled_issue(self):
+        issue_id = f"live_view_disabled_{self.get_model().info.serial}"
+
+        # Check if the issue already exists
+        registry = issue_registry.async_get(self._hass)
+        existing_issue = registry.async_get_issue(
+            domain=DOMAIN,
+            issue_id=issue_id,
+        )
+        if existing_issue is not None:
+            # Issue already exists, no need to create it again
+            return
+
+        # Report the issue
+        LOGGER.debug("Creating issue for no external storage")
+        issue_registry.async_create_issue(
+            hass=self._hass,
+            domain=DOMAIN,
+            issue_id=issue_id,
+            is_fixable=False,
+            severity=issue_registry.IssueSeverity.WARNING,
+            translation_key="live_view_disabled",
+            translation_placeholders = {"device": f"'{self.config_entry.options.get('name', '')}'"},
+        )
+
+
+    @functools.lru_cache(maxsize=1)
+    def get_file_cache_directory(self, serial: str|None = None) -> str:
         """Get the file cache directory for this printer."""
-        serial = self.get_model().info.serial
-        return f"/config/www/media/ha-bambulab/{serial}"
-    
+        if serial is None:
+            serial = self.get_model().info.serial
+        default_path = Path(self._hass.config.path(f"www/media/ha-bambulab/{serial}"))
+        LOGGER.debug(f"Using file cache directory: '{default_path}'")
+        try:
+            default_path.mkdir(parents=True, exist_ok=True)
+            return str(default_path)
+        except (OSError, PermissionError):
+            media_dir = self._hass.config.media_dirs.get("local")
+            LOGGER.debug(f"Default media directory not writable, falling back to local media directory : '{media_dir}'")
+            fallback_path = Path(media_dir) / f"ha-bambulab/{serial}"
+            fallback_path.mkdir(parents=True, exist_ok=True)
+            return str(fallback_path)
+
     async def get_cached_files(self, file_type: str) -> List[Dict[str, Any]]:
         """Get list of cached files with metadata."""
         cache_dir = self.get_file_cache_directory()

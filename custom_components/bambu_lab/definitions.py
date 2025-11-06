@@ -4,11 +4,20 @@ from __future__ import annotations
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from .coordinator import BambuDataUpdateCoordinator
 
-from .const import Options
-
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.components.binary_sensor import (
+    BinarySensorDeviceClass,
+    BinarySensorEntityDescription
+)
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntityDescription,
+    SensorStateClass,
+)
+from homeassistant.components.update import (
+    UpdateDeviceClass,
+    UpdateEntityDescription
+)
 from homeassistant.const import (
     PERCENTAGE,
     SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
@@ -17,24 +26,14 @@ from homeassistant.const import (
     UnitOfLength,
     UnitOfTime
 )
+from homeassistant.helpers.entity import EntityCategory
+from homeassistant.util import dt as dt_util
 
-from homeassistant.components.update import (
-    UpdateDeviceClass,
-    UpdateEntityDescription
+from .const import (
+    LOGGER,
+    Options,
 )
-
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntityDescription,
-    SensorStateClass,
-)
-
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntityDescription
-)
-
-from .const import LOGGER
+from .coordinator import BambuDataUpdateCoordinator
 from .pybambu.const import (
     PRINT_TYPE_OPTIONS,
     SPEED_PROFILE,
@@ -162,6 +161,15 @@ PRINTER_BINARY_SENSORS: tuple[BambuLabBinarySensorEntityDescription, ...] = (
         available_fn=lambda self: self.coordinator.get_model().info.door_open_available,
         is_on_fn=lambda self: self.coordinator.get_model().info.door_open,
         exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.DOOR_SENSOR),
+    ),
+    BambuLabBinarySensorEntityDescription(
+        key="airduct_mode",
+        translation_key="airduct_mode",
+        device_class=BinarySensorDeviceClass.OPENING,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        available_fn=lambda self: self.coordinator.get_model().info.airduct_mode_available,
+        is_on_fn=lambda self: self.coordinator.get_model().info.airduct_mode == False,
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.AIRDUCT_MODE),
     ),
     BambuLabBinarySensorEntityDescription(
         key="developer_lan_mode",
@@ -343,6 +351,15 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         value_fn=lambda self: self.coordinator.get_model().fans.get_fan_speed(FansEnum.HEATBREAK)
     ),
     BambuLabSensorEntityDescription(
+        key="model_download_percentage",
+        translation_key="model_download_percentage",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:percent",
+        value_fn=lambda self: self.coordinator.get_model().print_job.model_download_percentage,
+        exists_fn=lambda coordinator: coordinator.get_option_enabled(Options.FTP),
+    ),
+    BambuLabSensorEntityDescription(
         key="speed_profile",
         translation_key="speed_profile",
         icon="mdi:speedometer",
@@ -411,7 +428,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="start_time",
         icon="mdi:clock",
         available_fn=lambda self: self.coordinator.get_model().print_job.start_time is not None,
-        value_fn=lambda self: self.coordinator.get_model().print_job.start_time,
+        value_fn=lambda self: dt_util.as_local(self.coordinator.get_model().print_job.start_time).replace(tzinfo=None),
         exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.START_TIME) or coordinator.get_model().supports_feature(Features.START_TIME_GENERATED),
     ),
     BambuLabSensorEntityDescription(
@@ -429,7 +446,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="end_time",
         icon="mdi:clock",
         available_fn=lambda self: self.coordinator.get_model().print_job.end_time is not None,
-        value_fn=lambda self: self.coordinator.get_model().print_job.end_time,
+        value_fn=lambda self: dt_util.as_local(self.coordinator.get_model().print_job.end_time).replace(tzinfo=None),
     ),
     BambuLabSensorEntityDescription(
         key="total_usage_hours",

@@ -20,7 +20,6 @@
     },
     "error": {
       "cannot_connect": "Echec de la connexion. Vérifiez les informations d’identification.",
-      "cannot_connect_local_all": "Echec de la connexion. Vérifiez les paramètres fournis.",
       "invalid_auth": "Authentification invalide.",
       "unknown": "Erreur inattendue.",
       "code_needed": "Le code de vérification doit être fourni.",
@@ -32,7 +31,13 @@
       "cannot_connect_local_access_denied": "Échec de la connexion. Accès refusé - vérifiez le code d'accès.",
       "cannot_connect_local_incorrect_serial": "Échec de la connexion. La connexion a été fermée par l'imprimante - vérifiez le numéro de série.",
       "cannot_connect_local_incorrect_address": "Échec de la connexion. Connexion refusée - vérifiez l'adresse IP.",
-      "cannot_connect_local_address_unreachable": "Échec de la connexion. Adresse inaccessible - vérifiez la connexion réseau."
+      "cannot_connect_local_address_unreachable": "Échec de la connexion. Adresse inaccessible - vérifiez la connexion réseau.",
+      "cannot_connect_cloud_timeout": "Le délai a expiré lors de la tentative de connexion au cloud Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Accès refusé par le cloud Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Connexion refusée par le cloud Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Adresse cloud de Bambu Lab inaccessible.",
+      "cannot_connect_cloud_unknown": "Erreur inconnue lors de la connexion au cloud Bambu Lab.",
+      "cannot_connect_local_unknown": "Échec de la connexion. Vérifiez les paramètres fournis."
     },
     "step": {
       "user": {
@@ -61,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Configurer la connexion locale",
-        "description": "Vous pouvez choisir de vous connecter directement à l'imprimante pour les mises à jour d'état plutôt que via le cloud Bambu Lab. Cela vous donne une résilience aux pannes de cloud de Bambu Lab, mais Bambu Lab a restreint le contrôle de l'imprimante dans ce mode hybride, de sorte que certains contrôles seront indisponibles.",
+        "description": "Vous pouvez choisir de vous connecter directement à l'imprimante mqtt au lieu du cloud Bambu Lab. Cela donne de la résilience aux pannes de cloud de Bambu Lab, mais Bambu Lab a restreint le contrôle de l'imprimante dans ce mode hybride, de sorte que certains contrôles seront indisponibles.\n\rQuel que soit ce choix, l'intégration obtiendra l'adresse IP de l'imprimante du cloud Bambu Lab et confirmera qu'elle peut s'y connecter car cela est requis pour la prise en charge de l'appareil photo, de l'historique d'impression et du timelapse. Si votre imprimante est inaccessible à votre Home Assistant, vous pouvez désactiver cette vérification mais vous perdrez ces fonctionnalités.",
         "data": {
-          "local_mqtt": "Connectez-vous directement à l’imprimante au lieu de passer par Bambu Cloud :",
+          "local_mqtt": "Connectez-vous directement à l'imprimante mqtt :",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
           "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
-          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):",
+          "skip_local_mqtt": "Ignorer le test de connexion mqtt local (non recommandé) :"
         },
         "sections": {
           "advanced": {
@@ -112,7 +118,6 @@
     },
     "error": {
       "cannot_connect": "Echec de la connexion. Vérifiez les informations d’identification.",
-      "cannot_connect_local_all": "Echec de la connexion. Vérifiez les paramètres fournis.",
       "invalid_auth": "Authentification invalide.",
       "unknown": "Erreur inattendue.",
       "code_needed": "Le code de vérification doit être fourni.",
@@ -124,7 +129,13 @@
       "cannot_connect_local_access_denied": "Échec de la connexion. Accès refusé - vérifiez le code d'accès.",
       "cannot_connect_local_incorrect_serial": "Échec de la connexion. La connexion a été fermée par l'imprimante - vérifiez le numéro de série.",
       "cannot_connect_local_incorrect_address": "Échec de la connexion. Connexion refusée - vérifiez l'adresse IP.",
-      "cannot_connect_local_address_unreachable": "Échec de la connexion. Adresse inaccessible - vérifiez la connexion réseau."
+      "cannot_connect_local_address_unreachable": "Échec de la connexion. Adresse inaccessible - vérifiez la connexion réseau.",
+      "cannot_connect_cloud_timeout": "Le délai a expiré lors de la tentative de connexion au cloud Bambu Lab.",
+      "cannot_connect_cloud_access_denied": "Accès refusé par le cloud Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Connexion refusée par le cloud Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Adresse cloud de Bambu Lab inaccessible.",
+      "cannot_connect_cloud_unknown": "Erreur inconnue lors de la connexion au cloud Bambu Lab.",
+      "cannot_connect_local_unknown": "Échec de la connexion. Vérifiez les paramètres fournis."
     },
     "step": {
       "init": {
@@ -148,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Ajuster la configuration de l’imprimante",
-        "description": "Vous pouvez choisir de vous connecter directement à l'imprimante pour les mises à jour d'état plutôt que via le Cloud Bambu Lab. Cela vous donne une résilience aux pannes de cloud de Bambu Lab, mais Bambu Lab a restreint le contrôle de l'imprimante dans ce mode hybride, de sorte que certains contrôles seront indisponibles.",
+        "description": "Vous pouvez choisir de vous connecter directement à l'imprimante mqtt au lieu du cloud Bambu Lab. Cela donne de la résilience aux pannes de cloud de Bambu Lab, mais Bambu Lab a restreint le contrôle de l'imprimante dans ce mode hybride, de sorte que certains contrôles seront indisponibles.\n\rQuel que soit ce choix, l'intégration obtiendra l'adresse IP de l'imprimante du cloud Bambu Lab et confirmera qu'elle peut s'y connecter car cela est requis pour la prise en charge de l'appareil photo, de l'historique d'impression et du timelapse. Si votre imprimante est inaccessible à votre Home Assistant, vous pouvez désactiver cette vérification mais vous perdrez ces fonctionnalités.",
         "data": {
           "serial": "Ajustez les paramètres pour :",
           "host": "Adresse IP de l’imprimante locale :",
           "access_code": "Code d'accès :",
-          "local_mqtt": "Connectez-vous directement à l'imprimante plutôt que via le Cloud Bambu Lab :",
+          "local_mqtt": "Connectez-vous directement à l'imprimante mqtt :",
           "usage_hours": "Heures d'utilisation actuelles (facultatif) :",
           "print_cache_count": "Nombre de modèles à cache à l'assistant à domicile (-1 pour illimité):",
-          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):"
+          "timelapse_cache_count": "Nombre de vidéos timelapse à cache à l'assistant à domicile (-1 pour illimité):",
+          "skip_local_mqtt": "Ignorer le test de connexion mqtt local (non recommandé) :"
         },
         "sections": {
           "advanced": {
@@ -223,6 +235,9 @@
       },
       "active_ams": {
         "name": "Actif"
+      },
+      "airduct_mode": {
+        "name": "Mode conduit d'air"
       }
     },
     "button": {
@@ -799,6 +814,9 @@
           "high_flow_stainless_steel": "acier inoxydable avec un grand débit",
           "high_flow_tungsten_carbide": "carbure de tungstène avec un grand débit"
         }
+      },
+      "model_download_percentage": {
+        "name": "Téléchargement du modèle"
       }
     },
     "camera": {
@@ -818,6 +836,9 @@
       },
       "ftp": {
         "name": "Charger le modèle depuis l'imprimante"
+      },
+      "airduct_mode": {
+        "name": "Mode refroidissement ou mode chauffage/filtrage"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "L'authentification a échoué pour {device}",
-      "description": "Tenter de se connecter au laboratoire Bambu a échoué. Veuillez reconfigurer l'intégration et fournir de nouvelles références."
+      "title": "Échec de l'authentification",
+      "description": "La tentative de connexion à Bambu Lab a échoué pour {device}. Veuillez reconfigurer l'intégration et fournir de nouvelles informations d'identification."
+    },
+    "no_external_storage": {
+      "title": "Aucune carte USB ou SD détectée",
+      "description": "{device} n'a pas de carte USB ou SD connectée. Ceci est nécessaire pour toutes les fonctionnalités qui dépendent du FTP vers l'imprimante, telles que l'image de couverture, le saut d'objets et l'historique d'impression."
+    },
+    "live_view_disabled": {
+      "title": "Affichage en direct désactivé",
+      "description": "{device} a l'affichage en direct désactivé dans les paramètres de l'imprimante. Veuillez l'activer pour utiliser les fonctionnalités de l'appareil photo."
     }
   }
 }

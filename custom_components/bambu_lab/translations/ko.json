@@ -20,7 +20,6 @@
     },
     "error": {
       "cannot_connect": "연결에 실패했습니다. 자격 증명을 확인하세요.",
-      "cannot_connect_local_all": "연결에 실패했습니다. 제공된 설정을 확인하세요.",
       "invalid_auth": "잘못된 인증 정보입니다.",
       "unknown": "예기치 않은 오류입니다.",
       "code_needed": "인증 코드를 제공해야 합니다.",
@@ -32,7 +31,13 @@
       "cannot_connect_local_access_denied": "연결하지 못했습니다. 액세스가 거부되었습니다. 액세스 코드를 확인하세요.",
       "cannot_connect_local_incorrect_serial": "연결하지 못했습니다. 프린터에 의해 연결이 종료되었습니다. 일련번호를 확인하세요.",
       "cannot_connect_local_incorrect_address": "연결하지 못했습니다. 연결이 거부되었습니다. IP 주소를 확인하세요.",
-      "cannot_connect_local_address_unreachable": "연결하지 못했습니다. 주소에 연결할 수 없습니다. 네트워크 연결을 확인하세요."
+      "cannot_connect_local_address_unreachable": "연결하지 못했습니다. 주소에 연결할 수 없습니다. 네트워크 연결을 확인하세요.",
+      "cannot_connect_cloud_timeout": "Bambu Lab 클라우드에 연결하는 동안 시간이 초과되었습니다.",
+      "cannot_connect_cloud_access_denied": "Bambu Lab 클라우드에서 액세스가 거부되었습니다.",
+      "cannot_connect_cloud_connection_refused": "Bambu Lab 클라우드에서 연결을 거부했습니다.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab 클라우드 주소에 연결할 수 없습니다.",
+      "cannot_connect_cloud_unknown": "Bambu Lab 클라우드 연결에 알 수 없는 오류가 발생했습니다.",
+      "cannot_connect_local_unknown": "연결하지 못했습니다. 제공된 설정을 확인하세요."
     },
     "step": {
       "user": {
@@ -61,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "로컬 연결 설정",
-        "description": "상태 업데이트를 위해 Bambu Lab 클라우드 대신 프린터에 직접 연결하도록 선택할 수 있습니다. 이렇게 하면 Bambu Lab 클라우드 중단에 대한 복원력이 제공되지만 Bambu Lab은 이 하이브리드 모드에 있을 때 프린터 제어를 제한하므로 일부 제어를 사용할 수 없습니다.",
+        "description": "Bambu Lab 클라우드 대신 프린터 mqtt에 직접 연결하도록 선택할 수 있습니다. 이는 Bambu Lab 클라우드 중단에 대한 복원력을 제공하지만 Bambu Lab은 이 하이브리드 모드에 있을 때 프린터 제어를 제한하므로 일부 제어를 사용할 수 없습니다.\n\r이 선택에 관계없이 통합은 Bambu Lab 클라우드에서 프린터 IP 주소를 가져오고 카메라, 인쇄 기록 및 타임랩스 지원에 필요하므로 연결할 수 있는지 확인합니다. 홈어시스턴트가 프린터에 액세스할 수 없는 경우 이 확인을 비활성화할 수 있지만 해당 기능은 손실됩니다.",
         "data": {
-          "local_mqtt": "로컬에서 프린터에 연결:",
+          "local_mqtt": "프린터 mqtt에 직접 연결:",
           "host": "로컬 프린터 IP 주소:",
           "access_code": "접근 코드:",
           "usage_hours": "현재 사용 시간 (선택 사항):",
           "print_cache_count": "홈 어시스턴트로 캐시 할 모델 수 (무제한의 경우 -1) :",
-          "timelapse_cache_count": "홈 어시스턴트로 캐시 할 Timelapse 비디오 수 (무제한의 경우 -1) :"
+          "timelapse_cache_count": "홈 어시스턴트로 캐시 할 Timelapse 비디오 수 (무제한의 경우 -1) :",
+          "skip_local_mqtt": "로컬 mqtt 연결 테스트 건너뛰기(권장되지 않음):"
         },
         "sections": {
           "advanced": {
@@ -112,7 +118,6 @@
     },
     "error": {
       "cannot_connect": "연결에 실패했습니다.",
-      "cannot_connect_local_all": "연결에 실패했습니다. 제공된 설정을 확인하세요.",
       "invalid_auth": "잘못된 인증 정보입니다.",
       "unknown": "예기치 않은 오류입니다.",
       "code_needed": "인증 코드를 제공해야 합니다.",
@@ -124,7 +129,13 @@
       "cannot_connect_local_access_denied": "연결하지 못했습니다. 액세스가 거부되었습니다. 액세스 코드를 확인하세요.",
       "cannot_connect_local_incorrect_serial": "연결하지 못했습니다. 프린터에 의해 연결이 종료되었습니다. 일련번호를 확인하세요.",
       "cannot_connect_local_incorrect_address": "연결하지 못했습니다. 연결이 거부되었습니다. IP 주소를 확인하세요.",
-      "cannot_connect_local_address_unreachable": "연결하지 못했습니다. 주소에 연결할 수 없습니다. 네트워크 연결을 확인하세요."
+      "cannot_connect_local_address_unreachable": "연결하지 못했습니다. 주소에 연결할 수 없습니다. 네트워크 연결을 확인하세요.",
+      "cannot_connect_cloud_timeout": "Bambu Lab 클라우드에 연결하는 동안 시간이 초과되었습니다.",
+      "cannot_connect_cloud_access_denied": "Bambu Lab 클라우드에서 액세스가 거부되었습니다.",
+      "cannot_connect_cloud_connection_refused": "Bambu Lab 클라우드에서 연결을 거부했습니다.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab 클라우드 주소에 연결할 수 없습니다.",
+      "cannot_connect_cloud_unknown": "Bambu Lab 클라우드 연결에 알 수 없는 오류가 발생했습니다.",
+      "cannot_connect_local_unknown": "연결하지 못했습니다. 제공된 설정을 확인하세요."
     },
     "step": {
       "init": {
@@ -148,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "프린터 구성 조정",
-        "description": "상태 업데이트를 위해 Bambu Lab 클라우드 대신 프린터에 직접 연결하도록 선택할 수 있습니다. 이렇게 하면 Bambu Lab 클라우드 중단에 대한 복원력이 제공되지만 Bambu Lab은 이 하이브리드 모드에 있을 때 프린터 제어를 제한하므로 일부 제어를 사용할 수 없습니다.",
+        "description": "Bambu Lab 클라우드 대신 프린터 mqtt에 직접 연결하도록 선택할 수 있습니다. 이는 Bambu Lab 클라우드 중단에 대한 복원력을 제공하지만 Bambu Lab은 이 하이브리드 모드에 있을 때 프린터 제어를 제한하므로 일부 제어를 사용할 수 없습니다.\n\r이 선택에 관계없이 통합은 Bambu Lab 클라우드에서 프린터 IP 주소를 가져오고 카메라, 인쇄 기록 및 타임랩스 지원에 필요하므로 연결할 수 있는지 확인합니다. 홈어시스턴트가 프린터에 액세스할 수 없는 경우 이 확인을 비활성화할 수 있지만 해당 기능은 손실됩니다.",
         "data": {
           "serial": "다음에 대한 설정을 조정합니다.",
           "host": "로컬 프린터 IP 주소:",
           "access_code": "접근 코드:",
-          "local_mqtt": "Bambu Lab 클라우드 대신 프린터에 직접 연결:",
+          "local_mqtt": "프린터 mqtt에 직접 연결:",
           "usage_hours": "현재 사용 시간 (선택 사항):",
           "print_cache_count": "홈 어시스턴트로 캐시 할 모델 수 (무제한의 경우 -1) :",
-          "timelapse_cache_count": "홈 어시스턴트로 캐시 할 Timelapse 비디오 수 (무제한의 경우 -1) :"
+          "timelapse_cache_count": "홈 어시스턴트로 캐시 할 Timelapse 비디오 수 (무제한의 경우 -1) :",
+          "skip_local_mqtt": "로컬 mqtt 연결 테스트 건너뛰기(권장되지 않음):"
         },
         "sections": {
           "advanced": {
@@ -223,6 +235,9 @@
       },
       "active_ams": {
         "name": "활동적인"
+      },
+      "airduct_mode": {
+        "name": "에어덕트 모드"
       }
     },
     "button": {
@@ -799,6 +814,9 @@
           "high_flow_stainless_steel": "큰 흐름이있는 스테인레스 스틸",
           "high_flow_tungsten_carbide": "큰 흐름이있는 텅스텐 카바이드"
         }
+      },
+      "model_download_percentage": {
+        "name": "모델 다운로드"
       }
     },
     "camera": {
@@ -818,6 +836,9 @@
       },
       "ftp": {
         "name": "프린터에서 모델 데이터 로드"
+      },
+      "airduct_mode": {
+        "name": "냉각 모드 또는 가열/필터 모드"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "{device}에 대한 인증 실패",
-      "description": "Bambu Lab에 연결하려는 시도는 실패했습니다. 통합을 재구성하고 새로운 자격 증명을 제공하십시오."
+      "title": "인증 실패",
+      "description": "{device}에 대한 Bambu Lab 연결 시도가 실패했습니다. 통합을 재구성하고 새로운 자격 증명을 제공하세요."
+    },
+    "no_external_storage": {
+      "title": "USB 또는 SD 카드가 감지되지 않음",
+      "description": "{device}에는 USB 또는 SD 카드가 연결되어 있지 않습니다. 이는 표지 이미지, 개체 건너뛰기, 인쇄 기록 등 프린터에 대한 FTP에 의존하는 모든 기능에 필요합니다."
+    },
+    "live_view_disabled": {
+      "title": "라이브 뷰 비활성화됨",
+      "description": "{device}의 프린터 설정에서 라이브 뷰가 비활성화되었습니다. 카메라 기능을 사용하려면 이 기능을 활성화하세요."
     }
   }
 }

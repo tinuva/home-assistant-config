@@ -20,12 +20,17 @@
     },
     "error": {
       "cannot_connect": "Failed to connect. Check credentials.",
+      "cannot_connect_cloud_timeout": "Timed out trying to connect to Bambu Lab cloud.",
+      "cannot_connect_cloud_access_denied": "Access denied by Bambu Lab cloud.",
+      "cannot_connect_cloud_connection_refused": "Connection refused by Bambu Lab cloud.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab cloud address unreachable.",
+      "cannot_connect_cloud_unknown": "Unknown error connecting to Bambu Lab cloud.",
       "cannot_connect_local_timeout": "Failed to connect. Connection timed out.",
       "cannot_connect_local_access_denied": "Failed to connect. Access denied - check access code.",
       "cannot_connect_local_incorrect_serial": "Failed to connect. Connection was closed by printer - check serial number.",
       "cannot_connect_local_incorrect_address": "Failed to connect. Connection refused - check IP address.",
       "cannot_connect_local_address_unreachable": "Failed to connect. Address unreachable - check network connection.",
-      "cannot_connect_local_all": "Failed to connect. Check provided settings.",
+      "cannot_connect_local_unknown": "Failed to connect. Check provided settings.",
       "invalid_auth": "Invalid authentication.",
       "unknown": "Unexpected error.",
       "code_needed": "Verification code must be provided.",
@@ -61,9 +66,10 @@
       },
       "Bambu_Lan": {
         "title": "Setup Local Connection",
-        "description": "You can choose to connect directly to the printer for status updates instead of by Bambu Lab cloud. This gives you resilience to Bambu Lab cloud outages but Bambu Lab has restricted control of the printer when in this hybrid mode so some controls will be unavailable.",
+        "description": "You can choose to connect directly to the printer mqtt instead of Bambu Lab cloud. This gives resilience to Bambu Lab cloud outages but Bambu Lab has restricted control of the printer when in this hybrid mode so some controls will be unavailable.\n\rRegardless of this choice, the integration will get the printer IP address from Bambu Lab cloud and confirm that it can connect to it as this is required for camera, print history and timelapse support. If your printer is inaccessible to your Home Assistant then you can disable this check but you will lose those features.",
         "data": {
-          "local_mqtt": "Connect locally to the printer:",
+          "local_mqtt": "Connect directly to printer mqtt:",
+          "skip_local_mqtt": "Skip local mqtt connection test (not recommended):",
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
           "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
@@ -112,12 +118,17 @@
     },
     "error": {
       "cannot_connect": "Failed to connect",
+      "cannot_connect_cloud_timeout": "Timed out trying to connect to Bambu Lab cloud.",
+      "cannot_connect_cloud_access_denied": "Access denied by Bambu Lab cloud.",
+      "cannot_connect_cloud_connection_refused": "Connection refused by Bambu Lab cloud.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab cloud address unreachable.",
+      "cannot_connect_cloud_unknown": "Unknown error connecting to Bambu Lab cloud.",
       "cannot_connect_local_timeout": "Failed to connect. Connection timed out.",
       "cannot_connect_local_access_denied": "Failed to connect. Access denied - check access code.",
       "cannot_connect_local_incorrect_serial": "Failed to connect. Connection was closed by printer - check serial number.",
       "cannot_connect_local_incorrect_address": "Failed to connect. Connection refused - check IP address.",
       "cannot_connect_local_address_unreachable": "Failed to connect. Address unreachable - check network connection.",
-      "cannot_connect_local_all": "Failed to connect. Check provided settings.",
+      "cannot_connect_local_unknown": "Failed to connect. Check provided settings.",
       "invalid_auth": "Invalid authentication.",
       "unknown": "Unexpected error.",
       "code_needed": "Verification code must be provided.",
@@ -148,12 +159,13 @@
       },
       "Bambu_Lan": {
         "title": "Adjust Printer Configuration",
-        "description": "You can choose to connect directly to the printer for status updates instead of by Bambu Lab cloud. This gives you resilience to Bambu Lab cloud outages but Bambu Lab has restricted control of the printer when in this hybrid mode so some controls will be unavailable.",
+        "description": "You can choose to connect directly to the printer mqtt instead of Bambu Lab cloud. This gives resilience to Bambu Lab cloud outages but Bambu Lab has restricted control of the printer when in this hybrid mode so some controls will be unavailable.\n\rRegardless of this choice, the integration will get the printer IP address from Bambu Lab cloud and confirm that it can connect to it as this is required for camera, print history and timelapse support. If your printer is inaccessible to your Home Assistant then you can disable this check but you will lose those features.",
         "data": {
           "serial": "Adjust settings for:",
           "host": "Local Printer IP Address:",
           "access_code": "Access Code:",
-          "local_mqtt": "Connect directly to printer instead of by Bambu Lab cloud:",
+          "local_mqtt": "Connect directly to printer mqtt:",
+          "skip_local_mqtt": "Skip local mqtt connection test (not recommended):",
           "print_cache_count": "Number of models to cache to home assistant (-1 for unlimited):",
           "timelapse_cache_count": "Number of timelapse videos to cache to home assistant (-1 for unlimited):",
           "usage_hours": "Current usage hours (optional):"
@@ -202,6 +214,9 @@
       },
       "door_open": {
         "name": "Enclosure door"
+      },
+      "airduct_mode": {
+        "name": "Airduct Mode"
       },
       "timelapse": {
         "name": "Recording timelapse"
@@ -354,6 +369,9 @@
       },
       "heatbreak_fan_speed": {
         "name": "Heatbreak fan speed"
+      },
+      "model_download_percentage": {
+        "name": "Model download"
       },
       "speed_profile": {
         "name": "Speed profile",
@@ -818,6 +836,9 @@
       },
       "prompt_sound": {
         "name": "Allow Prompt Sound"
+      },
+      "airduct_mode": {
+        "name": "Cooling Mode or Heating/Filter Mode"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "Authentication Failed for {device}",
-      "description": "Attempting to connect to Bambu Lab failed. Please reconfigure the integration and provide fresh credentials."
+      "title": "Authentication Failed",
+      "description": "Attempting to connect to Bambu Lab failed for {device}. Please reconfigure the integration and provide fresh credentials."
+    },
+    "no_external_storage": {
+      "title": "No USB or SD Card Detected",
+      "description": "{device} does not have an USB or SD card connected. This is needed for all features that depend on ftp to the printer such as the cover image, skipping objects and print history."
+    },
+    "live_view_disabled": {
+      "title": "Live View Disabled",
+      "description": "{device} has live view disabled in the printer settings. Please enable this to use the camera features."
     }
   }
 }

@@ -17,6 +17,13 @@ from homeassistant.components.switch import (
 from .coordinator import BambuDataUpdateCoordinator
 
 
+AIRDUCT_MODE_SWITCH_DESCRIPTION = SwitchEntityDescription(
+    key="airduct_mode",
+    icon="mdi:air-filter",
+    translation_key="airduct_mode",
+    entity_category=EntityCategory.CONFIG,
+)
+
 PROMPT_SOUND_SWITCH_DESCRIPTION = SwitchEntityDescription(
     key="prompt_sound",
     icon="mdi:audio",
@@ -62,9 +69,9 @@ async def async_setup_entry(
 
     if coordinator.get_model().supports_feature(Features.PROMPT_SOUND):
         async_add_entities([BambuLabPromptSoundSwitch(coordinator, entry)])
-
-    if coordinator.get_model().supports_feature(Features.FTP):
-        async_add_entities([BambuLabFtpSwitch(coordinator, entry)])
+    
+    if coordinator.get_model().supports_feature(Features.AIRDUCT_MODE):
+        async_add_entities([BambuLabPromptAirductModeSwitch(coordinator, entry)])
 
 
 class BambuLabSwitch(BambuLabEntity, SwitchEntity):
@@ -149,39 +156,6 @@ class BambuLabCameraImageSwitch(BambuLabSwitch):
         await self.coordinator.set_option_enabled(Options.IMAGECAMERA, self._attr_is_on)
 
 
-class BambuLabFtpSwitch(BambuLabSwitch):
-    """BambuLab FTP Switch"""
-
-    entity_description = FTP_SWITCH_DESCRIPTION
-
-    def __init__(
-            self,
-            coordinator: BambuDataUpdateCoordinator,
-            config_entry: ConfigEntry
-    ) -> None:
-        super().__init__(coordinator, config_entry)
-        self._attr_is_on = self.coordinator.get_option_enabled(Options.FTP)
-
-    @property
-    def available(self) -> bool:
-        return True
-
-    @property
-    def icon(self) -> str:
-        """Return the icon for the switch."""
-        return "mdi:folder-network" if self.is_on else "mdi:folder-hidden"
-
-    async def async_turn_on(self, **kwargs: Any) -> None:
-        """Enable FTP."""
-        self._attr_is_on = True
-        await self.coordinator.set_option_enabled(Options.FTP, self._attr_is_on)
-
-    async def async_turn_off(self, **kwargs: Any) -> None:
-        """Disable FTP."""
-        self._attr_is_on = False
-        await self.coordinator.set_option_enabled(Options.FTP, self._attr_is_on)
-
-
 class BambuLabPromptSoundSwitch(BambuLabSwitch):
     """BambuLab Refresh data Switch"""
 
@@ -211,4 +185,45 @@ class BambuLabPromptSoundSwitch(BambuLabSwitch):
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Disable A1 / H2D sound."""
         self.coordinator.get_model().info.set_prompt_sound(False)
+
+
+
+class BambuLabPromptAirductModeSwitch(BambuLabSwitch):
+    """BambuLab Refresh data Switch"""
+
+    entity_description = AIRDUCT_MODE_SWITCH_DESCRIPTION
+
+    def __init__(
+            self,
+            coordinator: BambuDataUpdateCoordinator,
+            config_entry: ConfigEntry
+    ) -> None:
+        super().__init__(coordinator, config_entry)
+        self._attr_is_on = self.coordinator.get_model().info.airduct_mode == 0 
+        
+    def available(self) -> bool:
+        """Is the air duct mode switch available"""
+        available = True
+        # Changing the air duct mode involves sending a "print"-type command that may require signature
+        available = available and not self.coordinator.get_model().print_fun.mqtt_signature_required
+        return available
+
+    @property
+    def icon(self) -> str:
+        """Return the icon for the switch."""
+        # the filter icon looks like it's letting air in, so we use that for the cooling mode.
+        return "mdi:air-filter" if self.is_on else "mdi:hvac"
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if entity is on."""
+        return self.coordinator.get_model().info.airduct_mode == 0  # Cooling mode so outside air goes in
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Enable Cooling."""
+        self.coordinator.get_model().info.set_airduct_mode(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Enable Heating/Filter Mode."""
+        self.coordinator.get_model().info.set_airduct_mode(False)
 

@@ -1,3 +1,5 @@
+import functools
+import gzip
 import json
 import logging
 import math
@@ -5,8 +7,7 @@ import requests
 import socket
 import re
 
-from datetime import datetime, timedelta
-from functools import cache
+from datetime import datetime, timedelta, timezone
 from urllib3.exceptions import ReadTimeoutError
 from bs4 import BeautifulSoup
 from pathlib import Path
@@ -24,7 +25,6 @@ from .const import (
     TempEnum
 )
 from .commands import SEND_GCODE_TEMPLATE, UPGRADE_CONFIRM_TEMPLATE
-
 
 def search(lst, predicate, default={}):
     """Search an array for a string"""
@@ -102,7 +102,6 @@ def get_current_stage(id) -> str:
     """Return the human-readable description for a stage action"""
     return CURRENT_STAGE_IDS.get(int(id), "unknown")
 
-@cache
 def get_HMS_error_text(error_code: str, device_type: Printers | str, preferred_language: str) -> str:
     """
     Return the human-readable description for an HMS error
@@ -121,7 +120,6 @@ def get_HMS_error_text(error_code: str, device_type: Printers | str, preferred_l
     """
     return _get_error_text("device_hms", error_code, device_type, preferred_language)
 
-@cache
 def get_print_error_text(error_code: str, device_type: Printers | str, preferred_language: str) -> str:
     """
     Return the human-readable description for a print error
@@ -140,23 +138,15 @@ def get_print_error_text(error_code: str, device_type: Printers | str, preferred
     """
     return _get_error_text("device_error", error_code, device_type, preferred_language)
 
-@cache
+@functools.lru_cache(maxsize=8)
 def _get_error_text(error_type: str, error_code: str, device_type: Printers | str, preferred_language: str) -> str:
     """
     Return the human-readable description for an error
     
-    This returns the best available desription for the error. First preference
-    is to return a string in the requested locale or at least language; second
-    preference is to return an error string tailored for the printer. An English
-    message is better than 'unknown' when there is no translation, and the error
-    code identifies the affected part, so a message for a different printer should
-    provide some clue as to the problem.
-
-    :param error_type: The type of error to look up, either "device_hms" or "device_error".
-    :param error_code: The error code to look up from the printer, optionally with underscores.
-    :param device_type: The type of the printer.
-    :param preferred_language: The preferred language code, e.g. 'de', 'pt-BR'. This is not
-        case-sensitive.
+    Picks the best available description for the error:
+    - First, device-specific message
+    - Then, default message (empty list)
+    - Falls back to English if translation missing
     """
     LOGGER.debug(f"Looking up {error_type=} {error_code=} {device_type=} {preferred_language=}")
     error_code = error_code.replace("_", "")
@@ -165,32 +155,31 @@ def _get_error_text(error_type: str, error_code: str, device_type: Printers | st
     locales = [preferred_language.lower()]
     if len(preferred_language) > 2:
         locales.append(preferred_language[:2].lower())
-    if preferred_language != "en":
+    if preferred_language.lower() != "en":
         locales.append("en")
 
     for locale_code in locales:
-        for dev_type in (device_type, Printers.H2D):
-            LOGGER.debug(f"Looking for HMS error: {locale_code=} {dev_type=} {error_code=}")
-            error_data = _load_error_data(dev_type, locale_code)
-            try:
-                return error_data[error_type][error_code]
-            except KeyError:
-                pass
+        error_data = _load_error_data(locale_code)
+        code_entry = error_data.get(error_type, {}).get(error_code)
+        if not code_entry:
+            continue
+
+        # Pick message matching device_type or default (empty list)
+        for msg, models in code_entry.items():
+            if not models or str(device_type) in models:
+                return msg
 
     return 'unknown'
 
-@cache
-def _load_error_data(device_type: Printers | str, language: str) -> dict:
-    """Load error data for a specific device type and language"""
-    LOGGER.debug(f"Loading HMS error data for {device_type=} {language=}")
-    filename = Path(__file__).parent / "hms_error_text" / f"hms_{str(device_type)}_{language}.json"
+def _load_error_data(language: str) -> dict:
+    filename = Path(__file__).parent / "hms_error_text" / f"hms_{language}.json.gz"
     if not filename.exists():
-        logging.debug(f"No HMS error data for {device_type=} {language=}")
+        LOGGER.debug(f"No HMS error data for {language=}")
         return {}
 
-    with open(filename) as f:
+    with gzip.open(filename, "rt", encoding="utf-8") as f:
         return json.load(f)
-
+    
 def get_HMS_severity(code: int) -> str:
     uint_code = code >> 16
     if code > 0 and uint_code in HMS_SEVERITY_LEVELS:
@@ -263,6 +252,12 @@ def get_printer_type(modules, default):
     # }
     # X1E = AP02
 
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A1")):
+      return 'A1'
+
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A1 Mini")): # Guessed name
+      return 'A1MINI'
+
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P1S")):
       return 'P1S'
 
@@ -331,14 +326,12 @@ def get_start_time(timestamp):
 
 def get_end_time(remaining_time):
     """Calculate the end time of a print"""
-    end_time = round_minute(datetime.now() + timedelta(minutes=remaining_time))
+    end_time = round_minute(datetime.now(timezone.utc) + timedelta(minutes=remaining_time))
     return end_time
 
 
-def round_minute(date: datetime = None, round_to: int = 1):
+def round_minute(date: datetime, round_to: int = 1):
     """ Round datetime object to minutes"""
-    if not date:
-        date = datetime.now()
     date = date.replace(second=0, microsecond=0)
     delta = date.minute % round_to
     return date.replace(minute=date.minute - delta)
@@ -387,3 +380,29 @@ def upgrade_template(url: str) -> dict:
     )
     template["upgrade"]["version"] = version
     return template
+
+def safe_json_loads(raw_bytes):
+
+    # First try to decode it normally for efficiency.
+    try:
+        json_data = json.loads(raw_bytes)
+        return json_data
+    except json.JSONDecodeError as e:
+        # Some machines give this error for invalid unicode sequences in the mqtt payload.
+        pass
+    except json.UnicodeError as e:
+        # Some machines give this error instead.
+        pass
+
+    # Double up all backslashes to make JSON valid. Decode as non-utf8 to avoid errors and
+    # the content being modified.
+    text = raw_bytes.decode('latin-1')
+    text = text.replace('\\', '\\\\')
+
+    try:
+        json_data = json.loads(text)
+        return json_data
+    except Exception as e:
+        LOGGER.error(f"Failed to decode JSON payload: '{text}'")
+        LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
+        raise

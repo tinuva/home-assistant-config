@@ -20,7 +20,6 @@
     },
     "error": {
       "cannot_connect": "Nepodarilo sa pripojiť. Skontrolujte poverenia.",
-      "cannot_connect_local_all": "Nepodarilo sa pripojiť. Skontrolujte zadané nastavenia.",
       "invalid_auth": "Neplatné overenie.",
       "unknown": "Neočakávaná chyba.",
       "code_needed": "Je potrebné zadať overovací kód.",
@@ -32,7 +31,13 @@
       "cannot_connect_local_access_denied": "Nepodarilo sa pripojiť. Prístup odmietnutý - skontrolujte prístupový kód.",
       "cannot_connect_local_incorrect_serial": "Nepodarilo sa pripojiť. Spojenie bolo ukončené tlačiarňou - skontrolujte sériové číslo.",
       "cannot_connect_local_incorrect_address": "Nepodarilo sa pripojiť. Pripojenie odmietnuté - skontrolujte IP adresu.",
-      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie."
+      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie.",
+      "cannot_connect_cloud_timeout": "Pri pokuse o pripojenie k cloudu Bambu Lab vypršal časový limit.",
+      "cannot_connect_cloud_access_denied": "Prístup odmietnutý cloudom Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Spojenie bolo odmietnuté cloudom Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Cloudová adresa Bambu Lab je nedostupná.",
+      "cannot_connect_cloud_unknown": "Neznáma chyba pri pripájaní k cloudu Bambu Lab.",
+      "cannot_connect_local_unknown": "Nepodarilo sa pripojiť. Skontrolujte poskytnuté nastavenia."
     },
     "step": {
       "user": {
@@ -61,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Nastavenie lokálneho pripojenia",
-        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni pre aktualizácie stavu namiesto cloudu Bambu Lab. To vám dáva odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab má obmedzené ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.",
+        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni mqtt namiesto cloudu Bambu Lab. To poskytuje odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab obmedzilo ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.\n\rBez ohľadu na túto voľbu získa integrácia IP adresu tlačiarne z cloudu Bambu Lab a potvrdí, že sa k nej môže pripojiť, pretože je to potrebné pre fotoaparát, históriu tlače a podporu časozberu. Ak je vaša tlačiareň nedostupná pre domáceho asistenta, môžete túto kontrolu zakázať, ale tieto funkcie stratíte.",
         "data": {
-          "local_mqtt": "Pripojenie lokálne na tlačiareň:",
+          "local_mqtt": "Priame pripojenie k tlačiarni mqtt:",
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):",
           "print_cache_count": "Počet modelov na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
-          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):"
+          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
+          "skip_local_mqtt": "Preskočiť test miestneho pripojenia mqtt (neodporúča sa):"
         },
         "sections": {
           "advanced": {
@@ -112,7 +118,6 @@
     },
     "error": {
       "cannot_connect": "Nepodarilo sa pripojiť",
-      "cannot_connect_local_all": "Nepodarilo sa pripojiť. Skontrolujte zadané nastavenia.",
       "invalid_auth": "Neplatné overenie.",
       "unknown": "Neočakávaná chyba.",
       "code_needed": "Je potrebné zadať overovací kód.",
@@ -124,7 +129,13 @@
       "cannot_connect_local_access_denied": "Nepodarilo sa pripojiť. Prístup odmietnutý - skontrolujte prístupový kód.",
       "cannot_connect_local_incorrect_serial": "Nepodarilo sa pripojiť. Spojenie bolo ukončené tlačiarňou - skontrolujte sériové číslo.",
       "cannot_connect_local_incorrect_address": "Nepodarilo sa pripojiť. Pripojenie odmietnuté - skontrolujte IP adresu.",
-      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie."
+      "cannot_connect_local_address_unreachable": "Nepodarilo sa pripojiť. Adresa je nedostupná – skontrolujte sieťové pripojenie.",
+      "cannot_connect_cloud_timeout": "Pri pokuse o pripojenie k cloudu Bambu Lab vypršal časový limit.",
+      "cannot_connect_cloud_access_denied": "Prístup odmietnutý cloudom Bambu Lab.",
+      "cannot_connect_cloud_connection_refused": "Spojenie bolo odmietnuté cloudom Bambu Lab.",
+      "cannot_connect_cloud_address_unreachable": "Cloudová adresa Bambu Lab je nedostupná.",
+      "cannot_connect_cloud_unknown": "Neznáma chyba pri pripájaní k cloudu Bambu Lab.",
+      "cannot_connect_local_unknown": "Nepodarilo sa pripojiť. Skontrolujte poskytnuté nastavenia."
     },
     "step": {
       "init": {
@@ -148,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Úprava nastavenia tlačiarne",
-        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni pre aktualizácie stavu namiesto cloudu Bambu Lab. To vám dáva odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab má obmedzené ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.",
+        "description": "Môžete sa rozhodnúť pripojiť priamo k tlačiarni mqtt namiesto cloudu Bambu Lab. To poskytuje odolnosť voči výpadkom cloudu Bambu Lab, ale Bambu Lab obmedzilo ovládanie tlačiarne v tomto hybridnom režime, takže niektoré ovládacie prvky budú nedostupné.\n\rBez ohľadu na túto voľbu získa integrácia IP adresu tlačiarne z cloudu Bambu Lab a potvrdí, že sa k nej môže pripojiť, pretože je to potrebné pre fotoaparát, históriu tlače a podporu časozberu. Ak je vaša tlačiareň nedostupná pre domáceho asistenta, môžete túto kontrolu zakázať, ale tieto funkcie stratíte.",
         "data": {
           "serial": "Upravte nastavenia pre:",
           "host": "Lokálna IP adresa tlačiarne:",
           "access_code": "Prístupový kód:",
-          "local_mqtt": "Pripojte sa priamo k tlačiarni namiesto cloudu Bambu Lab:",
+          "local_mqtt": "Priame pripojenie k tlačiarni mqtt:",
           "usage_hours": "Aktuálne hodiny používania (voliteľné):",
           "print_cache_count": "Počet modelov na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
-          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):"
+          "timelapse_cache_count": "Počet videí Timelapse na vyrovnávaciu pamäť na domáceho asistenta (-1 pre Unlimited):",
+          "skip_local_mqtt": "Preskočiť test miestneho pripojenia mqtt (neodporúča sa):"
         },
         "sections": {
           "advanced": {
@@ -223,6 +235,9 @@
       },
       "active_ams": {
         "name": "Aktívny"
+      },
+      "airduct_mode": {
+        "name": "Režim vzduchovodu"
       }
     },
     "button": {
@@ -799,6 +814,9 @@
           "high_flow_stainless_steel": "nehrdzavejúca oceľ s veľkým prietokom",
           "high_flow_tungsten_carbide": "karbid volfrámu s veľkým prietokom"
         }
+      },
+      "model_download_percentage": {
+        "name": "Model na stiahnutie"
       }
     },
     "camera": {
@@ -818,6 +836,9 @@
       },
       "ftp": {
         "name": "Načítať údaje o modeli z tlačiarne"
+      },
+      "airduct_mode": {
+        "name": "Režim chladenia alebo režim vykurovania/filtra"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "Autentifikácia zlyhala pre {device}",
-      "description": "Pokus o pripojenie k laboratória Bambu zlyhal. Prekonfigurujte integráciu a poskytnite nové poverenia."
+      "title": "Autentifikácia zlyhala",
+      "description": "Pokus o pripojenie k Bambu Lab zlyhal pre {device}. Prekonfigurujte integráciu a poskytnite nové poverenia."
+    },
+    "no_external_storage": {
+      "title": "Nebolo zistené žiadne USB alebo SD karta",
+      "description": "{device} nemá pripojenú kartu USB alebo SD. Je to potrebné pre všetky funkcie, ktoré závisia od ftp na tlačiarni, ako je obrázok na obale, preskakovanie objektov a história tlače."
+    },
+    "live_view_disabled": {
+      "title": "Živé zobrazenie je vypnuté",
+      "description": "{device} má v nastaveniach tlačiarne zakázaný živý náhľad. Ak chcete používať funkcie fotoaparátu, povoľte to."
     }
   }
 }

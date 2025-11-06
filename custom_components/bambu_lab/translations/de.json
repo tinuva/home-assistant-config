@@ -20,7 +20,6 @@
     },
     "error": {
       "cannot_connect": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die Anmeldeinformationen.",
-      "cannot_connect_local_all": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen.",
       "invalid_auth": "Authentifizierung fehlgeschlagen.",
       "unknown": "Unerwarteter Fehler.",
       "code_needed": "Es muss ein Bestätigungscode angegeben werden.",
@@ -32,7 +31,13 @@
       "cannot_connect_local_access_denied": "Verbindung konnte nicht hergestellt werden. Zugang verweigert – Zugangscode prüfen.",
       "cannot_connect_local_incorrect_serial": "Verbindung konnte nicht hergestellt werden. Die Verbindung wurde vom Drucker geschlossen. Überprüfen Sie die Seriennummer.",
       "cannot_connect_local_incorrect_address": "Verbindung konnte nicht hergestellt werden. Verbindung abgelehnt – IP-Adresse prüfen.",
-      "cannot_connect_local_address_unreachable": "Verbindung konnte nicht hergestellt werden. Adresse nicht erreichbar – Netzwerkverbindung überprüfen."
+      "cannot_connect_local_address_unreachable": "Verbindung konnte nicht hergestellt werden. Adresse nicht erreichbar – Netzwerkverbindung überprüfen.",
+      "cannot_connect_cloud_timeout": "Beim Versuch, eine Verbindung zur Bambu Lab-Cloud herzustellen, ist eine Zeitüberschreitung aufgetreten.",
+      "cannot_connect_cloud_access_denied": "Zugriff durch die Bambu Lab-Cloud verweigert.",
+      "cannot_connect_cloud_connection_refused": "Verbindung wurde von der Bambu Lab-Cloud abgelehnt.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab-Cloud-Adresse nicht erreichbar.",
+      "cannot_connect_cloud_unknown": "Unbekannter Fehler beim Herstellen der Verbindung zur Bambu Lab-Cloud.",
+      "cannot_connect_local_unknown": "Verbindung konnte nicht hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen."
     },
     "step": {
       "user": {
@@ -61,14 +66,15 @@
       },
       "Bambu_Lan": {
         "title": "Lokale Verbindung einrichten",
-        "description": "Sie können für Statusaktualisierungen auch eine direkte Verbindung zum Drucker statt über die Bambu Lab-Cloud herstellen. Dadurch sind Sie widerstandsfähiger gegen Ausfälle der Bambu Lab-Cloud. Allerdings hat Bambu Lab in diesem Hybridmodus nur eine eingeschränkte Kontrolle über den Drucker, sodass einige Steuerungen nicht verfügbar sind.",
+        "description": "Sie können sich auch für eine direkte Verbindung zum Drucker-mqtt statt zur Bambu Lab-Cloud entscheiden. Dies erhöht die Ausfallsicherheit bei Cloud-Ausfällen von Bambu Lab, allerdings hat Bambu Lab in diesem Hybridmodus nur eine eingeschränkte Kontrolle über den Drucker, sodass einige Steuerungen nicht verfügbar sind.\n\rUnabhängig von dieser Wahl erhält die Integration die IP-Adresse des Druckers aus der Bambu Lab-Cloud und bestätigt, dass eine Verbindung mit ihr hergestellt werden kann, da dies für die Kamera-, Druckverlaufs- und Zeitrafferunterstützung erforderlich ist. Wenn Ihr Home Assistant nicht auf Ihren Drucker zugreifen kann, können Sie diese Prüfung deaktivieren, diese Funktionen gehen dann jedoch verloren.",
         "data": {
-          "local_mqtt": "Verbinden Sie sich direkt mit dem Drucker statt über die Bambu Cloud:",
+          "local_mqtt": "Direkte Verbindung zum Drucker mqtt herstellen:",
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):",
           "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
-          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):",
+          "skip_local_mqtt": "Lokalen MQTT-Verbindungstest überspringen (nicht empfohlen):"
         },
         "sections": {
           "advanced": {
@@ -112,7 +118,6 @@
     },
     "error": {
       "cannot_connect": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die Anmeldeinformationen.",
-      "cannot_connect_local_all": "Es konnte keine Verbindung hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen.",
       "invalid_auth": "Authentifizierung fehlgeschlagen",
       "unknown": "Unerwarteter Fehler",
       "code_needed": "Es muss ein Bestätigungscode angegeben werden.",
@@ -124,7 +129,13 @@
       "cannot_connect_local_access_denied": "Verbindung konnte nicht hergestellt werden. Zugang verweigert – Zugangscode prüfen.",
       "cannot_connect_local_incorrect_serial": "Verbindung konnte nicht hergestellt werden. Die Verbindung wurde vom Drucker geschlossen. Überprüfen Sie die Seriennummer.",
       "cannot_connect_local_incorrect_address": "Verbindung konnte nicht hergestellt werden. Verbindung abgelehnt – IP-Adresse prüfen.",
-      "cannot_connect_local_address_unreachable": "Verbindung konnte nicht hergestellt werden. Adresse nicht erreichbar – Netzwerkverbindung überprüfen."
+      "cannot_connect_local_address_unreachable": "Verbindung konnte nicht hergestellt werden. Adresse nicht erreichbar – Netzwerkverbindung überprüfen.",
+      "cannot_connect_cloud_timeout": "Beim Versuch, eine Verbindung zur Bambu Lab-Cloud herzustellen, ist eine Zeitüberschreitung aufgetreten.",
+      "cannot_connect_cloud_access_denied": "Zugriff durch die Bambu Lab-Cloud verweigert.",
+      "cannot_connect_cloud_connection_refused": "Verbindung wurde von der Bambu Lab-Cloud abgelehnt.",
+      "cannot_connect_cloud_address_unreachable": "Bambu Lab-Cloud-Adresse nicht erreichbar.",
+      "cannot_connect_cloud_unknown": "Unbekannter Fehler beim Herstellen der Verbindung zur Bambu Lab-Cloud.",
+      "cannot_connect_local_unknown": "Verbindung konnte nicht hergestellt werden. Überprüfen Sie die bereitgestellten Einstellungen."
     },
     "step": {
       "init": {
@@ -148,15 +159,16 @@
       },
       "Bambu_Lan": {
         "title": "Anpassen der Druckerkonfiguration",
-        "description": "Sie können für Statusaktualisierungen auch eine direkte Verbindung zum Drucker statt über die Bambu Lab-Cloud herstellen. Dadurch sind Sie widerstandsfähiger gegen Ausfälle der Bambu Lab-Cloud. Allerdings hat Bambu Lab in diesem Hybridmodus nur eine eingeschränkte Kontrolle über den Drucker, sodass einige Steuerungen nicht verfügbar sind.",
+        "description": "Sie können sich auch für eine direkte Verbindung zum Drucker-mqtt statt zur Bambu Lab-Cloud entscheiden. Dies erhöht die Ausfallsicherheit bei Cloud-Ausfällen von Bambu Lab, allerdings hat Bambu Lab in diesem Hybridmodus nur eine eingeschränkte Kontrolle über den Drucker, sodass einige Steuerungen nicht verfügbar sind.\n\rUnabhängig von dieser Wahl erhält die Integration die IP-Adresse des Druckers aus der Bambu Lab-Cloud und bestätigt, dass eine Verbindung mit ihr hergestellt werden kann, da dies für die Kamera-, Druckverlaufs- und Zeitrafferunterstützung erforderlich ist. Wenn Ihr Home Assistant nicht auf Ihren Drucker zugreifen kann, können Sie diese Prüfung deaktivieren, diese Funktionen gehen dann jedoch verloren.",
         "data": {
           "serial": "Passen Sie die Einstellungen an für:",
           "host": "IP-Adresse des lokalen Druckers:",
           "access_code": "Zugangscode",
-          "local_mqtt": "Stellen Sie eine direkte Verbindung zum Drucker statt über die Bambu Lab-Cloud her:",
+          "local_mqtt": "Direkte Verbindung zum Drucker mqtt herstellen:",
           "usage_hours": "Aktuelle Nutzungsstunden (optional):",
           "print_cache_count": "Anzahl der Modelle, die zum Home-Assistenten zwischenstrahlen sind (-1 für unbegrenzt):",
-          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):"
+          "timelapse_cache_count": "Anzahl der Timelapse-Videos zum Cache zum Home Assistant (-1 für unbegrenzt):",
+          "skip_local_mqtt": "Lokalen MQTT-Verbindungstest überspringen (nicht empfohlen):"
         },
         "sections": {
           "advanced": {
@@ -196,6 +208,9 @@
     "binary_sensor": {
       "door_open": {
         "name": "Gehäusetür"
+      },
+      "airduct_mode": {
+        "name": "Luftkanalmodus"
       },
       "timelapse": {
         "name": "Aufnahme von Zeitraffern"
@@ -799,6 +814,9 @@
           "high_flow_stainless_steel": "Edelstahl mit großem Fluss",
           "high_flow_tungsten_carbide": "Wolframkarbid mit großem Fluss"
         }
+      },
+      "model_download_percentage": {
+        "name": "Modell-Download"
       }
     },
     "camera": {
@@ -818,6 +836,9 @@
       },
       "ftp": {
         "name": "Modelldaten vom Drucker laden"
+      },
+      "airduct_mode": {
+        "name": "Aktiviere Kühlluftmodus oder Heizluft-/Filtermodus"
       }
     },
     "update": {
@@ -836,8 +857,16 @@
   },
   "issues": {
     "authentication_failed": {
-      "title": "Authentifizierung fehlgeschlagen für {device}",
-      "description": "Der Versuch eine Verbindung zu Bambu Lab herzustellen, schlug fehl. Bitte konfigurieren Sie die Integration und geben Sie aktuelle Anmeldeinformationen ein."
+      "title": "Authentifizierung fehlgeschlagen",
+      "description": "Der Versuch, eine Verbindung zu Bambu Lab herzustellen, ist für {device} fehlgeschlagen. Bitte konfigurieren Sie die Integration neu und geben Sie neue Anmeldeinformationen ein."
+    },
+    "no_external_storage": {
+      "title": "Keine USB- oder SD-Karte erkannt",
+      "description": "An {device} ist weder eine USB- noch eine SD-Karte angeschlossen. Dies ist für alle Funktionen erforderlich, die von der FTP-Verbindung zum Drucker abhängig sind, wie z. B. das Titelbild, das Überspringen von Objekten und den Druckverlauf."
+    },
+    "live_view_disabled": {
+      "title": "Live View deaktiviert",
+      "description": "Bei {device} ist die Live-Ansicht in den Druckereinstellungen deaktiviert. Bitte aktivieren Sie dies, um die Kamerafunktionen zu nutzen."
     }
   }
 }

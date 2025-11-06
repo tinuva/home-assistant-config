@@ -34,6 +34,7 @@ from .commands import (
     START_PUSH,
 )
 from .tests import MockMQTTClient
+from .utils import safe_json_loads
 
 class WatchdogThread(threading.Thread):
 
@@ -292,7 +293,7 @@ class MqttThread(threading.Thread):
             except Exception:
                 pass
 
-        LOGGER.info("MQTT listener thread exited.")
+        LOGGER.debug("MQTT listener thread exited.")
 
 class ImplicitFTP_TLS(ftplib.FTP_TLS):
     """
@@ -367,8 +368,8 @@ class BambuClient:
         self._device_type = config.get('device_type', 'unknown').upper()
         self._local_mqtt = config.get('local_mqtt', False)
         self._serial = config.get('serial', '')
-        self._enable_camera = config.get('enable_camera', True)
-        self._enable_ftp = config.get('enable_ftp', True)
+        self._enable_camera = config.get('enable_camera', True) and (self.host != "")
+        self._enable_ftp = (self.host != "")
         if self._serial.startswith('MOCK-'):
             self._enable_ftp = False
             self._enable_camera = False
@@ -381,6 +382,8 @@ class BambuClient:
             self._print_cache_count = 1
         self._timelapse_cache_count = max(-1, int(config.get('timelapse_cache_count', 0)))
         self._disable_ssl_verify = config.get('disable_ssl_verify', False)
+        self._cache_path = config.get('file_cache_path', f'/config/www/media/ha-bambulab/{self._serial}')
+        LOGGER.debug(f"Using file cache path: {self._cache_path}")
 
         self._connected = False
         self._port = 8883
@@ -408,6 +411,10 @@ class BambuClient:
     @property
     def settings(self):
         return self._config
+    
+    @property
+    def cache_path(self):
+        return self._cache_path
 
     @property
     def user_language(self):
@@ -447,6 +454,8 @@ class BambuClient:
     def setup_tls(self):
         if self._local_mqtt:
             self.client.tls_set_context(self.local_tls_context)
+            if self._disable_ssl_verify:
+                self.client.tls_insecure_set(True) 
         else:
             self.client.tls_set()
 
@@ -576,7 +585,7 @@ class BambuClient:
                 clean_msg = re.sub(r"False", "false", str(clean_msg))
                 LOGGER.debug(f"Received data: {clean_msg}")
 
-            json_data = json.loads(message.payload)
+            json_data = safe_json_loads(message.payload)
             if json_data.get("event"):
                 # These are events from the bambu cloud mqtt feed and allow us to detect when a local
                 # device has connected/disconnected (e.g. turned on/off)
@@ -718,7 +727,8 @@ class BambuClient:
                     self.client = None
 
         def try_on_message(client, userdata, message):
-            json_data = json.loads(message.payload)
+            json_data = safe_json_loads(message.payload)
+
             # X1 mqtt payload is inconsistent. Adjust it for consistent logging.
             clean_msg = re.sub(r"\\n *", "", str(message.payload))
             # And adjust all payload to be meet proper json syntax instead of being pythonized so I can feed it directly into an online json prettifier
@@ -803,8 +813,11 @@ def create_local_ssl_context():
     """
     script_path = os.path.abspath(__file__)
     directory_path = os.path.dirname(script_path)
-    certfile = directory_path + "/bambu.cert"
-    context = ssl.create_default_context(cafile=certfile)
+    context = ssl.create_default_context()
+    for filename in ("bambu.cert", "bambu_p2s_250626.cert"):
+        path = os.path.join(directory_path, filename)
+        context.load_verify_locations(cafile=path)
+
     # Ignore "CA cert does not include key usage extension" error since python 3.13
     # See note in https://docs.python.org/3/library/ssl.html#ssl.create_default_context
     context.verify_flags &= ~ssl.VERIFY_X509_STRICT
@@ -814,7 +827,7 @@ def create_local_ssl_context():
 
 @functools.lru_cache(maxsize=1)
 def create_insecure_ssl_context():
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS)
     context.check_hostname = False
     context.verify_mode = ssl.CERT_NONE
     return context
