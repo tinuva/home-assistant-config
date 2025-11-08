@@ -1687,37 +1687,40 @@ class PrintJob:
                         if metadata.get('skipped') == f"false":
                             _printable_objects[metadata.get('identify_id')] = metadata.get('name')
                     elif (metadata.tag == 'filament'):
-                        # Filament used for the current print job. The plate info contains filaments
-                        # identified in the order they appear in the slicer. These IDs must be
-                        # mapped to the AMS tray mappings provided by MQTT print.ams_mapping
+                        try:
+                            # Filament used for the current print job. The plate info contains filaments
+                            # identified in the order they appear in the slicer. These IDs must be
+                            # mapped to the AMS tray mappings provided by MQTT print.ams_mapping
 
-                        # Zero-index the filament ID
-                        filament_index = int(metadata.get('id')) - 1
-                        log_label = f"External spool"
-                        
-                        # Filament count should be greater than the zero-indexed filament ID
-                        if filament_count > filament_index:
-                            ams_index = self.ams_mapping[filament_index]
-                            if ams_index >= 16: # BUG - This will not yet handle AMS HT devices
-                                # We add the filament as you can map multiple slicer filaments to the same physical filament.
-                                self._ams_print_weights[ams_index] += float(metadata.get('used_g'))
-                                self._ams_print_lengths[ams_index] += float(metadata.get('used_m'))
-                                log_label = f"AMS Tray {ams_index + 1}"
+                            # Zero-index the filament ID
+                            filament_index = int(metadata.get('id')) - 1
+                            log_label = f"External spool"
+                            
+                            # Filament count should be greater than the zero-indexed filament ID
+                            if filament_count > filament_index:
+                                ams_index = self.ams_mapping[filament_index]
+                                if ams_index < 16: # BUG - This will not yet handle AMS HT devices
+                                    # We add the filament as you can map multiple slicer filaments to the same physical filament.
+                                    self._ams_print_weights[ams_index] += float(metadata.get('used_g'))
+                                    self._ams_print_lengths[ams_index] += float(metadata.get('used_m'))
+                                    log_label = f"AMS Tray {ams_index + 1}"
+                                else:
+                                    LOGGER.debug(f"ams_mapping: {self.ams_mapping}")
+                            elif plate_filament_count > 0:
+                                # Multi filament print but the AMS mapping is unknown
+                                # The data is only sent in the mqtt payload once and isn't part of the 'full' data so the integration must be
+                                # live and listening to capture it.
+                                LOGGER.debug(f"filament_index: {filament_index}")
+                                log_label = f"AMS Tray unknown"
                             else:
-                                LOGGER.debug(f"ams_mapping: {self.ams_mapping}")
-                        elif plate_filament_count > 0:
-                            # Multi filament print but the AMS mapping is unknown
-                            # The data is only sent in the mqtt payload once and isn't part of the 'full' data so the integration must be
-                            # live and listening to capture it.
-                            LOGGER.debug(f"filament_index: {filament_index}")
-                            log_label = f"AMS Tray unknown"
-                        else:
-                            LOGGER.debug(f"plate_filament_count: {plate_filament_count}")
+                                LOGGER.debug(f"plate_filament_count: {plate_filament_count}")
 
-                        LOGGER.debug(f"{log_label}: {metadata.get('used_m')}m | {metadata.get('used_g')}g")
+                            LOGGER.debug(f"{log_label}: {metadata.get('used_m')}m | {metadata.get('used_g')}g")
 
-                        # Increase the total print length
-                        print_length += float(metadata.get('used_m'))
+                            # Increase the total print length
+                            print_length += float(metadata.get('used_m'))
+                        except Exception as e:
+                            LOGGER.error(f"Failed to parse filament data: {e}")
                 
                 self.print_length = print_length
 
@@ -1752,7 +1755,6 @@ class PrintJob:
             result = True
         except Exception as e:
             LOGGER.error(f"Unexpected error parsing model data: {e}")
-            LOGGER.debug()
         
         self.prune_print_history_files()
 
@@ -3202,22 +3204,30 @@ class PrintFun:
     _value: str
     _int_value: int
     _encryption_enabled: bool
+    _fired_encryption_enabled_event: bool
     
     def __init__(self, client):
         self._value = ""
         self._client = client
         self._encryption_enabled = False
         self._int_value: int = 0
+        self._fired_encryption_enabled_event = False
 
     def print_update(self, data: dict) -> bool:
         old_data = f"{self.__dict__}"
         self._value = data.get("fun", str(self._value))
         self._int_value = int(self._value, 16) if self._value else 0
+        self._encryption_enabled = (self._int_value & Print_Fun_Values.MQTT_SIGNATURE_REQUIRED) != 0
+        if self._encryption_enabled:
+            if not self._fired_encryption_enabled_event:
+                self._fired_encryption_enabled_event = True
+                self._client.callback("event_printer_mqtt_encryption_enabled")
+
         return (old_data != f"{self.__dict__}")
 
     @property
     def mqtt_signature_required(self) -> bool:
-        return (self._int_value & Print_Fun_Values.MQTT_SIGNATURE_REQUIRED) != 0
+        return self._encryption_enabled
     
 
 @dataclass
