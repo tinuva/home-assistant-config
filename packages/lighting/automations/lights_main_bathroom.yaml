@@ -1,97 +1,97 @@
 ---
-
 timer:
-  # When calling the start service on a timer that is already running, it resets
-  # the duration it will need to finish and restart the timer without triggering
-  # a canceled or finished event. This, for example, makes it easy to create
-  # timed lights that get triggered by motion. Starting a timer triggers a
-  # started event unless the timer is paused, in that case, it triggers a
-  # restarted event.
-  main_bathroom:
-    duration: '00:10:00'
-    restore: true
+    # When calling the start service on a timer that is already running, it resets
+    # the duration it will need to finish and restart the timer without triggering
+    # a canceled or finished event. This, for example, makes it easy to create
+    # timed lights that get triggered by motion. Starting a timer triggers a
+    # started event unless the timer is paused, in that case, it triggers a
+    # restarted event.
+    main_bathroom:
+        duration: "00:10:00"
+        restore: true
 
 binary_sensor:
-  - platform: trend
-    sensors:
-      master_bathroom_humidity_rising:
-        entity_id: sensor.main_bathroom_humidity
-        friendly_name: Master Bathroom Humidity Rising
-        sample_duration: 7200
-        min_gradient: 0.02
-      master_bathroom_humidity_falling:
-        entity_id: sensor.main_bathroom_humidity
-        friendly_name: Master Bathroom Humidity Falling
-        sample_duration: 7200
-        min_gradient: -0.01
+    - platform: trend
+      sensors:
+          master_bathroom_humidity_rising:
+              entity_id: sensor.main_bathroom_humidity
+              friendly_name: Master Bathroom Humidity Rising
+              sample_duration: 7200
+              min_gradient: 0.02
+          master_bathroom_humidity_falling:
+              entity_id: sensor.main_bathroom_humidity
+              friendly_name: Master Bathroom Humidity Falling
+              sample_duration: 7200
+              min_gradient: -0.01
 
 automation:
-  # Timer end = Turn off
-  - alias: Turn off main_bathroom lights after timer finish
-    trigger:
-      platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.main_bathroom
-    action:
-      - condition: state
-        entity_id: timer.morning_routine
-        state: 'idle'
-      - service: light.turn_off
-        data:
-          entity_id: light.main_bathroom
-
-  # manual turn on
-  - alias: 'main bathroom manual turn on start timer'
-    initial_state: true
-    trigger:
-      - platform: state
-        entity_id: light.main_bathroom
-        to: 'on'
-    condition:
-      - condition: state
-        entity_id: timer.main_bathroom
-        state: 'idle'
-    action:
-      - service: automation.trigger
-        data:
-          skip_condition: true
-          entity_id: automation.turn_on_main_bathroom_lights_fan
-
-  # Turn on
-  - alias: "Turn on main bathroom lights+fan"
-    trigger:
-      - platform: state
-        entity_id: sensor.main_bathroom_humidity, sensor.main_bedroom_humidity   # 1st bathroom 2nd main bedroom
-    condition:
-      - condition: template
-        value_template: "{{ (states.sensor.main_bathroom_humidity.state|float - states.sensor.main_bedroom_humidity.state|float > 15) or (states.sensor.main_bathroom_humidity.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
-      - condition: state  # 'day' condition: from sunrise until sunset
-        entity_id: sun.sun
-        state: 'above_horizon'
-      - condition: not
-        conditions:
+    # Timer end = Turn off
+    - alias: Turn off main_bathroom lights after timer finish
+      trigger:
+          platform: event
+          event_type: timer.finished
+          event_data:
+              entity_id: timer.main_bathroom
+      action:
           - condition: state
-            entity_id: sensor.front_bathroom_temperature
-            state: 'unavailable'
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.main_bathroom
-          duration: >
-            {% set time = states('sensor.time') %}
-            {% if(is_state('timer.morning_wakup_window','active')) %}
-              {{120*60|int}}
-            {% elif(is_state('alarm_control_panel.home_alarm','armed_home')) %}
-              {{4*60|int}}
-            {% elif '20:00' <= time  <= '23:59' %}
-              {{30*60|int}}
-            {% elif '00:00' <= time <= '04:30' %}
-              {{10*60|int}}
-            {% elif '04:30' < time <= '08:29' %}
-              {{45*60|int}}
-            {% else %}
-              {{25*60|int}}
-            {%- endif -%}
-      - service: light.turn_on
-        entity_id: light.main_bathroom
+            entity_id: timer.morning_routine
+            state: "idle"
+          - service: light.turn_off
+            data:
+                entity_id: light.main_bathroom
+
+    # manual turn on
+    - alias: "main bathroom manual turn on start timer"
+      initial_state: true
+      trigger:
+          - platform: state
+            entity_id: light.main_bathroom
+            to: "on"
+      condition:
+          - condition: state
+            entity_id: timer.main_bathroom
+            state: "idle"
+      action:
+          - service: automation.trigger
+            data:
+                skip_condition: true
+                entity_id: automation.turn_on_main_bathroom_lights_fan
+
+    # Turn on
+    - alias: "Turn on main bathroom lights+fan"
+      trigger:
+          - platform: state
+            entity_id: sensor.main_bathroom_humidity, sensor.main_bedroom_humidity # 1st bathroom 2nd main bedroom
+      condition:
+          - condition: template
+            value_template: "{{ (states.sensor.main_bathroom_humidity.state|float - states.sensor.main_bedroom_humidity.state|float > 15) or (states.sensor.main_bathroom_humidity.state|float == 99.9) or states.binary_sensor.master_bathroom_humidity_rising.attributes['gradient']|float > 0.04 }}"
+          - condition: state # 'day' condition: from sunrise until sunset
+            entity_id: sun.sun
+            state: "above_horizon"
+          - condition: not
+            conditions:
+                - condition: state
+                  entity_id: sensor.front_bathroom_temperature
+                  state: "unavailable"
+      action:
+          - service: timer.start
+            data:
+                entity_id:
+                    timer.main_bathroom
+                    # {% if(is_state('timer.morning_wakup_window','active')) %}
+                    #   {{120*60|int}}
+                duration: >
+                    {% set time = states('sensor.time') %}
+                    {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+                      {{4*60|int}}
+                    {% elif '20:00' <= time  <= '23:59' %}
+                      {{30*60|int}}
+                    {% elif '00:00' <= time <= '04:30' %}
+                      {{10*60|int}}
+                    {% elif '04:30' < time <= '08:29' %}
+                      {{45*60|int}}
+                    {% else %}
+                      {{25*60|int}}
+                    {%- endif -%}
+          - service: light.turn_on
+            entity_id: light.main_bathroom

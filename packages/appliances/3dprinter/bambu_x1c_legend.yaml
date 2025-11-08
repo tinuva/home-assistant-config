@@ -1,154 +1,161 @@
 ---
-
 automation:
-  ## Bento-box control
-  ## Basically, turn on/off based on the cooling fan state
-  - alias: Bento Box Control
-    trigger:
-      - platform: state
-        entity_id: fan.x1c_00m09a363000342_cooling_fan
-      - platform: state
-        entity_id: fan.x1c_00m09a363000342_aux_fan
-      - platform: state
-        entity_id: sensor.x1c_00m09a363000342_bed_temperature
-    action:
-      - choose:
-          - conditions:
-              - condition: or
-                conditions:
-                  # - condition: state
-                  #   entity_id: fan.x1c_00m09a363000342_cooling_fan
-                  #   state: 'on'
-                  # - condition: state
-                  #   entity_id: fan.x1c_00m09a363000342_aux_fan
-                  #   state: 'on'
-                  - condition: numeric_state
-                    entity_id: sensor.x1c_00m09a363000342_bed_temperature
-                    above: 39
-            sequence:
-              - service: switch.turn_on
-                data:
-                  entity_id: switch.bento_box_bento_box
-        default:
-          - service: switch.turn_off
-            data:
-              entity_id: switch.bento_box_bento_box
+    ## Bento-box control
+    ## Basically, turn on/off based on the cooling fan state
+    - alias: Bento Box Control
+      trigger:
+          - platform: state
+            entity_id: fan.x1c_00m09a363000342_cooling_fan
+          - platform: state
+            entity_id: fan.x1c_00m09a363000342_aux_fan
+          - platform: state
+            entity_id: sensor.x1c_00m09a363000342_bed_temperature
+      action:
+          - choose:
+                - conditions:
+                      - condition: or
+                        conditions:
+                            # - condition: state
+                            #   entity_id: fan.x1c_00m09a363000342_cooling_fan
+                            #   state: 'on'
+                            # - condition: state
+                            #   entity_id: fan.x1c_00m09a363000342_aux_fan
+                            #   state: 'on'
+                            - condition: numeric_state
+                              entity_id: sensor.x1c_00m09a363000342_bed_temperature
+                              above: 39
+                  sequence:
+                      - service: switch.turn_on
+                        data:
+                            entity_id: switch.bento_box_bento_box
+            default:
+                - service: switch.turn_off
+                  data:
+                      entity_id: switch.bento_box_bento_box
 
-  ## Notifications
-  # - alias: Legend stage change
-  #   trigger:
-  #     - platform: state
-  #       entity_id: sensor.x1c_00m09a363000342_current_stage
-  #       not_to: ["unavailable", "unknown", "offline", "heatbed_preheating", "auto_bed_leveling", "cleaning_nozzle_tip", "calibrating_extrusion"]
-  #   condition:
-  #     - condition: not
-  #       conditions:
-  #         - condition: or
-  #           conditions:
-  #             - condition: template
-  #               value_template: >
-  #                 {{ trigger.from_state.state == 'offline' and trigger.to_state.state == 'idle' }}
-  #             - condition: template
-  #               value_template: >
-  #                 {{ trigger.from_state.state == 'idle' and trigger.to_state.state == 'idofflinele' }}
-  #   action:
-  #     - choose:
-  #         # IF specific states, we skip the camera
-  #         - conditions:
-  #             - condition: or
-  #               conditions:
-  #                 - condition: template
-  #                   value_template: "{{ trigger.to_state.state in ['offline', 'auto_bed_leveling', 'heatbed_preheating',' cleaning_nozzle_tip'] }}"
-  #                 - condition: template
-  #                   value_template: "{{ trigger.to_state.state in ['calibrating_extrusion', 'printing'] }}"
-  #           sequence:
-  #             - service: script.alert
-  #               data:
-  #                 target: 'alerts-david'
-  #                 icon: ':printer:'
-  #                 object: '3D Printer'
-  #                 message: >
-  #                   Legend's stage changed to: {{ states('sensor.x1c_00m09a363000342_current_stage') }} {{- '\n' -}}
-  #                   Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
-  #       # ELSE show camera
-  #       default:
-  #         - service: script.alert
-  #           data:
-  #             target: 'alerts-david'
-  #             icon: ':printer:'
-  #             object: '3D Printer'
-  #             camera: 'camera.bambu_x1c_legend'
-  #             message: >
-  #               Legend's stage changed to: {{ states('sensor.x1c_00m09a363000342_current_stage') }} {{- '\n' -}}
-  #               Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
+    ## Notifications
+    # - alias: Legend stage change
+    #   trigger:
+    #     - platform: state
+    #       entity_id: sensor.x1c_00m09a363000342_current_stage
+    #       not_to: ["unavailable", "unknown", "offline", "heatbed_preheating", "auto_bed_leveling", "cleaning_nozzle_tip", "calibrating_extrusion"]
+    #   condition:
+    #     - condition: not
+    #       conditions:
+    #         - condition: or
+    #           conditions:
+    #             - condition: template
+    #               value_template: >
+    #                 {{ trigger.from_state.state == 'offline' and trigger.to_state.state == 'idle' }}
+    #             - condition: template
+    #               value_template: >
+    #                 {{ trigger.from_state.state == 'idle' and trigger.to_state.state == 'idofflinele' }}
+    #   action:
+    #     - choose:
+    #         # IF specific states, we skip the camera
+    #         - conditions:
+    #             - condition: or
+    #               conditions:
+    #                 - condition: template
+    #                   value_template: "{{ trigger.to_state.state in ['offline', 'auto_bed_leveling', 'heatbed_preheating',' cleaning_nozzle_tip'] }}"
+    #                 - condition: template
+    #                   value_template: "{{ trigger.to_state.state in ['calibrating_extrusion', 'printing'] }}"
+    #           sequence:
+    #             - service: script.alert
+    #               data:
+    #                 target: 'alerts-david'
+    #                 icon: ':printer:'
+    #                 object: '3D Printer'
+    #                 message: >
+    #                   Legend's stage changed to: {{ states('sensor.x1c_00m09a363000342_current_stage') }} {{- '\n' -}}
+    #                   Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
+    #       # ELSE show camera
+    #       default:
+    #         - service: script.alert
+    #           data:
+    #             target: 'alerts-david'
+    #             icon: ':printer:'
+    #             object: '3D Printer'
+    #             camera: 'camera.x1c_00m09a363000342_camera'
+    #             message: >
+    #               Legend's stage changed to: {{ states('sensor.x1c_00m09a363000342_current_stage') }} {{- '\n' -}}
+    #               Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
 
-  - alias: Legend status change
-    trigger:
-      - platform: state
-        entity_id: sensor.x1c_00m09a363000342_print_status
-        not_from: ["unavailable", "unknown", "offline"]
-        not_to: ["unavailable", "unknown", "prepare", "running", "idle", "offline"]
-    action:
-      - choose:
-          # IF specific states, we skip the camera
-          - conditions:
-              - condition: or
-                conditions:
-                  - condition: template
-                    value_template: "{{ trigger.to_state.state in ['offline', 'prepare', 'slicing', 'printing'] }}"
-            sequence:
-              - service: script.alert
-                data:
-                  target: 'alerts-david'
-                  icon: ':printer:'
-                  object: '3D Printer'
-                  message: >
-                    Legend's print status changed to: {{ states('sensor.x1c_00m09a363000342_print_status') }} {{- '\n' -}}
-                    Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
-        # ELSE show camera
-        default:
-          - service: script.alert
-            data:
-              target: 'alerts-david'
-              icon: ':printer:'
-              object: '3D Printer'
-              camera: 'camera.bambu_x1c_legend'
-              message: >
-                Legend's print status changed to: {{ states('sensor.x1c_00m09a363000342_print_status') }} {{- '\n' -}}
-                Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
+    - alias: Legend status change
+      trigger:
+          - platform: state
+            entity_id: sensor.x1c_00m09a363000342_print_status
+            not_from: ["unavailable", "unknown", "offline"]
+            not_to:
+                [
+                    "unavailable",
+                    "unknown",
+                    "prepare",
+                    "running",
+                    "idle",
+                    "offline",
+                ]
+      action:
+          - choose:
+                # IF specific states, we skip the camera
+                - conditions:
+                      - condition: or
+                        conditions:
+                            - condition: template
+                              value_template: "{{ trigger.to_state.state in ['offline', 'prepare', 'slicing', 'printing'] }}"
+                  sequence:
+                      - service: script.alert
+                        data:
+                            target: "alerts-david"
+                            icon: ":printer:"
+                            object: "3D Printer"
+                            message: >
+                                Legend's print status changed to: {{ states('sensor.x1c_00m09a363000342_print_status') }} {{- '\n' -}}
+                                Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
+            # ELSE show camera
+            default:
+                - service: script.alert
+                  data:
+                      target: "alerts-david"
+                      icon: ":printer:"
+                      object: "3D Printer"
+                      camera: "camera.x1c_00m09a363000342_camera"
+                      message: >
+                          Legend's print status changed to: {{ states('sensor.x1c_00m09a363000342_print_status') }} {{- '\n' -}}
+                          Remaining Time: {{ states('sensor.x1c_00m09a363000342_remaining_time') }} {{- '\n' -}}
 
-  - alias: Legend HMS error
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.x1c_00m09a363000342_hms_errors
-        to: 'on'
-    variables:
-      count: >-
+    - alias: Legend HMS error
+      trigger:
+          - platform: state
+            entity_id: binary_sensor.x1c_00m09a363000342_hms_errors
+            to: "on"
+      variables:
+          count: >-
               {{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', 'Count') }}
-    action:
-      - choose:
-          - conditions:
-              - condition: or
-                conditions:
-                  - condition: template
-                    value_template: "{{ 1 < count }}"
-                  - condition: and
-                    conditions:
-                      - condition: template
-                        value_template: "{{ 1 == count }}"
-                      - condition: template
-                        value_template: "{{ 'Inspecting the first layer' not in state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', '1-Error') }}"
-            sequence:
-              - service: script.alert
-                data:
-                  target: 'alerts-david'
-                  icon: ':printer:'
-                  object: '3D Printer'
-                  camera: 'camera.bambu_x1c_legend'
-                  message: >
-                    Legend is reporting a Problem {{- '\n' -}}
-                    {{ count|string }} errors encountered. {{- '\n' -}}
-                    {%- for i in range(1, count+1) -%}
-                    Error {{ count|string  }}: <{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Wiki') }}|{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Error') }}>{{- '\n' -}}
-                    {%- endfor -%}
-        #default:
+      action:
+          - choose:
+                - conditions:
+                      - condition: or
+                        conditions:
+                            - condition: template
+                              value_template: "{{ 1 < count }}"
+                            - condition: and
+                              conditions:
+                                  - condition: template
+                                    value_template: "{{ 1 == count }}"
+                                  - condition: template
+                                    value_template: "{{ 'Inspecting the first layer' not in state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', '1-Error') }}"
+                  sequence:
+                      - service: script.alert
+                        data:
+                            target: "alerts-david"
+                            icon: ":printer:"
+                            object: "3D Printer"
+                            camera: "camera.x1c_00m09a363000342_camera"
+                            message: >
+                                Legend is reporting a Problem {{- '\n' -}}
+                                {{ count|string }} errors encountered. {{- '\n' -}}
+                                {%- for i in range(1, count+1) -%}
+                                Error {{ count|string  }}: <{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Wiki') }}|{{ state_attr('binary_sensor.x1c_00m09a363000342_hms_errors', i|string + '-Error') }}>{{- '\n' -}}
+                                {%- endfor -%}
+            #default:

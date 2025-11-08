@@ -219,19 +219,19 @@ automation:
                 seconds: 30
           until:
             - condition: template
-              value_template: '{{ states(sensor.solcast_forecast) != "unavailable" }}'
+              value_template: '{{ states(sensor.solcast_pv_forecast_forecast_today) != "unavailable" }}'
       - service: mqtt.publish
         data:
           topic: home/solcast/energy_today_predicted
-          payload: "{{ states('sensor.solcast_forecast') }}"
+          payload: "{{ states('sensor.solcast_pv_forecast_forecast_today') }}"
           retain: true
       - service: mqtt.publish
         data:
           topic: home/solcast/peak_power_today_predicted
-          payload: "{{ states('sensor.solcast_forecast_peak_power_today') }}"
+          payload: "{{ states('sensor.solcast_pv_forecast_peak_forecast_today') }}"
           retain: true
       - service: mqtt.publish
         data:
           topic: home/solcast/peak_time_today_predicted
-          payload: "{{ states('sensor.solcast_forecast_peak_time_today') }}"
+          payload: "{{ states('sensor.solcast_pv_forecast_peak_time_today') }}"
           retain: true

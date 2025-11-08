@@ -3,267 +3,272 @@
 #vacuum:
 #  - platform: mqtt
 
+mqtt:
+  sensor:
+    - state_topic: valetudo/rockrobo/map_calibration_points
+      name: rockrobo_calibration
+
 timer:
-  # When calling the start service on a timer that is already running, it resets
-  # the duration it will need to finish and restart the timer without triggering
-  # a canceled or finished event. This, for example, makes it easy to create
-  # timed lights that get triggered by motion. Starting a timer triggers a
-  # started event unless the timer is paused, in that case, it triggers a
-  # restarted event.
-  vacuumautoresume:
-    duration: "00:15:00"
-    restore: true
+    # When calling the start service on a timer that is already running, it resets
+    # the duration it will need to finish and restart the timer without triggering
+    # a canceled or finished event. This, for example, makes it easy to create
+    # timed lights that get triggered by motion. Starting a timer triggers a
+    # started event unless the timer is paused, in that case, it triggers a
+    # restarted event.
+    vacuumautoresume:
+        duration: "00:15:00"
+        restore: true
 
 sensor:
-  - platform: template
-    sensors:
-      vacuum_error_code:
-        friendly_name: "Vacuum Error Code"
-        unique_id: vacuum_error_code
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
-  - platform: template
-    sensors:
-      vacuum_error_message:
-        friendly_name: "Vacuum Error Message"
-        unique_id: vacuum_error_message
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
-  - platform: template
-    sensors:
-      vacuum_last_clean_stats:
-        friendly_name: Vacuum last cleaning stats
-        value_template: >
-          Vacuum Robot latest cleaning stats:{{- '\n' -}}
-          Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
-          Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
-          Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
-          End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
+    - platform: template
+      sensors:
+          vacuum_error_code:
+              friendly_name: "Vacuum Error Code"
+              unique_id: vacuum_error_code
+              value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
+    - platform: template
+      sensors:
+          vacuum_error_message:
+              friendly_name: "Vacuum Error Message"
+              unique_id: vacuum_error_message
+              value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
+    - platform: template
+      sensors:
+          vacuum_last_clean_stats:
+              friendly_name: Vacuum last cleaning stats
+              value_template: >
+                  Vacuum Robot latest cleaning stats:{{- '\n' -}}
+                  Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
+                  Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
+                  Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
+                  End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
 
-        # {{- '\n' -}}
-        # {%- if states.vacuum.rockrobo.attributes.mainBrush|int < 10 %}Main Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.mainBrush }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.sideBrush|int < 10 %}Side Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.sideBrush }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.filter|int < 10 %}Filter needs cleaning! {{ states.vacuum.rockrobo.attributes.filter }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.sensor|int < 10 %}Sensors needs cleaning! {{ states.vacuum.rockrobo.attributes.sensor }} hours left {{- '\n' -}}{% endif %}
-  - platform: template
-    sensors:
-      vacuum_valetudo_state:
-        friendly_name: Vacuum Valetudo State
-        value_template: >-
-          {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
-            {{ states('sensor.vacuum_valetudo_state') }}
-          {% else %}
-            {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
-          {% endif %}
+              # {{- '\n' -}}
+              # {%- if states.vacuum.rockrobo.attributes.mainBrush|int < 10 %}Main Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.mainBrush }} hours left {{- '\n' -}}{% endif %}
+              # {%- if states.vacuum.rockrobo.attributes.sideBrush|int < 10 %}Side Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.sideBrush }} hours left {{- '\n' -}}{% endif %}
+              # {%- if states.vacuum.rockrobo.attributes.filter|int < 10 %}Filter needs cleaning! {{ states.vacuum.rockrobo.attributes.filter }} hours left {{- '\n' -}}{% endif %}
+              # {%- if states.vacuum.rockrobo.attributes.sensor|int < 10 %}Sensors needs cleaning! {{ states.vacuum.rockrobo.attributes.sensor }} hours left {{- '\n' -}}{% endif %}
+    - platform: template
+      sensors:
+          vacuum_valetudo_state:
+              friendly_name: Vacuum Valetudo State
+              value_template: >-
+                  {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
+                    {{ states('sensor.vacuum_valetudo_state') }}
+                  {% else %}
+                    {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
+                  {% endif %}
 
 binary_sensor:
-  - platform: template
-    sensors:
-      vacuum_finished_cleaning:
-        friendly_name: Vacuum finished cleaning
-        value_template: >-
-          {{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}
+    - platform: template
+      sensors:
+          vacuum_finished_cleaning:
+              friendly_name: Vacuum finished cleaning
+              value_template: >-
+                  {{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}
 
 automation:
-  ### Clean
-  - alias: Start vacuum cleaning
-    trigger:
-      - platform: time
-        at: "05:45:00"
-    action:
-      - choose:
-          # Work day mornings when not holiday
-          - conditions:
-              # - condition: state
-              #   entity_id: binary_sensor.workday_sensor
-              #   state: "on"
-              - condition: state
-                entity_id: input_boolean.holiday
-                state: "off"
-              - condition: state
-                entity_id: input_boolean.guest
-                state: "off"
-              - condition: not
-                conditions:
-                  - condition: state
-                    entity_id: input_boolean.rockrobo_floor_disaster_zone
-                    state: "on"
-            sequence:
-              - service: vacuum.start
-                data:
-                  entity_id: vacuum.rockrobo
-        # No conditions met so log and do nothing
-        default:
-          - alias: "Log why cleaning didn't start"
-            service: script.log
+    ### Clean
+    - alias: Start vacuum cleaning
+      trigger:
+          - platform: time
+            at: "05:45:00"
+      action:
+          - choose:
+                # Work day mornings when not holiday
+                - conditions:
+                      # - condition: state
+                      #   entity_id: binary_sensor.workday_sensor
+                      #   state: "on"
+                      - condition: state
+                        entity_id: input_boolean.holiday
+                        state: "off"
+                      - condition: state
+                        entity_id: input_boolean.guest
+                        state: "off"
+                      - condition: not
+                        conditions:
+                            - condition: state
+                              entity_id: input_boolean.rockrobo_floor_disaster_zone
+                              state: "on"
+                  sequence:
+                      - service: vacuum.start
+                        data:
+                            entity_id: vacuum.rockrobo
+            # No conditions met so log and do nothing
+            default:
+                - alias: "Log why cleaning didn't start"
+                  service: script.log
+                  data:
+                      icon: ":robot_face:"
+                      object: "Vacuum Robot"
+                      message: >
+                          Not cleaning. Conditions not met:
+                          {% if is_state('binary_sensor.workday_sensor', 'off') %}
+                          - Not a workday
+                          {% endif %}
+                          {% if is_state('input_boolean.holiday', 'on') %}
+                          - Holiday mode is on
+                          {% endif %}
+                          {% if is_state('input_boolean.guest', 'on') %}
+                          - Guest mode is on
+                          {% endif %}
+                          {% if is_state('input_boolean.rockrobo_floor_disaster_zone', 'on') %}
+                          - Floor disaster zone is set
+                          {% endif %}
+                          {% if is_state('binary_sensor.workday_sensor', 'on') and is_state('input_boolean.holiday', 'off') and is_state('input_boolean.guest', 'off') and is_state('input_boolean.rockrobo_floor_disaster_zone', 'off') %}
+                          - Unknown reason (all conditions seem to be met)
+                          {% endif %}
+                - condition: state
+                  entity_id: input_boolean.rockrobo_floor_disaster_zone
+                  state: "on"
+                - service: script.log
+                  data:
+                      icon: ":robot_face:"
+                      object: "Vacuum Robot"
+                      message: >
+                          Rockrobo Floor disaster zone set
+
+    ### Notify state change
+    - alias: Notify when Robot State Change
+      description: Notify when Robot State Change
+      trigger:
+          - entity_id: vacuum.rockrobo
+            platform: state
+            to: "cleaning"
+          - entity_id: vacuum.rockrobo
+            platform: state
+            to: "paused"
+          #- entity_id: vacuum.rockrobo
+          #  platform: state
+          #  to: 'docked'
+          #- entity_id: vacuum.rockrobo
+          #  platform: state
+          #  to: 'idle'
+          #- entity_id: vacuum.rockrobo
+          #  platform: state
+          #  to: 'returning'
+      condition: []
+      action:
+          - service: script.alert
             data:
-              icon: ":robot_face:"
-              object: "Vacuum Robot"
-              message: >
-                Not cleaning. Conditions not met:
-                {% if is_state('binary_sensor.workday_sensor', 'off') %}
-                - Not a workday
-                {% endif %}
-                {% if is_state('input_boolean.holiday', 'on') %}
-                - Holiday mode is on
-                {% endif %}
-                {% if is_state('input_boolean.guest', 'on') %}
-                - Guest mode is on
-                {% endif %}
-                {% if is_state('input_boolean.rockrobo_floor_disaster_zone', 'on') %}
-                - Floor disaster zone is set
-                {% endif %}
-                {% if is_state('binary_sensor.workday_sensor', 'on') and is_state('input_boolean.holiday', 'off') and is_state('input_boolean.guest', 'off') and is_state('input_boolean.rockrobo_floor_disaster_zone', 'off') %}
-                - Unknown reason (all conditions seem to be met)
-                {% endif %}
-          - condition: state
-            entity_id: input_boolean.rockrobo_floor_disaster_zone
-            state: "on"
-          - service: script.log
+                target: "logs"
+                icon: ":robot_face: "
+                object: "Vacuum Robot"
+                #camera: 'camera.mapper_rockrobo_map'
+                message: "Vacuum Robot is now {{ states.vacuum.rockrobo.state }}"
+
+    ### Auto-resume after pause
+    - alias: Vacuum Auto-resume after pause timer
+      description: Vacuum Auto-resume after pause timer
+      trigger:
+          - entity_id: vacuum.rockrobo
+            platform: state
+            from: "cleaning"
+            to: "paused"
+      condition: []
+      action:
+          - service: timer.start
             data:
-              icon: ":robot_face:"
-              object: "Vacuum Robot"
-              message: >
-                Rockrobo Floor disaster zone set
+                entity_id: timer.vacuumautoresume
 
-  ### Notify state change
-  - alias: Notify when Robot State Change
-    description: Notify when Robot State Change
-    trigger:
-      - entity_id: vacuum.rockrobo
-        platform: state
-        to: "cleaning"
-      - entity_id: vacuum.rockrobo
-        platform: state
-        to: "paused"
-      #- entity_id: vacuum.rockrobo
-      #  platform: state
-      #  to: 'docked'
-      #- entity_id: vacuum.rockrobo
-      #  platform: state
-      #  to: 'idle'
-      #- entity_id: vacuum.rockrobo
-      #  platform: state
-      #  to: 'returning'
-    condition: []
-    action:
-      - service: script.alert
-        data:
-          target: "logs"
-          icon: ":robot_face: "
-          object: "Vacuum Robot"
-          #camera: 'camera.rockrobo_map'
-          message: "Vacuum Robot is now {{ states.vacuum.rockrobo.state }}"
+    - alias: Vacuum Auto-resume after pause timer end
+      trigger:
+          platform: event
+          event_type: timer.finished
+          event_data:
+              entity_id: timer.vacuumautoresume
+      action:
+          - service: vacuum.start
+            data:
+                entity_id: vacuum.rockrobo
 
-  ### Auto-resume after pause
-  - alias: Vacuum Auto-resume after pause timer
-    description: Vacuum Auto-resume after pause timer
-    trigger:
-      - entity_id: vacuum.rockrobo
-        platform: state
-        from: "cleaning"
-        to: "paused"
-    condition: []
-    action:
-      - service: timer.start
-        data:
-          entity_id: timer.vacuumautoresume
+    ### Notify error
+    - alias: Notify when Robot has error
+      description: Notify when Robot has error
+      trigger:
+          - entity_id: sensor.vacuum_error_code
+            platform: state
+            from: "0"
+      condition:
+          - condition: template
+            value_template: >-
+                {{ states('sensor.vacuum_error_code') != '' and states('sensor.vacuum_error_code') not in ['unavailable','unknown','none'] }}
+          #- condition:
+          #  value_template: >-
+          #    {{ trigger.platform == 'state' and trigger.from_state.state|default('') != '' }}
+      action:
+          - service: script.alert
+            data:
+                target: "logs"
+                icon: ":robot_face: "
+                object: "Vacuum Robot"
+                #camera: 'camera.mapper_rockrobo_map'
+                message: "Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }}"
 
-  - alias: Vacuum Auto-resume after pause timer end
-    trigger:
-      platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.vacuumautoresume
-    action:
-      - service: vacuum.start
-        data:
-          entity_id: vacuum.rockrobo
+    ### Notify when failed to docked after returning
+    - alias: Notify when Robot failed to dock
+      description: Notify when Robot failed to dock
+      trigger:
+          - entity_id: vacuum.rockrobo
+            platform: state
+            from: "returning"
+            to: "idle"
+      condition: []
+      action:
+          - service: script.alert
+            data:
+                target: "logs"
+                icon: ":robot_face: "
+                object: "Vacuum Robot"
+                #camera: 'camera.mapper_rockrobo_map'
+                message: "Vacuum Robot failed to dock!"
 
-  ### Notify error
-  - alias: Notify when Robot has error
-    description: Notify when Robot has error
-    trigger:
-      - entity_id: sensor.vacuum_error_code
-        platform: state
-        from: "0"
-    condition:
-      - condition: template
-        value_template: >-
-          {{ states('sensor.vacuum_error_code') != '' and states('sensor.vacuum_error_code') not in ['unavailable','unknown','none'] }}
-      #- condition:
-      #  value_template: >-
-      #    {{ trigger.platform == 'state' and trigger.from_state.state|default('') != '' }}
-    action:
-      - service: script.alert
-        data:
-          target: "logs"
-          icon: ":robot_face: "
-          object: "Vacuum Robot"
-          #camera: 'camera.rockrobo_map'
-          message: "Vacuum Robot Error: {{ states.sensor.vacuum_error_code.state }} {{ states.sensor.vacuum_error_message.state }}"
+    ### Notify error state
+    - alias: Notify when Robot State Error
+      description: Notify when Robot State Error
+      trigger:
+          - entity_id: sensor.vacuum_valetudo_state
+            platform: state
+            to: "Error"
+      #condition:
+      #  - condition: template
+      #    value_template: >-
+      #      {{ states('sensor.vacuum_valetudo_state') != '' and states('sensor.vacuum_valetudo_state') not in ['unavailable','unknown','none'] }}
+      #  - condition:
+      #    value_template: >-
+      #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
+      action:
+          - service: script.alert
+            data:
+                target: "logs"
+                icon: ":robot_face: "
+                object: "Vacuum Robot"
+                #camera: 'camera.mapper_rockrobo_map'
+                message: >
+                    Vacuum Robot Error - Check out why!
+                    From state: {{ trigger.from_state.state }}
 
-  ### Notify when failed to docked after returning
-  - alias: Notify when Robot failed to dock
-    description: Notify when Robot failed to dock
-    trigger:
-      - entity_id: vacuum.rockrobo
-        platform: state
-        from: "returning"
-        to: "idle"
-    condition: []
-    action:
-      - service: script.alert
-        data:
-          target: "logs"
-          icon: ":robot_face: "
-          object: "Vacuum Robot"
-          #camera: 'camera.rockrobo_map'
-          message: "Vacuum Robot failed to dock!"
-
-  ### Notify error state
-  - alias: Notify when Robot State Error
-    description: Notify when Robot State Error
-    trigger:
-      - entity_id: sensor.vacuum_valetudo_state
-        platform: state
-        to: "Error"
-    #condition:
-    #  - condition: template
-    #    value_template: >-
-    #      {{ states('sensor.vacuum_valetudo_state') != '' and states('sensor.vacuum_valetudo_state') not in ['unavailable','unknown','none'] }}
-    #  - condition:
-    #    value_template: >-
-    #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
-    action:
-      - service: script.alert
-        data:
-          target: "logs"
-          icon: ":robot_face: "
-          object: "Vacuum Robot"
-          #camera: 'camera.rockrobo_map'
-          message: >
-            Vacuum Robot Error - Check out why!
-            From state: {{ trigger.from_state.state }}
-
-  ### Notify last clean results
-  - alias: Notify when Robot State Change
-    description: Notify when Robot State Change
-    trigger:
-      #- entity_id: vacuum.rockrobo
-      #  platform: state
-      #  from: 'cleaning'
-      #  to: 'returning'
-      - entity_id: binary_sensor.vacuum_finished_cleaning
-        platform: state
-        to: "on"
-    #condition:
-    #  - condition:
-    #    value_template: >-
-    #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
-    action:
-      - service: script.alert
-        data:
-          target: "logs"
-          icon: ":robot_face: "
-          object: "Vacuum Robot"
-          camera: "camera.rockrobo_map"
-          message: "{{ states.sensor.vacuum_last_clean_stats.state }}"
+    ### Notify last clean results
+    - alias: Notify when Robot State Change
+      description: Notify when Robot State Change
+      trigger:
+          #- entity_id: vacuum.rockrobo
+          #  platform: state
+          #  from: 'cleaning'
+          #  to: 'returning'
+          - entity_id: binary_sensor.vacuum_finished_cleaning
+            platform: state
+            to: "on"
+      #condition:
+      #  - condition:
+      #    value_template: >-
+      #      {{ trigger.from_state.state not in ['unknown','unavailable','none'] }}
+      action:
+          - service: script.alert
+            data:
+                target: "logs"
+                icon: ":robot_face: "
+                object: "Vacuum Robot"
+                camera: "camera.mapper_rockrobo_map"
+                message: "{{ states.sensor.vacuum_last_clean_stats.state }}"
