@@ -14,16 +14,16 @@ automation:
   - id: auto_off_lights_evening_5min
     alias: "Auto-Off: Evening Lights (6-8pm, 5min)"
     description: "Turn off evening lights between 6pm-8pm if on for more than 5 minutes"
-    
+
     trigger:
       - platform: time_pattern
         minutes: "/1"  # Check every minute
-    
+
     condition:
       - condition: time
         after: "18:00:00"
         before: "20:00:00"
-    
+
     action:
       - service: light.turn_off
         target:
@@ -31,11 +31,11 @@ automation:
             {% set lights = state_attr('light.auto_off_evening_lights', 'entity_id') %}
             {% set result = namespace(entities=[]) %}
             {% for light in lights %}
-              {% if is_state(light, 'on') and 
+              {% if is_state(light, 'on') and
                     (now() - states[light].last_changed).total_seconds() > 300 %}
                 {% set result.entities = result.entities + [light] %}
               {% endif %}
             {% endfor %}
             {{ result.entities }}
-    
+
     mode: single
