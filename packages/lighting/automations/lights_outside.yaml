@@ -97,7 +97,6 @@ automation:
             #before_offset: "-00:20:00"
     action:
       - service: light.turn_on
-        data_template:
         entity_id:
           - light.lights_while_awake
       - condition: state
