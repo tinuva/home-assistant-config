@@ -28,15 +28,15 @@ automation:
                 data:
                   brightness_pct: 90
           # Hold - Mop Kitchen floor
-          - conditions:
-              - condition: template
-                value_template: "{{ trigger.payload == 'hold' }}"
-            sequence:
-              - service: script.clean_room
-                data:
-                  mode: Mop
-                  room:
-                    - "11"
+          # - conditions:
+          #     - condition: template
+          #       value_template: "{{ trigger.payload == 'hold' }}"
+          #   sequence:
+          #     - service: script.clean_room
+          #       data:
+          #         mode: Mop
+          #         room:
+          #           - "11"
 
   # Main Bathroom button
   - alias: 'MQTT Zigbee Button Main Bathroom single click'
