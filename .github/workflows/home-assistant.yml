@@ -39,6 +39,8 @@ jobs:
     steps:
       - name: ⤵️ Check out configuration from GitHub
         uses: actions/checkout@v4
+      - name: 📝 Copy fake secrets file
+        run: cp ./secrets.fake.yaml ./secrets.yaml
       - name: 🔗 Workaround for Home Assistant check (issue #111)
         run: |
           # Workaround for https://github.com/frenck/action-home-assistant/issues/111
