@@ -41,7 +41,7 @@ jobs:
         uses: actions/checkout@v4
       - name: 📝 Copy fake secrets file
         run: cp ./secrets.fake.yaml ./secrets.yaml
-      - name: 🔗 Workaround for Home Assistant check (issue #111)
+      - name: 🚀 Run Home Assistant Configuration Check
         run: |
           # Workaround for https://github.com/frenck/action-home-assistant/issues/111
           # The action looks for config in /root/.homeassistant but the workspace is mounted elsewhere
