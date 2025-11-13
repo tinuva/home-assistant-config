@@ -39,12 +39,14 @@ jobs:
     steps:
       - name: ⤵️ Check out configuration from GitHub
         uses: actions/checkout@v4
-      - name: 🚀 Run Home Assistant Configuration Check
-        uses: frenck/action-home-assistant@v1.4
-        with:
-          path: "."
-          secrets: ./secrets.fake.yaml
-          version: "${{ matrix.version }}"
+      - name: 🔗 Workaround for Home Assistant check (issue #111)
+        run: |
+          # Workaround for https://github.com/frenck/action-home-assistant/issues/111
+          # The action looks for config in /root/.homeassistant but the workspace is mounted elsewhere
+          docker run --rm \
+            -v ${{ github.workspace }}:/github/workspace \
+            ghcr.io/home-assistant/home-assistant:${{ matrix.version }} \
+            sh -c "ln -s /github/workspace /root/.homeassistant && python -m homeassistant --script check_config --config /root/.homeassistant -i"
 
   esphome:
     runs-on: ubuntu-latest
