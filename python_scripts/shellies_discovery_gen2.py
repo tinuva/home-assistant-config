@@ -1,6 +1,6 @@
 """Adds MQTT discovery support for Shellies Gen2+ devices."""
 
-VERSION = "4.0.0"
+VERSION = "4.1.0"
 
 ATTR_BATTERY_POWERED = "battery_powered"
 ATTR_BINARY_SENSORS = "binary_sensors"
@@ -1947,6 +1947,7 @@ SUPPORTED_MODELS = {
             SENSOR_SIGNAL_STRENGTH: DESCRIPTION_SENSOR_BTH_DEV_SIGNAL_STRENGTH,
             SENSOR_BATTERY: DESCRIPTION_SENSOR_BTH_DEV_BATTERY,
         },
+        ATTR_INPUTS: 1,
     },
     MODEL_BLU_MOTION: {
         ATTR_NAME: "Shelly BLU Motion",
@@ -5230,7 +5231,14 @@ def configure_device():
         profile = ATTR_COVER
     elif model == MODEL_PLUS_RGBW_PM:
         profile = device_config["sys"]["device"][ATTR_PROFILE]
-    elif model == MODEL_DIMMER_10V_G3:
+    elif model in (
+        MODEL_DALI_DIMMER_G3,
+        MODEL_DIMMER_10V_G3,
+        MODEL_DIMMER_G3,
+        MODEL_PLUS_DIMMER_10V,
+        MODEL_PRO_DIMMER_1PM,
+        MODEL_PRO_DIMMER_2PM,
+    ):
         profile = ATTR_LIGHT
     else:
         profile = device_config["sys"]["device"].get(ATTR_PROFILE, ATTR_SWITCH)
