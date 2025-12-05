@@ -37,14 +37,13 @@ BAMBU_LAB_CARDS = [
     {
         'name': 'Bambu Lab Cards',
         'filename': 'ha-bambulab-cards.js',
-        'version': '0.6.22'
+        'version': '0.6.39'
     }
 ]
 
 class Options(IntEnum):
     CAMERA = 1,
     IMAGECAMERA = 2,
-    FTP = 3,
     FIRMWAREUPDATE = 6
 
 OPTION_NAME = {

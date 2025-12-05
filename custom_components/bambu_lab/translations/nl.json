@@ -236,8 +236,14 @@
       "active_ams": {
         "name": "Actief"
       },
+      "drying": {
+        "name": "Drogen"
+      },
       "airduct_mode": {
         "name": "Luchtkanaalmodus"
+      },
+      "hybrid_mode_blocks_control": {
+        "name": "Hybride MQTT blokkeert de controle"
       }
     },
     "button": {
@@ -509,7 +515,10 @@
         "name": "Hoeveelheid lagen"
       },
       "active_tray": {
-        "name": "Actieve tray"
+        "name": "Actieve tray",
+        "state": {
+          "none": "Geen"
+        }
       },
       "nozzle_diameter": {
         "name": "Nozzle-grootte"
@@ -871,6 +880,10 @@
     "mqtt_encryption_enabled": {
       "title": "MQTT-codering ingeschakeld",
       "description": "{device} is met de cloud verbonden en mqtt-codering is ingeschakeld. Alleen het licht kan door deze integratie worden aangestuurd. Alle andere bedieningselementen zijn niet beschikbaar. De printer moet worden ingesteld op de Developer LAN-modus om bediening vanuit de thuisassistent mogelijk te maken."
+    },
+    "hybrid_mode_blocking": {
+      "title": "Hybride verbinding blokkeert controle",
+      "description": "{device} is verbonden met de cloud maar met lokale mqtt-verbinding door de integratie. Alleen het licht kan door deze integratie worden aangestuurd. Alle andere bedieningselementen zijn niet beschikbaar. Schakel de verbinding naar pure cloud om controle mogelijk te maken."
     }
   }
 }

@@ -236,8 +236,14 @@
       "active_ams": {
         "name": "Attivo"
       },
+      "drying": {
+        "name": "Asciugatura"
+      },
       "airduct_mode": {
         "name": "Modalità condotto d'aria"
+      },
+      "hybrid_mode_blocks_control": {
+        "name": "Controllo dei blocchi MQTT ibrido"
       }
     },
     "button": {
@@ -506,7 +512,10 @@
         "name": "Livelli Totali"
       },
       "active_tray": {
-        "name": "Piatto Attivo"
+        "name": "Piatto Attivo",
+        "state": {
+          "none": "Nessuno"
+        }
       },
       "nozzle_diameter": {
         "name": "Dimensione Ugello"
@@ -871,6 +880,10 @@
     "mqtt_encryption_enabled": {
       "title": "Crittografia MQTT abilitata",
       "description": "{device} è connesso al cloud con crittografia mqtt abilitata. Solo la luce può essere controllata da questa integrazione. Tutti gli altri controlli non sono disponibili. La stampante deve essere impostata sulla modalità lan sviluppatore per consentire il controllo dall'assistente domestico."
+    },
+    "hybrid_mode_blocking": {
+      "title": "Controllo dei blocchi di connessione ibridi",
+      "description": "{device} è connesso al cloud ma con connessione mqtt locale tramite l'integrazione. Solo la luce può essere controllata da questa integrazione. Tutti gli altri controlli non sono disponibili. Passa la connessione al cloud puro per abilitare il controllo."
     }
   }
 }

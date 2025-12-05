@@ -12,6 +12,7 @@ from .definitions import (
     AMS_BINARY_SENSORS,
     PRINTER_BINARY_SENSORS,
     VIRTUAL_TRAY_BINARY_SENSORS,
+    BambuLabAMSBinarySensorEntityDescription,
     BambuLabBinarySensorEntityDescription,
 )
 from .models import (
@@ -28,7 +29,10 @@ async def async_setup_entry(
         async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up BambuLab sensor based on a config entry."""
+
     coordinator: BambuDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    if not coordinator.get_model().has_full_printer_data:
+        return
 
     for sensor in PRINTER_BINARY_SENSORS:    
         if sensor.exists_fn(coordinator):
@@ -37,7 +41,8 @@ async def async_setup_entry(
     for sensor in AMS_BINARY_SENSORS:
         for index in coordinator.get_model().ams.data.keys():
             if coordinator.get_model().ams.data[index] is not None:
-                async_add_entities([BambuLabAMSBinarySensor(coordinator, sensor, index)])
+                if sensor.exists_fn(coordinator, index):
+                    async_add_entities([BambuLabAMSBinarySensor(coordinator, sensor, index)])
 
     for sensor in VIRTUAL_TRAY_BINARY_SENSORS:    
         if sensor.exists_fn(coordinator):
@@ -78,7 +83,7 @@ class BambuLabAMSBinarySensor(AMSEntity, BambuLabBinarySensor):
     def __init__(
             self,
             coordinator: BambuDataUpdateCoordinator,
-            description: BambuLabBinarySensorEntityDescription,
+            description: BambuLabAMSBinarySensorEntityDescription,
             index: int
     ) -> None:
         """Initialize the sensor."""

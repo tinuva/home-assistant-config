@@ -1,7 +1,6 @@
 """The Bambu Lab component."""
 
 import asyncio
-import json
 import os
 import mimetypes
 from datetime import datetime
@@ -305,8 +304,11 @@ class EnsureCacheFileAPIView(HomeAssistantView):
                 return web.json_response({"error": f"Printer with serial {serial} not found"}, status=404)
 
             model = coordinator.get_model()
-            BASE_CACHE_DIR = "/config/www/media/ha-bambulab/"
-            local_path = os.path.join(BASE_CACHE_DIR, cache_path)
+            # First get the cached path from the print UX. This may be for a different printer (i.e. it already
+            # includes the serial) so we need to allow for that.
+            base_cache_path = Path(coordinator.get_file_cache_directory()).parent
+            local_path = str(base_cache_path / cache_path)
+
             # local_path is of form '/config/www/media/ha-bambulab/<SERIAL>/prints/Fidgets_v14.3mf'
             #                    or '/config/www/media/ha-bambulab/<SERIAL>/prints/cache/Fidgets_v14.3mf'
             # Depending where the print source chose to put the file onto the printer.
@@ -363,7 +365,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         # Wait for the result from the second instance
         try:
             result = await asyncio.wait_for(future, timeout=15)
-            LOGGER.debug(f"Service call result: {result}")
+            if (call.service == 'extrude_retract' or
+                call.service == 'get_filament_data'):
+                # Only report result for service calls that return a result to avoid confusion.
+                if isinstance(result, (list, dict, tuple)):
+                    LOGGER.debug("Service call result: %s with length %d", type(result).__name__, len(result))
+                else:
+                    LOGGER.debug("Service call result: %s", result)
+            else:
+                LOGGER.debug("Service call complete.")
             return result
         except asyncio.TimeoutError:
             LOGGER.error("Service call timed out")
@@ -377,7 +387,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 # Integration may have been reloaded, ignore cleanup errors
                 pass
 
-    # Register the serviceS with Home Assistant
+    # Register the services with Home Assistant
     services = {
         "send_command": SupportsResponse.NONE,
         "print_project_file": SupportsResponse.NONE,
@@ -388,6 +398,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         "extrude_retract": SupportsResponse.ONLY,
         "set_filament": SupportsResponse.NONE,
         "get_filament_data": SupportsResponse.ONLY,
+        "read_rfid": SupportsResponse.NONE,
+        "start_filament_drying": SupportsResponse.NONE,
+        "stop_filament_drying": SupportsResponse.NONE,
     }
     for command in services:
         hass.services.async_register(

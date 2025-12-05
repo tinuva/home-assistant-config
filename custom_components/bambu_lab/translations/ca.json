@@ -236,8 +236,14 @@
       "active_ams": {
         "name": "Activa"
       },
+      "drying": {
+        "name": "Assecatge"
+      },
       "airduct_mode": {
         "name": "Mode de conducte d'aire"
+      },
+      "hybrid_mode_blocks_control": {
+        "name": "Control híbrid de blocs MQTT"
       }
     },
     "button": {
@@ -506,7 +512,10 @@
         "name": "Quantitat total de capes"
       },
       "active_tray": {
-        "name": "Safata activa"
+        "name": "Safata activa",
+        "state": {
+          "none": "Cap"
+        }
       },
       "nozzle_diameter": {
         "name": "Grandària del broquet"
@@ -871,6 +880,10 @@
     "mqtt_encryption_enabled": {
       "title": "Encriptació MQTT habilitat",
       "description": "{device} està connectat al núvol amb el xifratge mqtt habilitat. Només la llum es pot controlar mitjançant aquesta integració. Tots els altres controls no estan disponibles. La impressora s'ha de configurar en mode LAN de desenvolupador per permetre el control des de l'assistent domèstic."
+    },
+    "hybrid_mode_blocking": {
+      "title": "Control de blocs de connexió híbrid",
+      "description": "{device} està connectat al núvol però amb connexió mqtt local per la integració. Només la llum es pot controlar mitjançant aquesta integració. Tots els altres controls no estan disponibles. Canvia la connexió al núvol pur per activar el control."
     }
   }
 }

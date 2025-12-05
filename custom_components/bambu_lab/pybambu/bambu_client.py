@@ -156,17 +156,7 @@ class ChamberImageThread(threading.Thread):
                     while not self._stop_event.is_set():
                         try:
                             dr = sslSock.recv(read_chunk_size)
-                            #LOGGER.debug(f"Received {len(dr)} bytes.")
-
                         except ssl.SSLWantReadError:
-                            #LOGGER.debug("SSLWantReadError")
-                            if self._stop_event.wait(1):
-                                break
-                            continue
-
-                        except Exception as e:
-                            LOGGER.error("A Chamber Image thread inner exception occurred:")
-                            LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
                             if self._stop_event.wait(1):
                                 break
                             continue
@@ -204,25 +194,23 @@ class ChamberImageThread(threading.Thread):
                         elif len(dr) == 0:
                             # This occurs if the wrong access code was provided.
                             LOGGER.error("Chamber image connection rejected by the printer. Check provided access code and IP address.")
-                            # Sleep for a short while and then re-attempt the connection.
-                            time.sleep(5)
-                            break
+                            raise RuntimeError("Received no data unexpectedly.")
 
                         else:
                             LOGGER.error(f"UNEXPECTED DATA RECEIVED: {len(dr)}")
-                            time.sleep(1)
+                            raise RuntimeError(f"Unexpected data chunk size received: {len(dr)}")
 
             except OSError as e:
                 if e.errno == 113:
                     LOGGER.debug("Host is unreachable")
                 else:
-                    LOGGER.error("A Chamber Image thread outer exception occurred:")
+                    LOGGER.error("Chamber Image thread outer exception occurred:")
                     LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
                 if not self._stop_event.is_set():
                     time.sleep(2)  # Avoid a tight loop if this is a persistent error.
 
             except Exception as e:
-                LOGGER.error(f"A Chamber Image thread outer exception occurred:")
+                LOGGER.error(f"Chamber Image thread exception occurred:")
                 LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
                 if not self._stop_event.is_set():
                     time.sleep(2)  # Avoid a tight loop if this is a persistent error.
@@ -383,7 +371,6 @@ class BambuClient:
         self._timelapse_cache_count = max(-1, int(config.get('timelapse_cache_count', 0)))
         self._disable_ssl_verify = config.get('disable_ssl_verify', False)
         self._cache_path = config.get('file_cache_path', f'/config/www/media/ha-bambulab/{self._serial}')
-        LOGGER.debug(f"Using file cache path: {self._cache_path}")
 
         self._connected = False
         self._port = 8883
@@ -404,9 +391,6 @@ class BambuClient:
         else:
             language = language[:2]
         self._user_language = language
-
-        self._device.print_job.prune_print_history_files()
-        self._device.print_job.prune_timelapse_files()
 
     @property
     def settings(self):
@@ -442,7 +426,7 @@ class BambuClient:
 
     @property
     def ftp_enabled(self):
-        return self._device.supports_feature(Features.FTP) and self._enable_ftp
+        return self._enable_ftp
 
     @property
     def local_tls_context(self):
@@ -484,6 +468,9 @@ class BambuClient:
         LOGGER.debug("Starting MQTT listener thread")
         self._mqtt = MqttThread(self)
         self._mqtt.start()
+
+        self._device.print_job.prune_print_history_files()
+        self._device.print_job.prune_timelapse_files()
 
     def subscribe_and_request_info(self):
         LOGGER.debug("Now subscribing...")
@@ -605,7 +592,6 @@ class BambuClient:
                     if json_data.get("print").get("msg", 0) == 0:
                         self._refreshed= False
                 elif json_data.get("info") and json_data.get("info").get("command") == "get_version":
-                    LOGGER.debug("Got Version Data")
                     self._device.info_update(data=json_data.get("info"))
                 elif json_data.get("system") and json_data.get("system").get("command"):
                     self._device.observe_system_command(data=json_data.get("system"))
@@ -814,7 +800,7 @@ def create_local_ssl_context():
     script_path = os.path.abspath(__file__)
     directory_path = os.path.dirname(script_path)
     context = ssl.create_default_context()
-    for filename in ("bambu.cert", "bambu_p2s_250626.cert"):
+    for filename in ("bambu.cert", "bambu_p2s_250626.cert", "bambu_h2c_251122.cert"):
         path = os.path.join(directory_path, filename)
         context.load_verify_locations(cafile=path)
 

@@ -236,8 +236,14 @@
       "active_ams": {
         "name": "Ativo"
       },
+      "drying": {
+        "name": "Secagem"
+      },
       "airduct_mode": {
         "name": "Modo Airduct"
+      },
+      "hybrid_mode_blocks_control": {
+        "name": "Controle de blocos MQTT híbridos"
       }
     },
     "button": {
@@ -506,7 +512,10 @@
         "name": "Contagem total de camadas"
       },
       "active_tray": {
-        "name": "Bandeja ativa"
+        "name": "Bandeja ativa",
+        "state": {
+          "none": "Nenhum"
+        }
       },
       "nozzle_diameter": {
         "name": "Tamanho do bico"
@@ -871,6 +880,10 @@
     "mqtt_encryption_enabled": {
       "title": "Criptografia MQTT habilitada",
       "description": "{device} está conectado à nuvem com criptografia mqtt habilitada. Somente a luz pode ser controlada por esta integração. Todos os outros controles estão indisponíveis. A impressora deve ser configurada para o modo LAN do desenvolvedor para permitir o controle do assistente doméstico."
+    },
+    "hybrid_mode_blocking": {
+      "title": "Controle de blocos de conexão híbrida",
+      "description": "{device} está conectado à nuvem, mas com conexão mqtt local pela integração. Somente a luz pode ser controlada por esta integração. Todos os outros controles estão indisponíveis. Mude a conexão para nuvem pura para ativar o controle."
     }
   }
 }

@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import ftplib
-import functools
 import json
 import math
 import os
@@ -30,7 +31,6 @@ from .utils import (
     get_hw_version,
     get_sw_version,
     compare_version,
-    get_start_time,
     get_end_time,
     get_HMS_error_text,
     get_print_error_text,
@@ -86,8 +86,7 @@ class Device:
         self.extruder_tool = ExtruderTool(client=client)
         self.push_all_data = None
         self.get_version_data = None
-        if self.supports_feature(Features.CAMERA_IMAGE):
-            self.chamber_image = ChamberImage(client = client)
+        self.chamber_image = ChamberImage(client = client)
         self.cover_image = CoverImage(client = client)
         self.pick_image = PickImage(client = client)
         self.print_fun = PrintFun(client = client)
@@ -113,83 +112,96 @@ class Device:
         send_event = send_event | self.print_fun.print_update(data = data)
         send_event = send_event | self.extruder_tool.print_update(data = data)
 
+        send_ready_event = self.get_version_data is not None and self.push_all_data is None
+        if data.get("command") == "push_status":
+            if data.get("msg", 0) == 0:
+                self.push_all_data = data
+                if send_ready_event:
+                    self._client.callback("event_printer_ready")
+
         self._client.callback("event_printer_data_update")
 
-        if data.get("msg", 0) == 0:
-            self.push_all_data = data
+    @property
+    def has_full_printer_data(self):
+        return (self.push_all_data != None) and (self.get_version_data != None)
 
     def info_update(self, data):
         self.info.info_update(data = data)
         self.home_flag.info_update(data = data)
         self.ams.info_update(data = data)
+
         if data.get("command") == "get_version":
+            send_ready_event = self.get_version_data is None and self.push_all_data is not None
             self.get_version_data = data
+            if send_ready_event:
+                self._client.callback("event_printer_ready")
+
 
     def observe_system_command(self, data):
         if data.get("command") == "ledctrl" and data.get("led_node") == "heatbed_light":
             self.lights.observe_system_command(data)
 
-    def _supports_temperature_set(self):
-        # When talking to the Bambu cloud mqtt, setting the temperatures is allowed.
-        if self.info.mqtt_mode == "bambu_cloud":
-            return True
-        # X1* have not yet blocked setting the temperatures when in nybrid connection mode.
-        if self.info.device_type == Printers.X1 or self.info.device_type == Printers.X1C or self.info.device_type == Printers.X1E or self.info.device_type == Printers.H2D or self.info.device_type == Printers.H2S:
-            return True
-        # What's left is P1 and A1 printers that we are connecting by local mqtt. These are supported only in pure Lan Mode.
-        return not self._client.bambu_cloud.bambu_connected
-
     def supports_feature(self, feature):
+
+        # First check known early feature check scenarios:
+        if feature == Features.CAMERA_RTSP:
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
+                    self.info.device_type == Printers.H2S or
+                    self.info.device_type == Printers.P2S or
+                    self.info.device_type == Printers.X1 or
+                    self.info.device_type == Printers.X1C or
+                    self.info.device_type == Printers.X1E)
+        elif feature == Features.CAMERA_IMAGE:
+            return (self.info.device_type == Printers.A1 or
+                    self.info.device_type == Printers.A1MINI or
+                    self.info.device_type == Printers.P1P or
+                    self.info.device_type == Printers.P1S)
+
+        # Now check that we have a version. All tests after this are expected to only be called after the
+        # first full set of data from the printer has been received and so version will be available.
+        if self.info.sw_ver == "unknown":
+            LOGGER.error(f"supports_feature queried for {feature} before printer firmware version is known.")
+            return False
+
+        # All following features should only be every checked after full initialization data is available.
         if feature == Features.AUX_FAN:
             return not (self.info.device_type == Printers.A1 or
                         self.info.device_type == Printers.A1MINI)
-        elif feature == Features.CHAMBER_LIGHT:
-            return True
         elif feature == Features.CHAMBER_FAN:
             # The P1P may not have a fan but we don't have a perfectly reliable way to detect that. The p1s upgrade
             # flag would largely be good though but not accessible here.
             return not (self.info.device_type == Printers.A1 or
                         self.info.device_type == Printers.A1MINI)
         elif feature == Features.CHAMBER_TEMPERATURE:
-            return (self.info.device_type == Printers.H2D or
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S or
                     self.info.device_type == Printers.P2S or
                     self.info.device_type == Printers.X1 or
                     self.info.device_type == Printers.X1C or
                     self.info.device_type == Printers.X1E)
-        elif feature == Features.CURRENT_STAGE:
-            return True
-        elif feature == Features.PRINT_LAYERS:
-            return True
         elif feature == Features.AMS:
             return len(self.ams.data) != 0
-        elif feature == Features.EXTERNAL_SPOOL:
-            return True
         elif feature == Features.K_VALUE:
             return (self.info.device_type == Printers.A1 or
                     self.info.device_type == Printers.A1MINI or
                     self.info.device_type == Printers.P1P or
                     self.info.device_type == Printers.P1S)
-        elif feature == Features.START_TIME:
-            return False
-        elif feature == Features.START_TIME_GENERATED:
-            return True
         elif feature == Features.AMS_TEMPERATURE:
-            # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
-            # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
-            if self.info.sw_ver == "unknown":
-                LOGGER.error("Features.AMS_TEMPERATURE queried before version is known.")
-                return False
-
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI):
                 return self.supports_sw_version("01.06.10.33")
-            elif (self.info.device_type == Printers.H2D or
-                self.info.device_type == Printers.H2S or 
-                self.info.device_type == Printers.X1 or
-                self.info.device_type == Printers.X1C or
-                self.info.device_type == Printers.X1E or
-                self.info.device_type == Printers.P2S):
+            elif (self.info.device_type == Printers.H2C or
+                  self.info.device_type == Printers.H2D or
+                  self.info.device_type == Printers.H2DPRO or
+                  self.info.device_type == Printers.H2S or 
+                  self.info.device_type == Printers.P2S or
+                  self.info.device_type == Printers.X1 or
+                  self.info.device_type == Printers.X1C or
+                  self.info.device_type == Printers.X1E):
                 return True
             elif (self.info.device_type == Printers.P1S or
                   self.info.device_type == Printers.P1P):
@@ -201,25 +213,35 @@ class Device:
                 return True
             
             return False
-        elif feature == Features.CAMERA_RTSP:
-            return (self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2S or
-                    self.info.device_type == Printers.X1 or
-                    self.info.device_type == Printers.X1C or
-                    self.info.device_type == Printers.X1E or
-                    self.info.device_type == Printers.P2S)
-        elif feature == Features.CAMERA_IMAGE:
-            return (self.info.device_type == Printers.A1 or
-                    self.info.device_type == Printers.A1MINI or
-                    self.info.device_type == Printers.P1P or
-                    self.info.device_type == Printers.P1S)
+        elif feature == Features.HYBRID_MODE_BLOCKS_CONTROL:
+            if (self.info.device_type == Printers.P1S or
+                self.info.device_type == Printers.P1P):
+                # Not sure what the first version that did this was. At least this - could be earlier.
+                return self.supports_sw_version("01.07.00.00")
+            # Only the P1 firmware did this as far as I know. Not the A1.
+            return False
         elif feature == Features.DOOR_SENSOR:
-            return (self.info.device_type == Printers.H2D or
+            if (self.info.device_type in [Printers.X1,
+                                          Printers.X1C]):
+                return self.supports_sw_version("01.07.00.00")
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S or
-                    self.info.device_type == Printers.X1 or
-                    self.info.device_type == Printers.X1C or
-                    self.info.device_type == Printers.X1E or
-                    self.info.device_type == Printers.P2S)
+                    self.info.device_type == Printers.P2S or
+                    self.info.device_type == Printers.X1E)
+        elif feature == Features.AMS_READ_RFID_COMMAND:
+            if (self.info.device_type == Printers.A1 or
+                self.info.device_type == Printers.A1MINI):
+                return self.supports_sw_version("01.06.00.00")
+            if (self.info.device_type == Printers.P1P or
+                self.info.device_type == Printers.P1S):
+                return self.supports_sw_version("01.08.01.00")
+            if (self.info.device_type == Printers.X1 or
+                self.info.device_type == Printers.X1C or
+                self.info.device_type == Printers.X1E):
+                return self.supports_sw_version("01.09.00.00")
+            return True
         elif feature == Features.AMS_FILAMENT_REMAINING:
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI):
@@ -227,28 +249,22 @@ class Device:
                 # This needs fixing now the A1 printers support the other AMS models.
                 return False
             return True
-        elif feature == Features.SET_TEMPERATURE:
-            return self._supports_temperature_set()
         elif feature == Features.PROMPT_SOUND:
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI or
+                self.info.device_type == Printers.H2C or
                 self.info.device_type == Printers.H2D or
+                self.info.device_type == Printers.H2DPRO or
                 self.info.device_type == Printers.H2S or
                 self.info.device_type == Printers.P2S):
                 return not self.print_fun.mqtt_signature_required
             return False
-        elif feature == Features.FTP:
-            return True
         elif feature == Features.AMS_SWITCH_COMMAND:
-            # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
-            # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
-            if self.info.sw_ver == "unknown":
-                LOGGER.error("Features.AMS_SWITCH_COMMAND queried before version is known.")            
-                return False
-
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI or
+                self.info.device_type == Printers.H2C or
                 self.info.device_type == Printers.H2D or
+                self.info.device_type == Printers.H2DPRO or
                 self.info.device_type == Printers.P2S or
                 self.info.device_type == Printers.X1E):
                 return True
@@ -260,16 +276,12 @@ class Device:
                 return self.supports_sw_version("01.05.06.01")
             return False
         elif feature == Features.AMS_HUMIDITY:
-            # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
-            # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
-            if self.info.sw_ver == "unknown":
-                LOGGER.error("Features.AMS_HUMIDITY queried before version is known.")            
-                return False
-
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI):
                 return self.supports_sw_version("01.06.10.33")
-            elif (self.info.device_type == Printers.H2D or
+            elif (self.info.device_type == Printers.H2C or
+                  self.info.device_type == Printers.H2D or
+                  self.info.device_type == Printers.H2DPRO or
                   self.info.device_type == Printers.H2S or
                   self.info.device_type == Printers.P2S):
                 return True
@@ -281,13 +293,12 @@ class Device:
                 return self.supports_sw_version("01.07.50.18")
             return False
         elif feature == Features.AMS_DRYING:
-            # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
-            # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
-            if self.info.sw_ver == "unknown":
-                LOGGER.error("Features.AMS_DRYING queried before version is known.")
-                return False
-            
-            if (self.info.device_type == Printers.H2D or
+            if (self.info.device_type == Printers.A1 or
+                  self.info.device_type == Printers.A1MINI):
+                return self.supports_sw_version("01.06.10.33")
+            elif (self.info.device_type == Printers.H2C or
+                self.info.device_type == Printers.H2D or
+                self.info.device_type == Printers.H2DPRO or
                 self.info.device_type == Printers.H2S or
                 self.info.device_type == Printers.P2S):
                 return True
@@ -300,23 +311,26 @@ class Device:
             # This needs fixing now the A1 printers support the other AMS models.
             return False
         elif feature == Features.CHAMBER_LIGHT_2:
-            return (self.info.device_type == Printers.H2D or
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S)
         elif feature == Features.DUAL_NOZZLES:
-            return (self.info.device_type == Printers.H2D)
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO)
         elif feature == Features.EXTRUDER_TOOL:
-            return (self.info.device_type == Printers.H2D or
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S)
         elif feature == Features.MQTT_ENCRYPTION_FIRMWARE:
-            # We can't evaluate this until we have the printer version, which isn't available until we receive the first mqtt payloads.
-            # This means it can't be used for exists_fn checks for sensors. And will initially return False for available_fn calls from HA.
-            if self.info.sw_ver == "unknown":
-                return True
-            
             if (self.info.device_type == Printers.A1 or
                 self.info.device_type == Printers.A1MINI):
                 return self.supports_sw_version("01.05.00.00")
             elif (self.info.device_type == Printers.H2D):
+                return self.supports_sw_version("01.01.01.00")
+            elif (self.info.device_type == Printers.H2DPRO):
                 return self.supports_sw_version("01.01.01.00")
             elif (self.info.device_type == Printers.H2S or
                   self.info.device_type == Printers.P2S):
@@ -330,9 +344,12 @@ class Device:
             return False
         elif feature == Features.FIRE_ALARM_BUZZER:
             return (self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S)
         elif feature == Features.HEATBED_LIGHT:
-            return (self.info.device_type == Printers.H2D or
+            return (self.info.device_type == Printers.H2C or
+                    self.info.device_type == Printers.H2D or
+                    self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S)
         return False
     
@@ -484,14 +501,12 @@ class Camera:
         self.timelapse = data.get("ipcam", {}).get("timelapse", self.timelapse)
         self.recording = data.get("ipcam", {}).get("ipcam_record", self.recording)
         self.resolution = data.get("ipcam", {}).get("resolution", self.resolution)
+        self.rtsp_url = data.get("ipcam", {}).get("rtsp_url", self.rtsp_url)
         if self._client._enable_camera:
-            self.rtsp_url = data.get("ipcam", {}).get("rtsp_url", self.rtsp_url)
             if self.rtsp_url == "disable":
                 if not self._fired_camera_disabled_event:
                     self._fired_camera_disabled_event = True
                     self._client.callback("event_printer_live_view_disabled")
-        else:
-            self.rtsp_url = None
         
         return (old_data != f"{self.__dict__}")
 
@@ -920,8 +935,8 @@ class PrintJob:
         self.print_error = 0
         self.print_weight = 0
         self.ams_mapping = []
-        self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self._ams_print_weights = [0.0] * 136 # TODO: Convert to a dict in the future?
+        self._ams_print_lengths = [0.0] * 136 # TODO: Convert to a dict in the future?
         self.print_length = 0
         self.print_bed_type = "unknown"
         self.file_type_icon = "mdi:file"
@@ -1055,14 +1070,13 @@ class PrintJob:
             # Clear existing cover & pick image data before attempting any fresh download.
             self._clear_model_data()
 
-            # Generate the start_time for P1P/S when printer moves from idle to another state. Original attempt with remaining time
+            # Generate the start_time when printer moves from idle to another state. Original attempt with remaining time
             # becoming non-zero didn't work as it never bounced to zero in at least the scenario where a print was canceled.
-            if self._client._device.supports_feature(Features.START_TIME_GENERATED):
-                # We can use the existing get_end_time helper to format date.now() as desired by passing 0.
-                self.start_time = get_end_time(0)
-                # Make sure we don't keep using a stale end time.
-                self.end_time = None
-                LOGGER.debug(f"GENERATED START TIME: {self.start_time}")
+            # We can use the existing get_end_time helper to format date.now() as desired by passing 0.
+            self.start_time = get_end_time(0)
+            # Make sure we don't keep using a stale end time.
+            self.end_time = None
+            LOGGER.debug(f"GENERATED START TIME: {self.start_time}")
 
             if not self._client.ftp_enabled:
                 # We can update task data from the cloud immediately. But ftp has to wait.
@@ -1583,7 +1597,9 @@ class PrintJob:
             if (self._client._device.info.device_type == Printers.X1 or 
                 self._client._device.info.device_type == Printers.X1C or
                 self._client._device.info.device_type == Printers.X1E or
+                self._client._device.info.device_type == Printers.H2C or
                 self._client._device.info.device_type == Printers.H2D or
+                self._client._device.info.device_type == Printers.H2DPRO or
                 self._client._device.info.device_type == Printers.H2S):
                 # The X1 has a weird behavior where the downloaded file doesn't exist for several seconds into the RUNNING phase and even
                 # then it is still being downloaded in place so we might try to grab it mid-download and get a corrupt file. Try 13 times
@@ -1638,8 +1654,8 @@ class PrintJob:
                 plate_filament_count = len(plate.findall('filament'))
 
                 # Reset filament data
-                self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-                self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+                self._ams_print_weights = [0.0] * 136 # TODO: Convert to a dict in the future?
+                self._ams_print_lengths = [0.0] * 136 # TODO: Convert to a dict in the future?
 
                 for metadata in plate:
                     if (metadata.get('key') == 'index'):
@@ -1808,8 +1824,8 @@ class PrintJob:
             return
 
         self._task_data = self._client.bambu_cloud.get_latest_task_for_printer(self._client._serial)
-        self._ams_print_weights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        self._ams_print_lengths = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self._ams_print_weights = [0.0] * 136 # TODO: Convert to a dict in the future?
+        self._ams_print_lengths = [0.0] * 136 # TODO: Convert to a dict in the future?
         if self._task_data is None:
             LOGGER.debug("No bambu cloud task data found for printer.")
             self._client._device.cover_image.set_image(None)
@@ -1845,7 +1861,7 @@ class PrintJob:
 
             status = self._task_data['status']
             LOGGER.debug(f"CLOUD PRINT STATUS: {status}")
-            if self._client._device.supports_feature(Features.START_TIME_GENERATED) and (status == 4):
+            if status == 4:
                 # If we generate the start time (not X1), then rely more heavily on the cloud task data and
                 # do so uniformly so we always have matched start/end times.
                 # "startTime": "2023-12-21T19:02:16Z"
@@ -1933,6 +1949,16 @@ class PrintJob:
         return await loop.run_in_executor(None, self._sync_ftp_upload, local_path, remote_path, progress_callback)
 
     def _sync_ftp_upload(self, local_path: str, remote_path: str, progress_callback=None) -> bool:
+        try:
+            # Before we upload, make sure the file is present in this printer's local cache directory
+            relative_path = remote_path.lstrip('/')
+            this_printer_cache_file_path = Path(self._client.cache_path) / "prints" / relative_path
+            this_printer_cache_file_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(local_path, this_printer_cache_file_path)
+            LOGGER.debug(f"Copied file to local cache: {this_printer_cache_file_path}")
+        except Exception as e:
+            LOGGER.error(f"Failed to copy file to local cache: {e}")
+
         ftp = None
         try:
             ftp = self._client.ftp_connection()
@@ -1943,11 +1969,9 @@ class PrintJob:
             for d in dirs:
                 current += f'/{d}'
                 try:
-                    LOGGER.debug(f"FTP upload: Creating directory {current}")
                     ftp.mkd(current)
                 except Exception:
-                    LOGGER.debug(f"FTP upload: Directory {current} may already exist")
-                    pass  # Directory may already exist
+                    pass  # Directory may already exist which is fine
 
             LOGGER.debug(f"FTP upload: Starting file upload")
             file_size = os.path.getsize(local_path)
@@ -1967,22 +1991,22 @@ class PrintJob:
                     })
 
             with open(local_path, 'rb') as f:
-                # Use storbinary_no_unwrap with the progress callback
-                ftp.storbinary_no_unwrap(f'STOR {remote_path}', f, blocksize=chunk_size, callback=internal_progress_callback)
+                try:
+                    ftp.storbinary_no_unwrap(f'STOR {remote_path}', f, blocksize=chunk_size, callback=internal_progress_callback)
+                except Exception as e:
+                    # Handle the benign 426 “Failure reading network stream” case
+                    if "426" in str(e):
+                        LOGGER.warning(f"Ignoring benign FTP 426 for {remote_path}: {e}")
+                    else:
+                        raise
+
+            # Verify upload really succeeded by comparing file size
+            remote_size = ftp.size(remote_path)
+            if remote_size != file_size:
+                LOGGER.error(f"Size mismatch after FTP upload ({remote_size} != expected {file_size})")
+                raise ValueError(f"FTP upload verification failed: remote={remote_size}, local={file_size}")
 
             LOGGER.debug(f"FTP upload: Upload completed successfully")
-
-            # After successful upload, copy to cache path
-            # Remove leading slash from remote_path for relative path
-            relative_path = remote_path.lstrip('/')
-            cache_dir = os.path.join(self._client.cache_path, "prints")
-            cache_file_path = os.path.join(cache_dir, relative_path)
-            os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
-            try:
-                shutil.copy2(local_path, cache_file_path)
-                LOGGER.debug(f"Copied uploaded file to cache: {cache_file_path}")
-            except Exception as e:
-                LOGGER.error(f"Failed to copy uploaded file to cache: {e}")
 
             return True
 
@@ -2041,7 +2065,14 @@ class Info:
         self.airduct_mode = False
         self._ip_address = client.host
         self._force_ip = client.settings.get('force_ip', False)                
-        
+
+    @property
+    def is_hybrid_mode_blocking(self) -> bool:
+        if not self.mqtt_mode == "local":
+            return False
+        if not self._client._device.supports_feature(Features.HYBRID_MODE_BLOCKS_CONTROL):
+            return False
+        return self._client.bambu_cloud.bambu_connected
 
     def set_online(self, online):
         if self.online != online:
@@ -2071,8 +2102,10 @@ class Info:
         #         "sn": "..."
         #     },
         modules = data.get("module", [])
+        old_device_type = self.device_type
         self.device_type = get_printer_type(modules, self.device_type)
-        LOGGER.debug(f"Device is {self.device_type}")
+        if old_device_type != self.device_type:
+            LOGGER.debug(f"Device is {self.device_type}")
         self.hw_ver = get_hw_version(modules, self.hw_ver)
         self.sw_ver = get_sw_version(modules, self.sw_ver)
         self._client.callback("event_printer_info_update")
@@ -2277,18 +2310,6 @@ class Info:
         return self.nozzle_types[0]
 
     @property
-    def door_open_available(self) -> bool:
-        if (self.device_type in [Printers.X1, Printers.X1C] and not self.supports_sw_version("01.07.00.00")):
-            return False
-
-        return self._client._device.supports_feature(Features.DOOR_SENSOR)
-
-    
-    @property
-    def airduct_mode_available(self) -> bool:        
-        return self._client._device.supports_feature(Features.AIRDUCT_MODE)
-
-    @property
     def is_local_mqtt(self):
         return self._client._local_mqtt
 
@@ -2345,7 +2366,7 @@ class Info:
 class AMSInstance:
     """Return all AMS instance related info"""
     model: str
-    tray: dict[int, "AMSTray"]
+    tray: list[AMSTray]
 
     _active: bool = False
     serial: str = ""
@@ -2382,7 +2403,6 @@ class AMSList:
 
     _nozzle_tray_index: dict
     _nozzle_ams_index: dict
-    _tray_now: int = 0
     _first_initialization_done: bool = False
 
     def __init__(self, client):
@@ -2491,9 +2511,6 @@ class AMSList:
 
         data_changed = data_changed or (old_data != f"{self.__dict__}")
 
-        if data_changed:
-            self._client.callback("event_ams_info_update")
-
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
 
@@ -2563,8 +2580,8 @@ class AMSList:
                 if entry.get("id") in (0, 1):
                     if "snow" in entry:
                         tray_now = entry["snow"]
-                        self._nozzle_tray_index[entry["id"]] = tray_now & 0x3
                         self._nozzle_ams_index[entry["id"]] = tray_now >> 8
+                        self._nozzle_tray_index[entry["id"]] = tray_now & 0x3
         else:
             tray_now = ams_data.get('tray_now')
             if tray_now is not None:
@@ -2580,14 +2597,13 @@ class AMSList:
                 elif tray_now >= 80:
                     # AMS HT's are indices 128-135 (0x80-0x87)
                     self._nozzle_ams_index[0] = tray_now
-                    self._nozzle_tray_index[0] = tray_now & 0x3
+                    self._nozzle_tray_index[0] = 0
                 else:
                     # Otherwise we need to shift the index down by 2 to get the correct AMS index
                     self._nozzle_ams_index[0] = tray_now >> 2
                     self._nozzle_tray_index[0] = tray_now & 0x3
 
         if len(ams_data) != 0:
-
             ams_list = ams_data.get("ams", [])
             for ams in ams_list:
                 index = int(ams['id'])
@@ -2595,29 +2611,36 @@ class AMSList:
                 if index not in self.data:
                     self.data[index] = AMSInstance(self._client, "Unknown", index)
 
-                if self.data[index].humidity_index != int(ams['humidity']):
-                    self.data[index].humidity_index = int(ams['humidity'])
+                # Sometimes when the AMS is being powered on it may send bogus humidity and temperature values.
+                # So ignore these values if they are out of a sensible range.
 
-                if self.data[index].humidity != int(ams.get("humidity_raw", 0)):
-                    self.data[index].humidity = int(ams.get("humidity_raw", 0))
+                humidity_index = int(ams['humidity'])
+                if 1 <= humidity_index <= 5 and self.data[index].humidity_index != humidity_index:
+                    self.data[index].humidity_index = humidity_index
 
-                if self.data[index].temperature != float(ams['temp']):
-                    self.data[index].temperature = float(ams['temp'])
+                humidity = int(ams.get("humidity_raw", 0))
+                if 1 <= humidity <= 100 and self.data[index].humidity != humidity:
+                    self.data[index].humidity = humidity
+
+                temperature = float(ams['temp'])
+                if 0 <= temperature <= 100 and self.data[index].temperature != temperature:
+                    self.data[index].temperature = temperature
 
                 if self.data[index].remaining_drying_time != int(ams.get('dry_time', 0)):
                     self.data[index].remaining_drying_time = int(ams.get('dry_time', 0))
-
-                self.data[index]._active = index == self.active_ams_index
 
                 tray_list = ams['tray']
                 for tray in tray_list:
                     tray_id = int(tray['id'])
                     self.data[index].tray[tray_id].print_update(tray)
-                    active_tray = False
-                    if index == self.active_ams_index:
-                        if self.active_tray_index == tray_id:
-                            active_tray = True
-                    self.data[index].tray[tray_id].active = active_tray
+
+        # Now that we've populated the AMS/Trays (if this is first time through), we must
+        # loop over all the ams and trays to set active states correctly.
+        for index in self.data:
+            self.data[index]._active = (index == self.active_ams_index)
+            for tray_id, tray in enumerate(self.data[index].tray):
+                active_tray = (index == self.active_ams_index) and (self.active_tray_index == tray_id)
+                tray.active = active_tray
 
         data_changed = (old_data != f"{self.__dict__}")
         return data_changed
@@ -3053,10 +3076,7 @@ class ChamberImage:
     
     def get_last_update_time(self) -> datetime:
         return self._image_last_updated
-    
-    @property
-    def available(self):
-        return self._client._enable_camera 
+
     
 @dataclass
 class CoverImage:

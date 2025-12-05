@@ -267,8 +267,14 @@ def get_printer_type(modules, default):
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P1P")):
       return 'P1P'
 
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2C")):
+      return 'H2C'
+
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2D")):
       return 'H2D'
+
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2D Pro")):
+      return 'H2DP'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2S")):
       return 'H2S'
@@ -311,18 +317,14 @@ def get_sw_version(modules, default):
     return default
 
 def compare_version(version_max, version_min):
+    if version_max == "unknown":
+        # Happens unavoidably during startup when we don't yet know the current printer firmware version.
+        return False
     maxver = list(map(int, version_max.split('.')))
     minver = list(map(int, version_min.split('.')))
 
     # Returns 1 if max > min, -1 if max < min, 0 if equal
     return (maxver > minver) - (maxver < minver)
-
-def get_start_time(timestamp):
-    """Return start time of a print"""
-    if timestamp == 0:
-        return None
-    return datetime.fromtimestamp(timestamp)
-
 
 def get_end_time(remaining_time):
     """Calculate the end time of a print"""

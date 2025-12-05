@@ -209,6 +209,9 @@
       "active_ams": {
         "name": "Active"
       },
+      "drying": {
+        "name": "Drying"
+      },
       "developer_lan_mode": {
         "name": "Developer Lan Mode"
       },
@@ -232,6 +235,9 @@
       },
       "mqtt_encryption": {
         "name": "MQTT encryption firmware"
+      },
+      "hybrid_mode_blocks_control": {
+        "name": "Hybrid MQTT blocks control"
       },
       "firmware_update": {
         "name": "Firmware update"
@@ -548,7 +554,10 @@
         "name": "Total layer count"
       },
       "active_tray": {
-        "name": "Active tray"
+        "name": "Active tray",
+        "state": {
+          "none": "None"
+        }
       },
       "nozzle_diameter": {
         "name": "Nozzle size"
@@ -871,6 +880,10 @@
     "mqtt_encryption_enabled": {
       "title": "MQTT Encryption Enabled",
       "description": "{device} is cloud connected with mqtt encryption enabled. Only the light can be controlled by this integration. All other controls are unavailable. The printer must be set to developer lan mode in order to allow control from home assistant."
+    },
+    "hybrid_mode_blocking": {
+      "title": "Hybrid Connection Blocks Control",
+      "description": "{device} is cloud connected but with local mqtt connection by the integration. Only the light can be controlled by this integration. All other controls are unavailable. Switch the connection to pure cloud to enable control."
     }
   }
 }
