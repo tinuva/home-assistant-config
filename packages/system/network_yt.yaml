@@ -1,0 +1,32 @@
+---
+input_boolean:
+    allowyoutube:
+        name: Allow YouTube
+        icon: mdi:youtube
+
+automation:
+    - id: toggle_youtube
+      alias: Toggle YouTube Access
+      initial_state: "on"
+      trigger:
+          - platform: state
+            entity_id: input_boolean.allowyoutube
+            to:
+                - "on"
+                - "off"
+      variables:
+          blocklist_url: https://raw.githubusercontent.com/gieljnssns/Social-media-Blocklists/refs/heads/master/adguard-youtube.txt
+      action:
+          - choose:
+                - conditions:
+                      - condition: state
+                        entity_id: input_boolean.allowyoutube
+                        state: "on"
+                  sequence:
+                      - service: adguard.disable_url
+                        data:
+                            url: "{{ blocklist_url }}"
+            default:
+                - service: adguard.enable_url
+                  data:
+                      url: "{{ blocklist_url }}"
