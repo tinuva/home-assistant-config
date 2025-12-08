@@ -2,22 +2,46 @@
   "config": {
     "step": {
       "user": {
-        "title": "Add text-to-speech engine",
-        "description": "See documentation for further info.",
+        "title": "Add OpenAI TTS Service",
+        "description": "Set up OpenAI TTS integration to create TTS agents.",
         "data": {
-          "api_key": "Enter OpenAI API key",
-          "speed": "Speed (0.25 to 4.0, where 1.0 is default)",
-          "model": "Model",
-          "voice": "Voice",
-          "url": "Enter an OpenAI-compatible endpoint (optionally include a port number)."
+          "api_key": "API Key",
+          "url": "API Endpoint (optional)"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure OpenAI TTS",
+        "description": "Update API credentials for this integration.",
+        "data": {
+          "api_key": "API Key",
+          "url": "API Endpoint"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate OpenAI TTS",
+        "description": "The API key for {title} is no longer valid. Please enter a new API key.",
+        "data": {
+          "api_key": "API Key"
         }
       }
     },
     "error": {
-      "wrong_api_key": "Invalid API key. Please enter a valid API key."
+      "wrong_api_key": "Invalid API key. Please enter a valid API key.",
+      "invalid_api_key": "Invalid API key. Please check your API key and try again.",
+      "cannot_connect": "Cannot connect to OpenAI API. Please check your network and API endpoint.",
+      "duplicate_api_key": "An entry with this API key already exists. Each integration entry must have a unique API key."
+    },
+    "abort": {
+      "already_configured": "This instance is already configured",
+      "reconfigure_successful": "Configuration updated successfully",
+      "reauth_successful": "Re-authentication successful"
     }
   },
   "options": {
+    "abort": {
+      "no_options_available": "This integration entry has no configurable options. Use the subentries to configure individual TTS agents.",
+      "not_supported": "Options flow is not supported for this entry"
+    },
     "step": {
       "init": {
         "title": "Configure TTS options",
@@ -25,10 +49,60 @@
           "chime": "Enable chime sound prior speech (useful for announcements)",
           "chime_sound": "Chime sound",
           "speed": "Speed (0.25 to 4.0)",
+          "model": "Model",
           "voice": "Voice",
-          "instructions": "Instructions",
-          "normalize_audio": "Enable loudness for generated audio (uses more CPU)"
+          "enable_instructions": "Enable custom instructions",
+          "instructions": "Instructions (leave empty to disable)",
+          "normalize_audio": "Enable loudness for generated audio (uses more CPU)",
+          "volume_restore": "Restore speaker volumes after TTS playback",
+          "pause_playback": "Pause media during TTS (Sonos only)"
         }
+      }
+    }
+  },
+  "config_subentries": {
+    "profile": {
+      "entry_type": "TTS agent",
+      "initiate_flow": {
+        "user": "Add TTS agent",
+        "reconfigure": "Reconfigure TTS agent"
+      },
+      "step": {
+        "user": {
+          "title": "Add TTS Agent",
+          "description": "Create a new TTS agent with custom voice settings",
+          "data": {
+            "profile_name": "Profile name",
+            "model": "Model",
+            "voice": "Voice",
+            "speed": "Speed (0.25 to 4.0)",
+            "chime": "Enable chime sound",
+            "chime_sound": "Chime sound",
+            "normalize_audio": "Normalize audio volume",
+            "instructions": "Custom instructions (optional, for supported models only)"
+          }
+        },
+        "reconfigure": {
+          "title": "Update TTS Agent",
+          "description": "Modify settings for this TTS agent",
+          "data": {
+            "model": "Model",
+            "voice": "Voice",
+            "speed": "Speed (0.25 to 4.0)",
+            "chime": "Enable chime sound",
+            "chime_sound": "Chime sound",
+            "normalize_audio": "Normalize audio volume",
+            "instructions": "Custom instructions (optional, for supported models only)"
+          }
+        }
+      },
+      "error": {
+        "already_exists": "A profile with this name already exists"
+      },
+      "abort": {
+        "already_configured": "Profile already configured",
+        "reconfigure_successful": "TTS agent reconfigured successfully",
+        "subentry_not_found": "TTS agent not found"
       }
     }
   }

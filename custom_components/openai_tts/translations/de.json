@@ -2,31 +2,107 @@
   "config": {
     "step": {
       "user": {
-        "title": "Text-to-Speech Engine hinzufügen",
-        "description": "Weitere Informationen finden Sie in der Dokumentation.",
+        "title": "OpenAI TTS-Dienst hinzufügen",
+        "description": "Richten Sie die OpenAI TTS-Integration ein, um TTS-Agenten zu erstellen.",
         "data": {
-          "api_key": "Geben Sie den OpenAI API-Schlüssel ein",
-          "speed": "Geschwindigkeit (0,25 bis 4,0, wobei 1,0 Standard ist)",
-          "model": "Modell",
-          "voice": "Stimme",
-          "url": "Geben Sie einen OpenAI-kompatiblen Endpunkt ein (optional können Sie eine Portnummer angeben)."
+          "api_key": "API-Schlüssel",
+          "url": "API-Endpunkt (optional)"
+        }
+      },
+      "reconfigure": {
+        "title": "OpenAI TTS neu konfigurieren",
+        "description": "API-Anmeldedaten für diese Integration aktualisieren.",
+        "data": {
+          "api_key": "API-Schlüssel",
+          "url": "API-Endpunkt"
+        }
+      },
+      "reauth_confirm": {
+        "title": "OpenAI TTS erneut authentifizieren",
+        "description": "Der API-Schlüssel für {title} ist nicht mehr gültig. Bitte geben Sie einen neuen API-Schlüssel ein.",
+        "data": {
+          "api_key": "API-Schlüssel"
         }
       }
     },
+    "abort": {
+      "already_configured": "Diese Instanz ist bereits konfiguriert",
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert",
+      "reauth_successful": "Erneute Authentifizierung erfolgreich"
+    },
     "error": {
-      "wrong_api_key": "Ungültiger API-Schlüssel. Bitte geben Sie einen gültigen API-Schlüssel ein."
+      "wrong_api_key": "Ungültiger API-Schlüssel. Bitte geben Sie einen gültigen API-Schlüssel ein.",
+      "invalid_api_key": "Ungültiger API-Schlüssel. Bitte überprüfen Sie Ihren API-Schlüssel und versuchen Sie es erneut.",
+      "cannot_connect": "Verbindung zur OpenAI-API nicht möglich. Bitte überprüfen Sie Ihr Netzwerk und den API-Endpunkt.",
+      "duplicate_api_key": "Ein Eintrag mit diesem API-Schlüssel existiert bereits. Jeder Integrationseintrag muss einen eindeutigen API-Schlüssel haben."
+    }
+  },
+  "config_subentries": {
+    "profile": {
+      "entry_type": "TTS-Agent",
+      "initiate_flow": {
+        "user": "TTS-Agent hinzufügen",
+        "reconfigure": "TTS-Agent neu konfigurieren"
+      },
+      "step": {
+        "user": {
+          "title": "TTS-Agent hinzufügen",
+          "description": "Erstellen Sie einen neuen TTS-Agenten mit benutzerdefinierten Stimmeinstellungen",
+          "data": {
+            "profile_name": "Profilname",
+            "model": "Modell",
+            "voice": "Stimme",
+            "speed": "Geschwindigkeit (0,25 bis 4,0)",
+            "chime": "Signalton aktivieren",
+            "chime_sound": "Signalton-Sound",
+            "normalize_audio": "Audiolautstärke normalisieren",
+            "instructions": "Benutzerdefinierte Anweisungen (optional, nur für unterstützte Modelle)"
+          }
+        },
+        "reconfigure": {
+          "title": "TTS-Agent aktualisieren",
+          "description": "Einstellungen für diesen TTS-Agenten ändern",
+          "data": {
+            "model": "Modell",
+            "voice": "Stimme",
+            "speed": "Geschwindigkeit (0,25 bis 4,0)",
+            "chime": "Signalton aktivieren",
+            "chime_sound": "Signalton-Sound",
+            "normalize_audio": "Audiolautstärke normalisieren",
+            "instructions": "Benutzerdefinierte Anweisungen (optional, nur für unterstützte Modelle)"
+          }
+        }
+      },
+      "error": {
+        "already_exists": "Ein Profil mit diesem Namen existiert bereits"
+      },
+      "abort": {
+        "already_configured": "Profil bereits konfiguriert",
+        "reconfigure_successful": "TTS-Agent erfolgreich neu konfiguriert",
+        "subentry_not_found": "TTS-Agent nicht gefunden"
+      }
     }
   },
   "options": {
+    "abort": {
+      "no_options_available": "Dieser Integrationseintrag hat keine konfigurierbaren Optionen. Verwenden Sie die Untereinträge, um einzelne TTS-Agenten zu konfigurieren.",
+      "not_supported": "Der Optionsfluss wird für diesen Eintrag nicht unterstützt"
+    },
     "step": {
       "init": {
-        "title": "Konfigurieren Sie die TTS-Optionen",
+        "title": "TTS-Optionen konfigurieren",
+        "description": "Einstellungen für dieses TTS-Profil konfigurieren",
         "data": {
-          "chime": "Aktivieren Sie den Signalton vor der Sprache (nützlich für Ansagen)",
-          "chime_sound": "Signalton",
+          "chime": "Signalton vor der Sprache aktivieren (nützlich für Ansagen)",
+          "chime_sound": "Signalton-Sound",
           "speed": "Geschwindigkeit (0,25 bis 4,0)",
+          "model": "Modell",
           "voice": "Stimme",
-          "normalize_audio": "Aktivieren Sie die Lautstärkeerhöhung für das erzeugte Audio (verwendet mehr CPU)"
+          "enable_instructions": "Benutzerdefinierte Anweisungen aktivieren",
+          "instructions": "Anweisungen (leer lassen zum Deaktivieren)",
+          "normalize_audio": "Lautstärkeerhöhung für erzeugtes Audio aktivieren (verwendet mehr CPU)",
+          "volume_restore": "Lautsprecherlautstärke nach TTS-Wiedergabe wiederherstellen",
+          "pause_playback": "Medien während TTS pausieren (nur Sonos)"
         }
       }
     }

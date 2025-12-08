@@ -2,31 +2,107 @@
   "config": {
     "step": {
       "user": {
-        "title": "Přidat TTS engine",
-        "description": "Více informací naleznete v dokumentaci.",
+        "title": "Přidat OpenAI TTS službu",
+        "description": "Nastavte OpenAI TTS integraci pro vytvoření TTS agentů.",
         "data": {
-          "api_key": "Zadejte OpenAI API klíč",
-          "speed": "Rychlost (0,25 až 4,0, kde 1,0 je výchozí)",
-          "model": "Model",
-          "voice": "Hlas",
-          "url": "Zadejte endpoint kompatibilní s OpenAI (volitelně uveďte číslo portu)."
+          "api_key": "API klíč",
+          "url": "API Endpoint (volitelné)"
+        }
+      },
+      "reconfigure": {
+        "title": "Překonfigurovat OpenAI TTS",
+        "description": "Aktualizovat přihlašovací údaje API pro tuto integraci.",
+        "data": {
+          "api_key": "API klíč",
+          "url": "API Endpoint"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Znovu ověřit OpenAI TTS",
+        "description": "API klíč pro {title} již není platný. Zadejte prosím nový API klíč.",
+        "data": {
+          "api_key": "API klíč"
         }
       }
     },
+    "abort": {
+      "already_configured": "Tato instance je již nakonfigurována",
+      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována",
+      "reauth_successful": "Opětovné ověření bylo úspěšné"
+    },
     "error": {
-      "wrong_api_key": "Neplatný API klíč. Zadejte prosím platný API klíč."
+      "wrong_api_key": "Neplatný API klíč. Zadejte prosím platný API klíč.",
+      "invalid_api_key": "Neplatný API klíč. Zkontrolujte prosím svůj API klíč a zkuste to znovu.",
+      "cannot_connect": "Nelze se připojit k OpenAI API. Zkontrolujte prosím síť a API endpoint.",
+      "duplicate_api_key": "Integrace s tímto API klíčem již existuje. Každá integrace musí mít jedinečný API klíč."
+    }
+  },
+  "config_subentries": {
+    "profile": {
+      "entry_type": "TTS agent",
+      "initiate_flow": {
+        "user": "Přidat TTS agenta",
+        "reconfigure": "Překonfigurovat TTS agenta"
+      },
+      "step": {
+        "user": {
+          "title": "Přidat TTS agenta",
+          "description": "Vytvořte nového TTS agenta s vlastním nastavením hlasu",
+          "data": {
+            "profile_name": "Název profilu",
+            "model": "Model",
+            "voice": "Hlas",
+            "speed": "Rychlost (0,25 až 4,0)",
+            "chime": "Povolit zvukový signál",
+            "chime_sound": "Zvuk signálu",
+            "normalize_audio": "Normalizovat hlasitost audia",
+            "instructions": "Vlastní pokyny (volitelné, pouze pro podporované modely)"
+          }
+        },
+        "reconfigure": {
+          "title": "Aktualizovat TTS agenta",
+          "description": "Upravit nastavení tohoto TTS agenta",
+          "data": {
+            "model": "Model",
+            "voice": "Hlas",
+            "speed": "Rychlost (0,25 až 4,0)",
+            "chime": "Povolit zvukový signál",
+            "chime_sound": "Zvuk signálu",
+            "normalize_audio": "Normalizovat hlasitost audia",
+            "instructions": "Vlastní pokyny (volitelné, pouze pro podporované modely)"
+          }
+        }
+      },
+      "error": {
+        "already_exists": "Profil s tímto názvem již existuje"
+      },
+      "abort": {
+        "already_configured": "Profil je již nakonfigurován",
+        "reconfigure_successful": "TTS agent byl úspěšně překonfigurován",
+        "subentry_not_found": "TTS agent nebyl nalezen"
+      }
     }
   },
   "options": {
+    "abort": {
+      "no_options_available": "Tato integrace nemá konfigurovatelné možnosti. Pro konfiguraci jednotlivých TTS agentů použijte podpoložky.",
+      "not_supported": "Tok možností není pro tuto položku podporován"
+    },
     "step": {
       "init": {
-        "title": "Nastavte TTS možnosti",
+        "title": "Konfigurovat možnosti TTS",
+        "description": "Konfigurovat nastavení pro tento TTS profil",
         "data": {
-          "chime": "Povolte zvukový signál před řečí (užitečné pro oznámení)",
-          "chime_sound": "Zvuk zvukového signálu",
+          "chime": "Povolit zvukový signál před řečí (užitečné pro oznámení)",
+          "chime_sound": "Zvuk signálu",
           "speed": "Rychlost (0,25 až 4,0)",
+          "model": "Model",
           "voice": "Hlas",
-          "normalize_audio": "Povolte zvýšení hlasitosti generovaného audia (vyžaduje více CPU)"
+          "enable_instructions": "Povolit vlastní pokyny",
+          "instructions": "Pokyny (ponechte prázdné pro deaktivaci)",
+          "normalize_audio": "Povolit zvýšení hlasitosti generovaného audia (vyžaduje více CPU)",
+          "volume_restore": "Obnovit hlasitost reproduktorů po přehrávání TTS",
+          "pause_playback": "Pozastavit média během TTS (pouze Sonos)"
         }
       }
     }
