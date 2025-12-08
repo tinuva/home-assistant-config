@@ -12,6 +12,10 @@ template:
         action: light.turn_on
       default_entity_id: light.all_lights
       name: All Lights
-      state: "{% if ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(','))
-        == ''\n    or ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(','))
-        == 'light.all_lights' %}\nfalse {% else %} true {% endif %}"
+      state: >
+        {% if ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(',')) == ''
+            or ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(',')) == 'light.all_lights' %}
+        false
+        {% else %}
+        true
+        {% endif %}
