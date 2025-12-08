@@ -173,30 +173,30 @@
 #       unique_id: sensor.solcast_forecast_peak_power_today_predicted
 
 automation:
-  - alias: Solcast_update
-    description: New API call Solcast
-    mode: single
-    trigger:
-      - platform: time_pattern
-        minutes: '/30'
-        id: pattern
-      - platform: time
-        at: '01:30:00'
-        id: time
-    condition:
-      - condition: or
-        conditions:
-          - condition: trigger
-            id: time
-          - condition: and
-            conditions:
-              - condition: trigger
-                id: pattern
-              - condition: sun
-                before: sunset
-                after: sunrise
-    action:
-      - service: solcast_solar.update_forecasts
+  # - alias: Solcast_update
+  #   description: New API call Solcast
+  #   mode: single
+  #   trigger:
+  #     - platform: time_pattern
+  #       minutes: '/30'
+  #       id: pattern
+  #     - platform: time
+  #       at: '01:30:00'
+  #       id: time
+  #   condition:
+  #     - condition: or
+  #       conditions:
+  #         - condition: trigger
+  #           id: time
+  #         - condition: and
+  #           conditions:
+  #             - condition: trigger
+  #               id: pattern
+  #             - condition: sun
+  #               before: sunset
+  #               after: sunrise
+  #   action:
+  #     - service: solcast_solar.update_forecasts
   - alias: Solcast Forecast to MQTT
     description: Put Solcast predicted values in MQTT
     mode: queued

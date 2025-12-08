@@ -3,13 +3,16 @@ template:
 - binary_sensor:
   - default_entity_id: binary_sensor.zigbee_last_seen_problem
     name: Zigbee Last Seen Problem
-    state: "{% set ns = namespace(break = false) %} {% for state in (expand(states.sensor,states.binary_sensor,
-      \ states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen'))
-      -%}\n  {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_'
-      not in state.entity_id %}\n    {%- if (as_timestamp(now()) - as_timestamp(state.state)
-      > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break
-      == false %}\n      {%- set ns.break = true %}\n    {%- endif -%}\n  {%- endif
-      -%}\n{%- endfor %} {{ ns.break }}"
+    state: >-
+      {% set ns = namespace(break = false) %}
+      {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+        {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
+          {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
+            {%- set ns.break = true %}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor %}
+      {{ ns.break }}
       
 
 sensor:

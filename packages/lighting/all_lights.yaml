@@ -1,22 +1,17 @@
 ---
-light:
-  - platform: template
-    lights:
-      all_lights:
-        friendly_name: "All Lights"
-        unique_id: all_lights_template
-        value_template: >
-          {% if ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(',')) == ''
-              or ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(',')) == 'light.all_lights' %}
-          false
-          {% else %}
-          true
-          {% endif %}
-        turn_off:
-          service: light.turn_off
-          target:
-            entity_id: all
-        turn_on:
-          service: light.turn_on
-          target:
-            entity_id: all
+template:
+  - light:
+    - unique_id: all_lights_template
+      turn_off:
+      - target:
+          entity_id: all
+        action: light.turn_off
+      turn_on:
+      - target:
+          entity_id: all
+        action: light.turn_on
+      default_entity_id: light.all_lights
+      name: All Lights
+      state: "{% if ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(','))
+        == ''\n    or ((states.light|selectattr('state','eq','on')|map(attribute='entity_id'))|join(','))
+        == 'light.all_lights' %}\nfalse {% else %} true {% endif %}"

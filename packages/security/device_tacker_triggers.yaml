@@ -5,22 +5,31 @@ template:
   - unique_id: pixel_8_phone_charging
     default_entity_id: binary_sensor.pixel_8_phone_charging
     name: Is Pixel 8 phone charging
-    state: "{{ is_state('sensor.pixel_8_battery_state', 'charging')\n  or is_state('sensor.pixel_8_battery_state',
-      'full')\n  or is_state('sensor.pixel_8_battery_state', 'not_charging') }}"
+    state: >-
+      {{ is_state('sensor.pixel_8_battery_state', 'charging')
+        or is_state('sensor.pixel_8_battery_state', 'full')
+        or is_state('sensor.pixel_8_battery_state', 'not_charging') }}
   - unique_id: both_parent_phones_charging
     default_entity_id: binary_sensor.both_parent_phones_charging
     name: Is both parents phones charging
-    state: "{{ (is_state('sensor.pixel_8_battery_state', 'charging')\n  or is_state('sensor.pixel_8_battery_state',
-      'full')\n  or is_state('sensor.pixel_8_battery_state', 'not_charging'))\n  and
-      (is_state('sensor.pixel_7a_battery_state', 'charging')\n  or is_state('sensor.pixel_7a_battery_state',
-      'full')\n  or is_state('sensor.pixel_7a_battery_state', 'not_charging')) }}"
+    state: >-
+      {{ (is_state('sensor.pixel_8_battery_state', 'charging')
+        or is_state('sensor.pixel_8_battery_state', 'full')
+        or is_state('sensor.pixel_8_battery_state', 'not_charging'))
+        and (is_state('sensor.pixel_7a_battery_state', 'charging')
+        or is_state('sensor.pixel_7a_battery_state', 'full')
+        or is_state('sensor.pixel_7a_battery_state', 'not_charging')) }}
+    # silly workaround needed - mi9t phone shows not_charging when in fact charging...
   - unique_id: either_parent_phones_charging
     default_entity_id: binary_sensor.either_parent_phones_charging
     name: Is either parents phones charging
-    state: "{{ (is_state('sensor.pixel_8_battery_state', 'charging')\n  or is_state('sensor.pixel_8_battery_state',
-      'full')\n  or is_state('sensor.pixel_8_battery_state', 'not_charging'))\n  or
-      (is_state('sensor.pixel_7a_battery_state', 'charging')\n  or is_state('sensor.pixel_7a_battery_state',
-      'full')\n  or is_state('sensor.pixel_7a_battery_state', 'not_charging')) }}"
+    state: >-
+      {{ (is_state('sensor.pixel_8_battery_state', 'charging')
+        or is_state('sensor.pixel_8_battery_state', 'full')
+        or is_state('sensor.pixel_8_battery_state', 'not_charging'))
+        or (is_state('sensor.pixel_7a_battery_state', 'charging')
+        or is_state('sensor.pixel_7a_battery_state', 'full')
+        or is_state('sensor.pixel_7a_battery_state', 'not_charging')) }}
 
 automation:
   - alias: Parents both in bed when both phones charge

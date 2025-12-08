@@ -18,10 +18,10 @@ template:
 - binary_sensor:
   - default_entity_id: binary_sensor.near_sunset
     name: Near Sunset
-    state: '{% set next_sunset = (as_timestamp(state_attr(''sun.sun'', ''next_setting''))
-      + 0)|timestamp_custom(''%H:%M'') %} {% set next_sunset_m3h = (as_timestamp(state_attr(''sun.sun'',
-      ''next_setting'')) - (4 * 3600))|timestamp_custom(''%H:%M'') %} {{ (next_sunset_m3h
-      <= states(''sensor.time'') <= next_sunset) }}'
+    state: >-
+      {% set next_sunset = (as_timestamp(state_attr('sun.sun', 'next_setting')) + 0)|timestamp_custom('%H:%M') %}
+      {% set next_sunset_m3h = (as_timestamp(state_attr('sun.sun', 'next_setting')) - (4 * 3600))|timestamp_custom('%H:%M') %}
+      {{ (next_sunset_m3h <= states('sensor.time') <= next_sunset) }}
 
 automation:
   # Start ACs if enough power
