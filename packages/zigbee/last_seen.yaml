@@ -1,4 +1,16 @@
 ---
+template:
+- binary_sensor:
+  - default_entity_id: binary_sensor.zigbee_last_seen_problem
+    name: Zigbee Last Seen Problem
+    state: "{% set ns = namespace(break = false) %} {% for state in (expand(states.sensor,states.binary_sensor,
+      \ states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen'))
+      -%}\n  {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_'
+      not in state.entity_id %}\n    {%- if (as_timestamp(now()) - as_timestamp(state.state)
+      > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break
+      == false %}\n      {%- set ns.break = true %}\n    {%- endif -%}\n  {%- endif
+      -%}\n{%- endfor %} {{ ns.break }}"
+      
 
 sensor:
   # Used as a shared variable for the binary sensor and notification
@@ -22,23 +34,6 @@ sensor:
             {%- endif -%}
           {%- endfor %}
 
-binary_sensor:
-  # Used to trigger the automation. Using this, we can automatically create and dismiss the notification if the problem is resolved
-  # TODO: Devices that are unavailable, will need a separate notification. Depending on what it is.
-  - platform: template
-    sensors:
-      zigbee_last_seen_problem:
-        friendly_name: "Zigbee Last Seen Problem"
-        value_template: >-
-          {% set ns = namespace(break = false) %}
-          {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-            {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
-              {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
-                {%- set ns.break = true %}
-              {%- endif -%}
-            {%- endif -%}
-          {%- endfor %}
-          {{ ns.break }}
 
 automation:
   # If 'last_seen' sensors for many zigbee entities are disabled, see this issue on github:

@@ -59,13 +59,11 @@ sensor:
             {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
           {% endif %}
 
-binary_sensor:
-  - platform: template
-    sensors:
-      vacuum_finished_cleaning:
-        friendly_name: Vacuum finished cleaning
-        value_template: >-
-          {{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}
+template:
+  - binary_sensor:
+    - default_entity_id: binary_sensor.vacuum_finished_cleaning
+      name: Vacuum finished cleaning
+      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}'
 
 automation:
   ### Clean

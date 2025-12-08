@@ -14,16 +14,14 @@ sensor:
           {% elif temp_avg < (temp_comfort - 7) %}heat
           {% else %}auto{% endif -%}
 
-binary_sensor:
-  - platform: template
-    sensors:
-      # Template sensor to display input value only
-      near_sunset:
-        friendly_name: "Near Sunset"
-        value_template: >-
-          {% set next_sunset = (as_timestamp(state_attr('sun.sun', 'next_setting')) + 0)|timestamp_custom('%H:%M') %}
-          {% set next_sunset_m3h = (as_timestamp(state_attr('sun.sun', 'next_setting')) - (4 * 3600))|timestamp_custom('%H:%M') %}
-          {{ (next_sunset_m3h <= states('sensor.time') <= next_sunset) }}
+template:
+- binary_sensor:
+  - default_entity_id: binary_sensor.near_sunset
+    name: Near Sunset
+    state: '{% set next_sunset = (as_timestamp(state_attr(''sun.sun'', ''next_setting''))
+      + 0)|timestamp_custom(''%H:%M'') %} {% set next_sunset_m3h = (as_timestamp(state_attr(''sun.sun'',
+      ''next_setting'')) - (4 * 3600))|timestamp_custom(''%H:%M'') %} {{ (next_sunset_m3h
+      <= states(''sensor.time'') <= next_sunset) }}'
 
 automation:
   # Start ACs if enough power

@@ -2,25 +2,17 @@
 # AC Power Lost
 # AC Power Restored
 
-binary_sensor:
-  - platform: template
-    sensors:
-      alarm_trouble:
-        #entity_id: sensor.home_alarm_keypad
-        unique_id: alarm_trouble
-        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'trouble') }}"
-  - platform: template
-    sensors:
-      alarm_battery_trouble:
-        #entity_id: sensor.home_alarm_keypad
-        unique_id: alarm_battery_trouble
-        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'bat_trouble') }}"
-  - platform: template
-    sensors:
-      alarm_ac_power:
-        #entity_id: sensor.home_alarm_keypad
-        unique_id: alarm_ac_power
-        value_template: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
+template:
+  - binary_sensor:
+      - unique_id: alarm_trouble
+        name: alarm_trouble
+        state: "{{ state_attr('sensor.home_alarm_keypad', 'trouble') }}"
+      - unique_id: alarm_battery_trouble
+        name: alarm_battery_trouble
+        state: "{{ state_attr('sensor.home_alarm_keypad', 'bat_trouble') }}"
+      - unique_id: alarm_ac_power
+        name: alarm_ac_power
+        state: "{{ state_attr('sensor.home_alarm_keypad', 'ac_present') }}"
 
 automation:
   ### Notify alarm zone state change

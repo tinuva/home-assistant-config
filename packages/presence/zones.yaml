@@ -48,14 +48,12 @@ zone:
 # David = device_tracker.pixel_8
 # Karen = device_tracker.pixel_7a
 
-binary_sensor:
-    platform: template
-    sensors:
-        anyone_home:
-            friendly_name: "Anyone Home"
-            value_template: >-
-                {{ is_state('device_tracker.pixel_7a', 'home')
-                   or is_state('device_tracker.pixel_8', 'home') }}
+template:
+  - binary_sensor:
+    - default_entity_id: binary_sensor.anyone_home
+      name: Anyone Home
+      state: "{{ is_state('device_tracker.pixel_7a', 'home')\n   or is_state('device_tracker.pixel_8',
+        'home') }}"
 
 automation:
     - alias: zone arrived at
