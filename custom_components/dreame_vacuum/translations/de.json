@@ -121,7 +121,7 @@
         "state": {
           "quiet": "Leise",
           "standard": "Standard",
-          "strong": "Stark",
+          "strong": "Max",
           "turbo": "Turbo"
         }
       },
@@ -205,7 +205,10 @@
         "state": {
           "none": "Kein Material",
           "tile": "Bodenfliese",
-          "wood": "Holzboden"
+          "wood": "Holzboden",
+          "low_pile_carpet": "Niedrigfloriger Teppich",
+          "medium_pile_carpet": "Mittelfloriger Teppich",
+          "carpet": "Teppich"
         }
       },
       "voice_assistant_language": {
@@ -256,28 +259,28 @@
       "cleangenius": {
         "state": {
           "off": "Aus",
-          "routine_cleaning": "Routinereinigung",
-          "deep_cleaning": "Gründliche Reinigung"
+          "routine_cleaning": "An",
+          "deep_cleaning": "An & Gründliche Reinigung"
         }
       },
       "cleangenius_mode": {
         "state": {
-          "vacuum_and_mop": "Vakuum und Mopp",
-          "mop_after_vacuum": "Mop nach Vakuum"
+          "vacuum_and_mop": "Staubsaugen und Wischen",
+          "mop_after_vacuum": "Wischen nach dem Saugen"
         }
       },
       "washing_mode": {
         "state": {
-          "light": "Licht",
+          "light": "Leicht",
           "standard": "Standard",
-          "deep": "Tief",
-          "ultra_washing": "Ultra -Waschen"
+          "deep": "Tiefenreinigung",
+          "ultra_washing": "Ultra - Waschen"
         }
       },
       "water_temperature": {
         "state": {
           "normal": "Normal",
-          "mild": "Leicht",
+          "mild": "Lauwarm",
           "warm": "Warm",
           "hot": "Heiß"
         }
@@ -350,9 +353,20 @@
           "returning_to_drain": "Rückkehr zum Abfluss",
           "draining": "Entleeren",
           "auto_water_draining": "Automatische Wasserentleerung",
+          "emptying": "Leeren",
+          "dust_bag_drying": "Staubbeutel trocknen",
+          "dust_bag_drying_paused": "Staubbeutel‑Trocknung pausiert",
+          "heading_to_extra_cleaning": "Auf dem Weg zur Zusatzreinigung",
+          "extra_cleaning": "Zusatzreinigung",
+          "finding_pet_paused": "Haustier finden pausiert",
+          "finding_pet": "Haustier suchen",
           "shortcut": "Verknüpfung",
           "monitoring": "Überwachung",
-          "monitoring_paused": "Überwachung pausiert"
+          "monitoring_paused": "Überwachung pausiert",
+          "initial_deep_cleaning": "Initiale Tiefenreinigung",
+          "initial_deep_cleaning_paused": "Initiale Tiefenreinigung pausiert",
+          "sanitizing": "Desinfizieren",
+          "sanitizing_with_dry": "Desinfizieren mit Trocknung"
         }
       },
       "status": {
@@ -372,7 +386,7 @@
           "factory": "Factory",
           "error": "Fehler",
           "remote_control": "Ferngesteuert",
-          "sleeping": "schlafend",
+          "sleeping": "Schlafend",
           "self_test": "Selbsttest",
           "factory_test": "Werkstest",
           "standby": "Standby",
@@ -412,9 +426,9 @@
           "cruising_point": "Auf dem Weg zum Zielpunkt",
           "cruising_point_paused": "Die Fahrt zum Zielpunkt wurde unterbrochen",
           "summon_clean_paused": "Zur Reinigung rufen wurde angehalten",
-          "returning_to_install_mop": "Zurückkehren zum anbringen des Wischpads",
-          "returning_to_remove_mop": "Zurückkehren zum entfernen des Wischpads",
-          "station_cleaning": "Stationreinigung",
+          "returning_to_install_mop": "Zurückkehren zum Anbringen des Wischpads",
+          "returning_to_remove_mop": "Zurückkehren zum Entfernen des Wischpads",
+          "station_cleaning": "Stationsreinigung",
           "pet_finding": "Haustierfindung",
           "auto_cleaning_washing_paused": "Automatisch Reinigung waschen im Pause",
           "area_cleaning_washing_paused": "Reinigungsreinigung waschen pausieren",
@@ -579,7 +593,7 @@
         "state": {
           "no_warning": "Keine Warnung",
           "no_water_left_dismiss": "Bitte den Frischwassertank überprüfen.",
-          "no_water_left": "Das Wasser im Frischwassertank ist bald aufgebraucht.",
+          "no_water_left": "Der Wischmopp wird gereinigt. Das Wasser im Reinwassertank ist nicht ausreichend. Füllen Sie bitte den Reinwassertank und leeren Sie den Schmutzwassertank",
           "no_water_left_after_clean": "Wischpad wurde gereinigt.",
           "no_water_for_clean": "Niedriger Wasserstand im Frischwassertank.",
           "low_water": "Der Wasserstand ist niedrig. Bitte den Frischwassertank auffüllen",
@@ -669,7 +683,15 @@
           "water_stain": "Reinigung von Wasserflecken",
           "water_stain_paused": "Die Reinigung von Wasserflecken wurde angehalten",
           "boosted_edge_cleaning": "Steigende Kantenreinigung",
-          "hair_compressing": "Haarkomprimierung"
+          "hair_compressing": "Haarkomprimierung",
+          "large_particle_cleaning": "Grobteilreinigung",
+          "intensive_stain_cleaning": "Intensiv‑Fleckenreinigung",
+          "stain_cleaning": "Fleckenreinigung",
+          "initial_deep_cleaning": "Initiale Tiefenreinigung",
+          "initial_deep_cleaning_paused": "Initiale Tiefenreinigung pausiert",
+          "mop_pad_heating": "Aufheizen der Mop‑Pads",
+          "cleaning_after_mapping": "Reinigung nach Kartierung",
+          "small_particle_cleaning": "Feinstaubreinigung"
         }
       }
     }
@@ -1003,7 +1025,7 @@
           "name": "Teppichreinigung",
           "description": "Benutzerdefinierte Teppichreinigungseinstellung für jeden Teppich."
         },
-        "carpet_settings": {
+        "carpet_preferences": {
           "name": "Teppicheinstellungen",
           "description": "Benutzerdefinierte Teppicheinstellungen für jeden Teppich mit einem Array aktivierter Einstellungen."
         }
@@ -1059,7 +1081,7 @@
           "name": "Teppiche",
           "description": "Teppichbereiche."
         },
-        "ignored_carpets": {
+        "deleted_carpets": {
           "name": "Ignorierte Teppiche",
           "description": "Bereiche von ignorierten Teppichen zum Löschen der automatisch erkannten Teppiche."
         }
