@@ -28,33 +28,33 @@ template:
 
   - sensor:
       - unique_id: vacuum_error_code
-      default_entity_id: sensor.vacuum_error_code
-      name: Vacuum Error Code
-      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}'
+        default_entity_id: sensor.vacuum_error_code
+        name: Vacuum Error Code
+        state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}'
 
       - unique_id: vacuum_error_message
         default_entity_id: sensor.vacuum_error_message
-      name: Vacuum Error Message
-      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string
-        }}'
+        name: Vacuum Error Message
+        state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string
+          }}'
 
       - default_entity_id: sensor.vacuum_last_clean_stats
-      name: Vacuum last cleaning stats
-      state: >
-        Vacuum Robot latest cleaning stats:{{- '\n' -}}
-        Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
-        Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
-        Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
-        End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
+        name: Vacuum last cleaning stats
+        state: >
+            Vacuum Robot latest cleaning stats:{{- '\n' -}}
+            Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
+            Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
+            Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
+            End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
 
       - default_entity_id: sensor.vacuum_valetudo_state
-      name: Vacuum Valetudo State
-      state: >-
-        {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
-          {{ states('sensor.vacuum_valetudo_state') }}
-        {% else %}
-          {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
-        {% endif %}
+        name: Vacuum Valetudo State
+        state: >-
+          {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
+            {{ states('sensor.vacuum_valetudo_state') }}
+          {% else %}
+            {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
+          {% endif %}
 
 automation:
   ### Clean

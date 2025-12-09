@@ -28,89 +28,89 @@ template:
         name: Battery Available
         state: >-
           {% set battery_capacity = 14 %}
-      {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
-      {{ battery_current }}
+          {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
+          {{ battery_current }}
 
-  - unique_id: battery_available_dod
-    unit_of_measurement: kWh
-    default_entity_id: sensor.battery_available_dod
-    icon: mdi:battery-high
-    name: Battery Available (DoD)
-    state: >-
-      {% set soc = states('sensor.battery_state_of_charge')|int %}
-      {% set battery_capacity = 10.5 %}
-      {% set battery_dod_ongrid = states('sensor.goodwe_depth_of_discharge_on_grid') %}
-      {% set battery_dod_offgrid = 80 %}
-      {% set battery_dod = iif(is_state('sensor.energy_mode', 'Normal (On-Grid)'), battery_dod_ongrid, battery_dod_offgrid) %}
-      {% set battery_per_not_available = 100 - battery_dod|int %}
-      {% set battery_per_available = (soc - battery_per_not_available) %}
-      {% set battery_current = (battery_capacity * (battery_per_available/100))|round(2) %}
-      {{ battery_current }}
-  #To charge: {{ battery_to_charge }}
-  - unique_id: battery_tocharge
-    unit_of_measurement: kWh
-    default_entity_id: sensor.battery_tocharge
-    icon: mdi:battery-high
-    name: Battery Need Charge
-    state: >-
-      {% set battery_capacity = 10.5 %}
-      {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
-      {% set battery_to_charge = (battery_capacity - battery_current)|round(2) %}
-      {{ battery_to_charge }}
-  # Remaining minutes
-  - unique_id: goodwe_battery_charging_remaining_minutes
-    default_entity_id: sensor.goodwe_battery_charging_remaining_minutes
-    icon: mdi:battery-high
-    state: >
-      {% set y = states('sensor.goodwe_average_battery_dis_charge_rate') | float(0) %}
-      {% if y == 0 %}
-        Idle
-      {% elif y > 99 %}
-        {% set x = states('sensor.battery_available_dod') | float(0) %}
-        {% set ct = x / (y/1000) * 60 %}
-        {% if ct == 0 %}
-          Unknown
-        {% else %}
-          {{ ct | int }}
-        {% endif %}
-      {% elif y < -99 %}
-        {% set x = states('sensor.battery_tocharge') | float(0) %}
-        {% set ct = x / ((y/1000)*-1) * 60 %}
-        {% if ct == 0 %}
-          Unknown
-        {% else %}
-          {{ ct | int }}
-        {% endif %}
-      {% elif y != 0 %}
-        Idle
-      {% else %}
-        Unknown
-      {% endif %}
-  # Display in HhMm (was H:M) if more than 60 minutes
-  - unique_id: goodwe_battery_charging_remaining_time
-    default_entity_id: sensor.goodwe_battery_charging_remaining_time
-    icon: mdi:battery-high
-    state: >
-      {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
-      {% if ct == 0 %}
-        Idle
-      {% elif ct > 60 %}
-        {{ ct // 60 }}h{{ '{:0>2d}'.format((ct%60)|int) }}m
-      {% else %}
-        {{ ct }}m
-      {% endif %}
-  # Display finish time?
-  - unique_id: goodwe_battery_charging_finish_time
-    default_entity_id: sensor.goodwe_battery_charging_finish_time
-    icon: mdi:battery-high
-    state: >
-      {% if is_state('sensor.goodwe_battery_charging_remaining_minutes','Unknown') %}
-        Unknown
-      {% else %}
-        {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
-        {% if ct == 0 %}
-          Idle
-        {% else %}
-          {{ (as_timestamp(now()) + ct|int * 60) | timestamp_custom("%H:%M") }}
-        {% endif %}
-      {% endif %}
+      - unique_id: battery_available_dod
+        unit_of_measurement: kWh
+        default_entity_id: sensor.battery_available_dod
+        icon: mdi:battery-high
+        name: Battery Available (DoD)
+        state: >-
+          {% set soc = states('sensor.battery_state_of_charge')|int %}
+          {% set battery_capacity = 10.5 %}
+          {% set battery_dod_ongrid = states('sensor.goodwe_depth_of_discharge_on_grid') %}
+          {% set battery_dod_offgrid = 80 %}
+          {% set battery_dod = iif(is_state('sensor.energy_mode', 'Normal (On-Grid)'), battery_dod_ongrid, battery_dod_offgrid) %}
+          {% set battery_per_not_available = 100 - battery_dod|int %}
+          {% set battery_per_available = (soc - battery_per_not_available) %}
+          {% set battery_current = (battery_capacity * (battery_per_available/100))|round(2) %}
+          {{ battery_current }}
+      #To charge: {{ battery_to_charge }}
+      - unique_id: battery_tocharge
+        unit_of_measurement: kWh
+        default_entity_id: sensor.battery_tocharge
+        icon: mdi:battery-high
+        name: Battery Need Charge
+        state: >-
+          {% set battery_capacity = 10.5 %}
+          {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
+          {% set battery_to_charge = (battery_capacity - battery_current)|round(2) %}
+          {{ battery_to_charge }}
+      # Remaining minutes
+      - unique_id: goodwe_battery_charging_remaining_minutes
+        default_entity_id: sensor.goodwe_battery_charging_remaining_minutes
+        icon: mdi:battery-high
+        state: >
+          {% set y = states('sensor.goodwe_average_battery_dis_charge_rate') | float(0) %}
+          {% if y == 0 %}
+            Idle
+          {% elif y > 99 %}
+            {% set x = states('sensor.battery_available_dod') | float(0) %}
+            {% set ct = x / (y/1000) * 60 %}
+            {% if ct == 0 %}
+              Unknown
+            {% else %}
+              {{ ct | int }}
+            {% endif %}
+          {% elif y < -99 %}
+            {% set x = states('sensor.battery_tocharge') | float(0) %}
+            {% set ct = x / ((y/1000)*-1) * 60 %}
+            {% if ct == 0 %}
+              Unknown
+            {% else %}
+              {{ ct | int }}
+            {% endif %}
+          {% elif y != 0 %}
+            Idle
+          {% else %}
+            Unknown
+          {% endif %}
+      # Display in HhMm (was H:M) if more than 60 minutes
+      - unique_id: goodwe_battery_charging_remaining_time
+        default_entity_id: sensor.goodwe_battery_charging_remaining_time
+        icon: mdi:battery-high
+        state: >
+          {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
+          {% if ct == 0 %}
+            Idle
+          {% elif ct > 60 %}
+            {{ ct // 60 }}h{{ '{:0>2d}'.format((ct%60)|int) }}m
+          {% else %}
+            {{ ct }}m
+          {% endif %}
+      # Display finish time?
+      - unique_id: goodwe_battery_charging_finish_time
+        default_entity_id: sensor.goodwe_battery_charging_finish_time
+        icon: mdi:battery-high
+        state: >
+          {% if is_state('sensor.goodwe_battery_charging_remaining_minutes','Unknown') %}
+            Unknown
+          {% else %}
+            {% set ct = states('sensor.goodwe_battery_charging_remaining_minutes') | int %}
+            {% if ct == 0 %}
+              Idle
+            {% else %}
+              {{ (as_timestamp(now()) + ct|int * 60) | timestamp_custom("%H:%M") }}
+            {% endif %}
+          {% endif %}

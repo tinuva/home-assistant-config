@@ -32,11 +32,11 @@ template:
         icon: mdi:timer-outline
         name: Geyser Morning run-time
         state: >-
-        {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
-        {% if average_temp_int >= 20 %}120
-        {% elif average_temp_int >= 18 and average_temp_int < 20 %}150
-        {% elif average_temp_int >= 12 and average_temp_int < 18 %}150
-        {% else %}180{% endif -%}
+          {% set average_temp_int = states('sensor.average_temperature_outside_last_1_day')|int %}
+          {% if average_temp_int >= 20 %}120
+          {% elif average_temp_int >= 18 and average_temp_int < 20 %}150
+          {% elif average_temp_int >= 12 and average_temp_int < 18 %}150
+          {% else %}180{% endif -%}
 
 script:
   ######################################################################
