@@ -140,7 +140,6 @@ template:
             {% endif%}
             {{ duration // 60 }}
           {% endif%}
-        
 timer:
   loadshedding_slot:
     duration: "02:35:00"

@@ -159,7 +159,6 @@ template:
           {% else %}
             {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
           {% endif %}
-            
       - default_entity_id: sensor.energy_generate_monthly_saving
         icon: mdi:flash
         name: energy_generate_monthly_saving
