@@ -1,13 +1,13 @@
 ---
 
-sensor:
-  - platform: template
-    sensors:
-      mikrotik_total_bandwidth:
-        friendly_name: "Total Bandwidth"
-        unique_id: mikrotik_total_bandwidth
-        unit_of_measurement: 'GBs'
-        value_template: "{{((states('sensor.mikrotik_router_b_received')|float / 1000000000) + (states('sensor.mikrotik_router_b_sent')|float / 1000000000))|round(2)}}"
+template:
+- sensor:
+  - unique_id: mikrotik_total_bandwidth
+    unit_of_measurement: GBs
+    default_entity_id: sensor.mikrotik_total_bandwidth
+    name: Total Bandwidth
+    state: '{{((states(''sensor.mikrotik_router_b_received'')|float / 1000000000)
+      + (states(''sensor.mikrotik_router_b_sent'')|float / 1000000000))|round(2)}}'
 
 #### Sample lovelace
 #- type: custom:mini-graph-card #Traffic

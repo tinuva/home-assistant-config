@@ -19,51 +19,42 @@ timer:
     duration: "00:15:00"
     restore: true
 
-sensor:
-  - platform: template
-    sensors:
-      vacuum_error_code:
-        friendly_name: "Vacuum Error Code"
-        unique_id: vacuum_error_code
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}"
-  - platform: template
-    sensors:
-      vacuum_error_message:
-        friendly_name: "Vacuum Error Message"
-        unique_id: vacuum_error_message
-        value_template: "{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string }}"
-  - platform: template
-    sensors:
-      vacuum_last_clean_stats:
-        friendly_name: Vacuum last cleaning stats
-        value_template: >
-          Vacuum Robot latest cleaning stats:{{- '\n' -}}
-          Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
-          Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
-          Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
-          End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
-
-        # {{- '\n' -}}
-        # {%- if states.vacuum.rockrobo.attributes.mainBrush|int < 10 %}Main Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.mainBrush }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.sideBrush|int < 10 %}Side Brush needs cleaning! {{ states.vacuum.rockrobo.attributes.sideBrush }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.filter|int < 10 %}Filter needs cleaning! {{ states.vacuum.rockrobo.attributes.filter }} hours left {{- '\n' -}}{% endif %}
-        # {%- if states.vacuum.rockrobo.attributes.sensor|int < 10 %}Sensors needs cleaning! {{ states.vacuum.rockrobo.attributes.sensor }} hours left {{- '\n' -}}{% endif %}
-  - platform: template
-    sensors:
-      vacuum_valetudo_state:
-        friendly_name: Vacuum Valetudo State
-        value_template: >-
-          {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
-            {{ states('sensor.vacuum_valetudo_state') }}
-          {% else %}
-            {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
-          {% endif %}
 
 template:
   - binary_sensor:
     - default_entity_id: binary_sensor.vacuum_finished_cleaning
       name: Vacuum finished cleaning
       state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}'
+
+  - sensor:
+    - unique_id: vacuum_error_code
+      default_entity_id: sensor.vacuum_error_code
+      name: Vacuum Error Code
+      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}'
+
+    - unique_id: vacuum_error_message
+      default_entity_id: sensor.vacuum_error_message
+      name: Vacuum Error Message
+      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string
+        }}'
+
+    - default_entity_id: sensor.vacuum_last_clean_stats
+      name: Vacuum last cleaning stats
+      state: >
+        Vacuum Robot latest cleaning stats:{{- '\n' -}}
+        Duration: {{ ((states.vacuum.rockrobo.attributes.last_run_stats.duration|int)/60)|round(1) }} minutes{{- '\n' -}}
+        Area: {{ states.vacuum.rockrobo.attributes.last_run_stats.area }} m2{{- '\n' -}}
+        Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
+        End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
+
+    - default_entity_id: sensor.vacuum_valetudo_state
+      name: Vacuum Valetudo State
+      state: >-
+        {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}
+          {{ states('sensor.vacuum_valetudo_state') }}
+        {% else %}
+          {{ state_attr('vacuum.rockrobo','valetudo_state')['name'] }}
+        {% endif %}
 
 automation:
   ### Clean

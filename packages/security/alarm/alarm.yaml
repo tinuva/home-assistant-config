@@ -180,29 +180,26 @@ group:
       - binary_sensor.spare_bedroom_pir
       - binary_sensor.study_window
 
-sensor:
-  - platform: template
-    sensors:
-      armed_home:
-        friendly_name: Armed Home
-        unique_id: armed_home_sensors
-        value_template: >-
-          {%- for entity_id in states.group.armed_home.attributes.entity_id if states(entity_id) == 'on' -%}
-          {% set parts = entity_id.split('.') -%}
-          {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
-          {%- if loop.first %}{% elif loop.last %} {{- '\n' -}} {% else %} {{- '\n' -}} {% endif -%}
-          {% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
-          {%- endfor %}
-
-  - platform: template
-    sensors:
-      armed_away:
-        friendly_name: Armed Away
-        unique_id: armed_away_sensors
-        value_template: >-
-          {%- for entity_id in states.group.armed_away.attributes.entity_id if states(entity_id) == 'on' -%}
-          {% set parts = entity_id.split('.') -%}
-          {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
-          {%- if loop.first %}{% elif loop.last %} {{- '\n' -}} {% else %} {{- '\n' -}} {% endif -%}
-          {% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
-          {%- endfor %}
+template:
+  - sensor:
+    - unique_id: armed_home_sensors
+      default_entity_id: sensor.armed_home
+      name: Armed Home
+      state: >-
+        {%- for entity_id in states.group.armed_home.attributes.entity_id if states(entity_id) == 'on' -%}
+        {% set parts = entity_id.split('.') -%}
+        {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
+        {%- if loop.first %}{% elif loop.last %} {{- '\n' -}} {% else %} {{- '\n' -}} {% endif -%}
+        {% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
+        {%- endfor %}
+  
+    - unique_id: armed_away_sensors
+      default_entity_id: sensor.armed_away
+      name: Armed Away
+      state: >-
+        {%- for entity_id in states.group.armed_away.attributes.entity_id if states(entity_id) == 'on' -%}
+        {% set parts = entity_id.split('.') -%}
+        {% set sensor_name  = (states[parts[0]][parts[1]].name | replace(' - alarm',''))    %}
+        {%- if loop.first %}{% elif loop.last %} {{- '\n' -}} {% else %} {{- '\n' -}} {% endif -%}
+        {% if ('DOORS' in sensor_name|upper or 'WINDOWS' in sensor_name|upper ) %}{{ sensor_name }} opened{% elif ('DOOR' in sensor_name|upper or 'WINDOW' in sensor_name|upper ) %}{{ sensor_name }} opened{% else %}{{ sensor_name }} triggered{% endif %}
+        {%- endfor %}

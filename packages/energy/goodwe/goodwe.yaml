@@ -1,134 +1,187 @@
 ---
+template:
+  - sensor:
+    - unique_id: goodwe_depth_of_discharge_on_grid
+      unit_of_measurement: "%"
+      default_entity_id: sensor.goodwe_depth_of_discharge_on_grid
+      icon: mdi:battery-arrow-down
+      name: Depth of discharge (on-grid)
+      state: >-
+          {% if states('number.depth_of_discharge_on_grid')|int > 0 %}
+            {{ (states('number.depth_of_discharge_on_grid')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+
+    - unique_id: goodwe_eco_mode_soc
+      unit_of_measurement: "%"
+      default_entity_id: sensor.goodwe_eco_mode_soc
+      icon: mdi:battery-arrow-up
+      name: Eco mode target SoC
+      state: >-
+          {% if states('number.eco_mode_soc')|int > 0 %}
+            {{ (states('number.eco_mode_soc')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+
+    - unique_id: goodwe_eco_mode_power
+      unit_of_measurement: "%"
+      default_entity_id: sensor.goodwe_eco_mode_power
+      icon: mdi:battery-arrow-up
+      name: Eco mode power
+      state: >-
+          {% if states('number.eco_mode_power')|int > 0 %}
+            {{ (states('number.eco_mode_power')|int) }}
+          {% else %}
+            {{ 0 }}
+          {% endif %}
+
+    - unique_id: goodwe_inverter_operation_mode
+      default_entity_id: sensor.goodwe_inverter_operation_mode
+      icon: mdi:solar-power
+      name: Inverter operation mode
+      state: '{{ (states(''select.inverter_operation_mode'')) }}'
+
+    - unique_id: energy_buy
+      unit_of_measurement: W
+      device_class: power
+      default_entity_id: sensor.energy_buy
+      icon: mdi:flash
+      name: GoodWe Grid Power
+      state: >-
+        {% if states('sensor.on_grid_export_power')|float < 0 %}
+          {{ (states('sensor.on_grid_export_power')|float * -1)|round(0) }}
+        {% else %}
+          {{ 0 }}
+        {% endif %}
+
+  - unique_id: energy_sell
+    unit_of_measurement: W
+    device_class: power
+    default_entity_id: sensor.energy_sell
+    icon: mdi:flash
+    name: Energy Sell
+    state: >-
+      {% if states('sensor.on_grid_export_power')|float > 0 %}
+        {{ states('sensor.on_grid_export_power')|float }}
+      {% else %}
+        {{ 0 }}
+      {% endif %}
+
+
+  - unique_id: battery_charge_power
+    unit_of_measurement: W
+    device_class: power
+    default_entity_id: sensor.battery_charge_power
+    name: Battery Charging Power
+    state: >-
+      {% if states('sensor.battery_power')|float < 0 %}
+        {{ states('sensor.battery_power')|float * -1 }}
+      {% else %}
+        {{ 0 }}
+      {% endif %}
+
+  - unique_id: battery_discharge_power
+    unit_of_measurement: W
+    device_class: power
+    default_entity_id: sensor.battery_discharge_power
+    name: Battery Discharging Power
+    state: >-
+      {% if states('sensor.battery_power')|float > 0 %}
+        {{ states('sensor.battery_power')|float }}
+      {% else %}
+        {{ 0 }}
+      {% endif %}
+
+  - unique_id: energy_non_essentials
+    unit_of_measurement: W
+    default_entity_id: sensor.energy_non_essentials
+    icon: mdi:flash
+    name: non-essentials Power
+    state: >-
+      {% if (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float) > 0 %}
+        {{ (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float)|round(0) }}
+      {% else %}
+        {{ 0 }}
+      {% endif %}
+
+  - unique_id: pv_backup_excess
+    unit_of_measurement: W
+    default_entity_id: sensor.pv_backup_excess
+    icon: mdi:flash
+    name: PV Excess over Backup Power
+    state: >-
+      {% if states('sensor.pv_power')|float > 0 %}
+        {{ (states('sensor.pv_power')|float - states('sensor.back_up_power')|float)|float|round(0)}}
+      {% else %}
+        {{ 0 }}
+      {% endif %}
+
+
+  # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
+  # <= 600
+  - default_entity_id: sensor.coct_cost_1
+    icon: mdi:flash
+    name: coct_cost_1
+    state: '308.58'
+  # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
+  # > 600
+  - default_entity_id: sensor.coct_cost_2
+    icon: mdi:flash
+    name: coct_cost_2
+    state: '426.56'
+  # Template sensor for money used
+  - default_entity_id: sensor.energy_buy_daily_cost
+    icon: mdi:flash
+    name: energy_buy_daily_cost
+    state: >-
+      {% if states('sensor.energy_buy_monthly')|float > 600 %}
+        {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
+      {% else %}
+        {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
+      {% endif %}
+
+  - default_entity_id: sensor.energy_buy_monthly_cost
+    icon: mdi:flash
+    name: energy_buy_monthly_cost
+    state: >-
+      {% if states('sensor.energy_buy_monthly')|float > 600 %}
+        {{ (((states('sensor.energy_buy_monthly')|float - 600) * states('sensor.coct_cost_2')|float / 100)|round(2) + (600 * states('sensor.coct_cost_1')|float / 100))|round(2) }}
+      {% else %}
+        {{ (states('sensor.energy_buy_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
+      {% endif %}
+      
+  - default_entity_id: sensor.energy_generate_daily_saving
+    icon: mdi:flash
+    name: energy_generate_daily_saving
+    state: >-
+      {% if states('sensor.energy_buy_monthly')|float > 600 %}
+        {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
+      {% else %}
+        {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
+      {% endif %}
+          
+  - default_entity_id: sensor.energy_generate_monthly_saving
+    icon: mdi:flash
+    name: energy_generate_monthly_saving
+    state: >-
+      {{ (states('sensor.solar_generate_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
+
+  - default_entity_id: sensor.grid_mode
+    name: Grid Mode
+    state: >
+      {% if states('sensor.energy_mode_code') in ['unavailable','unknown','none'] -%}
+        {{ states('sensor.grid_mode') }}
+      {% else %}
+        {% if 1 <= states('sensor.energy_mode_code')|int <= 2 -%}
+        1
+        {% else %}
+          {{ states('sensor.energy_mode_code')|int }}
+        {% endif %}
+      {% endif %}
+
 sensor:
-    #- platform: goodwe
-    #scan_interval: 10
-    #ip_address: 10.0.0.59
-    #port: 8899
-    #network_timeout: 2
-    #network_retries: 3
-    #sensor_name_prefix: GoodWe
-    #inverter_type: ES
-    #comm_address: 247
-    #include_unknown_sensors: false
-
-    - platform: template
-      sensors:
-          # Template sensor to display input value only
-          goodwe_depth_of_discharge_on_grid:
-              friendly_name: "Depth of discharge (on-grid)"
-              unique_id: goodwe_depth_of_discharge_on_grid
-              unit_of_measurement: "%"
-              icon_template: "mdi:battery-arrow-down"
-              value_template: >-
-                  {% if states('number.depth_of_discharge_on_grid')|int > 0 %}
-                    {{ (states('number.depth_of_discharge_on_grid')|int) }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          goodwe_eco_mode_soc:
-              friendly_name: "Eco mode target SoC"
-              unique_id: goodwe_eco_mode_soc
-              unit_of_measurement: "%"
-              icon_template: "mdi:battery-arrow-up"
-              value_template: >-
-                  {% if states('number.eco_mode_soc')|int > 0 %}
-                    {{ (states('number.eco_mode_soc')|int) }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          goodwe_eco_mode_power:
-              friendly_name: "Eco mode power"
-              unique_id: goodwe_eco_mode_power
-              unit_of_measurement: "%"
-              icon_template: "mdi:battery-arrow-up"
-              value_template: >-
-                  {% if states('number.eco_mode_power')|int > 0 %}
-                    {{ (states('number.eco_mode_power')|int) }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          goodwe_inverter_operation_mode:
-              friendly_name: "Inverter operation mode"
-              unique_id: goodwe_inverter_operation_mode
-              icon_template: "mdi:solar-power"
-              value_template: "{{ (states('select.inverter_operation_mode')) }}"
-          # Template sensor for values of energy bought (active_power < 0)
-          energy_buy:
-              friendly_name: "GoodWe Grid Power"
-              unique_id: energy_buy
-              unit_of_measurement: "W"
-              device_class: power
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.on_grid_export_power')|float < 0 %}
-                    {{ (states('sensor.on_grid_export_power')|float * -1)|round(0) }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          # Template sensor for values of energy sold (active_power > 0)
-          energy_sell:
-              friendly_name: "Energy Sell"
-              unique_id: energy_sell
-              unit_of_measurement: "W"
-              device_class: power
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.on_grid_export_power')|float > 0 %}
-                    {{ states('sensor.on_grid_export_power')|float }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          # Template sensor for values of power sent to battery (goodwe_pbattery1 < 0)
-          battery_charge_power:
-              friendly_name: "Battery Charging Power"
-              unique_id: battery_charge_power
-              unit_of_measurement: "W"
-              value_template: >-
-                  {% if states('sensor.battery_power')|float < 0 %}
-                    {{ states('sensor.battery_power')|float * -1 }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-              device_class: power
-              #icon: mdi:battery-high # not possible?
-          # Template sensor for values of power pulled from (goodwe_pbattery1 > 0)
-          battery_discharge_power:
-              friendly_name: "Battery Discharging Power"
-              unique_id: battery_discharge_power
-              unit_of_measurement: "W"
-              value_template: >-
-                  {% if states('sensor.battery_power')|float > 0 %}
-                    {{ states('sensor.battery_power')|float }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-              device_class: power
-              #icon: mdi:battery-high # not possible?
-          # Template sensor for values of non-essential energy usage
-          energy_non_essentials:
-              friendly_name: "non-essentials Power"
-              unique_id: energy_non_essentials
-              unit_of_measurement: "W"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float) > 0 %}
-                    {{ (states('sensor.house_consumption')|float - states('sensor.back_up_power')|float)|round(0) }}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-          # PV usage over backup/essential
-          pv_backup_excess:
-              friendly_name: "PV Excess over Backup Power"
-              unique_id: pv_backup_excess
-              unit_of_measurement: "W"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.pv_power')|float > 0 %}
-                    {{ (states('sensor.pv_power')|float - states('sensor.back_up_power')|float)|float|round(0)}}
-                  {% else %}
-                    {{ 0 }}
-                  {% endif %}
-
     # Sensor for Riemann sum of energy bought (W -> Wh)
     - platform: integration
       source: sensor.energy_buy
@@ -165,67 +218,6 @@ sensor:
       unit_prefix: k
       round: 2
       method: left
-
-    - platform: template
-      sensors:
-          # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
-          # <= 600
-          coct_cost_1:
-              friendly_name: "coct_cost_1"
-              icon_template: "mdi:flash"
-              value_template: "308.58"
-          # https://www.capetown.gov.za/Family%20and%20home/residential-utility-services/residential-electricity-services/the-cost-of-electricity
-          # > 600
-          coct_cost_2:
-              friendly_name: "coct_cost_2"
-              icon_template: "mdi:flash"
-              value_template: "426.56"
-          # Template sensor for money used
-          energy_buy_daily_cost:
-              friendly_name: "energy_buy_daily_cost"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.energy_buy_monthly')|float > 600 %}
-                    {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
-                  {% else %}
-                    {{ (states('sensor.energy_buy_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
-                  {% endif %}
-          energy_buy_monthly_cost:
-              friendly_name: "energy_buy_monthly_cost"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.energy_buy_monthly')|float > 600 %}
-                    {{ (((states('sensor.energy_buy_monthly')|float - 600) * states('sensor.coct_cost_2')|float / 100)|round(2) + (600 * states('sensor.coct_cost_1')|float / 100))|round(2) }}
-                  {% else %}
-                    {{ (states('sensor.energy_buy_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
-                  {% endif %}
-          energy_generate_daily_saving:
-              friendly_name: "energy_generate_daily_saving"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {% if states('sensor.energy_buy_monthly')|float > 600 %}
-                    {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_2')|float / 100)|round(2) }}
-                  {% else %}
-                    {{ (states('sensor.solar_generate_daily')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
-                  {% endif %}
-          energy_generate_monthly_saving:
-              friendly_name: "energy_generate_monthly_saving"
-              icon_template: "mdi:flash"
-              value_template: >-
-                  {{ (states('sensor.solar_generate_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
-
-          grid_mode:
-              friendly_name_template: "Grid Mode"
-              value_template: >
-                  {% if states('sensor.energy_mode_code') in ['unavailable','unknown','none'] -%}
-                    {{ states('sensor.grid_mode') }}
-                  {% else %}
-                    {% if 1 <= states('sensor.energy_mode_code')|int <= 2 -%}
-                    1
-                    {% else %}
-                      {{ states('sensor.energy_mode_code')|int }}
-                    {% endif %}
-                  {% endif %}
 
     - platform: average
       name: "GoodWe Average House Consumption 30min"

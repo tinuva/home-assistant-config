@@ -52,9 +52,6 @@ ffmpeg:
 
 #surepetcare: !include includes/surepetcare.yaml
 
-# Sensors
-sensor: !include includes/sensors.yaml
-
 # Others
 shell_command: !include includes/shell_commands.yaml
 notify: !include includes/notify.yaml
