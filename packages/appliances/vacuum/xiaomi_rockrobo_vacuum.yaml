@@ -22,23 +22,23 @@ timer:
 
 template:
   - binary_sensor:
-    - default_entity_id: binary_sensor.vacuum_finished_cleaning
-      name: Vacuum finished cleaning
-      state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}'
+      - default_entity_id: binary_sensor.vacuum_finished_cleaning
+        name: Vacuum finished cleaning
+        state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.finishedFlag }}'
 
   - sensor:
-    - unique_id: vacuum_error_code
+      - unique_id: vacuum_error_code
       default_entity_id: sensor.vacuum_error_code
       name: Vacuum Error Code
       state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorCode|int }}'
 
-    - unique_id: vacuum_error_message
-      default_entity_id: sensor.vacuum_error_message
+      - unique_id: vacuum_error_message
+        default_entity_id: sensor.vacuum_error_message
       name: Vacuum Error Message
       state: '{{ states.vacuum.rockrobo.attributes.last_run_stats.errorDescription|string
         }}'
 
-    - default_entity_id: sensor.vacuum_last_clean_stats
+      - default_entity_id: sensor.vacuum_last_clean_stats
       name: Vacuum last cleaning stats
       state: >
         Vacuum Robot latest cleaning stats:{{- '\n' -}}
@@ -47,7 +47,7 @@ template:
         Start time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.startTime/1000)|timestamp_local }}{{- '\n' -}}
         End time: {{ (states.vacuum.rockrobo.attributes.last_run_stats.endTime/1000)|timestamp_local }}{{- '\n' -}}
 
-    - default_entity_id: sensor.vacuum_valetudo_state
+      - default_entity_id: sensor.vacuum_valetudo_state
       name: Vacuum Valetudo State
       state: >-
         {% if states('vacuum.rockrobo') in ['unavailable','unknown','none'] -%}

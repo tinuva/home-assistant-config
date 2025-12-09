@@ -20,14 +20,14 @@ sensor:
     precision: 0.1
 
 template:
-- sensor:
-  - unique_id: battery_available
-    unit_of_measurement: kWh
-    default_entity_id: sensor.battery_available
-    icon: mdi:battery-high
-    name: Battery Available
-    state: >-
-      {% set battery_capacity = 14 %}
+  - sensor:
+      - unique_id: battery_available
+        unit_of_measurement: kWh
+        default_entity_id: sensor.battery_available
+        icon: mdi:battery-high
+        name: Battery Available
+        state: >-
+          {% set battery_capacity = 14 %}
       {% set battery_current = (battery_capacity * (states('sensor.battery_state_of_charge')|int/100))|round(2) %}
       {{ battery_current }}
 

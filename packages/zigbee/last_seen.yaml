@@ -1,37 +1,37 @@
 ---
 template:
   - binary_sensor:
-    - default_entity_id: binary_sensor.zigbee_last_seen_problem
-      name: Zigbee Last Seen Problem
-      state: >-
-        {% set ns = namespace(break = false) %}
-        {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-          {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
-            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
-              {%- set ns.break = true %}
+      - default_entity_id: binary_sensor.zigbee_last_seen_problem
+        name: Zigbee Last Seen Problem
+        state: >-
+          {% set ns = namespace(break = false) %}
+          {% for state in (expand(states.sensor,states.binary_sensor,  states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if state.state not in ['unavailable','unknown','none'] and 'zigbee_last_seen_' not in state.entity_id %}
+              {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float)) and ns.break == false %}
+                {%- set ns.break = true %}
+              {%- endif -%}
             {%- endif -%}
-          {%- endif -%}
-        {%- endfor %}
-        {{ ns.break }}
-  
-  - sensor:
-    - unit_of_measurement: hours
-      default_entity_id: sensor.zigbee_last_seen_timeout
-      icon: mdi:clock
-      name: Zigbee Last Seen Timeout
-      state: '{{ 25|float }}'      
+          {%- endfor %}
+          {{ ns.break }}
 
-    - default_entity_id: sensor.zigbee_last_seen_problem_detail
-      icon: mdi:clock
-      name: Zigbee Last Seen Problem Detail
-      state: >
-        {%- for state in (expand(states.sensor, states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
-          {%- if state.state is string and state.state not in ['on', 'off', 'unavailable', 'unknown'] and state.state | regex_match('^[0-9]{4}-[0-9]{2}-[0-9]{2}.*') -%}
-            {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float(0))) %}
-              {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+  - sensor:
+      - unit_of_measurement: hours
+        default_entity_id: sensor.zigbee_last_seen_timeout
+        icon: mdi:clock
+        name: Zigbee Last Seen Timeout
+        state: '{{ 25|float }}'
+
+      - default_entity_id: sensor.zigbee_last_seen_problem_detail
+        icon: mdi:clock
+        name: Zigbee Last Seen Problem Detail
+        state: >
+          {%- for state in (expand(states.sensor, states.binary_sensor, states.light, states.switch) |selectattr('entity_id', 'search', 'last_seen')) -%}
+            {%- if state.state is string and state.state not in ['on', 'off', 'unavailable', 'unknown'] and state.state | regex_match('^[0-9]{4}-[0-9]{2}-[0-9]{2}.*') -%}
+              {%- if (as_timestamp(now()) - as_timestamp(state.state) > (60 * 60 * states('sensor.zigbee_last_seen_timeout')|float(0))) %}
+                {{- '\r\n' }}* {{ ((as_timestamp(now()) - as_timestamp(state.state)) / (3600)) | round(1) }} hours ago '{{ state.name }}'
+              {%- endif -%}
             {%- endif -%}
-          {%- endif -%}
-        {%- endfor %}
+          {%- endfor %}
 
 
 automation:

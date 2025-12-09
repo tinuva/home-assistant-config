@@ -2,53 +2,53 @@
 template:
   ## Front Garage Door
   - cover:
-    - device_class: garage
-      open_cover:
-      - data:
-          entity_id: switch.garagedoor_front_garagedoor_front
-        action: switch.turn_on
-      close_cover:
-      - data:
-          entity_id: switch.garagedoor_front_garagedoor_front
-        action: switch.turn_on
-      stop_cover:
-      - data:
-          entity_id: switch.garagedoor_front_garagedoor_front
-        action: switch.turn_on
-      default_entity_id: cover.garage_door_front
-      icon: >-
-        {% if is_state('binary_sensor.front_garage_door_window', 'on') %}
-          mdi:garage-open
-        {% else %}
-          mdi:garage
-        {% endif %}
-      name: Garage Door Front
-      position: '{{ is_state(''binary_sensor.front_garage_door_window'', ''on'') }}'
+      - device_class: garage
+        open_cover:
+          - data:
+              entity_id: switch.garagedoor_front_garagedoor_front
+            action: switch.turn_on
+        close_cover:
+          - data:
+              entity_id: switch.garagedoor_front_garagedoor_front
+            action: switch.turn_on
+        stop_cover:
+          - data:
+              entity_id: switch.garagedoor_front_garagedoor_front
+            action: switch.turn_on
+        default_entity_id: cover.garage_door_front
+        icon: >-
+          {% if is_state('binary_sensor.front_garage_door_window', 'on') %}
+            mdi:garage-open
+          {% else %}
+            mdi:garage
+          {% endif %}
+        name: Garage Door Front
+        position: '{{ is_state(''binary_sensor.front_garage_door_window'', ''on'') }}'
   # Back Garage Door
   - cover:
-    - device_class: garage
-      open_cover:
-      - data:
-          entity_id: switch.garagedoor_back_garagedoor_back
-        action: switch.turn_on
-      close_cover:
-      - data:
-          entity_id: switch.garagedoor_back_garagedoor_back
-        action: switch.turn_on
-      stop_cover:
-      - data:
-          entity_id: switch.garagedoor_back_garagedoor_back
-        action: switch.turn_on
-      default_entity_id: cover.garage_door_back
-      icon: >-
-        {% if is_state('binary_sensor.back_garage_door', 'on') %}
-          mdi:garage-open
-        {% else %}
-          mdi:garage
-        {% endif %}
-      name: Garage Door Back
-      position: '{{ is_state(''binary_sensor.back_garage_door'', ''on'') }}'
-  
+      - device_class: garage
+        open_cover:
+          - data:
+              entity_id: switch.garagedoor_back_garagedoor_back
+            action: switch.turn_on
+        close_cover:
+          - data:
+              entity_id: switch.garagedoor_back_garagedoor_back
+            action: switch.turn_on
+        stop_cover:
+          - data:
+              entity_id: switch.garagedoor_back_garagedoor_back
+            action: switch.turn_on
+        default_entity_id: cover.garage_door_back
+        icon: >-
+          {% if is_state('binary_sensor.back_garage_door', 'on') %}
+            mdi:garage-open
+          {% else %}
+            mdi:garage
+          {% endif %}
+        name: Garage Door Back
+        position: '{{ is_state(''binary_sensor.back_garage_door'', ''on'') }}'
+
 
 ## Alert
 alert:

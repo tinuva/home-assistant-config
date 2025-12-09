@@ -1,11 +1,11 @@
 ---
 template:
   - sensor:
-    - unique_id: goodwe_depth_of_discharge_on_grid
-      unit_of_measurement: "%"
-      default_entity_id: sensor.goodwe_depth_of_discharge_on_grid
-      icon: mdi:battery-arrow-down
-      name: Depth of discharge (on-grid)
+      - unique_id: goodwe_depth_of_discharge_on_grid
+        unit_of_measurement: "%"
+        default_entity_id: sensor.goodwe_depth_of_discharge_on_grid
+        icon: mdi:battery-arrow-down
+        name: Depth of discharge (on-grid)
       state: >-
           {% if states('number.depth_of_discharge_on_grid')|int > 0 %}
             {{ (states('number.depth_of_discharge_on_grid')|int) }}
@@ -149,7 +149,7 @@ template:
         {% else %}
           {{ (states('sensor.energy_buy_monthly')|float * states('sensor.coct_cost_1')|float / 100)|round(2) }}
         {% endif %}
-        
+
     - default_entity_id: sensor.energy_generate_daily_saving
       icon: mdi:flash
       name: energy_generate_daily_saving
@@ -180,8 +180,8 @@ template:
         {% endif %}
 
 sensor:
-    # Sensor for Riemann sum of energy bought (W -> Wh)
-    - platform: integration
+  # Sensor for Riemann sum of energy bought (W -> Wh)
+  - platform: integration
       source: sensor.energy_buy
       name: energy_buy_sum
       unit_prefix: k
@@ -217,89 +217,84 @@ sensor:
       round: 2
       method: left
 
-    - platform: average
-      name: "GoodWe Average House Consumption 30min"
-      duration:
-          minutes: 30
-      entities:
-          - sensor.house_consumption
+  - platform: average
+    name: "GoodWe Average House Consumption 30min"
+    duration:
+      minutes: 30
+    entities:
+      - sensor.house_consumption
 
-    - platform: average
-      name: "GoodWe Average House Consumption 10min"
-      duration:
-          minutes: 10
-      entities:
-          - sensor.house_consumption
+  - platform: average
+    name: "GoodWe Average House Consumption 10min"
+    duration:
+      minutes: 10
+    entities:
+      - sensor.house_consumption
 
-    - platform: average
-      name: "GoodWe Average Solar Generation 10min"
-      duration:
-          minutes: 10
-      entities:
-          - sensor.pv_power
+  - platform: average
+    name: "GoodWe Average Solar Generation 10min"
+    duration:
+      minutes: 10
+    entities:
+      - sensor.pv_power
 
-    - platform: average
-      name: "GoodWe Average Solar Generation 30min"
-      duration:
-          minutes: 30
-      entities:
-          - sensor.pv_power
+  - platform: average
+    name: "GoodWe Average Solar Generation 30min"
+    duration:
+      minutes: 30
+    entities:
+      - sensor.pv_power
 
-    - platform: average
-      name: "GoodWe Average Back-up use 10min"
-      duration:
-          minutes: 10
-      entities:
-          - sensor.back_up_power
+  - platform: average
+    name: "GoodWe Average Back-up use 10min"
+    duration:
+      minutes: 10
+    entities:
+      - sensor.back_up_power
 
-    - platform: average
-      name: "GoodWe Average Back-up use 30min"
-      duration:
-          minutes: 30
-      entities:
-          - sensor.back_up_power
+  - platform: average
+    name: "GoodWe Average Back-up use 30min"
+    duration:
+      minutes: 30
+    entities:
+      - sensor.back_up_power
 
 utility_meter:
-    # Grid
-    energy_buy_daily:
-        source: sensor.energy_buy_sum
-        cycle: daily
-    energy_buy_monthly:
-        source: sensor.energy_buy_sum
-        cycle: monthly
-    energy_sell_daily:
-        source: sensor.energy_sell_sum
-        cycle: daily
-    energy_sell_monthly:
-        source: sensor.energy_sell_sum
-        cycle: monthly
-    # Battery
-    battery_charge_daily:
-        source: sensor.battery_total_charge
-        cycle: daily
-    battery_charge_monthly:
-        source: sensor.battery_total_charge
-        cycle: monthly
-    battery_discharge_daily:
-        source: sensor.battery_total_discharge
-        cycle: daily
-    battery_discharge_monthly:
-        source: sensor.battery_total_discharge
-        cycle: monthly
-    # Other
-    house_consumption_daily:
-        source: sensor.house_consumption
-        cycle: daily
-    house_consumption_monthly:
-        source: sensor.house_consumption
-        cycle: monthly
-    # Solar
-    solar_generate_daily:
-        source: sensor.energy_solar_generate
-        cycle: daily
-    solar_generate_monthly:
-        source: sensor.energy_solar_generate
-        cycle: monthly
+  # Grid
+  energy_buy_daily:
+    source: sensor.energy_buy_sum
+    cycle: daily
+  energy_buy_monthly:
+    source: sensor.energy_buy_sum
+    cycle: monthly
+  energy_sell_daily:
+    source: sensor.energy_sell_sum
+    cycle: daily
+  energy_sell_monthly:
+    source: sensor.energy_sell_sum
+    cycle: monthly
+
+  # Battery
+  battery_charge_daily:
+    source: sensor.battery_total_charge
+    cycle: daily
+  battery_charge_monthly:
+    source: sensor.battery_total_charge
+    cycle: monthly
+  battery_discharge_daily:
+    source: sensor.battery_total_discharge
+    cycle: daily
+  battery_discharge_monthly:
+    source: sensor.battery_total_discharge
+    cycle: monthly
+
+  # Solar
+  solar_generate_daily:
+    source: sensor.energy_solar_generate
+    cycle: daily
+  solar_generate_monthly:
+    source: sensor.energy_solar_generate
+    cycle: monthly
 
 automation:
     # Notification - grid power lost
@@ -348,152 +343,152 @@ automation:
     #               data:
     #                 entity_id: switch.front_bathroom_geyser
 
-    - alias: notification - goodwe energy mode
-      trigger:
-          - platform: state
-            entity_id: sensor.energy_mode_code
-      condition:
-          - condition: template
-            value_template: >-
-                {{ trigger.from_state is not none and
-                  trigger.from_state.state not in ['unknown','unavailable'] }}
-          - condition: numeric_state
-            entity_id: sensor.energy_mode_code
-            above: "-1"
-      action:
-          - service: script.alert
-            data:
-                target: "logs"
-                icon: ":zap: "
-                object: "GoodWe - Energy mode"
-                message: "{{ states('sensor.energy_mode_code') }} - {{ states('sensor.energy_mode') }}"
+  - alias: notification - goodwe energy mode
+    trigger:
+      - platform: state
+        entity_id: sensor.energy_mode_code
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.from_state is not none and
+            trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: numeric_state
+        entity_id: sensor.energy_mode_code
+        above: "-1"
+    action:
+      - service: script.alert
+        data:
+          target: "logs"
+          icon: ":zap: "
+          object: "GoodWe - Energy mode"
+          message: "{{ states('sensor.energy_mode_code') }} - {{ states('sensor.energy_mode') }}"
 
-    - alias: notification - goodwe work mode
-      trigger:
-          - platform: state
-            entity_id: sensor.work_mode_code
-      condition:
-          - condition: template
-            value_template: >-
-                {{ trigger.from_state is not none and
-                  trigger.from_state.state not in ['unknown','unavailable'] }}
-          - condition: numeric_state
-            entity_id: sensor.work_mode_code
-            above: "-1"
-      action:
-          - delay:
-                seconds: 1
-          - service: script.alert
-            data:
-                target: "logs"
-                icon: ":zap: "
-                object: "GoodWe - Work mode"
-                message: "{{ states('sensor.work_mode_code') }} - {{ states('sensor.work_mode') }}"
+  - alias: notification - goodwe work mode
+    trigger:
+      - platform: state
+        entity_id: sensor.work_mode_code
+    condition:
+      - condition: template
+        value_template: >-
+          {{ trigger.from_state is not none and
+            trigger.from_state.state not in ['unknown','unavailable'] }}
+      - condition: numeric_state
+        entity_id: sensor.work_mode_code
+        above: "-1"
+    action:
+      - delay:
+          seconds: 1
+      - service: script.alert
+        data:
+          target: "logs"
+          icon: ":zap: "
+          object: "GoodWe - Work mode"
+          message: "{{ states('sensor.work_mode_code') }} - {{ states('sensor.work_mode') }}"
 
-    # notification daily kWh usage
-    - alias: notification daily kWh usage
-      trigger:
-          - platform: template
-            value_template: "{{ states('sensor.time') == ( '86399' | int | timestamp_custom('%H:%M', False)) }}"
-      # for now we want it monthly to reduce message spam
-      condition:
-          - condition: template
-            value_template: "{{ (now() + timedelta(days=1)).day == 1 }}"
-      action:
-          - service: notify.bezuidenhouts
-            data_template:
-                data:
-                    icon: ":zap:"
-                    username: "GoodWe Robot"
-                    blocks_template:
-                        - type: header
-                          text:
-                              type: plain_text
-                              text: >
-                                  Power Usage Daily
-                        - type: section
-                          fields:
-                              - type: mrkdwn
-                                text: >
-                                    *Eskom:* {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-                                    {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
-                                    {{- '\n' -}}*Total:* {{ (states('sensor.energy_buy_daily')|float + states('sensor.solar_generate_daily')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_daily_cost')|float + states('sensor.energy_generate_daily_saving')|float)|round(2) }}
-                        - type: header
-                          text:
-                              type: plain_text
-                              text: >
-                                  Power Usage Monthly
-                        - type: section
-                          fields:
-                              - type: mrkdwn
-                                text: >
-                                    *Eskom:* {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
-                                    {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
-                                    {{- '\n' -}}*Total:* {{ (states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float)|round(2) }}
-                        - type: section
-                          text:
-                              type: mrkdwn
-                              text: >
-                                  <https://grafana.heaven.za.net/d/aVNSpZGGz/power-usage-goodwe?orgId=1&refresh=30s|View graphs>
-                title: "Power"
-                target: ["#general"]
-                message: >
-                    Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
-                    {{- '\n' -}}Today's solar generation: {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
-                    {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
-                    {{- '\n' -}}This month's solar generation: {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
-                    {{- '\n' -}}Total monthly usage: {{ (states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float)|round(2) }}
+  # notification daily kWh usage
+  - alias: notification daily kWh usage
+    trigger:
+      - platform: template
+        value_template: "{{ states('sensor.time') == ( '86399' | int | timestamp_custom('%H:%M', False)) }}"
+    # for now we want it monthly to reduce message spam
+    condition:
+      - condition: template
+        value_template: "{{ (now() + timedelta(days=1)).day == 1 }}"
+    action:
+      - service: notify.bezuidenhouts
+        data_template:
+          data:
+            icon: ":zap:"
+            username: "GoodWe Robot"
+            blocks_template:
+              - type: header
+                text:
+                  type: plain_text
+                  text: >
+                    Power Usage Daily
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >
+                      *Eskom:* {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+                      {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
+                      {{- '\n' -}}*Total:* {{ (states('sensor.energy_buy_daily')|float + states('sensor.solar_generate_daily')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_daily_cost')|float + states('sensor.energy_generate_daily_saving')|float)|round(2) }}
+              - type: header
+                text:
+                  type: plain_text
+                  text: >
+                    Power Usage Monthly
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >
+                      *Eskom:* {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+                      {{- '\n' -}}*Solar:* {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
+                      {{- '\n' -}}*Total:* {{ (states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float)|round(2) }}
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >
+                    <https://grafana.heaven.za.net/d/aVNSpZGGz/power-usage-goodwe?orgId=1&refresh=30s|View graphs>
+          title: "Power"
+          target: ["#general"]
+          message: >
+            Today's power usage: {{ states('sensor.energy_buy_daily') }} kWh / R{{ states('sensor.energy_buy_daily_cost') }}
+            {{- '\n' -}}Today's solar generation: {{ states('sensor.solar_generate_daily') }} kWh / R{{ states('sensor.energy_generate_daily_saving') }}
+            {{- '\n' -}}This month's current usage: {{ states('sensor.energy_buy_monthly') }} kWh / R{{ states('sensor.energy_buy_monthly_cost') }}
+            {{- '\n' -}}This month's solar generation: {{ states('sensor.solar_generate_monthly') }} kWh / R{{ states('sensor.energy_generate_monthly_saving') }}
+            {{- '\n' -}}Total monthly usage: {{ (states('sensor.energy_buy_monthly')|float + states('sensor.solar_generate_monthly')|float)|round(2) }} kWh / R{{ (states('sensor.energy_buy_monthly_cost')|float + states('sensor.energy_generate_monthly_saving')|float)|round(2) }}
 
-    ## notification if SoH drop below 50%
-    - alias: Notify SoH below 50
-      mode: single
-      trigger:
-          - platform: numeric_state
-            entity_id: sensor.battery_state_of_health
-            below: "50"
-      condition: []
-      action:
-          - service: script.alert
-            data:
-                target: "alerts"
-                icon: ":zap: "
-                object: "GoodWe"
-                message: >
-                    GoodWe Battery State of Health LOW
-                    Current SoH: {{ states('sensor.battery_state_of_health') }}
+  ## notification if SoH drop below 50%
+  - alias: Notify SoH below 50
+    mode: single
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.battery_state_of_health
+        below: "50"
+    condition: []
+    action:
+      - service: script.alert
+        data:
+          target: "alerts"
+          icon: ":zap: "
+          object: "GoodWe"
+          message: >
+            GoodWe Battery State of Health LOW
+            Current SoH: {{ states('sensor.battery_state_of_health') }}
 
-    - alias: Notify if Goodwe stops updating
-      description: "Notify if Goodwe stops updating"
-      trigger:
-          - platform: template
-            value_template: >-
-                {{ (as_timestamp(states('sensor.date_time'),'%Y-%m-%d, %H:%M') -
-                as_timestamp(states.sensor.back_up_power.last_updated) )  > 600 }}
-      condition: []
-      action:
-          - service: script.alert
-            data:
-                # target: 'logs'
-                icon: ":zap: "
-                object: "GoodWe - Updates"
-                message: GoodWe integration haven't updated sensors for more than 5 minutes
+  - alias: Notify if Goodwe stops updating
+    description: "Notify if Goodwe stops updating"
+    trigger:
+      - platform: template
+        value_template: >-
+          {{ (as_timestamp(states('sensor.date_time'),'%Y-%m-%d, %H:%M') -
+          as_timestamp(states.sensor.back_up_power.last_updated) )  > 600 }}
+    condition: []
+    action:
+      - service: script.alert
+        data:
+          # target: 'logs'
+          icon: ":zap: "
+          object: "GoodWe - Updates"
+          message: GoodWe integration haven't updated sensors for more than 5 minutes
 
-    ## notification if Backup drop to 0%
-    - alias: Notify Backup drop to 0
-      mode: single
-      trigger:
-          - platform: state
-            entity_id: sensor.back_up_power
-            to: "0"
-            for:
-                seconds: 10
-      condition: []
-      action:
-          - service: script.alert
-            data:
-                target: "alerts"
-                icon: ":zap: "
-                object: "GoodWe"
-                message: >
-                    GoodWe Backup load is 0. Check if essentials earth leakage tripped.
-                    Current Essentials load: {{ states('sensor.back_up_power') }}
+  ## notification if Backup drop to 0%
+  - alias: Notify Backup drop to 0
+    mode: single
+    trigger:
+      - platform: state
+        entity_id: sensor.back_up_power
+        to: "0"
+        for:
+          seconds: 10
+    condition: []
+    action:
+      - service: script.alert
+        data:
+          target: "alerts"
+          icon: ":zap: "
+          object: "GoodWe"
+          message: >
+            GoodWe Backup load is 0. Check if essentials earth leakage tripped.
+            Current Essentials load: {{ states('sensor.back_up_power') }}

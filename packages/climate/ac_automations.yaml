@@ -1,24 +1,24 @@
 ---
 template:
   - sensor:
-    - default_entity_id: sensor.ac_central_mode
-      name: AC Central Mode
-      state: >-
-        {% set temp_comfort = 20 %}
-        {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
-        {% if temp_avg >= (temp_comfort) %}cool
-        {% elif temp_avg > (temp_comfort) %}auto
-        {% elif temp_avg >= (temp_comfort - 7) and temp_avg < (temp_comfort) %}auto
-        {% elif temp_avg < (temp_comfort - 7) %}heat
-        {% else %}auto{% endif -%}
+      - default_entity_id: sensor.ac_central_mode
+        name: AC Central Mode
+        state: >-
+          {% set temp_comfort = 20 %}
+          {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
+          {% if temp_avg >= (temp_comfort) %}cool
+          {% elif temp_avg > (temp_comfort) %}auto
+          {% elif temp_avg >= (temp_comfort - 7) and temp_avg < (temp_comfort) %}auto
+          {% elif temp_avg < (temp_comfort - 7) %}heat
+          {% else %}auto{% endif -%}
 
   - binary_sensor:
-    - default_entity_id: binary_sensor.near_sunset
-      name: Near Sunset
-      state: >-
-        {% set next_sunset = (as_timestamp(state_attr('sun.sun', 'next_setting')) + 0)|timestamp_custom('%H:%M') %}
-        {% set next_sunset_m3h = (as_timestamp(state_attr('sun.sun', 'next_setting')) - (4 * 3600))|timestamp_custom('%H:%M') %}
-        {{ (next_sunset_m3h <= states('sensor.time') <= next_sunset) }}
+      - default_entity_id: binary_sensor.near_sunset
+        name: Near Sunset
+        state: >-
+          {% set next_sunset = (as_timestamp(state_attr('sun.sun', 'next_setting')) + 0)|timestamp_custom('%H:%M') %}
+          {% set next_sunset_m3h = (as_timestamp(state_attr('sun.sun', 'next_setting')) - (4 * 3600))|timestamp_custom('%H:%M') %}
+          {{ (next_sunset_m3h <= states('sensor.time') <= next_sunset) }}
 
 automation:
   # Start ACs if enough power

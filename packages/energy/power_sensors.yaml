@@ -2,12 +2,12 @@
 
 template:
   - sensor:
-    - unique_id: lights_power
-      unit_of_measurement: W
-      default_entity_id: sensor.lights_power
-      icon: mdi:flash
-      name: Lights Power
-      state: >
+      - unique_id: lights_power
+        unit_of_measurement: W
+        default_entity_id: sensor.lights_power
+        icon: mdi:flash
+        name: Lights Power
+        state: >
         {%- set ns = namespace(lightspower=0) -%}
         {%- set lightswitchs = ['sensor.shelly_dimmer_d42c70_power_0',
         'sensor.shelly_dimmer_d3eac3_power_0',

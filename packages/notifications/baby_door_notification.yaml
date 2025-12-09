@@ -1,19 +1,19 @@
 ---
 template:
-- binary_sensor:
-  - unique_id: baby_room_door_closed_long
-    default_entity_id: binary_sensor.baby_room_door_closed_long
-    name: Baby room door closed long
-    state: >-
-      {% if states.binary_sensor.baby_room_door_contact.state == 'off' %}
-      {% if (as_timestamp(now()) - as_timestamp(states.binary_sensor.baby_room_door_contact.last_changed))/60 > 30 %}
-      off
-      {% else %}
-      on
-      {% endif %}
-      {% else %}
-      on
-      {% endif %}
+  - binary_sensor:
+      - unique_id: baby_room_door_closed_long
+        default_entity_id: binary_sensor.baby_room_door_closed_long
+        name: Baby room door closed long
+        state: >-
+          {% if states.binary_sensor.baby_room_door_contact.state == 'off' %}
+          {% if (as_timestamp(now()) - as_timestamp(states.binary_sensor.baby_room_door_contact.last_changed))/60 > 30 %}
+          off
+          {% else %}
+          on
+          {% endif %}
+          {% else %}
+          on
+          {% endif %}
 
 automation:
   ### Notify baby room door opened after closed for long

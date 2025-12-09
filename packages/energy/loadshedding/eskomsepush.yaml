@@ -58,9 +58,9 @@
 
 template:
   - sensor:
-    - unique_id: loadshedding_slot_forecast
-      default_entity_id: sensor.loadshedding_slot_forecast
-      name: Loadshedding slot forecast
+      - unique_id: loadshedding_slot_forecast
+        default_entity_id: sensor.loadshedding_slot_forecast
+        name: Loadshedding slot forecast
       state: >
         {%- set show = namespace(count=1) -%}
         {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
@@ -92,18 +92,18 @@ template:
         {%-else%}
         None scheduled
         {%endif%}
-    - unique_id: loadshedding_slot_next
-      default_entity_id: sensor.loadshedding_slot_next
-      name: Loadshedding slot next
+      - unique_id: loadshedding_slot_next
+        default_entity_id: sensor.loadshedding_slot_next
+        name: Loadshedding slot next
       state: >
         {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
         {{ as_timestamp(states['sensor.load_shedding_area_capetown_6_durbanville'].attributes.forecast[0]['start_time']) | timestamp_custom('%H:%M') }}
         {%else%}
         None scheduled
         {%endif%}
-    - unique_id: loadshedding_slot_next_after
-      default_entity_id: sensor.loadshedding_slot_next_after
-      name: Loadshedding slot next after
+      - unique_id: loadshedding_slot_next_after
+        default_entity_id: sensor.loadshedding_slot_next_after
+        name: Loadshedding slot next after
       state: >
         {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 1 %}
         {{ as_timestamp(states['sensor.load_shedding_area_capetown_6_durbanville'].attributes.forecast[1]['start_time']) | timestamp_custom('%H:%M') }}
@@ -111,21 +111,21 @@ template:
         None scheduled
         {%endif%}
 
-    - unique_id: Time_Until_Next_Loadshedding
-      unit_of_measurement: mins
-      default_entity_id: sensor.time_till_loadshedding
-      name: Time until next loadshedding
+      - unique_id: Time_Until_Next_Loadshedding
+        unit_of_measurement: mins
+        default_entity_id: sensor.time_till_loadshedding
+        name: Time until next loadshedding
       state: >
         {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
         {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int - as_timestamp(now()) | int ) / 60,-1] | max }}
         {%else%}
         Unknown
         {%endif%}
-        
-    - unique_id: actual_next_loadshedding_duration
-      unit_of_measurement: mins
-      default_entity_id: sensor.next_loadshedding_duration
-      name: Calculated Next Loadshedding Duration
+
+      - unique_id: actual_next_loadshedding_duration
+        unit_of_measurement: mins
+        default_entity_id: sensor.next_loadshedding_duration
+        name: Calculated Next Loadshedding Duration
       state: >
         {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
         {% set area_schedule = state_attr(area_sensor, "forecast") %}

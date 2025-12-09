@@ -50,10 +50,10 @@ zone:
 
 template:
   - binary_sensor:
-    - default_entity_id: binary_sensor.anyone_home
-      name: Anyone Home
-      state: "{{ is_state('device_tracker.pixel_7a', 'home')\n   or is_state('device_tracker.pixel_8',
-        'home') }}"
+      - default_entity_id: binary_sensor.anyone_home
+        name: Anyone Home
+        state: "{{ is_state('device_tracker.pixel_7a', 'home')\n   or is_state('device_tracker.pixel_8',
+          'home') }}"
 
 automation:
     - alias: zone arrived at

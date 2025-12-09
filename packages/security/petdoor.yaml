@@ -1,17 +1,16 @@
 ---
-
 template:
-- sensor:
-  - unique_id: kitchen_pet_door_battery
-    unit_of_measurement: '%'
-    default_entity_id: sensor.kitchen_pet_door_battery
-    icon: mdi:battery-arrow-down
-    name: Kitchen Pet Door Battery
-    state: >-
-      {% set battery_voltage = states('sensor.kitchen_kitchen_battery')|float %}
-      {% set battery_percent = (battery_voltage - 4.8)*100 %}
-      {% from 'formatter.jinja' import format_number %}
-      {{ format_number(battery_percent) }}
+  - sensor:
+      - unique_id: kitchen_pet_door_battery
+        unit_of_measurement: '%'
+        default_entity_id: sensor.kitchen_pet_door_battery
+        icon: mdi:battery-arrow-down
+        name: Kitchen Pet Door Battery
+        state: >-
+          {% set battery_voltage = states('sensor.kitchen_kitchen_battery')|float %}
+          {% set battery_percent = (battery_voltage - 4.8)*100 %}
+          {% from 'formatter.jinja' import format_number %}
+          {{ format_number(battery_percent) }}
 
 automation:
   ### Notify state change
