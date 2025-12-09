@@ -3,7 +3,7 @@ template:
   - sensor:
     - default_entity_id: sensor.ac_central_mode
       name: AC Central Mode
-      state:: >-
+      state: >-
         {% set temp_comfort = 20 %}
         {% set temp_avg = states('sensor.average_temperature_outside_last_1_day')|int %}
         {% if temp_avg >= (temp_comfort) %}cool
