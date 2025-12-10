@@ -18,7 +18,7 @@ logs:
   homeassistant.helpers.script: debug
   homeassistant.loader: error
 
-  custom_components.dreame_vacuum: info
+  custom_components.dreame_vacuum: warning
 
   custom_components.llama_conversation.conversation: info
 
