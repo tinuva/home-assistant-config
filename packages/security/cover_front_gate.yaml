@@ -13,7 +13,7 @@ mqtt:
       retain: false
       payload_open: "ON"
       payload_close: "ON"
-      payload_stop: 
+      payload_stop:
       state_open: "ON"
       state_closed: "OFF"
       payload_available: "Online"
