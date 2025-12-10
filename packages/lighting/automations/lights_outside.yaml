@@ -24,7 +24,7 @@ light:
       - light.main_bedroom_courtyard
       - light.scullery_outside
       - light.main_bedroom_outside
-      - light.pool_pool
+      # - light.pool_pool
 
 automation:
   ## Whole night
@@ -138,4 +138,4 @@ automation:
         entity_id:
           - light.lights_while_awake
           - light.lights_while_awake_with_guests
-          - light.pool_pool
+          # - light.pool_pool
