@@ -111,35 +111,42 @@ template:
           None scheduled
           {%endif%}
 
-      - unique_id: Time_Until_Next_Loadshedding
+      - unique_id: time_till_loadshedding
         unit_of_measurement: mins
         default_entity_id: sensor.time_till_loadshedding
         name: Time until next loadshedding
         state: >
-          {%if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
-          {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int - as_timestamp(now()) | int ) / 60,-1] | max }}
-          {%else%}
-          Unknown
-          {%endif%}
+          {% if state_attr('sensor.load_shedding_area_capetown_6_durbanville','forecast')|count > 0 %}
+            {{ [( as_timestamp(state_attr('sensor.load_shedding_area_capetown_6_durbanville','next_end_time')) | int(0) - as_timestamp(now()) | int(0) ) / 60, -1] | max | int(0) }}
+          {% else %}
+            0
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.load_shedding_area_capetown_6_durbanville') }}
 
-      - unique_id: actual_next_loadshedding_duration
+      - unique_id: next_loadshedding_duration
         unit_of_measurement: mins
         default_entity_id: sensor.next_loadshedding_duration
         name: Calculated Next Loadshedding Duration
         state: >
           {% set area_sensor = "sensor.load_shedding_area_capetown_6_durbanville"%}
           {% set area_schedule = state_attr(area_sensor, "forecast") %}
-          {% set duration = 0 %}
-          {% if area_schedule %}
-            {% set next_slot_end = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
-            {% set second_slot_end = as_timestamp(area_schedule[:3][1].end_time) - as_timestamp(area_schedule[:3][1].start_time) %}
-            {% set diff = as_timestamp(area_schedule[:3][1].start_time) - as_timestamp(area_schedule[:3][0].start_time) %}
-            {% set duration = as_timestamp(area_schedule[:3][0].end_time) - as_timestamp(area_schedule[:3][0].start_time) %}
+          {% if area_schedule and area_schedule|count >= 2 %}
+            {% set next_slot_end = as_timestamp(area_schedule[0].end_time) - as_timestamp(area_schedule[0].start_time) %}
+            {% set second_slot_end = as_timestamp(area_schedule[1].end_time) - as_timestamp(area_schedule[1].start_time) %}
+            {% set diff = as_timestamp(area_schedule[1].start_time) - as_timestamp(area_schedule[0].start_time) %}
+            {% set duration = as_timestamp(area_schedule[0].end_time) - as_timestamp(area_schedule[0].start_time) %}
             {% if diff == 7200 %}
               {% set duration = next_slot_end + second_slot_end %}
-            {% endif%}
-            {{ duration // 60 }}
-          {% endif%}
+            {% endif %}
+            {{ (duration // 60) | int(0) }}
+          {% elif area_schedule and area_schedule|count >= 1 %}
+            {{ ((as_timestamp(area_schedule[0].end_time) - as_timestamp(area_schedule[0].start_time)) // 60) | int(0) }}
+          {% else %}
+            0
+          {% endif %}
+        availability: >
+          {{ has_value('sensor.load_shedding_area_capetown_6_durbanville') }}
 timer:
   loadshedding_slot:
     duration: "02:35:00"
