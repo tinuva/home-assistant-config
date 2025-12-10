@@ -351,6 +351,11 @@ class Device:
                     self.info.device_type == Printers.H2D or
                     self.info.device_type == Printers.H2DPRO or
                     self.info.device_type == Printers.H2S)
+        elif feature == Features.SUPPORTS_EARLY_FTP_DOWNLOAD:
+            return (self.info.device_type == Printers.A1 or
+                    self.info.device_type == Printers.A1MINI or
+                    self.info.device_type == Printers.P1P or
+                    self.info.device_type == Printers.P1S)
         return False
     
     def supports_sw_version(self, version: str) -> bool:
@@ -1089,19 +1094,18 @@ class PrintJob:
 
         # If we are FTP enabled and we haven't yet downloaded the model data, see if we can now.
         if not self._loaded_model_data:
+            if self._client._device.supports_feature(Features.SUPPORTS_EARLY_FTP_DOWNLOAD):
+                if self.gcode_state == "PREPARE" and \
+                    old_gcode_file_prepare_percent > 0 and \
+                    old_gcode_file_prepare_percent != self._gcode_file_prepare_percent and \
+                    self._gcode_file_prepare_percent >= 99:
 
-            if self.gcode_state == "PREPARE" and \
-                old_gcode_file_prepare_percent > 0 and \
-                old_gcode_file_prepare_percent != self._gcode_file_prepare_percent and \
-                self._gcode_file_prepare_percent >= 99:
+                    # P1 sometimes only gets to 99% download and never reaches 100% so we treat 99% as complete.
 
-                # X1C jumps straight from 0 to 100 so we can't use this to trigger the download.
-                # P1 sometimes only gets to 99% download and never reaches 100% so we treat 99% as complete.
-
-                # Now we can update the model data by ftp. By this point the model has been successfully loaded to the printer.
-                # and it's network stack is idle and shouldn't timeout or fail on us randomly.
-                LOGGER.debug(f"DOWNLOAD TO PRINTER IS COMPLETE")
-                self._update_task_data()
+                    # Now we can update the model data by ftp. By this point the model has been successfully loaded to the printer.
+                    # and it's network stack is idle and shouldn't timeout or fail on us randomly.
+                    LOGGER.debug(f"DOWNLOAD TO PRINTER IS COMPLETE")
+                    self._update_task_data()
 
             if self.gcode_state == "RUNNING" and (previously_idle or previous_gcode_state == "PREPARE"):
                 # We haven't yet downloaded model data off the printer. I've observed three scenarios where this happens:
@@ -1594,20 +1598,14 @@ class PrintJob:
             if model_file_path is not None:
                 break
 
-            if (self._client._device.info.device_type == Printers.X1 or 
-                self._client._device.info.device_type == Printers.X1C or
-                self._client._device.info.device_type == Printers.X1E or
-                self._client._device.info.device_type == Printers.H2C or
-                self._client._device.info.device_type == Printers.H2D or
-                self._client._device.info.device_type == Printers.H2DPRO or
-                self._client._device.info.device_type == Printers.H2S):
+            if not self._client._device.supports_feature(Features.SUPPORTS_EARLY_FTP_DOWNLOAD):
                 # The X1 has a weird behavior where the downloaded file doesn't exist for several seconds into the RUNNING phase and even
                 # then it is still being downloaded in place so we might try to grab it mid-download and get a corrupt file. Try 13 times
                 # 5 seconds apart over 60s.
                 if i != 12:
-                    LOGGER.debug(f"Sleeping 5s for X1/H2 retry")
+                    LOGGER.debug(f"Sleeping 5s for X1/H2/P2 retry")
                     time.sleep(5)
-                    LOGGER.debug(f"Try #{i+1} for X1/H2")
+                    LOGGER.debug(f"Try #{i+1} for X1/H2/P2")
             else:
                 break
 
@@ -2029,7 +2027,6 @@ class Info:
     device_type: str
     wifi_signal: int
     wifi_sent: datetime
-    device_type: str
     hw_ver: str
     sw_ver: str
     online: bool
@@ -2040,7 +2037,7 @@ class Info:
     usage_hours: float
     extruder_filament_state: bool
     door_open: bool
-    airduct_mode: bool
+    airduct_mode: int
         
     _ip_address: str
     _force_ip: bool
@@ -2062,7 +2059,7 @@ class Info:
         self.usage_hours = client._usage_hours
         self.extruder_filament_state = False
         self.door_open = False
-        self.airduct_mode = False
+        self.airduct_mode = 0
         self._ip_address = client.host
         self._force_ip = client.settings.get('force_ip', False)                
 
@@ -2210,7 +2207,7 @@ class Info:
         # and new versions provided for each component. While the X1 lists only the new version
         # in separate string properties.
 
-        self.new_version_state = (data.get("upgrade_state") or {}).get("new_version_state", self.new_version_state)
+        self.new_version_state = data.get("upgrade_state",{}).get("new_version_state", self.new_version_state)
 
         # Nozzle data is provided differently for dual-nozzle printers (at least)
         # New (H2D):
@@ -2235,8 +2232,8 @@ class Info:
         if nozzle_data is not None and isinstance(nozzle_data, list):
             for entry in nozzle_data:
                 if entry.get("id") in (0, 1):
-                    self.nozzle_diameters[entry["id"]] = float(entry["diameter"])
-                    self.nozzle_types[entry["id"]] = Info._nozzle_type_name(entry["type"])
+                    self.nozzle_diameters[entry["id"]] = float(entry.get("diameter", 0))
+                    self.nozzle_types[entry["id"]] = Info._nozzle_type_name(entry.get("type", ""))
         else:
             if "nozzle_diameter" in data:
                 self.nozzle_diameters[0] = float(data["nozzle_diameter"])
@@ -2250,21 +2247,19 @@ class Info:
         # H2 example:
         #   "stat": "46258008",  # closed
         #   "stat": "46A58008",  # open
-        if self._client._device.supports_feature(Features.DOOR_SENSOR):
-            if self.device_type in [Printers.X1, Printers.X1C]:
-                if "home_flag" in data:
-                    self.door_open = (data["home_flag"] & Home_Flag_Values.DOOR_OPEN) != 0
-            elif "stat" in data:
-                stat_value = int(data["stat"], 16)
-                self.door_open = (stat_value & Stat_Flag_Values.DOOR_OPEN) != 0
+        if self.device_type in [Printers.X1, Printers.X1C]:
+            if "home_flag" in data:
+                self.door_open = (data["home_flag"] & Home_Flag_Values.DOOR_OPEN) != 0
+        elif "stat" in data:
+            stat_value = int(data["stat"], 16)
+            self.door_open = (stat_value & Stat_Flag_Values.DOOR_OPEN) != 0
 
 
         # Airduct mode is provided under print/device/airduct
         # P2S example:
         #   "modeCur": 0, // 0 = Cooling only, 1 = Heating/Filter
         #   "modeFunc": 0, // 0 = Cooling only, 1 = Heating/Filter        
-        if self._client._device.supports_feature(Features.AIRDUCT_MODE):            
-            self.airduct_mode = (data.get("device", {}).get("airduct", {}).get("modeCur", 1 if self.airduct_mode else 0) == 1)
+        self.airduct_mode = data.get("device", {}).get("airduct", {}).get("modeCur", self.airduct_mode)
 
         # Compute if there's a delta before we check the wifi_signal value.
         changed = (old_data != f"{self.__dict__}")
@@ -2346,6 +2341,9 @@ class Info:
        
     @staticmethod
     def _nozzle_type_name(nozzle_type_code: str) -> str:
+        if str == "":
+            return "unknown"
+
         # Second character indicates standard vs high flow
         if nozzle_type_code[1] == "H":
             flow_prefix = "high_flow_"
@@ -3310,13 +3308,16 @@ class SlicerSettings:
                         nozzle_temperature_range_low=filament["nozzle_temperature"][0]
                     )
             LOGGER.debug(f"Got {len(self.custom_filaments)} custom filaments.")
+        else:
+            LOGGER.debug(f"Received no filament data: {filaments}")
 
     def update(self):
         self.custom_filaments = {}
         if self._client.bambu_cloud.auth_token != "":
-            LOGGER.debug("Loading slicer settings")
+            LOGGER.debug(f"Loading slicer settings for {self._client._device.info.device_type} / {self._client._serial}")
             slicer_settings = self._client.bambu_cloud.get_slicer_settings()
             if slicer_settings is None:
+                LOGGER.debug(f"Failed to get slicer settings for {self._client._device.info.device_type} / {self._client._serial}")
                 self._client.callback("event_printer_bambu_authentication_failed")
             else:
                 self._load_custom_filaments(slicer_settings)

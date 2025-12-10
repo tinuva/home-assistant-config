@@ -11,11 +11,9 @@ import re
 import socket
 import ssl
 import struct
-import tempfile
 import threading
 import time
-from zipfile import ZipFile
-import xml.etree.ElementTree as ElementTree
+import uuid
 
 from dataclasses import dataclass
 from typing import Any
@@ -418,7 +416,7 @@ class BambuClient:
             self._callback(event)
 
     def set_camera_enabled(self, enable):
-        self._enable_camera = enable
+        self._enable_camera = enable and (self.host != "")
         if self._enable_camera:
             self.start_camera()
         else:
@@ -448,7 +446,10 @@ class BambuClient:
         if self._mock:
             self.client = MockMQTTClient(self._serial)
         else:
-            self.client = mqtt.Client()
+            self.client = mqtt.Client(client_id=f"ha-bambulab-{uuid.uuid4()}",
+                                      protocol=mqtt.MQTTv311,
+                                      clean_session=True)
+            self.client.enable_logger()
         self._callback = callback
         self.client.on_connect = self.on_connect
         self.client.on_disconnect = self.on_disconnect

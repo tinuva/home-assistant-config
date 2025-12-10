@@ -439,7 +439,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         dev_reg = device_registry.async_get(self._hass)
         ams_device = dev_reg.async_get(device_id)
         model = ams_device.model
-        if (model != 'AMS 2') and (model != 'AMS HT'):
+        if (model != 'AMS 2 Pro') and (model != 'AMS HT'):
             LOGGER.error("Passed device is not an AMS 2 or AMS HT.")
             return False
         
@@ -903,7 +903,6 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         if not OPTION_NAME[option] in options:
             options[OPTION_NAME[option]] = self.get_option_enabled(option)
 
-        LOGGER.debug(f"options: {options}")
         # Only apply the change if it differs from the current setting.
         if options[OPTION_NAME[option]] != enable:
             options[OPTION_NAME[option]] = enable
@@ -915,6 +914,10 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
             # Refresh all entities to handle deleted/added entities.
             self._printer_ready()
+
+            if option == Options.CAMERA:
+                # Camera option changed, need to poke bambu client to update its camera state:
+                self.client.set_camera_enabled(enable)
 
     def get_option_value(self, option: Options) -> int:
         options = dict(self.config_entry.options)
@@ -940,21 +943,19 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             # Force reload of integration to effect cache update.
             return await self.hass.config_entries.async_reload(self._entry.entry_id)
 
-    def _report_generic_issue(self, issue: str, force: bool):
-        if force:
-            # force generates a unique issue each time.
-            timestamp = int(time.time())
-            issue_id = f"{issue}_{self.get_model().info.serial}_{timestamp}"
-        else:
-            # One-time issue
-            issue_id = f"{issue}_{self.get_model().info.serial}"
+    def _report_generic_issue(self, issue: str, force: bool = False):
 
-            # Check if the issue already exists
-            registry = issue_registry.async_get(self._hass)
-            existing_issue = registry.async_get_issue(
-                domain=DOMAIN,
-                issue_id=issue_id,
-            )
+        issue_id = f"{issue}_{self.get_model().info.serial}"
+
+        # Check if the issue already exists
+        registry = issue_registry.async_get(self._hass)
+        existing_issue = registry.async_get_issue(domain=DOMAIN, issue_id=issue_id)
+
+        if force:
+            # Delete issue so we can re-create it but only ever have one in the list.
+            if existing_issue is not None:
+                registry.async_delete_issue(domain=DOMAIN, issue_id=issue_id)
+        else:
             if existing_issue is not None:
                 # Issue already exists, no need to create it again
                 return
@@ -976,7 +977,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         )
 
     def _report_authentication_issue(self):
-        # issue_id's are permanent - once ignore they will never show again so we need a unique id 
+        # issue_id's are permanent - once ignored they will never show again so we need a unique id 
         # per occurrence per integration instance. That does mean we'll fire a new issue every single
         # print attempt since that's when we'll typically encounter the authentication failure as we
         # attempt to get slicer settings.
