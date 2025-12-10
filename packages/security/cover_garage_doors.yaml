@@ -11,10 +11,10 @@ template:
           - data:
               entity_id: switch.garagedoor_front_garagedoor_front
             action: switch.turn_on
-        stop_cover:
-          - data:
-              entity_id: switch.garagedoor_front_garagedoor_front
-            action: switch.turn_on
+        # stop_cover:
+        #   - data:
+        #       entity_id: switch.garagedoor_front_garagedoor_front
+        #     action: switch.turn_on
         default_entity_id: cover.garage_door_front
         icon: >-
           {% if is_state('binary_sensor.front_garage_door_window', 'on') %}
@@ -35,10 +35,10 @@ template:
           - data:
               entity_id: switch.garagedoor_back_garagedoor_back
             action: switch.turn_on
-        stop_cover:
-          - data:
-              entity_id: switch.garagedoor_back_garagedoor_back
-            action: switch.turn_on
+        # stop_cover:
+        #   - data:
+        #       entity_id: switch.garagedoor_back_garagedoor_back
+        #     action: switch.turn_on
         default_entity_id: cover.garage_door_back
         icon: >-
           {% if is_state('binary_sensor.back_garage_door', 'on') %}
