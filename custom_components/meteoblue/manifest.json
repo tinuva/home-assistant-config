@@ -1,0 +1,12 @@
+{
+  "domain": "meteoblue",
+  "name": "Meteoblue Weather",
+  "codeowners": [],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://docs.meteoblue.com/en/weather-apis",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "version": "1.0.0"
+}

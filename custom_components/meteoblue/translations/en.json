@@ -1,0 +1,48 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Meteoblue Weather",
+        "description": "Enter your Meteoblue API key and location information. If you don't have an API key, contact [email protected] to request one.",
+        "data": {
+          "api_key": "API Key",
+          "name": "Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude"
+        },
+        "data_description": {
+          "api_key": "Your Meteoblue API key",
+          "name": "Name for this weather location",
+          "latitude": "Latitude coordinate (leave empty to use Home Assistant's location)",
+          "longitude": "Longitude coordinate (leave empty to use Home Assistant's location)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Meteoblue API. Please check your API key and try again.",
+      "invalid_auth": "Invalid API key. Please check your credentials.",
+      "unknown": "Unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Meteoblue Weather Options",
+        "description": "Configure additional options for Meteoblue Weather integration.",
+        "data": {
+          "forecast_days": "Forecast Days",
+          "enable_air_quality": "Enable Air Quality Sensors",
+          "enable_additional_sensors": "Enable Additional Sensors"
+        },
+        "data_description": {
+          "forecast_days": "Number of forecast days to retrieve (1-7)",
+          "enable_air_quality": "Create air quality entity with PM2.5, PM10, O3, NO2, SO2, and CO sensors",
+          "enable_additional_sensors": "Create additional sensor entities for UV index, precipitation probability, etc."
+        }
+      }
+    }
+  }
+}
