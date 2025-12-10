@@ -23,7 +23,7 @@ template:
             mdi:garage
           {% endif %}
         name: Garage Door Front
-        position: '{{ is_state(''binary_sensor.front_garage_door_window'', ''on'') }}'
+        position: "{{ 100 if is_state('binary_sensor.front_garage_door_window', 'on') else 0 }}"
   # Back Garage Door
   - cover:
       - device_class: garage
@@ -47,7 +47,7 @@ template:
             mdi:garage
           {% endif %}
         name: Garage Door Back
-        position: '{{ is_state(''binary_sensor.back_garage_door'', ''on'') }}'
+        position: "{{ 100 if is_state('binary_sensor.back_garage_door', 'on') else 0 }}"
 
 
 ## Alert
