@@ -18,6 +18,8 @@ logs:
   homeassistant.helpers.script: debug
   homeassistant.loader: error
 
+  custom_components.dreame_vacuum: info
+
   custom_components.llama_conversation.conversation: info
 
   custom_components.localtuya: fatal
@@ -33,6 +35,7 @@ logs:
 
   #homeassistant.component.opentherm_gw: debug
   homeassistant.components.python_script: warning
+  homeassistant.helpers.script.trigger_update_coordinator: warning
   homeassistant.helpers.script.websocket_api_script: warning
   #homeassistant.helpers.script: debug
   #homeassistant.components.zeroconf: debug
