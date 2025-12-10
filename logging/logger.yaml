@@ -20,6 +20,9 @@ logs:
 
   custom_components.dreame_vacuum: warning
 
+  custom_components.meteoblue: warning
+  # custom_components.meteoblue: debug  # Uncomment for detailed debugging
+
   custom_components.llama_conversation.conversation: info
 
   custom_components.localtuya: fatal
