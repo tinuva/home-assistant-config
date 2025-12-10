@@ -27,8 +27,8 @@ API_TIMEOUT: Final = 30
 
 # Default values
 DEFAULT_NAME: Final = "Meteoblue"
-DEFAULT_FORECAST_UPDATE_INTERVAL: Final = 7200  # 2 hours in seconds
-DEFAULT_CURRENT_UPDATE_INTERVAL: Final = 900  # 15 minutes in seconds
+DEFAULT_FORECAST_UPDATE_INTERVAL: Final = 3600  # 1 hour in seconds
+DEFAULT_CURRENT_UPDATE_INTERVAL: Final = 3600  # 1 hour in seconds
 DEFAULT_AIR_QUALITY_UPDATE_INTERVAL: Final = 3600  # 1 hour in seconds
 
 # Configuration keys
