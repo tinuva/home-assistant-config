@@ -20,7 +20,7 @@ light:
     name: Lights while awake with guests
     unique_id: lights_while_awake_with_guests
     entities:
-      - light.lounge_courtyard
+      - light.dining_l1 # light.lounge_courtyard
       - light.main_bedroom_courtyard
       - light.scullery_outside
       - light.main_bedroom_outside

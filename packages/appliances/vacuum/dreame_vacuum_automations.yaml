@@ -41,7 +41,7 @@
 #                   entity_id:
 #                     - light.kitchen_kitchen
 #                     - light.lounge_lounge
-#                     - light.lounge_dining
+#                     - light.dining_l2
 #                 data: {}
 #               - service: script.clean_room
 #                 data:
