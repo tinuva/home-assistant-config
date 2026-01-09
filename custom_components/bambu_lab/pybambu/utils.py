@@ -52,6 +52,8 @@ def fan_percentage_to_gcode(fan: FansEnum, percentage: int):
         fanString = "P2"
     elif fan == FansEnum.CHAMBER:
         fanString = "P3"
+    elif fan == FansEnum.SECONDARY_AUXILIARY:
+        fanString = "P10"
 
     percentage = round(percentage / 10) * 10
     speed = math.ceil(255 * percentage / 100)
@@ -80,6 +82,8 @@ def to_whole(number):
 
 def get_filament_name(idx, custom_filaments: dict):
     """Converts a filament idx to a human-readable name"""
+    if idx == "":
+        return "Empty"
     result = FILAMENT_NAMES.get(idx, "unknown")
     if result == "unknown" and idx != "":
         custom = custom_filaments.get(idx, None)
@@ -274,7 +278,7 @@ def get_printer_type(modules, default):
       return 'H2D'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2D Pro")):
-      return 'H2DP'
+      return 'H2DPRO'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2S")):
       return 'H2S'

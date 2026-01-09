@@ -471,6 +471,8 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         key="total_usage_hours",
         translation_key="total_usage_hours",
         icon="mdi:clock",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
         native_unit_of_measurement=UnitOfTime.HOURS,
         suggested_display_precision=0,
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -640,6 +642,13 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda self: self.coordinator.get_model().info.ip_address
     ),
+    BambuLabSensorEntityDescription(
+        key="serial",
+        translation_key="serial",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:identifier",
+        value_fn=lambda self: self.coordinator.get_model().info.serial
+    )
 )
 
 VIRTUAL_TRAY_BINARY_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (

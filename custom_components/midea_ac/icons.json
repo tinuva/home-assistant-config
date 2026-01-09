@@ -16,7 +16,8 @@
           },
           "preset_mode": {
             "state": {
-              "ieco": "mdi:leaf-circle-outline"
+              "ieco": "mdi:leaf-circle-outline",
+              "silent": "mdi:ear-hearing-off"
             }
           }
         }
@@ -36,6 +37,9 @@
       },
       "horizontal_swing_angle_rtl": {
         "default": "mdi:angle-acute"
+      },
+      "purifier": {
+        "default": "mdi:minus-circle"
       },
       "rate_select": {
         "default": "mdi:slope-downhill"

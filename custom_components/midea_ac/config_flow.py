@@ -1,7 +1,7 @@
 """Config flow for Midea Smart AC."""
 from __future__ import annotations
 
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import homeassistant.helpers.config_validation as cv
 import httpx
@@ -22,26 +22,32 @@ from homeassistant.helpers.selector import (CountrySelector,
                                             SelectSelectorMode, TextSelector,
                                             TextSelectorConfig,
                                             TextSelectorType)
+from msmart.base_device import Device
 from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
+from msmart.device import CommercialAirConditioner as CC
 from msmart.discover import CloudError, Discover
 from msmart.lan import AuthenticationError
 
 from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_BEEP,
                     CONF_CLOUD_COUNTRY_CODES, CONF_DEFAULT_CLOUD_COUNTRY,
-                    CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
-                    CONF_ENERGY_SENSOR, CONF_FAN_SPEED_STEP, CONF_KEY,
+                    CONF_DEVICE_TYPE, CONF_ENERGY_DATA_FORMAT,
+                    CONF_ENERGY_DATA_SCALE, CONF_ENERGY_SENSOR,
+                    CONF_FAN_SPEED_STEP, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME, CONF_POWER_SENSOR,
                     CONF_SHOW_ALL_PRESETS, CONF_SWING_ANGLE_RTL,
                     CONF_TEMP_STEP, CONF_USE_FAN_ONLY_WORKAROUND,
                     CONF_WORKAROUNDS, DOMAIN, UPDATE_INTERVAL, EnergyFormat)
 
 _DEFAULT_OPTIONS = {
-    CONF_BEEP: True,
     CONF_TEMP_STEP: 1.0,
-    CONF_FAN_SPEED_STEP: 1,
     CONF_MAX_CONNECTION_LIFETIME: None,
     CONF_SWING_ANGLE_RTL: False,
+}
+
+_DEFAULT_AC_OPTIONS = {
+    CONF_BEEP: True,
+    CONF_FAN_SPEED_STEP: 1,
     CONF_ENERGY_SENSOR: {
         CONF_ENERGY_DATA_FORMAT: EnergyFormat.BCD,
         CONF_ENERGY_DATA_SCALE: 1.0
@@ -67,7 +73,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Midea Smart AC."""
 
     VERSION = 1
-    MINOR_VERSION = 4
+    MINOR_VERSION = 5
 
     async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Handle a config flow initialized by the user."""
@@ -105,7 +111,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
 
             if device is None:
                 errors["base"] = "device_not_found"
-            elif device.type != DeviceType.AIR_CONDITIONER:
+            elif device.type not in [DeviceType.AIR_CONDITIONER, DeviceType.COMMERCIAL_AC]:
                 errors["base"] = "unsupported_device"
             else:
                 # Check if device has already been configured
@@ -115,7 +121,8 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Finish connection
                 try:
                     if await Discover.connect(device):
-                        return await self.async_step_show_token_key(device=cast(AC, device))
+                        assert isinstance(device, (AC, CC))
+                        return await self.async_step_show_token_key(device=device)
                     else:
                         # Indicate a connection could not be made
                         return self.async_abort(reason="cannot_connect")
@@ -161,7 +168,8 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 # Finish connection
                 try:
                     if await Discover.connect(device):
-                        return await self.async_step_show_token_key(device=cast(AC, device))
+                        assert isinstance(device, (AC, CC))
+                        return await self.async_step_show_token_key(device=device)
                     else:
                         # Indicate a connection could not be made
                         return self.async_abort(reason="cannot_connect")
@@ -193,7 +201,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             )
             for device in self._discovered_devices
             if (str(device.id) not in configured_devices and
-                device.type == DeviceType.AIR_CONDITIONER)
+                device.type in [DeviceType.AIR_CONDITIONER, DeviceType.COMMERCIAL_AC])
         }
 
         # Check if there is at least one device
@@ -212,7 +220,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_show_token_key(
         self, user_input: dict[str, Any] | None = None,
         *,
-        device: Optional[AC] = None
+        device: AC | CC | None = None
     ) -> ConfigFlowResult:
         """Handle the show token step of config flow."""
 
@@ -285,6 +293,14 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_ID): cv.string,
                 vol.Required(CONF_HOST): cv.string,
                 vol.Required(CONF_PORT, default=6444): cv.port,
+                vol.Required(CONF_DEVICE_TYPE): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[f"{e.value:X}" for e in
+                                 [DeviceType.AIR_CONDITIONER, DeviceType.COMMERCIAL_AC]],
+                        translation_key="device_type",
+                        mode=SelectSelectorMode.DROPDOWN,
+                    ),
+                ),
                 vol.Optional(CONF_TOKEN): TextSelector(TextSelectorConfig(type=TextSelectorType.TEXT)),
                 vol.Optional(CONF_KEY): cv.string
             }), user_input)
@@ -309,9 +325,13 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                         errors[field] = "invalid_hex_format"
 
             if not errors:
-                # Copy ID from existing entry
                 config_entry = self._get_reconfigure_entry()
+
+                # Copy ID from existing entry
                 user_input[CONF_ID] = config_entry.data[CONF_ID]
+
+                # Convert type to hex representation
+                user_input[CONF_DEVICE_TYPE] = f"{config_entry.data[CONF_DEVICE_TYPE]:X}"
 
                 # Ensure key & token are in dict
                 user_input.setdefault(CONF_KEY, None)
@@ -330,7 +350,14 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
                     # Update entry
                     return self.async_update_reload_and_abort(
                         self._get_reconfigure_entry(),
-                        data_updates=user_input,
+                        data_updates={
+                            CONF_DEVICE_TYPE: device.type,
+                            CONF_ID: device.id,
+                            CONF_HOST: device.ip,
+                            CONF_PORT: device.port,
+                            CONF_TOKEN: device.token,
+                            CONF_KEY: device.key,
+                        },
                     )
 
         # Use existing config entry data if no user input
@@ -354,12 +381,22 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
         """Create an httpx AsyncClient in a HA friendly way."""
         return httpx_client.get_async_client(self.hass, *args, **kwargs)
 
-    async def _test_manual_connection(self, config) -> Optional[AC]:
+    async def _test_manual_connection(self, config) -> AC | CC | None:
+        DEVICE_TYPES = {
+            "AC": DeviceType.AIR_CONDITIONER,
+            "CC": DeviceType.COMMERCIAL_AC
+        }
+
         # Construct the device
-        id = config.get(CONF_ID)
-        host = config.get(CONF_HOST)
-        port = config.get(CONF_PORT)
-        device = AC(ip=host, port=port, device_id=int(id))
+        device = Device.construct(
+            type=DEVICE_TYPES[config.get(CONF_DEVICE_TYPE).upper()],
+            ip=config.get(CONF_HOST),
+            port=config.get(CONF_PORT),
+            device_id=int(config.get(CONF_ID)),
+        )
+
+        # Ensure device is a supported type
+        assert isinstance(device, (AC, CC))
 
         # Authenticate with device as needed
         token = config.get(CONF_TOKEN)
@@ -381,6 +418,7 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
 
         # Populate config data
         data = {
+            CONF_DEVICE_TYPE: device.type,
             CONF_ID: device.id,
             CONF_HOST: device.ip,
             CONF_PORT: device.port,
@@ -388,8 +426,13 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             CONF_KEY: device.key,
         }
 
+        # Build default options based on device type
+        default_options = _DEFAULT_OPTIONS
+        if device.type == DeviceType.AIR_CONDITIONER:
+            default_options |= _DEFAULT_AC_OPTIONS
+
         # Create a config entry with the config data and default options
-        return self.async_create_entry(title=f"{DOMAIN} {device.id}", data=data, options=_DEFAULT_OPTIONS)
+        return self.async_create_entry(title=f"{DOMAIN} {device.id}", data=data, options=default_options)
 
     @staticmethod
     @callback
@@ -400,6 +443,24 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
 
 class MideaOptionsFlow(OptionsFlow):
     """Options flow from Midea Smart AC."""
+
+    _BASE_SCHEMA = vol.Schema(
+        {
+            vol.Optional(CONF_SWING_ANGLE_RTL): cv.boolean,
+            vol.Optional(CONF_TEMP_STEP): NumberSelector(
+                NumberSelectorConfig(
+                    min=.5,
+                    max=5,
+                    step=.5,
+                    unit_of_measurement=DEGREE
+                )
+            ),
+            vol.Optional(CONF_MAX_CONNECTION_LIFETIME): vol.All(
+                vol.Coerce(int),
+                vol.Range(min=UPDATE_INTERVAL)
+            ),
+        }
+    )
 
     _ENERGY_SENSOR_SCHEMA = section(
         vol.Schema(
@@ -421,41 +482,48 @@ class MideaOptionsFlow(OptionsFlow):
         {"collapsed": True}
     )
 
+    _AC_OPTION_SCHEMA = vol.Schema(
+        {
+            vol.Optional(CONF_BEEP): cv.boolean,
+            vol.Optional(CONF_FAN_SPEED_STEP): NumberSelector(
+                NumberSelectorConfig(min=1, max=20, step=1)
+            ),
+            vol.Optional(CONF_ENERGY_SENSOR): _ENERGY_SENSOR_SCHEMA,
+            vol.Optional(CONF_POWER_SENSOR): _ENERGY_SENSOR_SCHEMA,
+            vol.Optional(CONF_WORKAROUNDS): section(
+                vol.Schema({
+                    vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND): cv.boolean,
+                    vol.Optional(CONF_SHOW_ALL_PRESETS): cv.boolean,
+                    vol.Optional(CONF_ADDITIONAL_OPERATION_MODES): cv.string,
+                }),
+                {"collapsed": True},
+            )
+        }
+    )
+
+    _CC_OPTION_SCHEMA = vol.Schema({})
+
+    _DEVICE_SCHEMAS = {
+        DeviceType.AIR_CONDITIONER: _AC_OPTION_SCHEMA,
+        DeviceType.COMMERCIAL_AC: _CC_OPTION_SCHEMA,
+    }
+
     async def async_step_init(self, user_input=None) -> ConfigFlowResult:
         """Handle the options flow."""
         if user_input is not None:
             return self.async_create_entry(data=user_input)
 
-        data_schema = self.add_suggested_values_to_schema(
-            vol.Schema({
-                vol.Optional(CONF_BEEP): cv.boolean,
-                vol.Optional(CONF_SWING_ANGLE_RTL): cv.boolean,
-                vol.Optional(CONF_TEMP_STEP): NumberSelector(
-                    NumberSelectorConfig(
-                        min=.5,
-                        max=5,
-                        step=.5,
-                        unit_of_measurement=DEGREE
-                    )
-                ),
-                vol.Optional(CONF_FAN_SPEED_STEP): NumberSelector(
-                    NumberSelectorConfig(min=1, max=20, step=1)
-                ),
-                vol.Optional(CONF_MAX_CONNECTION_LIFETIME): vol.All(
-                    vol.Coerce(int),
-                    vol.Range(min=UPDATE_INTERVAL)
-                ),
-                vol.Optional(CONF_ENERGY_SENSOR): self._ENERGY_SENSOR_SCHEMA,
-                vol.Optional(CONF_POWER_SENSOR): self._ENERGY_SENSOR_SCHEMA,
-                vol.Optional(CONF_WORKAROUNDS): section(
-                    vol.Schema({
-                        vol.Optional(CONF_USE_FAN_ONLY_WORKAROUND): cv.boolean,
-                        vol.Optional(CONF_SHOW_ALL_PRESETS): cv.boolean,
-                        vol.Optional(CONF_ADDITIONAL_OPERATION_MODES): cv.string,
-                    }),
-                    {"collapsed": True},
-                )
+        # Get options schema based on device type
+        device_type = self.config_entry.data.get(CONF_DEVICE_TYPE)
+        device_schema = {}
 
-            }), self.config_entry.options)
+        if schema := self._DEVICE_SCHEMAS.get(device_type):
+            device_schema = schema.schema
+
+        # Merge base and device-specific schema
+        data_schema = self.add_suggested_values_to_schema(
+            self._BASE_SCHEMA.extend(device_schema),
+            self.config_entry.options,
+        )
 
         return self.async_show_form(step_id="init", data_schema=data_schema)

@@ -61,7 +61,11 @@ from .commands import (
     PROMPT_SOUND_DISABLE,
     AIRDUCT_SET_COOLING,
     AIRDUCT_SET_HEATING_FILTER,
-    SPEED_PROFILE_TEMPLATE, BUZZER_SET_SILENT, BUZZER_SET_ALARM, BUZZER_SET_BEEPING, HEATBED_LIGHT_ON,
+    SPEED_PROFILE_TEMPLATE,
+    BUZZER_SET_SILENT,
+    BUZZER_SET_ALARM,
+    BUZZER_SET_BEEPING,
+    HEATBED_LIGHT_ON,
     HEATBED_LIGHT_OFF,
 )
 
@@ -112,9 +116,11 @@ class Device:
         send_event = send_event | self.print_fun.print_update(data = data)
         send_event = send_event | self.extruder_tool.print_update(data = data)
 
-        send_ready_event = self.get_version_data is not None and self.push_all_data is None
         if data.get("command") == "push_status":
             if data.get("msg", 0) == 0:
+                send_ready_event = self.get_version_data is not None and self.push_all_data is None
+                if self.push_all_data is None:
+                    LOGGER.debug("Reached first push of all data.")
                 self.push_all_data = data
                 if send_ready_event:
                     self._client.callback("event_printer_ready")
@@ -132,6 +138,8 @@ class Device:
 
         if data.get("command") == "get_version":
             send_ready_event = self.get_version_data is None and self.push_all_data is not None
+            if self.get_version_data is None:
+                LOGGER.debug("Reached first push of version data.")
             self.get_version_data = data
             if send_ready_event:
                 self._client.callback("event_printer_ready")
@@ -142,22 +150,19 @@ class Device:
             self.lights.observe_system_command(data)
 
     def supports_feature(self, feature):
+        a1_printers = {Printers.A1, Printers.A1MINI}
+        h2_printers = {Printers.H2C, Printers.H2D, Printers.H2DPRO, Printers.H2S}
+        p1_printers = {Printers.P1P, Printers.P1S}
+        p2_printers = {Printers.P2S}
+        x1_printers = {Printers.X1, Printers.X1C, Printers.X1E}
+        dual_nozzle_printers = {Printers.H2C, Printers.H2D, Printers.H2DPRO}
+        model = self.info.device_type
 
         # First check known early feature check scenarios:
         if feature == Features.CAMERA_RTSP:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S or
-                    self.info.device_type == Printers.P2S or
-                    self.info.device_type == Printers.X1 or
-                    self.info.device_type == Printers.X1C or
-                    self.info.device_type == Printers.X1E)
+            return model in (h2_printers | p2_printers | x1_printers)
         elif feature == Features.CAMERA_IMAGE:
-            return (self.info.device_type == Printers.A1 or
-                    self.info.device_type == Printers.A1MINI or
-                    self.info.device_type == Printers.P1P or
-                    self.info.device_type == Printers.P1S)
+            return model in (a1_printers | p1_printers)
 
         # Now check that we have a version. All tests after this are expected to only be called after the
         # first full set of data from the printer has been received and so version will be available.
@@ -167,195 +172,105 @@ class Device:
 
         # All following features should only be every checked after full initialization data is available.
         if feature == Features.AUX_FAN:
-            return not (self.info.device_type == Printers.A1 or
-                        self.info.device_type == Printers.A1MINI)
+            return model not in a1_printers
         elif feature == Features.CHAMBER_FAN:
             # The P1P may not have a fan but we don't have a perfectly reliable way to detect that. The p1s upgrade
             # flag would largely be good though but not accessible here.
-            return not (self.info.device_type == Printers.A1 or
-                        self.info.device_type == Printers.A1MINI)
+            return model not in a1_printers
         elif feature == Features.CHAMBER_TEMPERATURE:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S or
-                    self.info.device_type == Printers.P2S or
-                    self.info.device_type == Printers.X1 or
-                    self.info.device_type == Printers.X1C or
-                    self.info.device_type == Printers.X1E)
+            return model in (h2_printers | p2_printers | x1_printers)
         elif feature == Features.AMS:
             return len(self.ams.data) != 0
         elif feature == Features.K_VALUE:
-            return (self.info.device_type == Printers.A1 or
-                    self.info.device_type == Printers.A1MINI or
-                    self.info.device_type == Printers.P1P or
-                    self.info.device_type == Printers.P1S)
+            return model in (a1_printers | p1_printers)
         elif feature == Features.AMS_TEMPERATURE:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 return self.supports_sw_version("01.06.10.33")
-            elif (self.info.device_type == Printers.H2C or
-                  self.info.device_type == Printers.H2D or
-                  self.info.device_type == Printers.H2DPRO or
-                  self.info.device_type == Printers.H2S or 
-                  self.info.device_type == Printers.P2S or
-                  self.info.device_type == Printers.X1 or
-                  self.info.device_type == Printers.X1C or
-                  self.info.device_type == Printers.X1E):
-                return True
-            elif (self.info.device_type == Printers.P1S or
-                  self.info.device_type == Printers.P1P):
+            elif model in p1_printers:
                 return self.supports_sw_version("01.07.50.18")
-            return False
+            return True
         elif feature == Features.AIRDUCT_MODE:
             # Airduct mode (Filter/Heating and Cooling) is currently only present on P2S
-            if self.info.device_type == Printers.P2S:
+            if model in {Printers.P2S, Printers.H2C}:
+                # CHECK H2C SUPPORT FOR THIS
                 return True
-            
             return False
         elif feature == Features.HYBRID_MODE_BLOCKS_CONTROL:
-            if (self.info.device_type == Printers.P1S or
-                self.info.device_type == Printers.P1P):
+            if model in p1_printers:
                 # Not sure what the first version that did this was. At least this - could be earlier.
                 return self.supports_sw_version("01.07.00.00")
             # Only the P1 firmware did this as far as I know. Not the A1.
             return False
         elif feature == Features.DOOR_SENSOR:
-            if (self.info.device_type in [Printers.X1,
-                                          Printers.X1C]):
+            if model in (h2_printers | p2_printers):
+                return True
+            if model in x1_printers:
                 return self.supports_sw_version("01.07.00.00")
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S or
-                    self.info.device_type == Printers.P2S or
-                    self.info.device_type == Printers.X1E)
+            return False
         elif feature == Features.AMS_READ_RFID_COMMAND:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 return self.supports_sw_version("01.06.00.00")
-            if (self.info.device_type == Printers.P1P or
-                self.info.device_type == Printers.P1S):
+            if model in p1_printers:
                 return self.supports_sw_version("01.08.01.00")
-            if (self.info.device_type == Printers.X1 or
-                self.info.device_type == Printers.X1C or
-                self.info.device_type == Printers.X1E):
+            if model in x1_printers:
                 return self.supports_sw_version("01.09.00.00")
             return True
         elif feature == Features.AMS_FILAMENT_REMAINING:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 # Technically this is not the AMS Lite but that's currently tied to only these printer types.
                 # This needs fixing now the A1 printers support the other AMS models.
-                return False
+                return self.supports_sw_version("01.06.10.33")
             return True
         elif feature == Features.PROMPT_SOUND:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI or
-                self.info.device_type == Printers.H2C or
-                self.info.device_type == Printers.H2D or
-                self.info.device_type == Printers.H2DPRO or
-                self.info.device_type == Printers.H2S or
-                self.info.device_type == Printers.P2S):
+            if model in (a1_printers | h2_printers | p2_printers):
                 return not self.print_fun.mqtt_signature_required
             return False
         elif feature == Features.AMS_SWITCH_COMMAND:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI or
-                self.info.device_type == Printers.H2C or
-                self.info.device_type == Printers.H2D or
-                self.info.device_type == Printers.H2DPRO or
-                self.info.device_type == Printers.P2S or
-                self.info.device_type == Printers.X1E):
-                return True
-            elif (self.info.device_type == Printers.P1S or
-                  self.info.device_type == Printers.P1P):
+            if model in p1_printers:
                 return self.supports_sw_version("01.02.99.10")
-            elif (self.info.device_type == Printers.X1 or
-                  self.info.device_type == Printers.X1C):
+            elif model in x1_printers:
                 return self.supports_sw_version("01.05.06.01")
-            return False
+            return True
         elif feature == Features.AMS_HUMIDITY:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 return self.supports_sw_version("01.06.10.33")
-            elif (self.info.device_type == Printers.H2C or
-                  self.info.device_type == Printers.H2D or
-                  self.info.device_type == Printers.H2DPRO or
-                  self.info.device_type == Printers.H2S or
-                  self.info.device_type == Printers.P2S):
-                return True
-            elif (self.info.device_type == Printers.X1 or
-                  self.info.device_type == Printers.X1C):
-                return self.supports_sw_version("01.08.50.18")
-            elif (self.info.device_type == Printers.P1S or
-                  self.info.device_type == Printers.P1P):
+            elif model in p1_printers:
                 return self.supports_sw_version("01.07.50.18")
-            return False
+            elif model in x1_printers:
+                return self.supports_sw_version("01.08.50.18")
+            return True
         elif feature == Features.AMS_DRYING:
-            if (self.info.device_type == Printers.A1 or
-                  self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 return self.supports_sw_version("01.06.10.33")
-            elif (self.info.device_type == Printers.H2C or
-                self.info.device_type == Printers.H2D or
-                self.info.device_type == Printers.H2DPRO or
-                self.info.device_type == Printers.H2S or
-                self.info.device_type == Printers.P2S):
-                return True
-            elif (self.info.device_type == Printers.X1 or
-                  self.info.device_type == Printers.X1C):
-                return self.supports_sw_version("01.08.50.18")
-            elif (self.info.device_type == Printers.P1S or
-                  self.info.device_type == Printers.P1P):
+            elif model in p1_printers:
                 return self.supports_sw_version("01.07.50.18")
-            # This needs fixing now the A1 printers support the other AMS models.
-            return False
+            elif model in x1_printers:
+                return self.supports_sw_version("01.08.50.18")
+            return True
         elif feature == Features.CHAMBER_LIGHT_2:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S)
+            return model in h2_printers
         elif feature == Features.DUAL_NOZZLES:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO)
+            return model in dual_nozzle_printers
         elif feature == Features.EXTRUDER_TOOL:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S)
+            return model in h2_printers
         elif feature == Features.MQTT_ENCRYPTION_FIRMWARE:
-            if (self.info.device_type == Printers.A1 or
-                self.info.device_type == Printers.A1MINI):
+            if model in a1_printers:
                 return self.supports_sw_version("01.05.00.00")
-            elif (self.info.device_type == Printers.H2D):
-                return self.supports_sw_version("01.01.01.00")
-            elif (self.info.device_type == Printers.H2DPRO):
-                return self.supports_sw_version("01.01.01.00")
-            elif (self.info.device_type == Printers.H2S or
-                  self.info.device_type == Printers.P2S):
-                return True
-            elif (self.info.device_type == Printers.P1S or
-                  self.info.device_type == Printers.P1P):
+            elif model in {Printers.H2D, Printers.H2DPRO}:
+                return self.supports_sw_version("01.01.00.00")
+            elif model in p1_printers:
                 return self.supports_sw_version("01.08.02.00")
-            elif (self.info.device_type == Printers.X1 or 
-                  self.info.device_type == Printers.X1C):
+            elif model in x1_printers:
                 return self.supports_sw_version("01.08.50.32")
-            return False
+            return True
         elif feature == Features.FIRE_ALARM_BUZZER:
-            return (self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S)
+            return model in h2_printers
         elif feature == Features.HEATBED_LIGHT:
-            return (self.info.device_type == Printers.H2C or
-                    self.info.device_type == Printers.H2D or
-                    self.info.device_type == Printers.H2DPRO or
-                    self.info.device_type == Printers.H2S)
+            return model in h2_printers
         elif feature == Features.SUPPORTS_EARLY_FTP_DOWNLOAD:
-            return (self.info.device_type == Printers.A1 or
-                    self.info.device_type == Printers.A1MINI or
-                    self.info.device_type == Printers.P1P or
-                    self.info.device_type == Printers.P1S)
+            return model in (a1_printers | p1_printers)
+        elif feature == Features.SECONDARY_AUX_FAN:
+            return model in p2_printers
         return False
     
     def supports_sw_version(self, version: str) -> bool:
@@ -529,8 +444,8 @@ class Temperature:
         self.bed_temp = 0
         self.target_bed_temp = 0
         self.chamber_temp = 0
-        self.nozzle_temps = { 0: 0, 1: 0}
-        self.target_nozzle_temps = { 0:0, 1: 0}
+        self.nozzle_temps = { 0: 0, 1: 0, 15: 0}
+        self.target_nozzle_temps = { 0:0, 1: 0, 15: 0}
 
     @property
     def active_nozzle_temperature(self):
@@ -656,6 +571,10 @@ class Fans:
     _cooling_fan_speed_override_time: datetime
     _heatbreak_fan_speed_percentage: int
     _heatbreak_fan_speed: int
+    _secondary_aux_fan_speed_percentage: int
+    _secondary_aux_fan_speed: int
+    _secondary_aux_fan_speed_override: int
+    _secondary_aux_fan_speed_override_time: datetime
 
     def __init__(self, client):
         self._client = client
@@ -673,6 +592,10 @@ class Fans:
         self._cooling_fan_speed_override_time = None
         self._heatbreak_fan_speed_percentage = 0
         self._heatbreak_fan_speed = 0
+        self._secondary_aux_fan_speed_percentage = 0
+        self._secondary_aux_fan_speed = 0
+        self._secondary_aux_fan_speed_override = 0
+        self._secondary_aux_fan_speed_override_time = None
 
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
@@ -697,7 +620,15 @@ class Fans:
                 self._cooling_fan_speed_override_time = None
         self._heatbreak_fan_speed = data.get("heatbreak_fan_speed", self._heatbreak_fan_speed)
         self._heatbreak_fan_speed_percentage = fan_percentage(self._heatbreak_fan_speed)
-        
+        if data.get('device') and data["device"].get('airduct') and data["device"]["airduct"].get('parts') and next((item for item in data["device"]["airduct"]["parts"] if item["id"] == 160), None):
+            fan_part = next(item for item in data["device"]["airduct"]["parts"] if item["id"] == 160)
+            self._secondary_aux_fan_speed = fan_part.get("value", self._secondary_aux_fan_speed)
+            self._secondary_aux_fan_speed_percentage = fan_percentage(self._secondary_aux_fan_speed)
+        if self._secondary_aux_fan_speed_override_time is not None:
+            delta = datetime.now() - self._secondary_aux_fan_speed_override_time
+            if delta.seconds > 5:
+                self._cooling_fan_speed_override_time = None
+
         return (old_data != f"{self.__dict__}")
 
     def set_fan_speed(self, fan: FansEnum, percentage: int):
@@ -714,6 +645,9 @@ class Fans:
         elif fan == FansEnum.CHAMBER:
             self._chamber_fan_speed_override = percentage
             self._chamber_fan_speed_override_time = datetime.now()
+        elif fan == FansEnum.SECONDARY_AUXILIARY:
+            self._secondary_aux_fan_speed_override = percentage
+            self._secondary_aux_fan_speed_override_time = datetime.now()
 
         LOGGER.debug(command)
         self._client.publish(command)
@@ -738,7 +672,10 @@ class Fans:
                 return self._chamber_fan_speed_percentage
         elif fan == FansEnum.HEATBREAK:
             return self._heatbreak_fan_speed_percentage
-
+        elif fan == FansEnum.SECONDARY_AUXILIARY:
+            if self._secondary_aux_fan_speed_override_time is not None:
+                return self._chamber_fan_speed_override
+            return self._chamber_fan_speed_percentage
 
 @dataclass
 class Upgrade:
@@ -1205,35 +1142,70 @@ class PrintJob:
     #     FILE: /cache/Lovers Valentine Day Shadowbox.3mf
     # 
 
-    ftp_search_paths = ['/cache/', '/']
+    # The cached files also include the file size appended to them so that new prints of the same model
+    # filename but different settings can be cached independently. This keeps the print history truer and
+    # allows reprints of earlier prints that had the same name.
+    #
+    # The legacy caching approach just put them in a matching path in the local cache for
+    # the printer. If we encounter that, we move the files to the new size-based subdirectory.
     def _attempt_ftp_download_of_file(self, ftp, file_path, progress_callback=None):
         if 'Metadata' in file_path:
             # This is a ram drive on the X1 and is not accessible via FTP
             return None
 
+        cache_root = os.path.join(self._client.cache_path, "prints")
+
         try:
             LOGGER.debug(f"Looking for '{file_path}'")
-            size = ftp.size(file_path)
+            size = int(ftp.size(file_path))
             LOGGER.debug(f"File exists. Size: {size} bytes.")
-            
-            relative_path = file_path.lstrip('/')
-            cache_dir = os.path.join(self._client.cache_path, "prints")
-            cache_file_path = os.path.join(cache_dir, relative_path)
+
+            relative_path = Path(file_path.lstrip('/'))
+            subdir = relative_path.parent
+            filename = relative_path.name
+
+            if filename.startswith(f"{size}-"):
+                # Craft legacy cache filepath for backwards compatibility:
+                cache_file_path = Path(cache_root) / subdir / filename
+                cache_file_path_legacy = Path(cache_root) / subdir / filename.removeprefix(f"{size}-")
+            else:
+                cache_file_path = Path(cache_root) / subdir / f"{size}-{filename}"
+                cache_file_path_legacy = Path(cache_root) / subdir / filename
 
             # Ensure the directory exists
-            os.makedirs(os.path.dirname(cache_file_path), exist_ok=True)
+            cache_file_path.parent.mkdir(parents=True, exist_ok=True)
 
-            # Check if file already exists in cache with same size
-            try:
-                cache_file_size = os.path.getsize(cache_file_path)
-                if cache_file_size == size:
-                    LOGGER.debug(f"File already in cache with same size.")
-                    # Update last edited time to refresh it's cache lifetime.
-                    os.utime(cache_file_path, None)
-                    return cache_file_path
-            except FileNotFoundError:
-                # File doesn't exist in the cache.
-                pass
+            # First check the new cache file path:
+            if cache_file_path.exists() and cache_file_path.stat().st_size == size:
+                LOGGER.debug(f"File already in cache: {cache_file_path}")
+                # Update last edited time to refresh its cache lifetime and print order in history.
+                os.utime(cache_file_path, None)
+                return str(cache_file_path)
+
+            # Check the legacy path second for backwards compatibility.
+            if cache_file_path_legacy.exists() and cache_file_path_legacy.stat().st_size == size:
+                LOGGER.debug(f"File already in cache: {cache_file_path_legacy}")
+                # File exists but in the old naming scheme. Move files to new location.
+                extensions = [
+                    ".3mf",
+                    ".gcode",
+                    ".png",
+                    ".slice_info.config",
+                ]
+                # Base path without the final suffix (so we can swap extensions)
+                for extension in extensions:
+                    src = cache_file_path_legacy.with_suffix("").with_suffix(extension)
+                    dst = cache_file_path.with_suffix("").with_suffix(extension)
+                    if src.exists():
+                        LOGGER.debug(f"Moving {src} -> {dst}")
+                        try:
+                            shutil.move(str(src), str(dst))
+                        except Exception as e:
+                            LOGGER.debug(f"Failed moving {src} -> {dst}: {e}")
+
+                # Update last edited time to refresh it's cache lifetime and print order in history.
+                os.utime(cache_file_path, None)
+                return str(cache_file_path)
 
             # Download to cache with progress tracking
             total_downloaded = 0
@@ -1261,7 +1233,7 @@ class PrintJob:
                     LOGGER.debug(f"Error in progress callback: {e}")
                     # Don't let progress callback errors break the download
 
-            with open(cache_file_path, 'wb') as f:
+            with open(str(cache_file_path), 'wb') as f:
                 # Create a wrapper function that combines file writing and progress tracking
                 def write_with_progress(data):
                     f.write(data)
@@ -1277,7 +1249,7 @@ class PrintJob:
             download_speed = size / download_time if download_time > 0 else 0
             
             LOGGER.debug(f"Successfully downloaded '{file_path}' to cache. Time: {download_time:.0f}s, Speed: {download_speed/1024:.0f} KB/s")
-            return cache_file_path
+            return str(cache_file_path)
                     
         except ftplib.error_perm as e:
              if '550' not in str(e.args): # 550 is unavailable.
@@ -1288,6 +1260,7 @@ class PrintJob:
             pass
         return None
 
+    ftp_search_paths = ['/cache/', '/']
     def _attempt_ftp_download_of_file_from_search_path(self, ftp, filename):
         for path in self.ftp_search_paths:
             file_path = f"{path}{filename.lstrip('/')}"
@@ -1337,23 +1310,46 @@ class PrintJob:
         # Look for the newest file with extension in directory.
         file_list = []
         def parse_line(path: str, line: str):
+            # Example line content:
+            # -rw-r--r--    1 1000     1000      1632221 Jun 17  2025 video_2025-06-17_12-12-18.mp4
+            # -rw-r--r--    1 1000     1000      1640240 Jun 18 00:27 video_2025-06-17_14-48-33.mp4
+            # (retrieved on 12/16/2025)
+
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 12:34 filename'
             pattern_with_time_no_year      = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+:\d+)\s+(.+)$'
             # Match the line format: '-rw-rw-rw- 1 user group 1234 Jan 01 2024 filename'
             pattern_without_time_just_year = r'^\S+\s+\d+\s+\S+\s+\S+\s+\d+\s+(\S+\s+\d+\s+\d+)\s+(.+)$'
             match = re.match(pattern_with_time_no_year, line)
+            #LOGGER.debug(line)
             if match:
                 timestamp_str, filename = match.groups()
                 _, extension = os.path.splitext(filename)
                 if extension in extensions:
-                    # Since these dates don't have the year we have to work it out. If the date is earlier in 
-                    # the year than now then it's this year. If it's later it's last year.
+                    # Since these dates don't have the year we have to work it out. For the most part that is going to be
+                    # the current year, but we need to handle the case where the file is from December and now it's January
+                    # or the file is from January but it's currently December because we've just passed through the New Year.
+                    # The transition from without year to with year is ~6 months in the past.
                     timestamp = datetime.strptime(timestamp_str, '%b %d %H:%M')
                     timestamp = timestamp.replace(tzinfo=timezone.utc)
                     utc_time_now = datetime.now().astimezone(timezone.utc)
+
+                    # Initially assume current year, then adjust if the parsed time would be more than ~6 months away from now
                     timestamp = timestamp.replace(year=utc_time_now.year)
-                    if timestamp > utc_time_now:
-                        timestamp = timestamp.replace(year=datetime.now().year - 1)
+                    delta = timestamp - utc_time_now
+                    six_months = timedelta(days=190) # Slightly more than 6 months to be safe
+
+                    # If the timestamp is more than six months in the future, it's really from the previous year. This will be a
+                    # common case for files from the previous year until we reach mid-year current time.
+                    if delta > six_months:
+                        timestamp = timestamp.replace(year=utc_time_now.year - 1)
+
+                    # If the timestamp is more than six months in the past, it's from next year. Should be rare but could happen
+                    # as the timezone the printer uses is not consistent. Sometimes it's UTC+8 (China), sometimes UTC, sometimes
+                    # local + day light savings. So we could end up with a slightly future time (ignoring year) that becomes way
+                    # in the past when we assign the current year right before new years.
+                    elif delta < -six_months:
+                        timestamp = timestamp.replace(year=utc_time_now.year + 1)
+
                     return timestamp, f"{path}/{filename}" if path != '/' else f"/{filename}"
                 else:
                     return None
@@ -1381,6 +1377,7 @@ class PrintJob:
             except Exception as e:
                 LOGGER.error(f"FTP list Exception. Type: {type(e)} Args: {e}")
                 pass
+
 
         files = sorted(file_list, key=lambda file: file[0], reverse=True)
         for file in files:
@@ -1436,7 +1433,7 @@ class PrintJob:
         # Files to delete: those beyond the 'keep' most recent
         old_files = matching_files[keep:]
 
-        LOGGER.debug(f"Keeping {keep} files. Deleting {len(old_files)} files.")
+        LOGGER.debug(f"Keeping up to {keep} files. Deleting {len(old_files)} excess files.")
         
         for primary_file in old_files:
             try:
@@ -2054,8 +2051,8 @@ class Info:
         self.online = False
         self.new_version_state = 0
         self.mqtt_mode = "local" if self._client._local_mqtt else "bambu_cloud"
-        self.nozzle_diameters = {0: None, 1: None}
-        self.nozzle_types = {0: None, 1: None}
+        self.nozzle_diameters = {0: None, 1: None, 15: None}
+        self.nozzle_types = {0: None, 1: None, 15: None}
         self.usage_hours = client._usage_hours
         self.extruder_filament_state = False
         self.door_open = False
@@ -2405,8 +2402,8 @@ class AMSList:
 
     def __init__(self, client):
         self._client = client
-        self._nozzle_tray_index = { 0: 0, 1: 0}
-        self._nozzle_ams_index = { 0: 0, 1: 0}
+        self._nozzle_tray_index = { 0: 0, 1: 0, 15: 0}
+        self._nozzle_ams_index = { 0: 0, 1: 0, 15: 0}
         self.data = {}
 
     @property
@@ -2697,38 +2694,31 @@ class AMSTray:
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
 
-        if len(data) <= 2:
-            # If the data just id + state then the tray is empty.
-            self.empty = True
-            self.idx = ""
-            self.name = "Empty"
+        self.idx = data.get('tray_info_idx', self.idx)
+        self.name = get_filament_name(self.idx, self._client.slicer_settings.custom_filaments)
+        self.type = data.get('tray_type', self.type)
+        self.sub_brands = data.get('tray_sub_brands', self.sub_brands)
+        self.color = data.get('tray_color', self.color)
+        self.nozzle_temp_min = data.get('nozzle_temp_min', self.nozzle_temp_min)
+        self.nozzle_temp_max = data.get('nozzle_temp_max', self.nozzle_temp_max)
+        self._remain = data.get('remain', self._remain)
+        self.tag_uid = data.get('tag_uid', self.tag_uid)
+        self.tray_uuid = data.get('tray_uuid', self.tray_uuid)
+        self.k = data.get('k', self.k)
+        self.tray_weight = data.get('tray_weight', self.tray_weight)
+        if self.name == "unknown":
+            # Fallback to the type if the name is unknown
+            self.name = self.type
+        self.empty = (self.name == "Empty")
+        if self.name == "Empty":
             self.type = "Empty"
             self.sub_brands = ""
-            self.color = "00000000"  # RRGGBBAA
-            self.nozzle_temp_min = 0
-            self.nozzle_temp_max = 0
             self._remain = -1
             self.tag_uid = ""
             self.tray_uuid = ""
             self.k = 0
             self.tray_weight = 0
-        else:
-            self.empty = False
-            self.idx = data.get('tray_info_idx', self.idx)
-            self.name = get_filament_name(self.idx, self._client.slicer_settings.custom_filaments)
-            self.type = data.get('tray_type', self.type)
-            self.sub_brands = data.get('tray_sub_brands', self.sub_brands)
-            self.color = data.get('tray_color', self.color)
-            self.nozzle_temp_min = data.get('nozzle_temp_min', self.nozzle_temp_min)
-            self.nozzle_temp_max = data.get('nozzle_temp_max', self.nozzle_temp_max)
-            self._remain = data.get('remain', self._remain)
-            self.tag_uid = data.get('tag_uid', self.tag_uid)
-            self.tray_uuid = data.get('tray_uuid', self.tray_uuid)
-            self.k = data.get('k', self.k)
-            self.tray_weight = data.get('tray_weight', self.tray_weight)
-            if self.name == "unknown":
-                # Fallback to the type if the name is unknown
-                self.name = self.type
+
         return (old_data != f"{self.__dict__}")
 
 

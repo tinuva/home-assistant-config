@@ -24,25 +24,26 @@
           "id": "ID",
           "host": "Host",
           "port": "Port",
+          "device_type": "Gerätetyp",
           "token": "Token",
-          "k1": "Key"
+          "k1": "Schlüssel"
         },
         "data_description": {
           "token": "Token für V3-Geräte (hexadezimal)",
-          "k1": "Key für V3-Geräte (hexadezimal)"
+          "k1": "Schlüssel für V3-Geräte (hexadezimal)"
         }
       },
       "reconfigure": {
-        "description": "Reconfigure your device.",
+        "description": "Konfigurieren Sie Ihr Gerät neu.",
         "data": {
           "host": "Host",
           "port": "Port",
           "token": "Token",
-          "k1": "Key"
+          "k1": "Schlüssel"
         },
         "data_description": {
           "token": "Token für V3-Geräte (hexadezimal)",
-          "k1": "Key für V3-Geräte (hexadezimal)"
+          "k1": "Schlüssel für V3-Geräte (hexadezimal)"
         }
       },
       "show_token_key": {
@@ -50,7 +51,7 @@
         "data": {
           "id": "ID",
           "token": "Token",
-          "k1": "Key"
+          "k1": "Schlüssel"
         }
       }
     },
@@ -59,7 +60,7 @@
       "cannot_connect": "Es konnte keine Verbindung hergestellt werden.",
       "cloud_connection_failed": "Es konnte keine Verbindung zur Cloud hergestellt werden.",
       "no_devices_found": "Keine unterstützten Geräte im Netzwerk gefunden.",
-      "reconfigure_successful": "Device successfully reconfigured."
+      "reconfigure_successful": "Gerät erfolgreich neu konfiguriert."
     },
     "error": {
       "cannot_connect": "Mit diesen Einstellungen konnte keine Verbindung hergestellt werden.",
@@ -71,7 +72,7 @@
   "options": {
     "step": {
       "init": {
-        "description": "Advanced integration settings.",
+        "description": "Erweiterte Integrationseinstellungen.",
         "data": {
           "prompt_tone": "Signalton aktivieren",
           "temp_step": "Temperaturschritte",
@@ -86,25 +87,25 @@
         },
         "sections": {
           "energy_sensor": {
-            "name": "Energy Sensor Format",
-            "description": "Customize energy sensor format",
+            "name": "Energiesensor-Format",
+            "description": "Energiesensor-Format anpassen",
             "data": {
-              "energy_data_format": "Data Format",
-              "energy_data_scale": "Scale"
+              "energy_data_format": "Datenformat",
+              "energy_data_scale": "Skalierung"
             },
             "data_description": {
-              "energy_data_scale": "Factor to scale reported energy usage"
+              "energy_data_scale": "Faktor zur Skalierung des gemeldeten Energieverbrauchs"
             }
           },
           "power_sensor": {
-            "name": "Power Sensor Format",
-            "description": "Customize power sensor format",
+            "name": "Leistungssensor-Format",
+            "description": "Leistungssensor-Format anpassen",
             "data": {
-              "energy_data_format": "Data Format",
-              "energy_data_scale": "Scale"
+              "energy_data_format": "Datenformat",
+              "energy_data_scale": "Skalierung"
             },
             "data_description": {
-              "energy_data_scale": "Factor to scale reported power usage"
+              "energy_data_scale": "Faktor zur Skalierung der gemeldeten Leistungsaufnahme"
             }
           },
           "workarounds": {
@@ -126,7 +127,7 @@
     "energy_data_format": {
       "options": {
         "bcd": "BCD",
-        "binary": "Binary"
+        "binary": "Binär"
       }
     }
   },
@@ -154,12 +155,20 @@
               "high": "Hoch",
               "max": "Max",
               "auto": "Auto",
-              "custom": "Benutzerdefiniert"
+              "custom": "Benutzerdefiniert",
+              "l1": "Stufe 1",
+              "l2": "Stufe 2",
+              "l3": "Stufe 3",
+              "l4": "Stufe 4",
+              "l5": "Stufe 5",
+              "l6": "Stufe 6",
+              "l7": "Stufe 7"
             }
           },
           "preset_mode": {
             "state": {
-              "ieco": "iECO"
+              "ieco": "iECO",
+              "silent": "Leise"
             }
           },
           "swing_mode": {
@@ -197,15 +206,17 @@
         "state": {
           "off": "Aus",
           "aux_heat": "Heizen und Zusatzheizung",
-          "aux_only": "Nur Zusatzheizung"
+          "aux_only": "Nur Zusatzheizung",
+          "on": "An",
+          "auto": "Auto"
         }
       },
       "cascade": {
-        "name": "Cascade mode",
+        "name": "Kaskadenmodus",
         "state": {
           "off": "Aus",
-          "up": "Up",
-          "down": "Down"
+          "up": "Oben",
+          "down": "Unten"
         }
       },
       "horizontal_swing_angle": {
@@ -216,7 +227,9 @@
           "pos_2": "Links-mitte",
           "pos_3": "Mitte",
           "pos_4": "Rechts-mitte",
-          "pos_5": "Rechts"
+          "pos_5": "Rechts",
+          "close": "Schließen",
+          "auto": "Auto"
         }
       },
       "horizontal_swing_angle_rtl": {
@@ -227,7 +240,17 @@
           "pos_2": "Rechts-mitte",
           "pos_3": "Mitte",
           "pos_4": "Links-mitte",
-          "pos_5": "Links"
+          "pos_5": "Links",
+          "close": "Schließen",
+          "auto": "Auto"
+        }
+      },
+      "purifier": {
+        "name": "Luftreiniger-Modus",
+        "state": {
+          "off": "Aus",
+          "on": "An",
+          "auto": "Auto"
         }
       },
       "rate_select": {
@@ -244,14 +267,16 @@
         }
       },
       "vertical_swing_angle": {
-        "name": "Vertical swing angle",
+        "name": "Vertikaler Schwenkwinkel",
         "state": {
           "off": "Aus",
           "pos_1": "Oben",
-          "pos_2": "Oben-mitte",
+          "pos_2": "Oben-Mitte",
           "pos_3": "Mitte",
-          "pos_4": "Unten-mitte",
-          "pos_5": "Unten"
+          "pos_4": "Unten-Mitte",
+          "pos_5": "Unten",
+          "close": "Schließen",
+          "auto": "Auto"
         }
       }
     },
@@ -277,19 +302,19 @@
     },
     "switch": {
       "breeze_away": {
-        "name": "Breeze away"
+        "name": "Breeze Away"
       },
       "breeze_mild": {
-        "name": "Breeze mild"
+        "name": "Sanfte Brise"
       },
       "breezeless": {
-        "name": "Breezeless"
+        "name": "Windfrei"
       },
       "display": {
         "name": "Geräteanzeige"
       },
       "flash_cool": {
-        "name": "Flash cool"
+        "name": "Schnellkühlen"
       },
       "purifier": {
         "name": "Luftreiniger"

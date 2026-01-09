@@ -24,6 +24,7 @@
           "id": "ID",
           "host": "Host",
           "port": "Port",
+          "device_type": "Device Type",
           "token": "Token",
           "k1": "Key"
         },
@@ -154,12 +155,20 @@
               "high": "High",
               "max": "Max",
               "auto": "Auto",
-              "custom": "Custom"
+              "custom": "Custom",
+              "l1": "Level 1",
+              "l2": "Level 2",
+              "l3": "Level 3",
+              "l4": "Level 4",
+              "l5": "Level 5",
+              "l6": "Level 6",
+              "l7": "Level 7"
             }
           },
           "preset_mode": {
             "state": {
-              "ieco": "iECO"
+              "ieco": "iECO",
+              "silent": "Silent"
             }
           },
           "swing_mode": {
@@ -197,7 +206,9 @@
         "state": {
           "off": "Off",
           "aux_heat": "Heat & Aux",
-          "aux_only": "Aux only"
+          "aux_only": "Aux only",
+          "on": "On",
+          "auto": "Auto"
         }
       },
       "cascade": {
@@ -216,7 +227,9 @@
           "pos_2": "Left-center",
           "pos_3": "Center",
           "pos_4": "Right-center",
-          "pos_5": "Right"
+          "pos_5": "Right",
+          "close": "Close",
+          "auto": "Auto"
         }
       },
       "horizontal_swing_angle_rtl": {
@@ -227,7 +240,17 @@
           "pos_2": "Right-center",
           "pos_3": "Center",
           "pos_4": "Left-center",
-          "pos_5": "Left"
+          "pos_5": "Left",
+          "close": "Close",
+          "auto": "Auto"
+        }
+      },
+      "purifier": {
+        "name": "Purifier mode",
+        "state": {
+          "off": "Off",
+          "on": "On",
+          "auto": "Auto"
         }
       },
       "rate_select": {
@@ -251,7 +274,9 @@
           "pos_2": "Top-center",
           "pos_3": "Center",
           "pos_4": "Bottom-center",
-          "pos_5": "Bottom"
+          "pos_5": "Bottom",
+          "close": "Close",
+          "auto": "Auto"
         }
       }
     },

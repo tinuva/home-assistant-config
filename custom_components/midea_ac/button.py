@@ -2,12 +2,11 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
@@ -27,10 +26,11 @@ async def async_setup_entry(
 
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device = coordinator.device
 
     # Create entities for supported features
     entities = []
-    if coordinator.device.supports_self_clean:
+    if hasattr(device, "start_self_clean") and getattr(device, "supports_self_clean", False):
         entities.append(MideaButton(coordinator,
                                     "start_self_clean",
                                     "self_clean",
@@ -45,7 +45,7 @@ class MideaButton(MideaCoordinatorEntity, ButtonEntity):
     def __init__(self,
                  coordinator: MideaDeviceUpdateCoordinator,
                  method: str,
-                 translation_key: Optional[str] = None,
+                 translation_key:  str | None = None,
                  *,
                  entity_category: EntityCategory = None) -> None:
         MideaCoordinatorEntity.__init__(self, coordinator)

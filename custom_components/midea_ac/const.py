@@ -1,4 +1,8 @@
 from enum import StrEnum, auto
+from typing import TypeVar
+
+from msmart.device import AirConditioner as AC
+from msmart.device import CommercialAirConditioner as CC
 
 DOMAIN = "midea_ac"
 UPDATE_INTERVAL = 15
@@ -19,8 +23,10 @@ CONF_ENERGY_DATA_SCALE = "energy_data_scale"
 CONF_CLOUD_COUNTRY_CODES = ["DE", "KR", "US"]
 CONF_DEFAULT_CLOUD_COUNTRY = "US"
 CONF_SWING_ANGLE_RTL = "swing_angle_rtl"
+CONF_DEVICE_TYPE = "device_type"
 
 PRESET_IECO = "ieco"
+PRESET_SILENT = "silent"
 
 
 class EnergyFormat(StrEnum):
@@ -31,3 +37,6 @@ class EnergyFormat(StrEnum):
     _DEFAULT = "default"
     _ALTERNATE_A = "alternate_a"
     _ALTERNATE_B = "alternate_b"
+
+
+MideaDevice = TypeVar("MideaDevice", AC, CC)

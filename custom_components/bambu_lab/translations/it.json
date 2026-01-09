@@ -281,6 +281,9 @@
       },
       "chamber_fan": {
         "name": "Ventola Camera di Stampa"
+      },
+      "secondary_aux_fan": {
+        "name": "Ventola ausiliaria secondaria"
       }
     },
     "image": {
@@ -827,6 +830,9 @@
       },
       "model_download_percentage": {
         "name": "Scaricamento del modello"
+      },
+      "serial": {
+        "name": "Numero di serie"
       }
     },
     "camera": {
@@ -884,7 +890,7 @@
     },
     "hybrid_mode_blocking": {
       "title": "Controllo dei blocchi di connessione ibridi",
-      "description": "{device} è connesso al cloud ma con connessione mqtt locale tramite l'integrazione. Solo la luce può essere controllata da questa integrazione. Tutti gli altri controlli non sono disponibili. Passa la connessione al cloud puro per abilitare il controllo."
+      "description": "{device} è connesso al cloud ma con connessione mqtt locale tramite l'integrazione. Ciò blocca l'impostazione delle temperature e la ristampa dalla cronologia. Passa la connessione al cloud puro per consentire il controllo completo."
     }
   }
 }

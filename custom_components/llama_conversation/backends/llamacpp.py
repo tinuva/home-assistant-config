@@ -9,7 +9,6 @@ import time
 from typing import Any, Callable, List, Generator, AsyncGenerator, Optional, cast
 
 from homeassistant.components import conversation as conversation
-from homeassistant.components.conversation.const import DOMAIN as CONVERSATION_DOMAIN
 from homeassistant.components.homeassistant.exposed_entities import async_should_expose
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_LLM_HASS_API
@@ -20,6 +19,8 @@ from homeassistant.helpers.event import async_track_state_change, async_call_lat
 
 from custom_components.llama_conversation.utils import install_llama_cpp_python, validate_llama_cpp_python_installation, get_oai_formatted_messages, get_oai_formatted_tools
 from custom_components.llama_conversation.const import (
+    CONF_ENABLE_LEGACY_TOOL_CALLING,
+    CONF_TOOL_RESPONSE_AS_STRING,
     CONF_INSTALLED_LLAMACPP_VERSION,
     CONF_CHAT_MODEL,
     CONF_MAX_TOKENS,
@@ -39,7 +40,10 @@ from custom_components.llama_conversation.const import (
     CONF_LLAMACPP_BATCH_SIZE,
     CONF_LLAMACPP_THREAD_COUNT,
     CONF_LLAMACPP_BATCH_THREAD_COUNT,
+    CONF_LLAMACPP_CACHE_SIZE_MB,
     CONF_INSTALLED_LLAMACPP_VERSION,
+    DEFAULT_ENABLE_LEGACY_TOOL_CALLING,
+    DEFAULT_TOOL_RESPONSE_AS_STRING,
     DEFAULT_MAX_TOKENS,
     DEFAULT_PROMPT,
     DEFAULT_TEMPERATURE,
@@ -56,7 +60,9 @@ from custom_components.llama_conversation.const import (
     DEFAULT_LLAMACPP_BATCH_SIZE,
     DEFAULT_LLAMACPP_THREAD_COUNT,
     DEFAULT_LLAMACPP_BATCH_THREAD_COUNT,
+    DEFAULT_LLAMACPP_CACHE_SIZE_MB,
     DOMAIN,
+    CONF_RESPONSE_JSON_SCHEMA,
 )
 from custom_components.llama_conversation.entity import LocalLLMClient, TextGenerationResult
 
@@ -64,10 +70,16 @@ from custom_components.llama_conversation.entity import LocalLLMClient, TextGene
 from typing import TYPE_CHECKING
 from types import ModuleType
 if TYPE_CHECKING:
-    from llama_cpp import Llama as LlamaType, LlamaGrammar as LlamaGrammarType
+    from llama_cpp import (
+        Llama as LlamaType,
+        LlamaGrammar as LlamaGrammarType,
+        LlamaDiskCache as LlamaDiskCacheType,
+        ChatCompletionRequestResponseFormat
+    )
 else:
     LlamaType = Any
     LlamaGrammarType = Any
+    ChatCompletionRequestResponseFormat = Any
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,6 +90,7 @@ def snapshot_settings(options: dict[str, Any]) -> dict[str, Any]:
         CONF_LLAMACPP_BATCH_SIZE: options.get(CONF_LLAMACPP_BATCH_SIZE, DEFAULT_LLAMACPP_BATCH_SIZE),
         CONF_LLAMACPP_THREAD_COUNT: options.get(CONF_LLAMACPP_THREAD_COUNT, DEFAULT_LLAMACPP_THREAD_COUNT),
         CONF_LLAMACPP_BATCH_THREAD_COUNT: options.get(CONF_LLAMACPP_BATCH_THREAD_COUNT, DEFAULT_LLAMACPP_BATCH_THREAD_COUNT),
+        CONF_LLAMACPP_CACHE_SIZE_MB: options.get(CONF_LLAMACPP_CACHE_SIZE_MB, DEFAULT_LLAMACPP_CACHE_SIZE_MB),
         CONF_LLAMACPP_ENABLE_FLASH_ATTENTION: options.get(CONF_LLAMACPP_ENABLE_FLASH_ATTENTION, DEFAULT_LLAMACPP_ENABLE_FLASH_ATTENTION),
         CONF_INSTALLED_LLAMACPP_VERSION: options.get(CONF_INSTALLED_LLAMACPP_VERSION, ""),
         CONF_GBNF_GRAMMAR_FILE: options.get(CONF_GBNF_GRAMMAR_FILE, DEFAULT_GBNF_GRAMMAR_FILE),
@@ -151,6 +164,7 @@ class LlamaCppClient(LocalLLMClient):
                 self.llama_cpp_module = importlib.import_module("llama_cpp")
 
         Llama: type[LlamaType] = getattr(self.llama_cpp_module, "Llama")
+        LlamaDiskCache: type[LlamaDiskCacheType] = getattr(self.llama_cpp_module, "LlamaDiskCache")
 
         _LOGGER.debug(f"Loading model '{model_path}'...")
         model_settings = snapshot_settings(entity_options)
@@ -165,11 +179,15 @@ class LlamaCppClient(LocalLLMClient):
         )
         _LOGGER.debug("Model loaded")
 
-        # TODO: check about disk caching
-        # self.llm.set_cache(self.llama_cpp_module.LlamaDiskCache(
-        #     capacity_bytes=(512 * 10e8),
-        #     cache_dir=os.path.join(self.hass.config.media_dirs.get("local", self.hass.config.path("media")), "kv_cache")
-        # ))
+        # create disk cache if enabled
+        # cache must be per-model to avoid conflicts with different hidden state sizes
+        cache_size = model_settings.get(CONF_LLAMACPP_CACHE_SIZE_MB, DEFAULT_LLAMACPP_CACHE_SIZE_MB)
+        cache_dir = model_name.strip().replace(" ", "_").lower()
+        if cache_size > 0:
+            llm.set_cache(LlamaDiskCache(
+                capacity_bytes=int(cache_size * (1024 ** 2)), # MB to bytes
+                cache_dir=os.path.join(self.hass.config.media_dirs.get("local", self.hass.config.path("media")), "kv_cache", cache_dir)
+            ))
 
         if model_settings[CONF_PROMPT_CACHING_ENABLED]:
             @callback
@@ -216,6 +234,8 @@ class LlamaCppClient(LocalLLMClient):
         elif loaded_options[CONF_LLAMACPP_BATCH_THREAD_COUNT] != entity_options.get(CONF_LLAMACPP_BATCH_THREAD_COUNT, DEFAULT_LLAMACPP_BATCH_THREAD_COUNT):
             should_reload = True
         elif loaded_options[CONF_LLAMACPP_ENABLE_FLASH_ATTENTION] != entity_options.get(CONF_LLAMACPP_ENABLE_FLASH_ATTENTION, DEFAULT_LLAMACPP_ENABLE_FLASH_ATTENTION):
+            should_reload = True
+        elif loaded_options[CONF_LLAMACPP_CACHE_SIZE_MB] != entity_options.get(CONF_LLAMACPP_CACHE_SIZE_MB, DEFAULT_LLAMACPP_CACHE_SIZE_MB):
             should_reload = True
         elif loaded_options[CONF_INSTALLED_LLAMACPP_VERSION] != entity_options.get(CONF_INSTALLED_LLAMACPP_VERSION):
             should_reload = True
@@ -283,8 +303,6 @@ class LlamaCppClient(LocalLLMClient):
         # Sort the items based on the sort_key function
         sorted_items = sorted(list(entity_order.items()), key=sort_key)
 
-        _LOGGER.debug(f"sorted_items: {sorted_items}")
-
         sorted_entities: dict[str, dict[str, str]] = {}
         for item_name, _ in sorted_items:
             sorted_entities[item_name] = entities[item_name]
@@ -297,7 +315,7 @@ class LlamaCppClient(LocalLLMClient):
 
             entity_ids = [
                 state.entity_id for state in self.hass.states.async_all() \
-                    if async_should_expose(self.hass, CONVERSATION_DOMAIN, state.entity_id)
+                    if async_should_expose(self.hass, conversation.DOMAIN, state.entity_id)
             ]
 
             _LOGGER.debug(f"watching entities: {entity_ids}")
@@ -390,6 +408,7 @@ class LlamaCppClient(LocalLLMClient):
                     max_tokens=1,
                     grammar=grammar,
                     stream=False,
+                    # stop=["<end_of_turn>", "<end_function_call>"]
                 )
 
                 self.last_cache_prime = time.time()
@@ -431,15 +450,25 @@ class LlamaCppClient(LocalLLMClient):
         min_p = entity_options.get(CONF_MIN_P, DEFAULT_MIN_P)
         typical_p = entity_options.get(CONF_TYPICAL_P, DEFAULT_TYPICAL_P)
         grammar = self.grammars.get(model_name) if entity_options.get(CONF_USE_GBNF_GRAMMAR, DEFAULT_USE_GBNF_GRAMMAR) else None
+        enable_legacy_tool_calling = entity_options.get(CONF_ENABLE_LEGACY_TOOL_CALLING, DEFAULT_ENABLE_LEGACY_TOOL_CALLING)
+        tool_response_as_string = entity_options.get(CONF_TOOL_RESPONSE_AS_STRING, DEFAULT_TOOL_RESPONSE_AS_STRING)
 
         _LOGGER.debug(f"Options: {entity_options}")
 
-        messages = get_oai_formatted_messages(conversation, user_content_as_list=True)
+        messages = get_oai_formatted_messages(conversation, tool_result_to_str=tool_response_as_string)
         tools = None
-        if llm_api:
+        if llm_api and not enable_legacy_tool_calling:
             tools = get_oai_formatted_tools(llm_api, self._async_get_all_exposed_domains())
 
         _LOGGER.debug(f"Generating completion with {len(messages)} messages and {len(tools) if tools else 0} tools...")
+
+        response_json_schema = entity_options.get(CONF_RESPONSE_JSON_SCHEMA)
+        response_format: Optional[ChatCompletionRequestResponseFormat] = None
+        if response_json_schema:
+            response_format = {
+                "type": "json_object",
+                "schema": response_json_schema,
+            }
 
         chat_completion = self.models[model_name].create_chat_completion(
             messages,
@@ -452,6 +481,8 @@ class LlamaCppClient(LocalLLMClient):
             max_tokens=max_tokens,
             grammar=grammar,
             stream=True,
+            response_format=response_format,
+            # stop=["<end_of_turn>", "<end_function_call>"] # FIXME: make configurable (pull from tool end token?)
         )
 
         def next_token() -> Generator[tuple[Optional[str], Optional[List]]]:
@@ -464,5 +495,5 @@ class LlamaCppClient(LocalLLMClient):
                     tool_calls = chunk["choices"][0]["delta"].get("tool_calls")
                     yield content, tool_calls
 
-        return self._async_parse_completion(llm_api, agent_id, entity_options, next_token=next_token())
+        return self._async_stream_parse_completion(llm_api, agent_id, entity_options, next_token=next_token())
 

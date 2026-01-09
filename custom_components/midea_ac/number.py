@@ -8,7 +8,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from msmart.device import AirConditioner as AC
 
 from .const import CONF_FAN_SPEED_STEP, DOMAIN
 from .coordinator import MideaCoordinatorEntity, MideaDeviceUpdateCoordinator
@@ -27,9 +26,10 @@ async def async_setup_entry(
 
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device = coordinator.device
 
     # Create entity if supported
-    if coordinator.device.supports_custom_fan_speed:
+    if getattr(device, "supports_custom_fan_speed", False):
         add_entities([MideaFanSpeedNumber(
             coordinator,
             config_entry.options.get(CONF_FAN_SPEED_STEP, 1)
@@ -96,7 +96,7 @@ class MideaFanSpeedNumber(MideaCoordinatorEntity, NumberEntity):
         speed = self._device.fan_speed
 
         # Convert enum to integer
-        if isinstance(speed, AC.FanSpeed):
+        if isinstance(speed, type(self._device).FanSpeed):
             speed = speed.value
 
         return speed

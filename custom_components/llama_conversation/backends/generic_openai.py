@@ -23,19 +23,22 @@ from custom_components.llama_conversation.const import (
     CONF_TEMPERATURE,
     CONF_TOP_P,
     CONF_REQUEST_TIMEOUT,
-    CONF_OPENAI_API_KEY,
+    CONF_API_KEY,
     CONF_REMEMBER_CONVERSATION,
     CONF_REMEMBER_CONVERSATION_TIME_MINUTES,
-    CONF_GENERIC_OPENAI_PATH,
+    CONF_API_PATH,
     CONF_ENABLE_LEGACY_TOOL_CALLING,
+    CONF_TOOL_RESPONSE_AS_STRING,
+    CONF_RESPONSE_JSON_SCHEMA,
     DEFAULT_MAX_TOKENS,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_P,
     DEFAULT_REQUEST_TIMEOUT,
     DEFAULT_REMEMBER_CONVERSATION,
     DEFAULT_REMEMBER_CONVERSATION_TIME_MINUTES,
-    DEFAULT_GENERIC_OPENAI_PATH,
+    DEFAULT_API_PATH,
     DEFAULT_ENABLE_LEGACY_TOOL_CALLING,
+    DEFAULT_TOOL_RESPONSE_AS_STRING,
     RECOMMENDED_CHAT_MODELS,
 )
 from custom_components.llama_conversation.entity import TextGenerationResult, LocalLLMClient
@@ -56,24 +59,24 @@ class GenericOpenAIAPIClient(LocalLLMClient):
             hostname=client_options[CONF_HOST],
             port=client_options[CONF_PORT],
             ssl=client_options[CONF_SSL],
-            path="/" + client_options.get(CONF_GENERIC_OPENAI_PATH, DEFAULT_GENERIC_OPENAI_PATH)
+            path="/" + client_options.get(CONF_API_PATH, DEFAULT_API_PATH)
         )
 
-        self.api_key = client_options.get(CONF_OPENAI_API_KEY, "")
+        self.api_key = client_options.get(CONF_API_KEY, "")
 
     @staticmethod
     def get_name(client_options: dict[str, Any]):
         host = client_options[CONF_HOST]
         port = client_options[CONF_PORT]
         ssl = client_options[CONF_SSL]
-        path = "/" + client_options[CONF_GENERIC_OPENAI_PATH]
+        path = "/" + client_options[CONF_API_PATH]
         return f"Generic OpenAI at '{format_url(hostname=host, port=port, ssl=ssl, path=path)}'"
     
     @staticmethod
     async def async_validate_connection(hass: HomeAssistant, user_input: Dict[str, Any]) -> str | None:
         headers = {}
-        api_key = user_input.get(CONF_OPENAI_API_KEY)
-        api_base_path = user_input.get(CONF_GENERIC_OPENAI_PATH, DEFAULT_GENERIC_OPENAI_PATH)
+        api_key = user_input.get(CONF_API_KEY)
+        api_base_path = user_input.get(CONF_API_PATH, DEFAULT_API_PATH)
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
 
@@ -110,7 +113,7 @@ class GenericOpenAIAPIClient(LocalLLMClient):
             ) as response:
                 response.raise_for_status()
                 models_result = await response.json()
-        except:
+        except (asyncio.TimeoutError, aiohttp.ClientResponseError):
             _LOGGER.exception("Failed to get available models")
             return RECOMMENDED_CHAT_MODELS
             
@@ -120,27 +123,40 @@ class GenericOpenAIAPIClient(LocalLLMClient):
                          conversation: List[conversation.Content],
                          llm_api: llm.APIInstance | None,
                          agent_id: str,
-                         entity_options: dict[str, Any]) -> AsyncGenerator[TextGenerationResult, None]:
+                         entity_options: dict[str, Any],
+                        ) -> AsyncGenerator[TextGenerationResult, None]:
         model_name = entity_options[CONF_CHAT_MODEL]
         temperature = entity_options.get(CONF_TEMPERATURE, DEFAULT_TEMPERATURE)
         top_p = entity_options.get(CONF_TOP_P, DEFAULT_TOP_P)
+        max_tokens = entity_options.get(CONF_MAX_TOKENS, DEFAULT_MAX_TOKENS)
         timeout = entity_options.get(CONF_REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT)
         enable_legacy_tool_calling = entity_options.get(CONF_ENABLE_LEGACY_TOOL_CALLING, DEFAULT_ENABLE_LEGACY_TOOL_CALLING)
+        tool_response_as_string = entity_options.get(CONF_TOOL_RESPONSE_AS_STRING, DEFAULT_TOOL_RESPONSE_AS_STRING)
 
         endpoint, additional_params = self._chat_completion_params(entity_options)
-        messages = get_oai_formatted_messages(conversation, user_content_as_list=True)
+        messages = get_oai_formatted_messages(conversation, user_content_as_list=True, tool_result_to_str=tool_response_as_string)
 
         request_params = {
             "model": model_name,
             "stream": True,
+            "max_tokens": max_tokens,
             "temperature": temperature,
             "top_p": top_p,
             "messages": messages
         }
 
+        response_json_schema = entity_options.get(CONF_RESPONSE_JSON_SCHEMA)
+        if response_json_schema:
+            request_params["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "ha_task",
+                    "schema": response_json_schema,
+                    "strict": True,
+                },
+            }
+
         tools = None
-        # "legacy" tool calling passes the tools directly as part of the system prompt instead of as "tools"
-        # most local backends absolutely butcher any sort of prompt formatting when using tool calling
         if llm_api and not enable_legacy_tool_calling:
             tools = get_oai_formatted_tools(llm_api, self._async_get_all_exposed_domains())
             request_params["tools"] = tools
@@ -155,7 +171,7 @@ class GenericOpenAIAPIClient(LocalLLMClient):
 
         session = async_get_clientsession(self.hass)
 
-        async def anext_token() -> AsyncGenerator[Tuple[Optional[str], Optional[List[llm.ToolInput]]], None]:
+        async def anext_token() -> AsyncGenerator[Tuple[Optional[str], Optional[List[dict]]], None]:
             response = None
             chunk = None
             try:
@@ -175,7 +191,7 @@ class GenericOpenAIAPIClient(LocalLLMClient):
                             break
 
                         if chunk and chunk.strip():
-                            to_say, tool_calls = self._extract_response(json.loads(chunk), llm_api, agent_id)
+                            to_say, tool_calls = self._extract_response(json.loads(chunk))
                             if to_say or tool_calls:
                                 yield to_say, tool_calls
             except asyncio.TimeoutError as err:
@@ -183,14 +199,14 @@ class GenericOpenAIAPIClient(LocalLLMClient):
             except aiohttp.ClientError as err:
                 raise HomeAssistantError(f"Failed to communicate with the API! {err}") from err
 
-        return self._async_parse_completion(llm_api, agent_id, entity_options, anext_token=anext_token())
+        return self._async_stream_parse_completion(llm_api, agent_id, entity_options, anext_token=anext_token())
     
     def _chat_completion_params(self, entity_options: dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
         request_params = {}
         endpoint = "/chat/completions"
         return endpoint, request_params
 
-    def _extract_response(self, response_json: dict, llm_api: llm.APIInstance | None, agent_id: str) -> Tuple[Optional[str], Optional[List[llm.ToolInput]]]:
+    def _extract_response(self, response_json: dict) -> Tuple[Optional[str], Optional[List[dict]]]:
         if "choices" not in response_json or len(response_json["choices"]) == 0: # finished
             _LOGGER.warning("Response missing or empty 'choices'. Keys present: %s. Full response: %s",
                             list(response_json.keys()), response_json)
@@ -204,16 +220,7 @@ class GenericOpenAIAPIClient(LocalLLMClient):
         elif response_json["object"] == "chat.completion.chunk":
             response_text = choice["delta"].get("content", "")
             if "tool_calls" in choice["delta"] and choice["delta"]["tool_calls"] is not None:
-                tool_calls = []
-                for call in choice["delta"]["tool_calls"]:
-                    tool_call, to_say = parse_raw_tool_call(
-                        call["function"], llm_api, agent_id)
-                    
-                    if tool_call:
-                        tool_calls.append(tool_call)
-                        
-                    if to_say:
-                        response_text += to_say
+                tool_calls = [call["function"] for call in choice["delta"]["tool_calls"]]
             streamed = True
         else:
             response_text = choice["text"]
@@ -244,17 +251,17 @@ class GenericOpenAIResponsesAPIClient(LocalLLMClient):
             hostname=client_options[CONF_HOST],
             port=client_options[CONF_PORT],
             ssl=client_options[CONF_SSL],
-            path="/" + client_options.get(CONF_GENERIC_OPENAI_PATH, DEFAULT_GENERIC_OPENAI_PATH)
+            path="/" + client_options.get(CONF_API_PATH, DEFAULT_API_PATH)
         )
 
-        self.api_key = client_options.get(CONF_OPENAI_API_KEY, "")
+        self.api_key = client_options.get(CONF_API_KEY, "")
 
     @staticmethod
     def get_name(client_options: dict[str, Any]):
         host = client_options[CONF_HOST]
         port = client_options[CONF_PORT]
         ssl = client_options[CONF_SSL]
-        path = "/" + client_options[CONF_GENERIC_OPENAI_PATH]
+        path = "/" + client_options[CONF_API_PATH]
         return f"Generic OpenAI at '{format_url(hostname=host, port=port, ssl=ssl, path=path)}'"
 
     def _responses_params(self, conversation: List[conversation.Content], entity_options: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
@@ -267,7 +274,6 @@ class GenericOpenAIResponsesAPIClient(LocalLLMClient):
             try:
                 if msg.role == "user":
                     input_text = msg.content
-                    break
             except Exception:
                 continue
 
@@ -367,7 +373,8 @@ class GenericOpenAIResponsesAPIClient(LocalLLMClient):
                         conversation: List[conversation.Content],
                         llm_api: llm.APIInstance | None,
                         agent_id: str,
-                        entity_options: dict[str, Any]) -> TextGenerationResult:
+                        entity_options: dict[str, Any],
+                        ) -> TextGenerationResult:
         """Generate a response using the OpenAI-compatible Responses API (non-streaming endpoint wrapped as a single-chunk stream)."""
 
         model_name = entity_options.get(CONF_CHAT_MODEL)
@@ -377,6 +384,16 @@ class GenericOpenAIResponsesAPIClient(LocalLLMClient):
         request_params: Dict[str, Any] = {
             "model": model_name,
         }
+        response_json_schema = entity_options.get(CONF_RESPONSE_JSON_SCHEMA)
+        if response_json_schema:
+            request_params["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "ha_task",
+                    "schema": response_json_schema,
+                    "strict": True,
+                },
+            }
         request_params.update(additional_params)
 
         headers: Dict[str, Any] = {}
@@ -398,7 +415,10 @@ class GenericOpenAIResponsesAPIClient(LocalLLMClient):
 
                 try:
                     text = self._extract_response(response_json)
-                    return TextGenerationResult(response=text, response_streamed=False)
+                    if not text:
+                        return TextGenerationResult(raise_error=True, error_msg="The Responses API returned an empty response.")
+                    # return await self._async_parse_completion(llm_api, agent_id, entity_options, text)
+                    return TextGenerationResult(response=text) # Currently we don't extract any info from the response besides the raw model output
                 except Exception as err:
                     _LOGGER.exception("Failed to parse Responses API payload: %s", err)
                     return TextGenerationResult(raise_error=True, error_msg=f"Failed to parse Responses API payload: {err}")

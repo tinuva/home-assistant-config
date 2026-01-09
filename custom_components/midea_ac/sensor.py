@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from homeassistant.components.sensor import (SensorDeviceClass, SensorEntity,
                                              SensorStateClass)
@@ -11,7 +10,7 @@ from homeassistant.const import (PERCENTAGE, UnitOfEnergy, UnitOfPower,
                                  UnitOfTemperature)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from msmart.device import AirConditioner as AC
+from msmart.utils import MideaIntEnum
 
 from .const import (CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
                     CONF_ENERGY_SENSOR, CONF_POWER_SENSOR, DOMAIN,
@@ -32,22 +31,7 @@ async def async_setup_entry(
 
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
-
-    def _get_energy_config(key: str) -> tuple[EnergyFormat, float]:
-        config = config_entry.options.get(key)
-        format = AC.EnergyDataFormat.get_from_name(
-            config.get(CONF_ENERGY_DATA_FORMAT).upper())
-        scale = config.get(CONF_ENERGY_DATA_SCALE)
-        return format, scale
-
-    # Configure energy format
-    energy_data_format, energy_scale = _get_energy_config(CONF_ENERGY_SENSOR)
-    _LOGGER.info(
-        "Using energy format %r (scale: %f) for device ID %s.", energy_data_format, energy_scale, coordinator.device.id)
-
-    power_data_format, power_scale = _get_energy_config(CONF_POWER_SENSOR)
-    _LOGGER.info(
-        "Using power format %r (scale: %f) for device ID %s.", power_data_format, power_scale, coordinator.device.id)
+    device = coordinator.device
 
     entities = [
         # Temperature sensors
@@ -65,40 +49,9 @@ async def async_setup_entry(
             UnitOfTemperature.CELSIUS,
             "outdoor_temperature",
         ),
-
-        # Energy sensors
-        MideaEnergySensor(
-            coordinator,
-            "total_energy_usage",
-            SensorDeviceClass.ENERGY,
-            UnitOfEnergy.KILO_WATT_HOUR,
-            "total_energy_usage",
-            format=energy_data_format,
-            scale=energy_scale,
-            state_class=SensorStateClass.TOTAL,
-        ),
-        MideaEnergySensor(
-            coordinator,
-            "current_energy_usage",
-            SensorDeviceClass.ENERGY,
-            UnitOfEnergy.KILO_WATT_HOUR,
-            "current_energy_usage",
-            format=energy_data_format,
-            scale=energy_scale,
-            state_class=SensorStateClass.TOTAL_INCREASING,
-        ),
-        MideaEnergySensor(
-            coordinator,
-            "real_time_power_usage",
-            SensorDeviceClass.POWER,
-            UnitOfPower.WATT,
-            "real_time_power_usage",
-            format=power_data_format,
-            scale=power_scale,
-        )
     ]
 
-    if coordinator.device.supports_humidity:
+    if hasattr(device, "indoor_humidity") and getattr(device, "supports_humidity", False):
         entities.append(MideaSensor(
             coordinator,
             "indoor_humidity",
@@ -106,6 +59,59 @@ async def async_setup_entry(
             PERCENTAGE,
             "indoor_humidity",
         ))
+
+    # Only add energy sensors if device supports energy requests
+    if hasattr(device, "enable_energy_usage_requests"):
+        def _get_energy_config(key: str) -> tuple[EnergyFormat, float]:
+            config = config_entry.options.get(key)
+            format = type(device).EnergyDataFormat.get_from_name(
+                config.get(CONF_ENERGY_DATA_FORMAT).upper())
+            scale = config.get(CONF_ENERGY_DATA_SCALE)
+            return format, scale
+
+        # Configure energy format
+        energy_data_format, energy_scale = _get_energy_config(
+            CONF_ENERGY_SENSOR)
+        _LOGGER.info(
+            "Using energy format %r (scale: %f) for device ID %s.", energy_data_format, energy_scale, coordinator.device.id)
+
+        power_data_format, power_scale = _get_energy_config(CONF_POWER_SENSOR)
+        _LOGGER.info(
+            "Using power format %r (scale: %f) for device ID %s.", power_data_format, power_scale, coordinator.device.id)
+
+        entities.extend(
+            [
+                # Energy sensors
+                MideaEnergySensor(
+                    coordinator,
+                    "total_energy_usage",
+                    SensorDeviceClass.ENERGY,
+                    UnitOfEnergy.KILO_WATT_HOUR,
+                    "total_energy_usage",
+                    format=energy_data_format,
+                    scale=energy_scale,
+                    state_class=SensorStateClass.TOTAL,
+                ),
+                MideaEnergySensor(
+                    coordinator,
+                    "current_energy_usage",
+                    SensorDeviceClass.ENERGY,
+                    UnitOfEnergy.KILO_WATT_HOUR,
+                    "current_energy_usage",
+                    format=energy_data_format,
+                    scale=energy_scale,
+                    state_class=SensorStateClass.TOTAL_INCREASING,
+                ),
+                MideaEnergySensor(
+                    coordinator,
+                    "real_time_power_usage",
+                    SensorDeviceClass.POWER,
+                    UnitOfPower.WATT,
+                    "real_time_power_usage",
+                    format=power_data_format,
+                    scale=power_scale,
+                )
+            ])
 
     add_entities(entities)
 
@@ -118,7 +124,7 @@ class MideaSensor(MideaCoordinatorEntity, SensorEntity):
                  prop: str,
                  device_class: SensorDeviceClass,
                  unit: str,
-                 translation_key: Optional[str] = None,
+                 translation_key: str | None = None,
                  *,
                  state_class: SensorStateClass = SensorStateClass.MEASUREMENT,
                  ) -> None:
@@ -182,7 +188,7 @@ class MideaEnergySensor(MideaSensor):
 
     def __init__(self,
                  *args,
-                 format: AC.EnergyDataFormat,
+                 format: MideaIntEnum,
                  scale: float = 1.0,
                  **kwargs) -> None:
         MideaSensor.__init__(self, *args, **kwargs)

@@ -281,6 +281,9 @@
       },
       "chamber_fan": {
         "name": "Wentylator obudowy"
+      },
+      "secondary_aux_fan": {
+        "name": "Dodatkowy wentylator pomocniczy"
       }
     },
     "image": {
@@ -827,6 +830,9 @@
       },
       "model_download_percentage": {
         "name": "Pobieranie modelu"
+      },
+      "serial": {
+        "name": "Numer seryjny"
       }
     },
     "camera": {
@@ -884,7 +890,7 @@
     },
     "hybrid_mode_blocking": {
       "title": "Sterowanie hybrydowymi blokami połączeń",
-      "description": "{device} jest połączone z chmurą, ale dzięki integracji ma lokalne połączenie mqtt. Dzięki tej integracji można kontrolować wyłącznie światło. Wszystkie inne elementy sterujące są niedostępne. Przełącz połączenie na czystą chmurę, aby umożliwić kontrolę."
+      "description": "{device} jest połączone z chmurą, ale dzięki integracji ma lokalne połączenie mqtt. Blokuje to ustawienie temperatur i ponowne wydrukowanie historii. Przełącz połączenie na czystą chmurę, aby umożliwić pełną kontrolę."
     }
   }
 }

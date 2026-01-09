@@ -8,7 +8,6 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from msmart.device import AirConditioner as AC
 from msmart.utils import MideaIntEnum
 
 from .const import CONF_SWING_ANGLE_RTL, DOMAIN
@@ -28,41 +27,54 @@ async def async_setup_entry(
 
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device = coordinator.device
+    device_class = type(device)
 
     # Create entities for supported features
     entities = []
-    if coordinator.device.supports_vertical_swing_angle:
+    if hasattr(device, "vertical_swing_angle") and getattr(device, "supports_vertical_swing_angle", False):
         entities.append(MideaEnumSelect(coordinator,
                                         "vertical_swing_angle",
-                                        AC.SwingAngle
+                                        device_class.SwingAngle
                                         ))
 
-    if coordinator.device.supports_horizontal_swing_angle:
+    if hasattr(device, "horizontal_swing_angle") and getattr(device, "supports_horizontal_swing_angle", False):
         entities.append(MideaEnumSelect(coordinator,
                                         "horizontal_swing_angle",
-                                        AC.SwingAngle,
+                                        device_class.SwingAngle,
                                         translation_key="horizontal_swing_angle_rtl" if config_entry.options.get(
                                             CONF_SWING_ANGLE_RTL) else None
                                         ))
 
-    if (supported_rates := coordinator.device.supported_rate_selects) != [AC.RateSelect.OFF]:
+    supported_rates = getattr(device, "supported_rate_selects", [])
+    if hasattr(device, "rate_select") and len(supported_rates) > 1:
         entities.append(MideaEnumSelect(coordinator,
                                         "rate_select",
-                                        AC.RateSelect,
+                                        device_class.RateSelect,
                                         options=supported_rates
                                         ))
 
-    if (supported_aux_modes := coordinator.device.supported_aux_modes) != [AC.AuxHeatMode.OFF]:
+    supported_aux_modes = getattr(device, "supported_aux_modes", [])
+    if hasattr(device, "aux_mode") and len(supported_aux_modes) > 1:
         entities.append(MideaEnumSelect(coordinator,
                                         "aux_mode",
-                                        AC.AuxHeatMode,
+                                        device_class.AuxHeatMode,
                                         options=supported_aux_modes
                                         ))
 
-    if coordinator.device.supports_cascade:
+    if hasattr(device, "cascade") and getattr(device, "supports_cascade", False):
         entities.append(MideaEnumSelect(coordinator,
                                         "cascade",
-                                        AC.CascadeMode
+                                        device_class.CascadeMode
+                                        ))
+
+    # Add select for purifier with 3 or more modes
+    supported_purifier_modes = getattr(device, "supported_purifier_modes", [])
+    if hasattr(device, "purifier") and len(supported_purifier_modes) > 2:
+        entities.append(MideaEnumSelect(coordinator,
+                                        "purifier",
+                                        device_class.PurifierMode,
+                                        options=supported_purifier_modes
                                         ))
 
     add_entities(entities)
@@ -76,8 +88,8 @@ class MideaEnumSelect(MideaCoordinatorEntity, SelectEntity):
                  prop: str,
                  enum_class: MideaIntEnum,
                  *,
-                 translation_key: Optional[str] = None,
-                 options: Optional[List[MideaIntEnum]] = None) -> None:
+                 translation_key: str | None = None,
+                 options: List[MideaIntEnum] | None = None) -> None:
         MideaCoordinatorEntity.__init__(self, coordinator)
 
         self._prop = prop

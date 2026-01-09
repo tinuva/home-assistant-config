@@ -5,15 +5,16 @@ import csv
 import logging
 import os
 import random
-from typing import Literal, Any, List, Dict, Optional, Tuple, AsyncIterator, Generator, AsyncGenerator
+import re
+from typing import Literal, Any, List, Dict, Optional, Sequence, Tuple, AsyncIterator, Generator, AsyncGenerator
 from dataclasses import dataclass
 
 from homeassistant.components import conversation
-from homeassistant.components.conversation.const import DOMAIN as CONVERSATION_DOMAIN
 from homeassistant.components.homeassistant.exposed_entities import async_should_expose
 from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import MATCH_ALL, CONF_LLM_HASS_API
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import template, entity_registry as er, llm, \
     area_registry as ar, device_registry as dr, entity
 from homeassistant.util import color
@@ -41,8 +42,6 @@ from .const import (
     DEFAULT_TOOL_CALL_PREFIX,
     DEFAULT_TOOL_CALL_SUFFIX,
     DEFAULT_ENABLE_LEGACY_TOOL_CALLING,
-    HOME_LLM_API_ID,
-    SERVICE_TOOL_NAME,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -184,28 +183,25 @@ class LocalLLMClient:
                 _LOGGER.debug("Received chunk: %s", input_chunk)
 
                 tool_calls = input_chunk.tool_calls
-                # fix tool calls for the service tool
-                if tool_calls and chat_log.llm_api and chat_log.llm_api.api.id == HOME_LLM_API_ID:
-                    tool_calls = [
-                        llm.ToolInput(
-                            tool_name=SERVICE_TOOL_NAME,
-                            tool_args={**tc.tool_args, "service": tc.tool_name}
-                        ) for tc in tool_calls
-                    ]
+                if tool_calls and not chat_log.llm_api:
+                    raise HomeAssistantError("Model attempted to call a tool but no LLM API was provided")
+
                 yield conversation.AssistantContentDeltaDict(
                     content=input_chunk.response,
-                    tool_calls=tool_calls
+                    tool_calls=tool_calls 
                 )
         
         return chat_log.async_add_delta_content_stream(agent_id, stream=async_iterator())
         
-    async def _async_parse_completion(
-            self, llm_api: llm.APIInstance | None, 
+    async def _async_stream_parse_completion(
+            self, 
+            llm_api: llm.APIInstance | None, 
             agent_id: str,
             entity_options: Dict[str, Any],
-            next_token: Optional[Generator[Tuple[Optional[str], Optional[List]]]] = None,
-            anext_token: Optional[AsyncGenerator[Tuple[Optional[str], Optional[List]]]] = None,
+            next_token: Optional[Generator[Tuple[Optional[str], Optional[Sequence[str | dict]]]]] = None,
+            anext_token: Optional[AsyncGenerator[Tuple[Optional[str], Optional[Sequence[str | dict]]]]] = None,
         ) -> AsyncGenerator[TextGenerationResult, None]:
+        """Parse streaming completion with tool calls from the backend. Accepts either a sync or async token generator."""
         think_prefix = entity_options.get(CONF_THINKING_PREFIX, DEFAULT_THINKING_PREFIX)
         think_suffix = entity_options.get(CONF_THINKING_SUFFIX, DEFAULT_THINKING_SUFFIX)
         tool_prefix = entity_options.get(CONF_TOOL_CALL_PREFIX, DEFAULT_TOOL_CALL_PREFIX)
@@ -236,7 +232,7 @@ class LocalLLMClient:
         cur_match_length = 0
         async for chunk in token_generator:
             # _LOGGER.debug(f"Handling chunk: {chunk} {in_thinking=} {in_tool_call=} {last_5_tokens=}")
-            tool_calls: Optional[List[str | llm.ToolInput | dict]]
+            tool_calls: Optional[List[str | dict]]
             content, tool_calls = chunk
 
             if not tool_calls:
@@ -265,12 +261,15 @@ class LocalLLMClient:
                     tool_content += content
 
                 if think_prefix in potential_block and not in_thinking:
+                    _LOGGER.debug("Entering thinking block")
                     in_thinking = True
                     last_5_tokens.clear()
                 elif think_suffix in potential_block and in_thinking:
+                    _LOGGER.debug("Exiting thinking block")
                     in_thinking = False
                     content = content.replace(think_suffix, "").strip()
                 elif tool_prefix in potential_block and not in_tool_call:
+                    _LOGGER.debug("Entering tool call block")
                     in_tool_call = True
                     last_5_tokens.clear()
                 elif tool_suffix in potential_block and in_tool_call:
@@ -289,31 +288,96 @@ class LocalLLMClient:
                     _LOGGER.warning("Model attempted to call a tool but no LLM API was provided, ignoring tool calls")
                 else:
                     for raw_tool_call in tool_calls:
-                        if isinstance(raw_tool_call, llm.ToolInput):
-                            parsed_tool_calls.append(raw_tool_call)
+                        if isinstance(raw_tool_call, str):
+                            tool_call, to_say = parse_raw_tool_call(raw_tool_call, agent_id)
                         else:
-                            if isinstance(raw_tool_call, str):
-                                tool_call, to_say = parse_raw_tool_call(raw_tool_call, llm_api, agent_id)
-                            else:
-                                tool_call, to_say = parse_raw_tool_call(raw_tool_call["function"], llm_api, agent_id)
+                            # try multiple dict key names
+                            function_content = raw_tool_call.get("function") or raw_tool_call.get("function_call") or raw_tool_call.get("tool")
+                            if not function_content:
+                                _LOGGER.warning("Received tool call dict without 'function', 'function_call' or 'tool' key: %s", raw_tool_call)
+                                continue
+                            tool_call, to_say = parse_raw_tool_call(function_content, agent_id)
 
-                            if tool_call:
-                                _LOGGER.debug("Tool call parsed: %s", tool_call)
-                                parsed_tool_calls.append(tool_call)
-                            if to_say:
-                                result.response = to_say
+                        if tool_call:
+                            _LOGGER.debug("Tool call parsed: %s", tool_call)
+                            parsed_tool_calls.append(tool_call)
+                        if to_say:
+                            result.response = to_say
 
             if len(parsed_tool_calls) > 0:
                 result.tool_calls = parsed_tool_calls
 
             if not in_thinking and not in_tool_call and (cur_match_length == 0 or result.tool_calls):
                 yield result
+
+        if in_tool_call and tool_content:
+            # flush any unclosed tool calls because using the tool_suffix as a stop token can
+            # cause the tool_suffix to be omitted when the model streams output
+            tool_block = tool_content.strip().removeprefix(tool_prefix)
+            _LOGGER.debug("Raw tool block extracted at end: %s", tool_block)
+            tool_call, to_say = parse_raw_tool_call(tool_block, agent_id)
+            if tool_call:
+                _LOGGER.debug("Tool call parsed at end: %s", tool_call)
+                yield TextGenerationResult(
+                    response=to_say,
+                    response_streamed=True,
+                    tool_calls=[tool_call]
+                )
+
+    async def _async_parse_completion(
+            self, 
+            llm_api: llm.APIInstance | None, 
+            agent_id: str,
+            entity_options: Dict[str, Any],
+            completion: str | dict) -> TextGenerationResult:
+        """Parse completion with tool calls from the backend."""
+        think_prefix = entity_options.get(CONF_THINKING_PREFIX, DEFAULT_THINKING_PREFIX)
+        think_suffix = entity_options.get(CONF_THINKING_SUFFIX, DEFAULT_THINKING_SUFFIX)
+        think_regex = re.compile(re.escape(think_prefix) + "(.*?)" + re.escape(think_suffix), re.DOTALL)
+        tool_prefix = entity_options.get(CONF_TOOL_CALL_PREFIX, DEFAULT_TOOL_CALL_PREFIX)
+        tool_suffix = entity_options.get(CONF_TOOL_CALL_SUFFIX, DEFAULT_TOOL_CALL_SUFFIX)
+        tool_regex = re.compile(re.escape(tool_prefix) + "(.*?)" + re.escape(tool_suffix), re.DOTALL)
+
+        if isinstance(completion, dict):
+            completion = str(completion.get("response", ""))
+
+        # Remove thinking blocks, and extract tool calls
+        tool_calls = tool_regex.findall(completion)
+        completion = think_regex.sub("", completion)
+        completion = tool_regex.sub("", completion)
+
+        to_say = ""
+        parsed_tool_calls: list[llm.ToolInput] = []
+        if len(tool_calls) and not llm_api:
+            _LOGGER.warning("Model attempted to call a tool but no LLM API was provided, ignoring tool calls")
+        else:
+            for raw_tool_call in tool_calls:
+                if isinstance(raw_tool_call, llm.ToolInput):
+                    parsed_tool_calls.append(raw_tool_call)
+                else:
+                    if isinstance(raw_tool_call, str):
+                        tool_call, to_say = parse_raw_tool_call(raw_tool_call, agent_id)
+                    else:
+                        # try multiple dict key names
+                        function_content = raw_tool_call.get("function") or raw_tool_call.get("function_call") or raw_tool_call.get("tool")
+                        if not function_content:
+                            _LOGGER.warning("Received tool call dict without 'function', 'function_call' or 'tool' key: %s", raw_tool_call)
+                            continue
+                        tool_call, to_say = parse_raw_tool_call(function_content, agent_id)
+                    if tool_call:
+                        _LOGGER.debug("Tool call parsed: %s", tool_call)
+                        parsed_tool_calls.append(tool_call)
+
+        return TextGenerationResult(
+            response=completion + (to_say or ""),
+            tool_calls=parsed_tool_calls,
+        )
     
     def _async_get_all_exposed_domains(self) -> list[str]:
         """Gather all exposed domains"""
         domains = set()
         for state in self.hass.states.async_all():
-            if async_should_expose(self.hass, CONVERSATION_DOMAIN, state.entity_id):
+            if async_should_expose(self.hass, conversation.DOMAIN, state.entity_id):
                 domains.add(state.domain)
 
         return list(domains)
@@ -326,7 +390,7 @@ class LocalLLMClient:
         area_registry = ar.async_get(self.hass)
 
         for state in self.hass.states.async_all():
-            if not async_should_expose(self.hass, CONVERSATION_DOMAIN, state.entity_id):
+            if not async_should_expose(self.hass, conversation.DOMAIN, state.entity_id):
                 continue
 
             entity = entity_registry.async_get(state.entity_id)
@@ -433,7 +497,6 @@ class LocalLLMClient:
         entities_to_expose = self._async_get_exposed_entities()
 
         extra_attributes_to_expose = entity_options.get(CONF_EXTRA_ATTRIBUTES_TO_EXPOSE, DEFAULT_EXTRA_ATTRIBUTES_TO_EXPOSE)
-        enable_legacy_tool_calling = entity_options.get(CONF_ENABLE_LEGACY_TOOL_CALLING, DEFAULT_ENABLE_LEGACY_TOOL_CALLING)
         tool_call_prefix = entity_options.get(CONF_TOOL_CALL_PREFIX, DEFAULT_TOOL_CALL_PREFIX)
         tool_call_suffix = entity_options.get(CONF_TOOL_CALL_SUFFIX, DEFAULT_TOOL_CALL_SUFFIX)
 
@@ -507,21 +570,16 @@ class LocalLLMClient:
             "tool_call_suffix": tool_call_suffix,
         }
 
-        if enable_legacy_tool_calling:
-            if llm_api:
-                tools = []
-                for tool in llm_api.tools:
-                    tools.append(f"{tool.name}({','.join(flatten_vol_schema(tool.parameters))})")
-                render_variables["tools"] = tools
-                render_variables["formatted_tools"] = ", ".join(tools)
-            else:
-                message = "No tools were provided. If the user requests you interact with a device, tell them you are unable to do so."
-                render_variables["tools"] = [message]
-                render_variables["formatted_tools"] = message
+        if llm_api:
+            tools = []
+            for tool in llm_api.tools:
+                tools.append(f"{tool.name}({','.join(flatten_vol_schema(tool.parameters))})")
+            render_variables["tools"] = tools
+            render_variables["formatted_tools"] = ", ".join(tools)
         else:
-            # Tools are passed via the API not the prompt
-            render_variables["tools"] = []
-            render_variables["formatted_tools"] = ""
+            message = "No tools were provided. If the user requests you interact with a device, tell them you are unable to do so."
+            render_variables["tools"] = [message]
+            render_variables["formatted_tools"] = message
 
         # only pass examples if there are loaded examples + an API was exposed
         if self.in_context_examples and llm_api:

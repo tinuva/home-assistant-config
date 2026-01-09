@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Mapping
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -27,38 +27,43 @@ async def async_setup_entry(
 
     # Fetch coordinator from global data
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device = coordinator.device
 
-    # Add supported switch entities
-    entities = [
+    # Create switches for supported features
+    entities = []
+    if hasattr(device, "toggle_display"):
         # TODO Check supports_display_control ?
-        MideaDisplaySwitch(coordinator)
-    ]
+        entities.append(MideaDisplaySwitch(coordinator))
 
-    if coordinator.device.supports_breeze_away:
-        entities.append(MideaSwitch(coordinator,
-                                    "breeze_away",
-                                    "breeze_away"))
+    if hasattr(device, "breeze_away") and getattr(device, "supports_breeze_away", False):
+        entities.append(MideaSwitch(coordinator, "breeze_away"))
 
-    if coordinator.device.supports_breeze_mild:
-        entities.append(MideaSwitch(coordinator,
-                                    "breeze_mild",
-                                    "breeze_mild"))
+    if hasattr(device, "breeze_mild") and getattr(device, "supports_breeze_mild_away", False):
+        entities.append(MideaSwitch(coordinator, "breeze_mild"))
 
-    if coordinator.device.supports_breezeless:
-        entities.append(MideaSwitch(coordinator,
-                                    "breezeless",
-                                    "breezeless"))
+    if hasattr(device, "breezeless") and getattr(device, "supports_breezeless", False):
+        entities.append(MideaSwitch(coordinator, "breezeless"))
 
-    if coordinator.device.supports_flash_cool:
-        entities.append(MideaSwitch(coordinator,
-                                    "flash_cool",
-                                    "flash_cool"))
+    if hasattr(device, "flash_cool") and getattr(device, "supports_flash_cool", False):
+        entities.append(MideaSwitch(coordinator, "flash_cool"))
 
-    if coordinator.device.supports_purifier:
-        entities.append(MideaSwitch(coordinator,
-                                    "purifier",
-                                    "purifier",
-                                    entity_category=EntityCategory.CONFIG))
+    if hasattr(device, "purifier"):
+        # AC has on/off purifier
+        if getattr(device, "supports_purifier", False):
+            entities.append(MideaSwitch(coordinator,
+                                        "purifier",
+                                        entity_category=EntityCategory.CONFIG))
+
+        # Create switch for CC purifier if only 2 modes supported
+        if len(getattr(device, "supported_purifier_modes", [])) == 2:
+            device_class = type(device)
+            entities.append(MideaSwitch(coordinator,
+                                        "purifier",
+                                        entity_category=EntityCategory.CONFIG,
+                                        state_map={
+                                            False: device_class.PurifierMode.OFF,
+                                            True: device_class.PurifierMode.ON,
+                                        }))
 
     add_entities(entities)
 
@@ -122,20 +127,30 @@ class MideaSwitch(MideaCoordinatorEntity, SwitchEntity):
     def __init__(self,
                  coordinator: MideaDeviceUpdateCoordinator,
                  prop: str,
-                 translation_key: Optional[str] = None,
+                 translation_key: str | None = None,
                  *,
-                 entity_category: EntityCategory = None) -> None:
+                 entity_category: EntityCategory | None = None,
+                 state_map: Mapping[bool, Any] | None = None
+                 ) -> None:
+
         MideaCoordinatorEntity.__init__(self, coordinator)
 
         self._prop = prop
         self._entity_category = entity_category
-        self._attr_translation_key = translation_key
+        self._attr_translation_key = translation_key if translation_key is not None else prop
+        self._state_map = state_map
 
-    async def _set_state(self, state) -> None:
+    async def _set_state(self, state: bool) -> None:
         """Set the state of the property controlled by the switch."""
 
+        # Convert state if necessary
+        if self._state_map:
+            prop_state = self._state_map.get(state)
+        else:
+            prop_state = state
+
         # Update device property
-        setattr(self._device, self._prop, state)
+        setattr(self._device, self._prop, prop_state)
 
         # Apply via coordinator
         await self.coordinator.apply()
@@ -172,7 +187,15 @@ class MideaSwitch(MideaCoordinatorEntity, SwitchEntity):
     @property
     def is_on(self) -> bool | None:
         """Return the on state of the switch."""
-        return getattr(self._device, self._prop, None)
+        state = getattr(self._device, self._prop, None)
+        if state is None:
+            return None
+
+        # Convert state if necessary
+        if self._state_map:
+            state = (state == self._state_map.get(True))
+
+        return state
 
     async def async_turn_on(self) -> None:
         """Turn the switch on."""

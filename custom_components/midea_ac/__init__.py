@@ -9,14 +9,18 @@ from homeassistant.const import (CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN,
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from msmart import __version__ as MSMART_VERISON
+from msmart.base_device import Device
+from msmart.const import DeviceType
 from msmart.device import AirConditioner as AC
+from msmart.device import CommercialAirConditioner as CC
 from msmart.lan import AuthenticationError
 
-from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_ENERGY_DATA_FORMAT,
-                    CONF_ENERGY_DATA_SCALE, CONF_ENERGY_SENSOR, CONF_KEY,
-                    CONF_MAX_CONNECTION_LIFETIME, CONF_POWER_SENSOR,
-                    CONF_SHOW_ALL_PRESETS, CONF_USE_FAN_ONLY_WORKAROUND,
-                    CONF_WORKAROUNDS, DOMAIN, EnergyFormat)
+from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_DEVICE_TYPE,
+                    CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
+                    CONF_ENERGY_SENSOR, CONF_KEY, CONF_MAX_CONNECTION_LIFETIME,
+                    CONF_POWER_SENSOR, CONF_SHOW_ALL_PRESETS,
+                    CONF_USE_FAN_ONLY_WORKAROUND, CONF_WORKAROUNDS, DOMAIN,
+                    EnergyFormat)
 from .coordinator import MideaDeviceUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,15 +41,22 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     # Ensure the global data dict exists
     hass.data.setdefault(DOMAIN, {})
 
+    device_type = config_entry.data[CONF_DEVICE_TYPE]
     id = config_entry.data[CONF_ID]
     host = config_entry.data[CONF_HOST]
     port = config_entry.data[CONF_PORT]
 
-    _LOGGER.info("Starting midea-ac-py for device ID %s (%s:%d). Using msmart-ng version %s.",
-                 id, host, port, MSMART_VERISON)
+    _LOGGER.info("Starting midea-ac-py for device type %02X ID %s (%s:%d). Using msmart-ng version %s.",
+                 device_type, id, host, port, MSMART_VERISON)
 
     # Construct the device
-    device = AC(ip=host, port=port, device_id=int(id))
+    device = Device.construct(
+        type=device_type,
+        ip=host,
+        port=port,
+        device_id=int(id)
+    )
+    assert isinstance(device, (AC, CC))
 
     # Configure the connection lifetime
     if (lifetime := config_entry.options.get(CONF_MAX_CONNECTION_LIFETIME)) is not None:
@@ -68,7 +79,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     await device.get_capabilities()
 
     # Create device coordinator and fetch data
-    coordinator = MideaDeviceUpdateCoordinator(hass, device)
+    coordinator = MideaDeviceUpdateCoordinator(hass, device)  # type: ignore
     await coordinator.async_config_entry_first_refresh()
 
     # Store coordinator in global data
@@ -144,6 +155,17 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
             hass.config_entries.async_update_entry(
                 config_entry, options=new_options, minor_version=4)
+
+        # 1.4 -> 1.5: Assign a device type
+        if config_entry.minor_version == 4:
+            hass.config_entries.async_update_entry(
+                config_entry,
+                data={
+                    CONF_DEVICE_TYPE: DeviceType.AIR_CONDITIONER,
+                    **config_entry.data,
+                },
+                minor_version=5,
+            )
 
     _LOGGER.debug("Migration to configuration version %s.%s successful.",
                   config_entry.version, config_entry.minor_version)

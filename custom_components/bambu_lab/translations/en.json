@@ -281,6 +281,9 @@
       },
       "chamber_fan": {
         "name": "Chamber fan"
+      },
+      "secondary_aux_fan": {
+        "name": "Secondary aux fan"
       }
     },
     "image": {
@@ -450,11 +453,11 @@
           "bed_level_phase_2": "Auto bed leveling - phase 2",
           "heating_chamber": "Heating chamber",
           "heated_bedcooling": "Heated bed cooling",
-          "print_calibration_lines": "Printing calibration lines",          
+          "print_calibration_lines": "Printing calibration lines",
           "idle": "Idle"
         }
       },
-      "sdcard_status": { 
+      "sdcard_status": {
         "name": "SD card status",
         "state": {
           "missing": "Missing",
@@ -604,6 +607,9 @@
       },
       "ip_address": {
         "name": "IP address"
+      },
+      "serial": {
+        "name": "Serial number"
       },
       "humidity_index": {
         "name": "Humidity index"
@@ -884,7 +890,7 @@
     },
     "hybrid_mode_blocking": {
       "title": "Hybrid Connection Blocks Control",
-      "description": "{device} is cloud connected but with local mqtt connection by the integration. Only the light can be controlled by this integration. All other controls are unavailable. Switch the connection to pure cloud to enable control."
+      "description": "{device} is cloud connected but with local mqtt connection by the integration. This blocks setting temperatures and reprinting from history. Switch the connection to pure cloud to enable full control."
     }
   }
 }
