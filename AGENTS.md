@@ -107,7 +107,7 @@ homeassistant/
 - **`automations.yaml`**: UI-managed automations (can be edited but may be overwritten)
 - **`secrets.yaml`**: Contains sensitive data referenced via `!secret` tags
 
-## Configuration Guidelines
+## Code Style Guidelines
 
 ### 1. Package-Based Organization
 
@@ -177,7 +177,52 @@ automation:
 - Add comments for complex logic
 - Preserve existing comments
 
-### 4. Secrets Management
+### 4. Python Code Style
+
+**Imports:**
+```python
+# Standard library imports first
+import logging
+from datetime import datetime, timedelta
+
+# Third-party imports
+import requests
+import voluptuous as vol
+
+# Home Assistant imports
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import Entity
+```
+
+**Naming Conventions:**
+- Classes: `PascalCase` (e.g., `MyCustomSensor`)
+- Functions/variables: `snake_case` (e.g., `get_sensor_data`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `DEFAULT_TIMEOUT`)
+- Private members: prefix with `_` (e.g., `_internal_method`)
+
+**Error Handling:**
+```python
+# Always handle potential exceptions
+try:
+    result = some_operation()
+except (ValueError, KeyError) as error:
+    _LOGGER.error("Failed to process data: %s", error)
+    return None
+```
+
+**Type Hints:**
+```python
+from typing import Optional, Dict, Any, List
+
+def process_data(
+    data: Dict[str, Any],
+    config: Optional[Dict[str, str]] = None
+) -> List[str]:
+    """Process data and return list of results."""
+    pass
+```
+
+### 5. Secrets Management
 
 Never hardcode sensitive data. Always use secrets:
 
@@ -193,13 +238,68 @@ password: !secret some_service_password
 
 **Note:** Never suggest modifications to `secrets.yaml` content directly. Instead, tell users which secrets need to be defined.
 
-### 5. Entity Naming
+### 6. Entity Naming
 
 Follow Home Assistant entity naming conventions:
 
 - **Domain.location_description**: `sensor.main_bathroom_humidity`
 - **Domain.device_room**: `light.main_bathroom`
 - **Domain.descriptive_name**: `binary_sensor.master_bathroom_humidity_rising`
+
+### 7. Template Best Practices
+
+**Safe Template Patterns:**
+```yaml
+# ✅ Good: Safe template with fallback
+value_template: "{{ states('sensor.temperature') | float(0) > 20 }}"
+
+# ✅ Good: Check availability first
+availability: "{{ has_value('sensor.source') }}"
+state: "{{ states('sensor.source') | float(0) }}"
+
+# ❌ Bad: Can break if sensor unavailable
+value_template: "{{ states.sensor.temperature.state | float > 20 }}"
+```
+
+**Complex Logic:**
+```yaml
+# Use line breaks for complex templates
+value_template: >-
+  {% set temp = states('sensor.temperature') | float(0) %}
+  {% set humidity = states('sensor.humidity') | float(0) %}
+  {{ temp > 20 and humidity < 50 }}
+```
+
+### 8. Automation Structure
+
+**Standard Automation Format:**
+```yaml
+automation:
+  - alias: "Descriptive Automation Name"
+    description: "Optional description of what this does"
+    trigger:
+      - platform: state
+        entity_id: sensor.example
+        to: "on"
+    condition:
+      - condition: state
+        entity_id: input_boolean.example_mode
+        state: "on"
+    action:
+      - action: light.turn_on
+        target:
+          entity_id: light.example
+        data:
+          brightness_pct: 100
+    mode: single
+```
+
+**Best Practices:**
+- Always include descriptive alias
+- Use `description` for complex automations
+- Specify `mode` (default: `single`)
+- Use `target` syntax for actions
+- Include relevant conditions to prevent false triggers
 
 ## Safety & Best Practices
 
@@ -296,40 +396,76 @@ When proposing changes:
 4. **Add Context**: Add comments explaining new logic if complex
 5. **Validate YAML**: Ensure proper indentation and syntax
 
-## Useful Commands
-
-The following commands are useful when working with the configuration:
+## Build/Lint/Test Commands
 
 ### Configuration Validation
 
 ```bash
 # Check Home Assistant configuration for errors
 ha core check
+
+# Alternative Docker method (used in CI)
+docker run --rm \
+  -v /usr/share/hassio/homeassistant:/github/workspace \
+  ghcr.io/home-assistant/home-assistant:stable \
+  sh -c "ln -s /github/workspace /root/.homeassistant && python -m homeassistant --script check_config --config /root/.homeassistant -i"
 ```
 
-Run this command from `/usr/share/hassio/homeassistant` (project root) to validate your configuration before restarting Home Assistant. This catches YAML syntax errors and integration configuration issues.
+Run from project root to validate configuration before restarting Home Assistant.
 
 ### YAML Linting
 
 ```bash
+# Lint entire configuration
+yamllint .
+
 # Lint all package files
 yamllint packages/*
 
 # Lint specific file
 yamllint packages/climate/bathroom_humidity.yaml
 
-# Lint entire configuration
-yamllint .
+# Lint specific directory
+yamllint includes/
 ```
 
-The project uses yamllint with custom rules defined in `.yamllint.yaml`. This ensures consistent YAML formatting across all configuration files.
+Uses `.yamllint.yaml` configuration. Ignores: `custom_components/`, `blueprints/`, `scripts.yaml`, `scenes.yaml`.
 
-### When to Run These Commands
+### Python Testing
 
-- **Before committing changes**: Always run both commands
+```bash
+# Bambu Lab custom component tests
+./custom_components/bambu_lab/pybambu/run_tests.sh
+
+# Run specific test module
+python3 -m unittest custom_components.bambu_lab.pybambu.tests.test_models
+
+# Run all bambu_lab tests
+python3 -m unittest discover custom_components/bambu_lab/pybambu/tests/
+
+# Envisalink test harness
+python3 custom_components/envisalink_new/pyenvisalink/test_harness.py <action> <host> <port> <user> <pw> [httpPort]
+```
+
+### ESPHome Configuration
+
+```bash
+# Validate ESPHome configs (requires ESPHome installation)
+esphome config esphome/bluetooth-proxy.yaml
+esphome config esphome/bluetooth-proxy-02.yaml
+esphome config esphome/bluetooth-proxy-03.yaml
+
+# Validate all ESPHome files
+for file in $(find ./esphome -type f -name "*.yaml" -maxdepth 1 -not -name "secrets.yaml"); do esphome config "${file}"; done
+```
+
+### When to Run Commands
+
+- **Before committing changes**: Always run `ha core check` and `yamllint .`
 - **After modifying configuration**: Validate before restarting Home Assistant
+- **Python changes**: Run relevant tests after modifying custom components
 - **During troubleshooting**: Check for syntax errors first
-- **In CI/CD pipelines**: Both commands are part of the GitHub Actions workflow
+- **In CI/CD pipelines**: All commands run automatically in GitHub Actions
 
 ## Common Tasks
 
