@@ -1,0 +1,40 @@
+---
+automation:
+  - alias: "Turn off Main Bedroom AC when alarm disarmed in early morning"
+    description: "Turns off main bedroom AC when alarm is disarmed between 4:30-6:00am and stays disarmed"
+    trigger:
+      - platform: state
+        entity_id: alarm_control_panel.home_alarm
+        to: 'disarmed'
+    condition:
+      # Only trigger between 4:30am and 6:00am
+      - condition: time
+        after: '04:30:00'
+        before: '06:00:00'
+      # Main bedroom AC must be currently on
+      - condition: template
+        value_template: >
+          {{ states('climate.midea_ac_30786325862093') not in ['off', 'unavailable', 'unknown', 'none'] }}
+    action:
+      # Wait 5 minutes to ensure alarm stays disarmed
+      - delay: '00:05:00'
+      # Check alarm is still disarmed (wasn't re-armed during delay)
+      - condition: state
+        entity_id: alarm_control_panel.home_alarm
+        state: 'disarmed'
+      # Double-check AC is still on before turning off
+      - condition: template
+        value_template: >
+          {{ states('climate.midea_ac_30786325862093') not in ['off', 'unavailable', 'unknown', 'none'] }}
+      # Turn off main bedroom AC
+      - service: script.ac
+        data:
+          ac: "climate.midea_ac_30786325862093"
+          mode: "off"
+      # Log the action
+      - service: script.log
+        data:
+          icon: ':thermometer:'
+          object: 'Aircon Automation'
+          message: 'Main bedroom AC turned off after alarm disarmed (early morning)'
+    mode: single
