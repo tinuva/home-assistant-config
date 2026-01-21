@@ -787,7 +787,7 @@ class DreameVacuumDevice:
         return changed
 
     def _request_properties(self, properties: list[DreameVacuumProperty] = None) -> bool:
-        """Request properties from the device."""
+        """Request properties from the device with adaptive batch sizing."""
         if not properties:
             properties = self._default_properties
 
@@ -801,11 +801,53 @@ class DreameVacuumDevice:
 
         props = property_list.copy()
         results = []
+        
+        # Start with standard batch size, will adapt if timeouts occur
+        if not hasattr(self, '_property_batch_size'):
+            self._property_batch_size = 15
+        
+        batch_size = self._property_batch_size
+        consecutive_failures = 0
+        
         while props:
-            result = self._protocol.get_properties(props[:15], timeout=10)
-            if result is not None:
-                results.extend(result)
-                props[:] = props[15:]
+            try:
+                result = self._protocol.get_properties(props[:batch_size], timeout=10)
+                if result is not None:
+                    results.extend(result)
+                    props[:] = props[batch_size:]
+                    consecutive_failures = 0  # Reset on success
+                else:
+                    # None result treated as failure
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        _LOGGER.error("No response from device after 3 attempts with batch size %d", batch_size)
+                        return False
+                        
+            except Exception as ex:
+                # Check if it's a timeout/communication error
+                error_str = str(ex).lower()
+                is_timeout = any(keyword in error_str for keyword in ["timed out", "timeout", "no response"])
+                
+                if is_timeout and batch_size > 1 and consecutive_failures < 3:
+                    consecutive_failures += 1
+                    old_size = batch_size
+                    batch_size = max(1, batch_size // 2)
+                    self._property_batch_size = batch_size
+                    _LOGGER.warning(
+                        "Property request timeout with batch size %d, reducing to %d and retrying",
+                        old_size,
+                        batch_size
+                    )
+                    # Don't advance props, retry same batch with smaller size
+                    continue
+                else:
+                    # Different error, too many failures, or can't reduce further
+                    _LOGGER.error(
+                        "Property request failed with batch size %d: %s", 
+                        batch_size, 
+                        ex
+                    )
+                    raise
 
         return self._handle_properties(results)
 
