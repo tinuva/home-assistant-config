@@ -787,11 +787,7 @@ class DreameVacuumDevice:
         return changed
 
     def _request_properties(self, properties: list[DreameVacuumProperty] = None) -> bool:
-        """Request properties from the device with adaptive batch sizing.
-        
-        Uses a conservative batch size to avoid timeout issues on certain firmware versions.
-        See docs/dreame-vacuum-property-batch-size-fix.md for details.
-        """
+        """Request properties from the device."""
         if not properties:
             properties = self._default_properties
 
@@ -805,45 +801,11 @@ class DreameVacuumDevice:
 
         props = property_list.copy()
         results = []
-        
-        # Conservative default batch size for firmware compatibility (Phase 1)
-        # Some firmware versions timeout with larger batch sizes (e.g., 10 or 15)
-        if not hasattr(self, '_property_batch_size'):
-            self._property_batch_size = 5
-        
-        batch_size = self._property_batch_size
-        consecutive_failures = 0
-        
         while props:
-            try:
-                result = self._protocol.get_properties(props[:batch_size], timeout=10)
-                if result is not None:
-                    results.extend(result)
-                    props[:] = props[batch_size:]
-                    consecutive_failures = 0  # Reset on success
-            except Exception as ex:
-                # Adaptive fallback: reduce batch size on timeout (Phase 2)
-                if "timed out" in str(ex) or "No response" in str(ex):
-                    consecutive_failures += 1
-                    
-                    # Try reducing batch size further
-                    if batch_size > 1 and consecutive_failures < 3:
-                        old_size = batch_size
-                        batch_size = max(1, batch_size // 2)
-                        self._property_batch_size = batch_size
-                        _LOGGER.warning(
-                            "Property request timeout with batch size %d, reducing to %d",
-                            old_size,
-                            batch_size
-                        )
-                        continue  # Retry with smaller batch
-                    else:
-                        # Can't reduce further or too many failures
-                        _LOGGER.error("Property request failed even with batch size %d", batch_size)
-                        raise
-                else:
-                    # Different error, re-raise
-                    raise
+            result = self._protocol.get_properties(props[:15], timeout=10)
+            if result is not None:
+                results.extend(result)
+                props[:] = props[15:]
 
         return self._handle_properties(results)
 
