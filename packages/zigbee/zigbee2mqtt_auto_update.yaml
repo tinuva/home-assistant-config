@@ -1,0 +1,96 @@
+---
+# Automatic OTA firmware updates for Zigbee2MQTT devices
+# Inspired by: https://community.home-assistant.io/t/how-to-automation-for-ota-zigbee-zwave-device-firmware-updates/680203/9
+
+automation:
+  - alias: "Zigbee2MQTT - Automatic OTA Firmware Updates"
+    description: >
+      Automatically checks for and installs firmware updates for Zigbee2MQTT devices
+      during off-peak hours (19:30). Only updates devices that are ready and not actively in use.
+    id: zigbee2mqtt_automatic_ota_updates
+    trigger:
+      - platform: time
+        at: "19:30:00"
+    condition: []
+    action:
+      - variables:
+          z2m_update_entities: >
+            {{ states.update 
+               | selectattr('entity_id', 'match', 'update\\..*_update$')
+               | selectattr('attributes.device_class', 'defined')
+               | selectattr('attributes.device_class', 'eq', 'firmware')
+               | selectattr('state', 'eq', 'on')
+               | map(attribute='entity_id') 
+               | list }}
+        alias: "Get list of Z2M devices needing firmware update"
+      
+      - condition: template
+        value_template: "{{ z2m_update_entities | count > 0 }}"
+        alias: "Check if any updates are available"
+      
+      - alias: "Send notification about pending updates"
+        service: persistent_notification.create
+        data:
+          title: "Zigbee2MQTT Firmware Updates Starting"
+          message: >
+            Starting automatic firmware updates for {{ z2m_update_entities | count }} device(s):
+            {% for entity in z2m_update_entities %}
+            - {{ state_attr(entity, 'friendly_name') or entity }}
+            {% endfor %}
+          notification_id: "z2m_ota_updates_in_progress"
+      
+      - alias: "Update each device sequentially"
+        repeat:
+          for_each: "{{ z2m_update_entities }}"
+          sequence:
+            - variables:
+                triggered_entity: "{{ repeat.item }}"
+                device_name: "{{ state_attr(repeat.item, 'friendly_name') }}"
+              alias: "Get entity details"
+            
+            - alias: "Trigger update via update.install service"
+              service: update.install
+              target:
+                entity_id: "{{ triggered_entity }}"
+              continue_on_error: true
+            
+            - alias: "Wait for update to start"
+              wait_template: "{{ is_state_attr(triggered_entity, 'in_progress', true) }}"
+              timeout: "00:02:00"
+              continue_on_timeout: true
+            
+            - alias: "Wait for update to complete"
+              wait_template: "{{ is_state(triggered_entity, 'off') }}"
+              timeout: "01:00:00"
+              continue_on_timeout: true
+            
+            - alias: "Brief delay between updates"
+              delay: "00:00:30"
+    
+    mode: single
+
+  - alias: "Zigbee2MQTT - Auto-dismiss Update Notifications"
+    description: >
+      Automatically dismisses the firmware update notification when all updates are complete
+    id: zigbee2mqtt_auto_dismiss_update_notifications
+    trigger:
+      - platform: state
+        entity_id:
+          - update
+    condition:
+      - condition: template
+        value_template: >
+          {{ states.update 
+             | selectattr('entity_id', 'match', 'update\\..*_update$')
+             | selectattr('attributes.device_class', 'defined')
+             | selectattr('attributes.device_class', 'eq', 'firmware')
+             | selectattr('state', 'eq', 'on')
+             | list | count == 0 }}
+        alias: "Check if all Z2M updates are complete"
+    action:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: "z2m_ota_updates_in_progress"
+        alias: "Dismiss the in-progress notification"
+    
+    mode: single

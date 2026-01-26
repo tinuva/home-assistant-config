@@ -105,6 +105,7 @@ venv.bak/
 .mypy_cache/
 
 # home assistant
+core
 
 ## You can whitelist files/folders with !, these will not be ignored.
 !*.yaml
@@ -151,3 +152,6 @@ solcast-sites.json
 solcast-usage.json
 solcast-undampened.json
 .aider*
+
+# bambulab stuffs
+www/media/ha-bambulab/00M09A363000342/prints/*
