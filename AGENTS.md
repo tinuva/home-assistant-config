@@ -16,15 +16,17 @@ This is a **production Home Assistant installation** managing a real home in Sou
 
 ## Validation Commands
 
-**Always run before committing or restarting Home Assistant:**
+**Always run before committing or restarting Home Assistant (in this order):**
 
 ```bash
-# Check configuration validity
-ha core check
-
-# Lint YAML files
+# 1. ALWAYS run yamllint FIRST to catch syntax errors
 yamllint .
+
+# 2. Then check Home Assistant configuration validity
+ha core check
 ```
+
+**Important:** Run `yamllint` before `ha core check` to catch trailing spaces, indentation issues, and other YAML syntax errors that will cause CI failures.
 
 **Python tests** for custom components:
 ```bash
