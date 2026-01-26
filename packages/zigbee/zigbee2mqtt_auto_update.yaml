@@ -74,10 +74,15 @@ automation:
       Automatically dismisses the firmware update notification when all updates are complete
     id: zigbee2mqtt_auto_dismiss_update_notifications
     trigger:
-      - platform: state
-        entity_id:
-          - update
+      - platform: event
+        event_type: state_changed
     condition:
+      - condition: template
+        value_template: >
+          {{ trigger.event.data.entity_id is defined 
+             and trigger.event.data.entity_id.startswith('update.') 
+             and trigger.event.data.entity_id.endswith('_update') }}
+        alias: "Check if trigger is from a Z2M update entity"
       - condition: template
         value_template: >
           {{ states.update 
