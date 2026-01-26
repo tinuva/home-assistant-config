@@ -15,19 +15,19 @@ automation:
     action:
       - variables:
           z2m_update_entities: >
-            {{ states.update 
+            {{ states.update
                | selectattr('entity_id', 'match', 'update\\..*_update$')
                | selectattr('attributes.device_class', 'defined')
                | selectattr('attributes.device_class', 'eq', 'firmware')
                | selectattr('state', 'eq', 'on')
-               | map(attribute='entity_id') 
+               | map(attribute='entity_id')
                | list }}
         alias: "Get list of Z2M devices needing firmware update"
-      
+
       - condition: template
         value_template: "{{ z2m_update_entities | count > 0 }}"
         alias: "Check if any updates are available"
-      
+
       - alias: "Send notification about pending updates"
         service: persistent_notification.create
         data:
@@ -38,7 +38,7 @@ automation:
             - {{ state_attr(entity, 'friendly_name') or entity }}
             {% endfor %}
           notification_id: "z2m_ota_updates_in_progress"
-      
+
       - alias: "Update each device sequentially"
         repeat:
           for_each: "{{ z2m_update_entities }}"
@@ -47,26 +47,26 @@ automation:
                 triggered_entity: "{{ repeat.item }}"
                 device_name: "{{ state_attr(repeat.item, 'friendly_name') }}"
               alias: "Get entity details"
-            
+
             - alias: "Trigger update via update.install service"
               service: update.install
               target:
                 entity_id: "{{ triggered_entity }}"
               continue_on_error: true
-            
+
             - alias: "Wait for update to start"
               wait_template: "{{ is_state_attr(triggered_entity, 'in_progress', true) }}"
               timeout: "00:02:00"
               continue_on_timeout: true
-            
+
             - alias: "Wait for update to complete"
               wait_template: "{{ is_state(triggered_entity, 'off') }}"
               timeout: "01:00:00"
               continue_on_timeout: true
-            
+
             - alias: "Brief delay between updates"
               delay: "00:00:30"
-    
+
     mode: single
 
   - alias: "Zigbee2MQTT - Auto-dismiss Update Notifications"
@@ -79,13 +79,13 @@ automation:
     condition:
       - condition: template
         value_template: >
-          {{ trigger.event.data.entity_id is defined 
-             and trigger.event.data.entity_id.startswith('update.') 
+          {{ trigger.event.data.entity_id is defined
+             and trigger.event.data.entity_id.startswith('update.')
              and trigger.event.data.entity_id.endswith('_update') }}
         alias: "Check if trigger is from a Z2M update entity"
       - condition: template
         value_template: >
-          {{ states.update 
+          {{ states.update
              | selectattr('entity_id', 'match', 'update\\..*_update$')
              | selectattr('attributes.device_class', 'defined')
              | selectattr('attributes.device_class', 'eq', 'firmware')
@@ -97,5 +97,5 @@ automation:
         data:
           notification_id: "z2m_ota_updates_in_progress"
         alias: "Dismiss the in-progress notification"
-    
+
     mode: single
