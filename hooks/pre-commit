@@ -1,0 +1,48 @@
+#!/bin/bash
+# Pre-commit hook for Home Assistant configuration validation
+# This hook runs yamllint and Home Assistant configuration check before allowing commits
+
+set -e
+
+echo "Running pre-commit validation..."
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Track if any checks fail
+FAILED=0
+
+# Step 1: Run yamllint
+echo -e "\n${YELLOW}[1/2] Running yamllint...${NC}"
+if yamllint .; then
+    echo -e "${GREEN}✓ yamllint passed${NC}"
+else
+    echo -e "${RED}✗ yamllint failed - Fix YAML syntax errors before committing${NC}"
+    FAILED=1
+fi
+
+# Step 2: Run Home Assistant configuration check
+echo -e "\n${YELLOW}[2/2] Running Home Assistant configuration check...${NC}"
+if ha core check; then
+    echo -e "${GREEN}✓ Home Assistant configuration is valid${NC}"
+else
+    echo -e "${RED}✗ Home Assistant configuration check failed${NC}"
+    FAILED=1
+fi
+
+# Final result
+echo ""
+if [ $FAILED -eq 1 ]; then
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${RED}Commit blocked - Fix validation errors above${NC}"
+    echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    exit 1
+else
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${GREEN}All validation checks passed - Proceeding with commit${NC}"
+    echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    exit 0
+fi
