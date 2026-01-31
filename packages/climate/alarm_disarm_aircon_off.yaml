@@ -16,8 +16,8 @@ automation:
         value_template: >
           {{ states('climate.midea_ac_30786325862093') not in ['off', 'unavailable', 'unknown', 'none'] }}
     action:
-      # Wait 5 minutes to ensure alarm stays disarmed
-      - delay: '00:05:00'
+      # Wait 2 minutes to ensure alarm stays disarmed
+      - delay: '00:02:00'
       # Check alarm is still disarmed (wasn't re-armed during delay)
       - condition: state
         entity_id: alarm_control_panel.home_alarm
@@ -36,5 +36,5 @@ automation:
         data:
           icon: ':thermometer:'
           object: 'Aircon Automation'
-          message: 'Main bedroom AC turned off after alarm disarmed (early morning)'
+          message: 'Main bedroom AC turned off after alarm disarmed (early morning, 2min delay)'
     mode: single
