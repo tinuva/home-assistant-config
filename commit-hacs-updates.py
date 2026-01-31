@@ -3,6 +3,26 @@
 import subprocess
 from pathlib import Path
 
+
+def get_commit_message(folder: str) -> str:
+    """Generate conventional commit message for HACS update."""
+    # Map folder paths to conventional commit types and scopes
+    if folder.startswith("www/community/"):
+        plugin = folder.split("/")[2]
+        return f"chore(frontend): update {plugin} via HACS"
+    elif folder.startswith("themes/"):
+        theme = folder.split("/")[1]
+        return f"chore(theme): update {theme} via HACS"
+    elif folder == "custom_components/hacs/":
+        return "chore(hacs): update HACS integration"
+    elif folder == "custom_components/":
+        return "chore(integration): update custom components via HACS"
+    elif folder == "python_scripts/":
+        return "chore(scripts): update Python scripts via HACS"
+    else:
+        return f"chore: update {folder} via HACS"
+
+
 cmd = "git status --porcelain".split()
 p = subprocess.run(cmd, capture_output=True).stdout.decode()
 
@@ -42,10 +62,11 @@ for line in p.split("\n"):
 for folder in folders_to_add:
     print(folder)
     subprocess.run(f"git add {folder}".split())
-    subprocess.run(["git", "commit", "-m", f"update {folder} via HACS"])
+    commit_msg = get_commit_message(folder)
+    subprocess.run(["git", "commit", "-m", commit_msg])
 
 if ha_update:
     with open(ha_version) as f:
-        version = f.read()
+        version = f.read().strip()
     subprocess.run(f"git add {ha_version}".split())
-    subprocess.run(["git", "commit", "-m", f"update Home Assistant to {version}"])
+    subprocess.run(["git", "commit", "-m", f"chore(core): update Home Assistant to {version}"])
