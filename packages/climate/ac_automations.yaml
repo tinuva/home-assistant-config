@@ -282,6 +282,173 @@ automation:
         target:
           entity_id: switch.midea_ac_30786325862093_display
 
+  - alias: "Auto enable eco mode for children's bedrooms"
+    description: "Automatically sets eco mode for Amy's and Andre's bedrooms when AC is in cool or heat mode"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    condition: []
+    action:
+      # Amy's Bedroom
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_30786325862153') in ['cool', 'heat'] }}
+              - condition: template
+                value_template: >
+                  {{ state_attr('climate.midea_ac_30786325862153', 'preset_mode') != 'eco' }}
+            sequence:
+              - service: climate.set_preset_mode
+                data:
+                  preset_mode: eco
+                target:
+                  entity_id: climate.midea_ac_30786325862153
+      # Andre's Bedroom
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: >
+                  {{ states('climate.midea_ac_32985348871179') in ['cool', 'heat'] }}
+              - condition: template
+                value_template: >
+                  {{ state_attr('climate.midea_ac_32985348871179', 'preset_mode') != 'eco' }}
+            sequence:
+              - service: climate.set_preset_mode
+                data:
+                  preset_mode: eco
+                target:
+                  entity_id: climate.midea_ac_32985348871179
+    mode: queued
+
+  - alias: "Main bedroom AC smart temperature and eco control"
+    description: "Controls eco mode and temperature for main bedroom based on time of day"
+    trigger:
+      - platform: time_pattern
+        minutes: "/1"
+    condition:
+      - condition: template
+        value_template: >
+          {{ states('climate.midea_ac_30786325862093') in ['cool', 'heat'] }}
+    action:
+      - choose:
+          # 6:00am - 6:59pm: Enable eco mode
+          - conditions:
+              - condition: time
+                after: '06:00:00'
+                before: '19:00:00'
+            sequence:
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'preset_mode') != 'eco' }}
+                    sequence:
+                      - service: climate.set_preset_mode
+                        data:
+                          preset_mode: eco
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+          # 7:00pm - 7:59pm: Disable eco, set temp to 22 if cooling
+          - conditions:
+              - condition: time
+                after: '19:00:00'
+                before: '20:00:00'
+            sequence:
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'preset_mode') == 'eco' }}
+                    sequence:
+                      - service: climate.set_preset_mode
+                        data:
+                          preset_mode: none
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+              - choose:
+                  - conditions:
+                      - condition: state
+                        entity_id: climate.midea_ac_30786325862093
+                        state: 'cool'
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'temperature') != 22 }}
+                    sequence:
+                      - service: climate.set_temperature
+                        data:
+                          temperature: 22
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+          # 8:00pm - 8:59pm: Disable eco, set temp to 20 if cooling
+          - conditions:
+              - condition: time
+                after: '20:00:00'
+                before: '21:00:00'
+            sequence:
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'preset_mode') == 'eco' }}
+                    sequence:
+                      - service: climate.set_preset_mode
+                        data:
+                          preset_mode: none
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+              - choose:
+                  - conditions:
+                      - condition: state
+                        entity_id: climate.midea_ac_30786325862093
+                        state: 'cool'
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'temperature') != 20 }}
+                    sequence:
+                      - service: climate.set_temperature
+                        data:
+                          temperature: 20
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+          # 9:00pm - 5:59am: Disable eco, set temp to 18 if cooling
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: time
+                    after: '21:00:00'
+                    before: '23:59:59'
+                  - condition: time
+                    after: '00:00:00'
+                    before: '06:00:00'
+            sequence:
+              - choose:
+                  - conditions:
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'preset_mode') == 'eco' }}
+                    sequence:
+                      - service: climate.set_preset_mode
+                        data:
+                          preset_mode: none
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+              - choose:
+                  - conditions:
+                      - condition: state
+                        entity_id: climate.midea_ac_30786325862093
+                        state: 'cool'
+                      - condition: template
+                        value_template: >
+                          {{ state_attr('climate.midea_ac_30786325862093', 'temperature') != 18 }}
+                    sequence:
+                      - service: climate.set_temperature
+                        data:
+                          temperature: 18
+                        target:
+                          entity_id: climate.midea_ac_30786325862093
+    mode: queued
+
 script:
   ######################################################################
   # Re-usable script to change ac to silent fan in the am
