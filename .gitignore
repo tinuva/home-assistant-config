@@ -146,6 +146,7 @@ home-assistant.log.*
 alexa_media*.html
 music_assistant.db
 solcast.json
+solcast_solar/solcast-actuals.json
 
 # solcast integration
 solcast-sites.json
