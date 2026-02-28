@@ -1,0 +1,113 @@
+---
+# Cape Town Pollen Report Notifications
+# Sends daily pollen report updates to Slack #alerts-david channel
+
+automation:
+  - id: 'pollen_report_notification'
+    alias: "Pollen Report - Notify on Update"
+    description: "Send Slack notification when Cape Town pollen report updates"
+    trigger:
+      - platform: state
+        entity_id: sensor.cape_town_pollen
+        attribute: report_date
+    condition:
+      # Ensure sensor is available and has valid data
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.cape_town_pollen
+            state: 'unavailable'
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: sensor.cape_town_pollen
+            state: 'unknown'
+    action:
+      - service: notify.bezuidenhouts
+        data:
+          target: ["#alerts-david"]
+          message: >-
+            Cape Town Pollen Report - {{ as_timestamp(state_attr('sensor.cape_town_pollen', 'report_date')) | timestamp_custom('%d %B %Y') }}
+          data:
+            blocks_template:
+              - type: header
+                text:
+                  type: plain_text
+                  text: "Cape Town Pollen Report"
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >-
+                      *Report Date:*
+                      {{ as_timestamp(state_attr('sensor.cape_town_pollen', 'report_date')) | timestamp_custom('%d %B %Y') }}
+              - type: divider
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >-
+                    {% set risk = states('sensor.cape_town_pollen') %}
+                    {% if risk == 'Very Low' %}
+                    :large_green_circle: *Overall Risk:* Very Low
+                    {% elif risk == 'Low' %}
+                    :large_yellow_circle: *Overall Risk:* Low
+                    {% elif risk == 'Moderate' %}
+                    :large_orange_circle: *Overall Risk:* Moderate
+                    {% elif risk == 'High' %}
+                    :red_circle: *Overall Risk:* High
+                    {% elif risk == 'Very High' %}
+                    :red_circle::red_circle: *Overall Risk:* Very High
+                    {% else %}
+                    :white_circle: *Overall Risk:* {{ risk }}
+                    {% endif %}
+              - type: section
+                fields:
+                  - type: mrkdwn
+                    text: >-
+                      {% set level = state_attr('sensor.cape_town_pollen', 'tree_pollen') %}
+                      :deciduous_tree: *Tree Pollen:*
+                      {% if level == 'Very Low' %}:large_green_circle:
+                      {% elif level == 'Low' %}:large_yellow_circle:
+                      {% elif level == 'Moderate' %}:large_orange_circle:
+                      {% elif level == 'High' %}:red_circle:
+                      {% elif level == 'Very High' %}:red_circle::red_circle:
+                      {% else %}:white_circle:{% endif %} {{ level }}
+                  - type: mrkdwn
+                    text: >-
+                      {% set level = state_attr('sensor.cape_town_pollen', 'grass_pollen') %}
+                      :herb: *Grass Pollen:*
+                      {% if level == 'Very Low' %}:large_green_circle:
+                      {% elif level == 'Low' %}:large_yellow_circle:
+                      {% elif level == 'Moderate' %}:large_orange_circle:
+                      {% elif level == 'High' %}:red_circle:
+                      {% elif level == 'Very High' %}:red_circle::red_circle:
+                      {% else %}:white_circle:{% endif %} {{ level }}
+                  - type: mrkdwn
+                    text: >-
+                      {% set level = state_attr('sensor.cape_town_pollen', 'weed_pollen') %}
+                      :leaves: *Weed Pollen:*
+                      {% if level == 'Very Low' %}:large_green_circle:
+                      {% elif level == 'Low' %}:large_yellow_circle:
+                      {% elif level == 'Moderate' %}:large_orange_circle:
+                      {% elif level == 'High' %}:red_circle:
+                      {% elif level == 'Very High' %}:red_circle::red_circle:
+                      {% else %}:white_circle:{% endif %} {{ level }}
+                  - type: mrkdwn
+                    text: >-
+                      {% set level = state_attr('sensor.cape_town_pollen', 'mould_spores') %}
+                      :mushroom: *Mould Spores:*
+                      {% if level == 'Very Low' %}:large_green_circle:
+                      {% elif level == 'Low' %}:large_yellow_circle:
+                      {% elif level == 'Moderate' %}:large_orange_circle:
+                      {% elif level == 'High' %}:red_circle:
+                      {% elif level == 'Very High' %}:red_circle::red_circle:
+                      {% else %}:white_circle:{% endif %} {{ level }}
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: >-
+                    {% set summary = state_attr('sensor.cape_town_pollen', 'summary') %}
+                    {% if summary and summary|length > 0 %}
+                    *Summary:*
+                    {{ summary }}
+                    {% endif %}
+    mode: single
