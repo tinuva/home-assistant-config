@@ -1,0 +1,14 @@
+{
+  "domain": "custom_conversation",
+  "name": "Custom Conversation",
+  "after_dependencies": ["assist_pipeline", "intent"],
+  "codeowners": ["@michelle-avery"],
+  "config_flow": true,
+  "dependencies": ["conversation"],
+  "documentation": "https://github.com/michelle-avery/custom-conversation",
+  "issue_tracker": "https://github.com/michelle-avery/custom-conversation/issues",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "requirements": ["langfuse>=2.59.3,<3", "litellm>=1.80.0,<2", "openai>=2.8.0"],
+  "version": "1.5.0"
+}

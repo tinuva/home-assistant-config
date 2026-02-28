@@ -70,6 +70,7 @@ class BambuLabSensorEntityDescription(SensorEntityDescription, BambuLabSensorEnt
     exists_fn: Callable[..., bool] = lambda _: True
     extra_attributes: Callable[..., dict] = lambda _: {}
     icon_fn: Callable[..., str] = lambda _: None
+    is_restoring: bool = False
 
 
 @dataclass
@@ -447,8 +448,9 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         key="start_time",
         translation_key="start_time",
         icon="mdi:clock",
-        available_fn=lambda self: self.coordinator.get_model().print_job.start_time is not None,
-        value_fn=lambda self: dt_util.as_local(self.coordinator.get_model().print_job.start_time).replace(tzinfo=None),
+        available_fn=lambda self: self._start_time_avail_fn(),
+        value_fn=lambda self: self._start_time_value_fn(),
+        is_restoring=True,
     ),
     BambuLabSensorEntityDescription(
         key="remaining_time",
@@ -510,14 +512,12 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
     BambuLabSensorEntityDescription(
         key="subtask_name",
         translation_key="subtask_name",
-        available_fn=lambda self: self.coordinator.get_model().print_job.subtask_name != "",
         value_fn=lambda self: self.coordinator.get_model().print_job.subtask_name,
         icon_fn=lambda self: self.coordinator.get_model().print_job.file_type_icon
     ),
     BambuLabSensorEntityDescription(
         key="print_type",
         translation_key="print_type",
-        available_fn=lambda self: self.coordinator.get_model().print_job.print_type != "",
         value_fn=lambda self: self.coordinator.get_model().print_job.print_type,
         icon_fn=lambda self: self.coordinator.get_model().print_job.file_type_icon,
         options=PRINT_TYPE_OPTIONS,
@@ -565,7 +565,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         icon="mdi:printer-3d-nozzle",
         value_fn=lambda self: "none" if self.coordinator.get_model().ams.active_tray is None else self.coordinator.get_model().ams.active_tray.name,
         extra_attributes=lambda self:
-        {} if self.coordinator.get_model().ams.active_tray is  None else
+        {} if self.coordinator.get_model().ams.active_tray is None else
         {
             "ams_index": self.coordinator.get_model().ams.active_ams_index,
             "color": f"#{self.coordinator.get_model().ams.active_tray.color}",

@@ -35,6 +35,7 @@ from .const import (
     CONF_CHIME_ENABLE,
     CONF_CHIME_SOUND,
     CONF_NORMALIZE_AUDIO,
+    CONF_EXTRA_PAYLOAD,
     VOICES,
     MESSAGE_DURATIONS_KEY,
     CONF_PROFILE_NAME,
@@ -43,7 +44,7 @@ from .const import (
 
 SUBENTRY_TYPE_PROFILE = "profile"
 from .openaitts_engine import OpenAITTSEngine, StreamingAudioResponse
-from .utils import get_media_duration, process_audio
+from .utils import get_media_duration, process_audio, detect_audio_format
 from homeassistant.exceptions import MaxLengthExceeded
 
 _LOGGER = logging.getLogger(__name__)
@@ -458,6 +459,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             CONF_CHIME_SOUND,
             CONF_NORMALIZE_AUDIO,
             CONF_INSTRUCTIONS,
+            CONF_EXTRA_PAYLOAD,
         ]
 
     @property
@@ -692,6 +694,9 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             config_instructions = self._get_config_value(CONF_INSTRUCTIONS)
             instructions = service_instructions if service_instructions is not None else config_instructions
 
+            # Handle extra_payload for custom backends (service call overrides config)
+            extra_payload = options.get(CONF_EXTRA_PAYLOAD) or self._get_config_value(CONF_EXTRA_PAYLOAD)
+
             # Step 3: Determine if we can use streaming
             can_stream = self._can_use_streaming(full_text, options)
 
@@ -718,7 +723,8 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                             voice=voice,
                             model=model,
                             speed=speed,
-                            instructions=instructions
+                            instructions=instructions,
+                            extra_payload=extra_payload
                         ):
                             all_chunks.append(chunk)
                             yield chunk
@@ -758,7 +764,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
                         # Get processed audio using the existing method
                         audio_data = await self._get_processed_audio_for_streaming(
-                            full_text, request.language, options, voice, model, speed, instructions
+                            full_text, request.language, options, voice, model, speed, instructions, extra_payload
                         )
 
                         # Calculate and store duration for non-streaming audio
@@ -814,7 +820,8 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         voice: str,
         model: str,
         speed: float,
-        instructions: str | None
+        instructions: str | None,
+        extra_payload: str | None = None
     ) -> bytes:
         """Get processed audio for non-streaming cases.
 
@@ -837,6 +844,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                 voice=voice,
                 model=model,
                 instructions=instructions,
+                extra_payload=extra_payload,
                 stream=False  # Don't use streaming for processed audio
             )
         )
@@ -854,9 +862,12 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
 
         audio_data = audio_response.content
 
-        # Process audio if needed (chime, normalization)
-        if chime_enable or normalize_audio:
-            _LOGGER.debug("Processing audio with chime=%s, normalize=%s", chime_enable, normalize_audio)
+        # Check if audio is WAV (some custom TTS backends return WAV instead of MP3)
+        is_wav = detect_audio_format(audio_data) == "wav"
+
+        # Process audio if needed (chime, normalization, or WAV conversion)
+        if chime_enable or normalize_audio or is_wav:
+            _LOGGER.debug("Processing audio with chime=%s, normalize=%s, is_wav=%s", chime_enable, normalize_audio, is_wav)
 
             # Get chime file path
             chime_path = None
@@ -928,7 +939,10 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
         
         # If service provides instructions, use them; otherwise use config
         instructions = service_instructions if service_instructions is not None else config_instructions
-        
+
+        # Handle extra_payload for custom backends
+        extra_payload = options.get(CONF_EXTRA_PAYLOAD)
+
         # Audio processing options
         chime_enable = options.get(CONF_CHIME_ENABLE) or self._get_config_value(CONF_CHIME_ENABLE) or False
         chime_sound = options.get(CONF_CHIME_SOUND) or self._get_config_value(CONF_CHIME_SOUND)
@@ -961,6 +975,7 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
                     voice=voice,
                     model=model,  # Pass model parameter
                     instructions=instructions,
+                    extra_payload=extra_payload,
                     stream=can_stream
                 )
             )
@@ -999,10 +1014,13 @@ class OpenAITTSEntity(TextToSpeechEntity, RestoreEntity):
             
             # Save state to persistent storage
             await self._save_persisted_state()
-            
-            # Process audio if needed (chime, normalization)
-            if chime_enable or normalize_audio:
-                _LOGGER.debug("Processing audio with chime=%s, normalize=%s", chime_enable, normalize_audio)
+
+            # Check if audio is WAV (some custom TTS backends return WAV instead of MP3)
+            is_wav = detect_audio_format(audio_data) == "wav"
+
+            # Process audio if needed (chime, normalization, or WAV conversion)
+            if chime_enable or normalize_audio or is_wav:
+                _LOGGER.debug("Processing audio with chime=%s, normalize=%s, is_wav=%s", chime_enable, normalize_audio, is_wav)
                 
                 # Get chime file path
                 chime_path = None

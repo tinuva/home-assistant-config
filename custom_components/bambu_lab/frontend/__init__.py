@@ -11,6 +11,10 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import __version__
 
+from ..pybambu.utils import (
+    compare_version,
+)
+
 from ..const import BAMBU_LAB_CARDS, URL_BASE, LOGGER
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,24 +24,24 @@ class BambuLabCardRegistration:
         self.hass = hass
 
     @property
-    def lovelace_mode(self):
-        ha_version = parse(__version__)
-        if (ha_version.major >= 2026) or ((ha_version.major == 2025) and (ha_version.minor >= 2)):
+    def lovelace_resource_mode(self):
+        if compare_version(__version__, "2026.2.0") >= 0:
+            return self.hass.data["lovelace"].resource_mode
+        elif compare_version(__version__, "2025.2.0") >= 0:
             return self.hass.data["lovelace"].mode
         else:
             return self.hass.data["lovelace"]["mode"]
 
     @property
     def lovelace_resources(self):
-        ha_version = parse(__version__)
-        if (ha_version.major >= 2026) or ((ha_version.major == 2025) and (ha_version.minor >= 2)):
+        if compare_version(__version__, "2025.2.0") >= 0:
             return self.hass.data["lovelace"].resources
         else:
             return self.hass.data["lovelace"]["resources"]
 
     async def async_register(self):
         await self.async_register_bambu_path()
-        if self.lovelace_mode == "storage":
+        if self.lovelace_resource_mode == "storage":
             await self.async_wait_for_lovelace_resources()
 
     # install card 
@@ -114,7 +118,7 @@ class BambuLabCardRegistration:
 
     async def async_unregister(self):
         # Unload lovelace module resource
-        if self.lovelace_mode == "storage":
+        if self.lovelace_resource_mode == "storage":
             for card in BAMBU_LAB_CARDS:
                 url = f"{URL_BASE}/{card.get("filename")}"
                 bambu_resources = [

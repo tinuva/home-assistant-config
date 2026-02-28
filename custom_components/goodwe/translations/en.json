@@ -11,7 +11,8 @@
         "step": {
             "user": {
                 "data": {
-                    "host": "Hostname / IP Address",
+                    "host": "Hostname / IP address",
+                    "port": "Port (8899/UDP | 502/TCP)",
                     "protocol": "Protocol",
                     "model_family": "Inverter Family (optional)"
                 },
@@ -36,11 +37,17 @@
             "battery_discharge_depth": {
                 "name": "Depth of discharge (on-grid)"
             },
+            "battery_discharge_depth_offline": {
+                "name": "Depth of discharge (backup)"
+            },
             "eco_mode_power": {
                 "name": "Eco mode power"
             },
             "eco_mode_soc": {
                 "name": "Eco mode SoC"
+            },
+            "ems_power_limit": {
+                "name": "EMS power limit"
             },
             "grid_export_limit": {
                 "name": "Grid export limit"
@@ -53,6 +60,22 @@
             }
         },
         "select": {
+            "ems_mode": {
+                "name": "EMS mode",
+                "state": {
+                "auto": "Auto",
+                "charge_pv": "Charge PV",
+                "import_ac": "Import AC",
+                "export_ac": "Export AC",
+                "conserve": "Conserve",
+                "off_grid": "Off-grid",
+                "battery_standby": "Battery Standby",
+                "buy_power": "Buy Power",
+                "sell_power": "Sell Power",
+                "charge_battery": "Charge Battery",
+                "discharge_battery": "Discharge Battery"
+                }
+            },
             "operation_mode": {
                 "name": "Inverter operation mode",
                 "state": {
@@ -61,7 +84,7 @@
                     "eco_charge": "Eco charge mode",
                     "eco_discharge": "Eco discharge mode",
                     "general": "General mode",
-                    "off_grid": "Off grid mode",
+                    "off_grid": "Off-grid mode",
                     "peak_shaving": "Peak shaving mode",
                     "self_use": "Self Use mode"
                 }
@@ -88,6 +111,9 @@
             },
             "backup_supply_switch": {
                 "name": "Backup supply"
+            },
+            "dod_holding_switch": {
+                "name": "DOD holding"
             }
         }
     },
@@ -96,6 +122,7 @@
             "init": {
                 "data": {
                     "host": "Hostname / IP Address",
+                    "port": "Port (8899/UDP | 502/TCP)",
                     "protocol": "Protocol",
                     "keep_alive": "TCP Keep alive",
                     "model_family": "Protocol Family [ET|DT|ES]",

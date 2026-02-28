@@ -1,0 +1,200 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "primary_provider": "LLM Provider",
+          "secondary_provider": "LLM Fallback Provider"
+        }
+      },
+      "credentials": {
+        "data": {
+          "primary_api_key": "API Key",
+          "primary_base_url": "Base URL",
+          "secondary_api_key": "Fallback Provider API Key",
+          "secondary_base_url": "Fallback Provider Base URL"
+        }
+      },
+      "model": {
+        "data": {
+          "primary_chat_model": "Model",
+          "secondary_chat_model": "Fallback Model",
+          "secondary_provider_enabled": "Enable a fallback provider/model in the next step"
+        }
+      },
+      "reconfigure_provider": {
+        "data": {
+          "primary_provider": "LLM Provider",
+          "secondary_provider": "LLM Fallback Provider"
+        }
+      },
+      "reconfigure_credentials": {
+        "data": {
+          "primary_api_key": "API Key",
+          "primary_base_url": "Base URL",
+          "secondary_api_key": "Fallback Provider API Key",
+          "secondary_base_url": "Fallback Provider Base URL"
+        }
+      },
+      "reconfigure_model": {
+        "data": {
+          "primary_chat_model": "Model",
+          "secondary_chat_model": "Fallback Model",
+          "secondary_provider_enabled": "Enable a fallback provider/model in the next step"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication",
+      "unknown": "Unexpected error"
+    },
+    "abort": {
+      "reconfigure_successful": "Reconfiguration was successful"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "instructions_prompt": "Instructions",
+          "llm_hass_api": "Choose the API to expose to the LLM"
+        },
+        "data_description": {
+          "prompt": "Instruct how the LLM should respond. This can be a template."
+        },
+        "sections": {
+          "ignored_intents_section": {
+            "name": "Ignored Intents",
+            "description": "Configure which intents should be ignored by the Custom LLM API.\nThose recommended by the current Home Assistant version are marked.",
+            "data": {
+              "ignored_intents": "Ignored Intents"
+            }
+          },
+          "agents": {
+            "name": "Custom LLM API Agents",
+            "description": "Configure which agents are enabled for the Custom LLM API.\nEnabling both will try to resolve intents locally first,\nand then fall back to the configured LLM.",
+            "data": {
+              "enable_home_assistant_agent": "Enable Home Assistant Agent",
+              "enable_llm_agent": "Enable LLM Agent"
+            }
+          },
+          "llm_parameters": {
+            "name": "LLM Parameters",
+            "description": "Configure the LLM Parameters",
+            "data": {
+              "chat_model": "Chat Model",
+              "max_tokens": "Max Tokens",
+              "temperature": "Temperature",
+              "top_p": "Top P"
+            }
+          },
+          "custom_prompts": {
+            "name": "Customize Prompts",
+            "description": "Customize the various prompt segments used by the Conversation agent and the API",
+            "data": {
+              "prompt_base": "Base Prompt",
+              "prompt_no_enabled_entities": "No Enabled Entities Prompt",
+              "prompt_api_base": "API Base Prompt",
+              "prompt_device_known_location": "Device Known Location Prompt",
+              "prompt_device_unknown_location": "Device Unknown Location Prompt",
+              "prompt_timers_unsupported": "Timers Unsupported Prompt",
+              "prompt_exposed_entities": "Exposed Entities Prompt"
+            },
+            "data_description": {
+              "prompt_base": "The base prompt included in every LLM prompt. Can be a template.",
+              "prompt_no_enabled_entities": "The prompt the API includesto when no entities are exposed.",
+              "prompt_api_base": "The base prompt the API uses to give directions on controlling entities.",
+              "prompt_device_known_location": "The prompt the API uses when the request comes from a device with a known area.  The '{{ location }}' variable will be replaced with the devices area and potentially floor.",
+              "prompt_device_unknown_location": "The prompt the API uses with the request comes from a device whose area is unknown.",
+              "prompt_timers_unsupported": "The prompt the API includes if the request comes from a device that cannot set timers.",
+              "prompt_exposed_entities": "The prompt the API includes prior to the list of exposed entities and areas."
+            }
+          },
+          "langfuse": {
+            "name": "Langfuse",
+            "description": "Configure the Langfuse parameters",
+            "data": {
+              "enable_langfuse": "Enable Langfuse Prompt management",
+              "base_prompt_id": "Base Prompt ID",
+              "base_prompt_label": "Base Prompt Label",
+              "api_prompt_id": "API Prompt ID",
+              "api_prompt_label": "API Prompt Label",
+              "langfuse_host": "Langfuse Host",
+              "langfuse_public_key": "Langfuse Public Key",
+              "langfuse_secret_key": "Langfuse Secret  Key",
+              "langfuse_tracing_enabled": "Enable Langfuse Tracing",
+              "langfuse_tags": "Langfuse Tags",
+              "langfuse_score_enabled": "Enable Langfuse Scoring"
+            },
+            "data_description": {
+              "enable_langfuse": "Enable Langfuse for prompt management",
+              "base_prompt_id": "The ID Langfuse prompt to use when the API is not enabled.\nHome assistant templating is not supported, but the variables '{{current_time}}' and '{{current_date}}', '{{ha_name}}' and '{{user_name}}' are available.",
+              "base_prompt_label": "The label to select the version of the base prompt (ie, 'production', or 'latest')",
+              "api_prompt_id": "The ID of the Langfuse  prompt to use when the custom LLM API is enabled.\nNote that because Langfuse does not currently support combining multiple prompts, this will be the only prompt sent, it will not be combined with the one above as is the case with the non-Langfuse support.\nIn addition to the above variables, '{{location}}', '{{supports_timers}}' and '{{exposed_entities}}' are available.",
+              "api_prompt_label": "The label to select the version of the API prompt (ie, 'production', or 'latest')",
+              "langfuse_host": "The host of the Langfuse API",
+              "langfuse_public_key": "The public key for the Langfuse API",
+              "langfuse_secret_key": "The secret key for the Langfuse API",
+              "langfuse_tracing_enabled": "Enable tracing for Langfuse",
+              "langfuse_tags": "Optional tags that will be added to all Langfuse traces.",
+              "langfuse_score_enabled": "Enable Home Assistant Actions to score Langfuse traces."
+            }
+          }
+        }
+      }
+    }
+  },
+  "services": {
+    "generate_image": {
+      "name": "Generate image",
+      "description": "Turn a prompt into an image",
+      "fields": {
+        "config_entry": {
+          "name": "Config Entry",
+          "description": "The config entry to use for this action"
+        },
+        "prompt": {
+          "name": "Prompt",
+          "description": "The text to turn into an image",
+          "example": "A photo of a dog"
+        },
+        "size": {
+          "name": "Size",
+          "description": "The size of the image to generate"
+        },
+        "quality": {
+          "name": "Quality",
+          "description": "The quality of the image that will be generated"
+        },
+        "style": {
+          "name": "Style",
+          "description": "The style of the generated image"
+        }
+      }
+    },
+    "score_conversation": {
+      "name": "Score conversation",
+      "description": "Score a conversation with Langfuse",
+      "fields": {
+        "config_entry": {
+          "name": "Config Entry",
+          "description": "The config entry to use for this action"
+        },
+        "assist_entity": {
+          "name": "Assist Device",
+          "description": "The device that the conversation took place on"
+        },
+        "score": {
+          "name": "Score",
+          "description": "The score to assign to the conversation"
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "invalid_config_entry": {
+      "message": "Invalid config entry provided. Got {config_entry}"
+    }
+  }
+}

@@ -38,6 +38,17 @@ def _get_setting_unit(inverter: Inverter, setting: str) -> str:
     return next((s.unit for s in inverter.settings() if s.id_ == setting), "")
 
 
+async def set_offline_battery_dod(inverter: Inverter, dod: int) -> None:
+    """Sets offline battery dod - dod for backup output."""
+    if 10 <= dod <= 100:
+        await inverter.write_setting("battery_discharge_depth_offline", 100 - dod)
+
+
+async def get_offline_battery_dod(inverter: Inverter) -> int:
+    """Returns offline battery dod - dod for backup output."""
+    return 100 - (await inverter.read_setting("battery_discharge_depth_offline"))
+
+
 NUMBERS = (
     # Only one of the export limits are added.
     # Availability is checked in the filter method.
@@ -84,6 +95,31 @@ NUMBERS = (
         filter=lambda inv: True,
     ),
     GoodweNumberEntityDescription(
+        key="soc_upper_limit",
+        translation_key="soc_upper_limit",
+        native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+        native_min_value=0,
+        native_max_value=100,
+        getter=lambda inv: inv.read_setting("soc_upper_limit"),
+        mapper=lambda v: v,
+        setter=lambda inv, val: inv.write_setting("soc_upper_limit", val),
+        filter=lambda inv: True,
+    ),
+    GoodweNumberEntityDescription(
+        key="battery_discharge_depth_offline",
+        translation_key="battery_discharge_depth_offline",
+        entity_category=EntityCategory.CONFIG,
+        native_unit_of_measurement=PERCENTAGE,
+        native_step=1,
+        native_min_value=0,
+        native_max_value=99,
+        getter=lambda inv: get_offline_battery_dod(inv),
+        mapper=lambda v: v,
+        setter=lambda inv, val: set_offline_battery_dod(inv, val),
+        filter=lambda inv: True,
+    ),
+    GoodweNumberEntityDescription(
         key="eco_mode_power",
         translation_key="eco_mode_power",
         entity_category=EntityCategory.CONFIG,
@@ -105,7 +141,7 @@ NUMBERS = (
         native_min_value=0,
         native_max_value=100,
         getter=lambda inv: inv.read_setting("eco_mode_1"),
-        mapper=lambda v: v.soc if v.soc else 0,
+        mapper=lambda v: v.soc or 0,
         setter=None,
         filter=lambda inv: True,
     ),
@@ -133,6 +169,19 @@ NUMBERS = (
         setter=lambda inv, val: inv.write_setting("fast_charging_soc", val),
         filter=lambda inv: True,
     ),
+    GoodweNumberEntityDescription(
+        key="ems_power_limit",
+        translation_key="ems_power_limit",
+        entity_category=EntityCategory.CONFIG,
+        device_class=NumberDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        native_step=100,
+        native_min_value=0,
+        getter=lambda inv: inv.read_setting("ems_power_limit"),
+        mapper=lambda v: v,
+        setter=lambda inv, val: inv.write_setting("ems_power_limit", val),
+        filter=lambda inv: True,
+    ),
 )
 
 
@@ -156,9 +205,9 @@ async def async_setup_entry(
             continue
 
         entity = InverterNumberEntity(device_info, description, inverter, current_value)
-        # Set the max value of grid_export_limit (W version)
+        # Set the max value of grid_export_limit and ems_power_limit (W version)
         if (
-            description.key == "grid_export_limit"
+            description.key in ("grid_export_limit", "ems_power_limit")
             and description.native_unit_of_measurement == UnitOfPower.WATT
         ):
             entity.native_max_value = (
@@ -187,10 +236,7 @@ class InverterNumberEntity(NumberEntity):
         self.entity_description = description
         self._attr_unique_id = f"{DOMAIN}-{description.key}-{inverter.serial_number}"
         self._attr_device_info = device_info
-        self._attr_native_value = (
-            float(current_value) if current_value is not None else None
-        )
-
+        self._attr_native_value = float(current_value)
         self._inverter: Inverter = inverter
 
     async def async_update(self) -> None:

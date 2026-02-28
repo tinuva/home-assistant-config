@@ -12,6 +12,7 @@
             "user": {
                 "data": {
                     "host": "IP adresa",
+                    "port": "Port (8899/UDP | 502/TCP)",
                     "protocol": "Protokol",
                     "model_family": "Typ střídače (volitelné)"
                 },
@@ -35,6 +36,9 @@
         "number": {
             "battery_discharge_depth": {
                 "name": "Maximum vybití (v síti)"
+            },
+            "battery_discharge_depth_offline": {
+                "name": "Maximum vybití (backup)"
             },
             "eco_mode_power": {
                 "name": "Výkon v ekonomickém režimu"
@@ -89,6 +93,9 @@
             },
             "backup_supply_switch": {
                 "name": "Záloha"
+            },
+            "dod_holding_switch": {
+                "name": "Udržovat DOD baterie"
             }
         }
     },
@@ -97,6 +104,7 @@
             "init": {
                 "data": {
                     "host": "IP adresa",
+                    "port": "Port (8899/UDP | 502/TCP)",
                     "protocol": "Protokol",
                     "keep_alive": "TCP Keep alive",
                     "model_family": "Typ protokolu [ET|DT|ES]",
