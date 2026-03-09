@@ -30,7 +30,6 @@ logbook: !include logging/logbook.yaml
 logger: !include logging/logger.yaml
 
 recorder: !include includes/recorder.yaml
-influxdb: !include includes/influxdb.yaml
 
 
 # Managed via UI
