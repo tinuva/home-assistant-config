@@ -29,22 +29,24 @@ jobs:
         with:
           args: "remark --no-stdout --color --frail --use preset-lint-recommended ."
 
-  home-assistant:
-    name: "Home Assistant Core ${{ matrix.version }} Configuration Check"
-    needs: [yamllint]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ["stable", "beta", "dev"]
-    steps:
-      - name: ⤵️ Check out configuration from GitHub
-        uses: actions/checkout@v4
-      - name: 🚀 Run Home Assistant Configuration Check
-        uses: frenck/action-home-assistant@v1.4
-        with:
-          path: "."
-          secrets: ./secrets.fake.yaml
-          version: "${{ matrix.version }}"
+  # home-assistant job disabled - frenck/action-home-assistant@v1.4 broken for beta/dev
+  # See: https://github.com/frenck/action-home-assistant/issues/111
+  # home-assistant:
+  #   name: "Home Assistant Core ${{ matrix.version }} Configuration Check"
+  #   needs: [yamllint]
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       version: ["stable", "beta", "dev"]
+  #   steps:
+  #     - name: ⤵️ Check out configuration from GitHub
+  #       uses: actions/checkout@v4
+  #     - name: 🚀 Run Home Assistant Configuration Check
+  #       uses: frenck/action-home-assistant@v1.4
+  #       with:
+  #         path: "."
+  #         secrets: ./secrets.fake.yaml
+  #         version: "${{ matrix.version }}"
 
   esphome:
     runs-on: ubuntu-latest
