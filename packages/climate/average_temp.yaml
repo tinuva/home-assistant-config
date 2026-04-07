@@ -1,8 +1,9 @@
 ---
 sensor:
-  - platform: average
+  - platform: statistics
     name: 'Average Temperature Outside last 1 day'
-    duration:
+    entity_id: sensor.outside_temperature
+    state_characteristic: mean
+    max_age:
       days: 1
-    entities:
-      - sensor.outside_temperature
+    keep_last_sample: true

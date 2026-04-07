@@ -1,14 +1,13 @@
 ---
 
 sensor:
-  # This sensor requires the following package installed in HACS
-  ### https://github.com/Limych/ha-average
-  - platform: average
+  - platform: statistics
     name: 'GoodWe Average Battery Dis/Charge Rate'
-    duration:
+    entity_id: sensor.battery_power
+    state_characteristic: mean
+    max_age:
       minutes: 5
-    entities:
-      - sensor.battery_power
+    keep_last_sample: true
 
   - platform: statistics
     name: Battery SoC change over 10 minutes

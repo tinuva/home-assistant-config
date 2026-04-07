@@ -123,6 +123,23 @@ automation:
                 duration: >
                     {{ states('input_number.88e9fe88abfe_off_time_duration') | int * 60 }}
 
+    # enforce dining_l2 stays off while switch.cpt_5cg2332ssh is off
+    - alias: Enforce dining_l2 off while cpt_5cg2332ssh is off
+      trigger:
+          - platform: time_pattern
+            minutes: "/1"
+      condition:
+          - condition: state
+            entity_id: switch.cpt_5cg2332ssh
+            state: "off"
+          - condition: state
+            entity_id: light.dining_l2
+            state: "on"
+      action:
+          - service: light.turn_off
+            target:
+                entity_id: light.dining_l2
+
     # 88e9fe88abfe on when timer finish
     - alias: Turn on 88e9fe88abfe
       trigger:

@@ -216,47 +216,53 @@ sensor:
     round: 2
     method: left
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average House Consumption 30min"
-    duration:
+    entity_id: sensor.house_consumption
+    state_characteristic: mean
+    max_age:
       minutes: 30
-    entities:
-      - sensor.house_consumption
+    keep_last_sample: true
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average House Consumption 10min"
-    duration:
+    entity_id: sensor.house_consumption
+    state_characteristic: mean
+    max_age:
       minutes: 10
-    entities:
-      - sensor.house_consumption
+    keep_last_sample: true
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average Solar Generation 10min"
-    duration:
+    entity_id: sensor.pv_power
+    state_characteristic: mean
+    max_age:
       minutes: 10
-    entities:
-      - sensor.pv_power
+    keep_last_sample: true
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average Solar Generation 30min"
-    duration:
+    entity_id: sensor.pv_power
+    state_characteristic: mean
+    max_age:
       minutes: 30
-    entities:
-      - sensor.pv_power
+    keep_last_sample: true
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average Back-up use 10min"
-    duration:
+    entity_id: sensor.back_up_power
+    state_characteristic: mean
+    max_age:
       minutes: 10
-    entities:
-      - sensor.back_up_power
+    keep_last_sample: true
 
-  - platform: average
+  - platform: statistics
     name: "GoodWe Average Back-up use 30min"
-    duration:
+    entity_id: sensor.back_up_power
+    state_characteristic: mean
+    max_age:
       minutes: 30
-    entities:
-      - sensor.back_up_power
+    keep_last_sample: true
 
 utility_meter:
   # Grid
