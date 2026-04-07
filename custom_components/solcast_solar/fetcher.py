@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import copy
 from datetime import UTC, datetime as dt, timedelta
+from hashlib import md5
 import json
 import logging
 import math
@@ -57,8 +58,13 @@ from .const import (
     RESOURCE_ID,
     RESPONSE_STATUS,
     SITE_INFO,
+    SUCCESS,
+    SUCCESS_FORCED,
+    SUCCESS_TRACKED,
     TASK_ACTUALS_FETCH,
     TASK_FORECASTS_FETCH,
+    UPDATE_BACKOFF,
+    UPDATE_TRIES,
 )
 from .util import (
     AutoUpdate,
@@ -118,12 +124,14 @@ class Fetcher:
         return success
 
     async def reset_failure_stats(self) -> None:
-        """Reset the failure statistics."""
+        """Reset the failure statistics and the success counters."""
 
         _LOGGER.debug("Resetting failure statistics")
         self.api.data[FAILURE][LAST_24H] = 0
         self.api.data[FAILURE][LAST_7D] = [0, *self.api.data[FAILURE][LAST_7D][:-1]]
         self.api.data[FAILURE][LAST_14D] = [0, *self.api.data[FAILURE][LAST_14D][:-1]]
+        self.api.data[SUCCESS][SUCCESS_TRACKED] = {}
+        self.api.data[SUCCESS][SUCCESS_FORCED] = {}
         await self.api.sites_cache.serialise_data(self.api.data, self.api.filename)
 
     async def update_estimated_actuals(self, dampen_yesterday: bool = False) -> None:
@@ -196,6 +204,7 @@ class Fetcher:
                 site[RESOURCE_ID], self.api.data_actuals, self.api.advanced_options[ADVANCED_HISTORY_MAX_DAYS], actuals
             )
             _LOGGER.debug("Estimated actuals dictionary for site %s length %s", site[RESOURCE_ID], len(actuals))
+            self.increment_success_count(force=True, api_key=api_key)
 
         if status == DataCallStatus.SUCCESS and dampen_yesterday:
             # Apply dampening to yesterday actuals, but only if the new factors for the day have not been modelled.
@@ -210,6 +219,7 @@ class Fetcher:
             self.api.data_actuals_dampened[LAST_UPDATED] = dt.now(UTC).replace(microsecond=0)
             self.api.data_actuals_dampened[LAST_ATTEMPT] = dt.now(UTC).replace(microsecond=0)
             await self.api.sites_cache.serialise_data(self.api.data_actuals_dampened, self.api.filename_actuals_dampened)
+            await self.api.sites_cache.serialise_data(self.api.data, self.api.filename)
 
         _LOGGER.debug("Task update_estimated_actuals took %.3f seconds", time.time() - start_time)
 
@@ -273,6 +283,7 @@ class Fetcher:
                 return ""
             if result == DataCallStatus.SUCCESS:
                 sites_succeeded += 1
+                self.increment_success_count(force, site[API_KEY])
 
         if sites_attempted > 0 and not failure:
             await self.api.dampening.apply_forward(do_past_hours=do_past_hours)
@@ -524,6 +535,23 @@ class Fetcher:
         self.api.data[FAILURE][LAST_7D][0] = self.api.data[FAILURE][LAST_24H]
         self.api.data[FAILURE][LAST_14D][0] = self.api.data[FAILURE][LAST_24H]
 
+    def increment_success_count(self, force: bool, api_key: str) -> None:
+        """Increment the appropriate success counter once per successful site API call.
+
+        Arguments:
+            force (bool): True if the update was a forced update (quota not consumed).
+            api_key (str): The API key used for the site fetch.
+        """
+        key = md5(api_key[-6:].encode()).hexdigest()
+        if force:
+            forced = self.api.data[SUCCESS][SUCCESS_FORCED]
+            forced[key] = forced.get(key, 0) + 1
+            _LOGGER.debug("Incremented forced success count for API key ending %s, now %d", redact_api_key(api_key), forced[key])
+        else:
+            tracked = self.api.data[SUCCESS][SUCCESS_TRACKED]
+            tracked[key] = tracked.get(key, 0) + 1
+            _LOGGER.debug("Incremented tracked success count for API key ending %s, now %d", redact_api_key(api_key), tracked[key])
+
     async def fetch_data(  # noqa: C901
         self,
         hours: int = 0,
@@ -569,9 +597,9 @@ class Fetcher:
                         url = f"{self.api.advanced_options[ADVANCED_SOLCAST_URL]}/rooftop_sites/{site}/{path}"
                         params: dict[str, str | int] = {FORMAT: JSON, API_KEY: api_key, HOURS: hours}
 
-                        tries = 10
+                        tries = UPDATE_TRIES
                         counter = 0
-                        backoff = 15  # On every retry the back-off increases by (at least) fifteen seconds more than the previous back-off.
+                        backoff = UPDATE_BACKOFF  # On every retry the back-off increases by (at least) UPDATE_BACKOFF seconds more than the previous back-off.
                         while True:
                             _LOGGER.debug("Fetching path %s", path)
                             counter += 1
@@ -680,13 +708,14 @@ class Fetcher:
                             )
                             _LOGGER.debug("HTTP session status %s", http_status_translate(status))
 
-                            if received_429 == tries and issue_registry.async_get_issue(DOMAIN, ISSUE_API_UNAVAILABLE) is None:
+                            if received_429 == tries:
                                 _LOGGER.debug("Raise issue for %s", ISSUE_API_UNAVAILABLE)
                                 ir.async_create_issue(
                                     self.api.hass,
                                     DOMAIN,
                                     ISSUE_API_UNAVAILABLE,
                                     is_fixable=False,
+                                    is_persistent=True,
                                     severity=ir.IssueSeverity.WARNING,
                                     translation_key=ISSUE_API_UNAVAILABLE,
                                     learn_more_url=LEARN_MORE_MISSING_FORECAST_DATA,

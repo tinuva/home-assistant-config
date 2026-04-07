@@ -190,7 +190,6 @@ async def async_setup_entry(
         InverterSensor(coordinator, device_info, inverter, sensor)
         for sensor in inverter.sensors()
     )
-
     async_add_entities(entities)
 
 

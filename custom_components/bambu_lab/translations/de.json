@@ -209,9 +209,6 @@
       "door_open": {
         "name": "Gehäusetür"
       },
-      "airduct_mode": {
-        "name": "Luftkanalmodus"
-      },
       "timelapse": {
         "name": "Aufnahme von Zeitraffern"
       },
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Zieltemperatur der Düse"
+      },
+      "target_chamber_temperature": {
+        "name": "Zieltemperatur der Kammer"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Standard",
           "sport": "Sport",
           "ludicrous": "Verrückt"
+        }
+      },
+      "airduct_mode": {
+        "name": "Luftkanalmodus",
+        "state": {
+          "cooling": "Kühlung",
+          "heating": "Heizung"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Auto -Bett -Leveling - Phase 2",
           "heating_chamber": "Heizkammer",
           "heated_bedcooling": "Erhitzte Bettkühlung",
-          "print_calibration_lines": "Drucken von Kalibrierungslinien"
+          "print_calibration_lines": "Drucken von Kalibrierungslinien",
+          "check_material": "Automatische Prüfung: Material",
+          "calibrating_live_view_camera": "Kalibrierung der Live View-Kamera",
+          "waiting_for_heatbed_temperature": "Warten darauf, dass das Heizbett die Zieltemperatur erreicht",
+          "check_material_position": "Automatische Prüfung: Materialposition",
+          "calibrating_cutter_model_offset": "Offsetkalibrierung des Schneidmoduls",
+          "measuring_surface": "Messfläche",
+          "thermal_preconditioning": "Thermische Vorkonditionierung zur Optimierung der ersten Schicht",
+          "homing_blade_holder": "Referenzmesserhalter",
+          "calibrating_camera_offset": "Kamera-Offset kalibrieren",
+          "calibrating_blade_holder_position": "Kalibrieren der Position des Klingenhalters",
+          "hotend_pick_place_test": "Hotend-Pick-and-Place-Test",
+          "waiting_chamber_temperature_equalize": "Warten auf den Temperaturausgleich in der Kammer",
+          "preparing_hotend": "Hotend wird vorbereitet",
+          "calibrating_detection_nozzle_clumping": "Kalibrieren der Erkennungsposition der Düsenverklumpung",
+          "purifying_chamber_air": "Kammerluft reinigen",
+          "preparing_ams": "AMS vorbereiten"
         }
       },
       "print_progress": {
@@ -548,8 +571,23 @@
           "active": {
             "name": "Aktiv"
           },
+          "bed_temp": {
+            "name": "Heizbett Temperatur"
+          },
           "color": {
             "name": "Farbe"
+          },
+          "cols": {
+            "name": "Farben"
+          },
+          "ctype": {
+            "name": "Farbtyp"
+          },
+          "dry_temp": {
+            "name": "Trocknungstemperatur"
+          },
+          "dry_time": {
+            "name": "Trocknungszeit"
           },
           "empty": {
             "name": "Leer"
@@ -586,14 +624,32 @@
           }
         }
       },
-      "tray_1": {
-        "name": "Slot 1",
+      "tray": {
+        "name": "Slot {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
           "active": {
             "name": "Aktiv"
           },
+          "bed_temp": {
+            "name": "Heizbett Temperatur"
+          },
           "color": {
             "name": "Farbe"
+          },
+          "cols": {
+            "name": "Farben"
+          },
+          "ctype": {
+            "name": "Farbtyp"
+          },
+          "dry_temp": {
+            "name": "Trocknungstemperatur"
+          },
+          "dry_time": {
+            "name": "Trocknungszeit"
           },
           "empty": {
             "name": "Leer"
@@ -613,52 +669,14 @@
           "remain": {
             "name": "Verbleibende Filamentmenge"
           },
-          "tag_uid": {
-            "name": "Seriennummer der Spule"
-          },
-          "type": {
-            "name": "Typ"
-          },
           "remain_enabled": {
             "name": "Berechnung verbleibendes Filament aktiviert"
           },
-          "filament_id": {
-            "name": "Filament-ID"
-          },
-          "tray_weight": {
-            "name": "Maximales Filamentgewicht"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Slot 2",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farbe"
-          },
-          "empty": {
-            "name": "Leer"
-          },
-          "k_value": {
-            "name": "K-Wert"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Düse Mindesttemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Düse Maximaltemperatur"
-          },
-          "remain": {
-            "name": "Verbleibende Filamentmenge"
-          },
           "tag_uid": {
             "name": "Seriennummer der Spule"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Typ"
@@ -668,97 +686,6 @@
           },
           "tray_weight": {
             "name": "Maximales Filamentgewicht"
-          },
-          "remain_enabled": {
-            "name": "Berechnung verbleibendes Filament aktiviert"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Slot 3",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farbe"
-          },
-          "empty": {
-            "name": "Leer"
-          },
-          "k_value": {
-            "name": "K-Wert"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Düse Mindesttemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Düse Maximaltemperatur"
-          },
-          "remain": {
-            "name": "Verbleibende Filamentmenge"
-          },
-          "tag_uid": {
-            "name": "Seriennummer der Spule"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "Filament-ID"
-          },
-          "tray_weight": {
-            "name": "Maximales Filamentgewicht"
-          },
-          "remain_enabled": {
-            "name": "Berechnung verbleibendes Filament aktiviert"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Slot 4",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farbe"
-          },
-          "empty": {
-            "name": "Leer"
-          },
-          "k_value": {
-            "name": "K-Wert"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Düse Mindesttemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Düse Maximaltemperatur"
-          },
-          "remain": {
-            "name": "Verbleibende Filamentmenge"
-          },
-          "tag_uid": {
-            "name": "Seriennummer der Spule"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "Filament-ID"
-          },
-          "tray_weight": {
-            "name": "Maximales Filamentgewicht"
-          },
-          "remain_enabled": {
-            "name": "Berechnung verbleibendes Filament aktiviert"
           }
         }
       },
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Seriennummer"
+      },
+      "target_chamber_temp": {
+        "name": "Zieltemperatur der Kammer"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Halterposition",
+        "state": {
+          "unknown": "Unbekannt",
+          "a_top": "Position A",
+          "b_top": "Position B",
+          "centre": "Center"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Inhaberstaat",
+        "state": {
+          "unknown": "Unbekannt",
+          "idle": "Leerlauf",
+          "hotend_centre": "Zentrierung des Hotends",
+          "toolhead_centre": "Zentrierwerkzeugkopf",
+          "calibrate_hotend_rack": "Kalibriergestell",
+          "cut_material": "Schneidmaterial",
+          "unlock_hotend": "Hotend entsperren",
+          "lift_hotend_rack": "Hebegestell",
+          "place_hotend": "Hotend platzieren",
+          "pick_hotend": "Hotend auswählen",
+          "lock_hotend": "Hotend sperren"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Montiert",
+          "docked": "Angedockt",
+          "empty": "Leer"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
+          "nozzle_type": {
+            "name": "Düsentyp",
+            "state": {
+              "hardened_steel": "Gehärteter Stahl",
+              "stainless_steel": "Edelstahl",
+              "tungsten_carbide": "Wolframcarbid",
+              "high_flow_hardened_steel": "Gehärteter Stahl mit hoher Fließfähigkeit",
+              "high_flow_stainless_steel": "Edelstahl mit hohem Durchfluss",
+              "high_flow_tungsten_carbide": "Hochfließfähiges Wolframkarbid",
+              "unknown": "Unbekannt"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Düsendurchmesser"
+          },
+          "serial": {
+            "name": "Seriennummer"
+          },
+          "max_temp": {
+            "name": "Maximale Temperatur"
+          },
+          "wear": {
+            "name": "Tragen"
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "normal": "Normal",
+              "abnormal": "Abnormal",
+              "unknown": "Unbekannt"
+            }
+          },
+          "color": {
+            "name": "Farbe"
+          },
+          "filament_id": {
+            "name": "Filament-ID"
+          },
+          "filament_name": {
+            "name": "Filamentname"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Luftkanalmodus",
+        "state": {
+          "cooling": "Kühlung",
+          "heating": "Heizung",
+          "laser": "Laser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "ftp": {
         "name": "Modelldaten vom Drucker laden"
-      },
-      "airduct_mode": {
-        "name": "Aktiviere Kühlluftmodus oder Heizluft-/Filtermodus"
       }
     },
     "update": {

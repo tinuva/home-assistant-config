@@ -239,9 +239,6 @@
       "drying": {
         "name": "Sušenie"
       },
-      "airduct_mode": {
-        "name": "Režim vzduchovodu"
-      },
       "hybrid_mode_blocks_control": {
         "name": "Hybridné MQTT blokuje riadenie"
       }
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Cieľová teplota trysky"
+      },
+      "target_chamber_temperature": {
+        "name": "Cieľová teplota komory"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Štandard",
           "sport": "Šport",
           "ludicrous": "Smiešny"
+        }
+      },
+      "airduct_mode": {
+        "name": "Režim vzduchovodu",
+        "state": {
+          "cooling": "Chladenie",
+          "heating": "Kúrenie"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Vyrovnanie automatického lôžka - fáza 2",
           "heating_chamber": "Vykurovacia komora",
           "heated_bedcooling": "Vyhrievané chladenie",
-          "print_calibration_lines": "Kalibračné vedenie"
+          "print_calibration_lines": "Kalibračné vedenie",
+          "check_material": "Automatická kontrola: Materiál",
+          "calibrating_live_view_camera": "Kalibrácia kamery so živým náhľadom",
+          "waiting_for_heatbed_temperature": "Čaká sa, kým vyhrievacia podložka dosiahne cieľovú teplotu",
+          "check_material_position": "Automatická kontrola: Poloha materiálu",
+          "calibrating_cutter_model_offset": "Kalibrácia ofsetu rezacieho modulu",
+          "measuring_surface": "Meracia plocha",
+          "thermal_preconditioning": "Tepelné predkondicionovanie pre optimalizáciu prvej vrstvy",
+          "homing_blade_holder": "Držiak navádzacej čepele",
+          "calibrating_camera_offset": "Kalibrácia offsetu kamery",
+          "calibrating_blade_holder_position": "Kalibrácia polohy držiaka čepele",
+          "hotend_pick_place_test": "Test výberu a umiestnenia hotendu",
+          "waiting_chamber_temperature_equalize": "Čaká sa, kým sa teplota v komore vyrovná",
+          "preparing_hotend": "Príprava hotendu",
+          "calibrating_detection_nozzle_clumping": "Kalibrácia polohy detekcie zhlukovania trysky",
+          "purifying_chamber_air": "Čistiaci vzduch v komore",
+          "preparing_ams": "Príprava AMS"
         }
       },
       "print_progress": {
@@ -548,6 +571,9 @@
           "color": {
             "name": "Farba"
           },
+          "cols": {
+            "name": "Farby"
+          },
           "empty": {
             "name": "Prázdna"
           },
@@ -580,17 +606,35 @@
           },
           "tray_weight": {
             "name": "Maximálna hmotnosť vlákna"
+          },
+          "bed_temp": {
+            "name": "Teplota lôžka"
+          },
+          "ctype": {
+            "name": "Typ farby"
+          },
+          "dry_temp": {
+            "name": "Teplota sušenia"
+          },
+          "dry_time": {
+            "name": "Doba schnutia"
           }
         }
       },
-      "tray_1": {
-        "name": "Zásobník 1",
+      "tray": {
+        "name": "Zásobník {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
           "active": {
             "name": "Aktívny"
           },
           "color": {
             "name": "Farba"
+          },
+          "cols": {
+            "name": "Farby"
           },
           "empty": {
             "name": "Prázdny"
@@ -610,52 +654,14 @@
           "remain": {
             "name": "Zostávajúci filament"
           },
-          "tag_uid": {
-            "name": "Sériové číslo cievky"
-          },
-          "type": {
-            "name": "Typ"
-          },
           "remain_enabled": {
             "name": "Zostávajúci odhad vlákna povolený"
           },
-          "filament_id": {
-            "name": "ID vlákna"
-          },
-          "tray_weight": {
-            "name": "Maximálna hmotnosť vlákna"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Zásobník 2",
-        "state_attributes": {
-          "active": {
-            "name": "Aktívny"
-          },
-          "color": {
-            "name": "Farba"
-          },
-          "empty": {
-            "name": "Prázdny"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Názov"
-          },
-          "nozzle_temp_min": {
-            "name": "Min teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max teplota trysky"
-          },
-          "remain": {
-            "name": "Zostávajúci filament"
-          },
           "tag_uid": {
             "name": "Sériové číslo cievky"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Typ"
@@ -666,96 +672,17 @@
           "tray_weight": {
             "name": "Maximálna hmotnosť vlákna"
           },
-          "remain_enabled": {
-            "name": "Zostávajúci odhad vlákna povolený"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Zásobník 3",
-        "state_attributes": {
-          "active": {
-            "name": "Aktívny"
+          "bed_temp": {
+            "name": "Teplota lôžka"
           },
-          "color": {
-            "name": "Farba"
+          "ctype": {
+            "name": "Typ farby"
           },
-          "empty": {
-            "name": "Prázdny"
+          "dry_temp": {
+            "name": "Teplota sušenia"
           },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Názov"
-          },
-          "nozzle_temp_min": {
-            "name": "Min teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max teplota trysky"
-          },
-          "remain": {
-            "name": "Zostávajúci filament"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cievky"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID vlákna"
-          },
-          "tray_weight": {
-            "name": "Maximálna hmotnosť vlákna"
-          },
-          "remain_enabled": {
-            "name": "Zostávajúci odhad vlákna povolený"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Zásobník 4",
-        "state_attributes": {
-          "active": {
-            "name": "Aktívny"
-          },
-          "color": {
-            "name": "Farba"
-          },
-          "empty": {
-            "name": "Prázdny"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Názov"
-          },
-          "nozzle_temp_min": {
-            "name": "Min teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max teplota trysky"
-          },
-          "remain": {
-            "name": "Zostávajúci filament"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cievky"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID vlákna"
-          },
-          "tray_weight": {
-            "name": "Maximálna hmotnosť vlákna"
-          },
-          "remain_enabled": {
-            "name": "Zostávajúci odhad vlákna povolený"
+          "dry_time": {
+            "name": "Doba schnutia"
           }
         }
       },
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Sériové číslo"
+      },
+      "target_chamber_temp": {
+        "name": "Cieľová teplota komory"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Pozícia držiteľa",
+        "state": {
+          "unknown": "Neznámy",
+          "a_top": "Pozícia A",
+          "b_top": "Pozícia B",
+          "centre": "centrum"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Stav držiteľa",
+        "state": {
+          "unknown": "Neznámy",
+          "idle": "Nečinný",
+          "hotend_centre": "Strediaci hotend",
+          "toolhead_centre": "Centrovacia hlava nástroja",
+          "calibrate_hotend_rack": "Kalibračný stojan",
+          "cut_material": "Rezanie materiálu",
+          "unlock_hotend": "Odblokovanie hotendu",
+          "lift_hotend_rack": "Zdvíhací stojan",
+          "place_hotend": "Umiestnenie hotendu",
+          "pick_hotend": "Vyberáme hotend",
+          "lock_hotend": "Zamykanie hotendu"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Namontované",
+          "docked": "Ukotvený",
+          "empty": "Prázdny"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
+          "nozzle_type": {
+            "name": "Typ trysky",
+            "state": {
+              "hardened_steel": "Kalená oceľ",
+              "stainless_steel": "Nehrdzavejúca oceľ",
+              "tungsten_carbide": "Karbid volfrámu",
+              "high_flow_hardened_steel": "Kalená oceľ s vysokým prietokom",
+              "high_flow_stainless_steel": "Nerezová oceľ s vysokým prietokom",
+              "high_flow_tungsten_carbide": "Vysoko prietokový karbid volfrámu",
+              "unknown": "Neznámy"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Priemer dýzy"
+          },
+          "serial": {
+            "name": "Sériové číslo"
+          },
+          "max_temp": {
+            "name": "Maximálna teplota"
+          },
+          "wear": {
+            "name": "Opotrebenie"
+          },
+          "status": {
+            "name": "Stav",
+            "state": {
+              "normal": "Normálne",
+              "abnormal": "Abnormálne",
+              "unknown": "Neznámy"
+            }
+          },
+          "color": {
+            "name": "Farba"
+          },
+          "filament_id": {
+            "name": "ID vlákna"
+          },
+          "filament_name": {
+            "name": "Názov vlákna"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Režim vzduchovodu",
+        "state": {
+          "cooling": "Chladenie",
+          "heating": "Kúrenie",
+          "laser": "Laser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "ftp": {
         "name": "Načítať údaje o modeli z tlačiarne"
-      },
-      "airduct_mode": {
-        "name": "Režim chladenia alebo režim vykurovania/filtra"
       }
     },
     "update": {

@@ -239,9 +239,6 @@
       "drying": {
         "name": "Tørring"
       },
-      "airduct_mode": {
-        "name": "Airduct Mode"
-      },
       "hybrid_mode_blocks_control": {
         "name": "Hybrid MQTT blokerer kontrol"
       }
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Måletemperatur for dyse"
+      },
+      "target_chamber_temperature": {
+        "name": "Kammerets måltemperatur"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Standard",
           "sport": "Sport",
           "ludicrous": "Ekstrem"
+        }
+      },
+      "airduct_mode": {
+        "name": "Airduct-tilstand",
+        "state": {
+          "cooling": "Køling",
+          "heating": "Opvarmning"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Auto Bed Leveling - Fase 2",
           "heating_chamber": "Opvarmningskammer",
           "heated_bedcooling": "Opvarmet seng afkøling",
-          "print_calibration_lines": "Udskrivning af kalibreringslinjer"
+          "print_calibration_lines": "Udskrivning af kalibreringslinjer",
+          "check_material": "Autocheck: Materiale",
+          "calibrating_live_view_camera": "Live View-kamerakalibrering",
+          "waiting_for_heatbed_temperature": "Venter på, at heatbed når måltemperaturen",
+          "check_material_position": "Auto Check: Materialeposition",
+          "calibrating_cutter_model_offset": "Kuttermodul offset kalibrering",
+          "measuring_surface": "Måleoverflade",
+          "thermal_preconditioning": "Termisk forkonditionering til optimering af første lag",
+          "homing_blade_holder": "Homing klingeholder",
+          "calibrating_camera_offset": "Kalibrerende kamera offset",
+          "calibrating_blade_holder_position": "Kalibrerende knivholderposition",
+          "hotend_pick_place_test": "Hotend pick and place test",
+          "waiting_chamber_temperature_equalize": "Venter på, at kammertemperaturen er udlignet",
+          "preparing_hotend": "Forbereder hotend",
+          "calibrating_detection_nozzle_clumping": "Kalibrering af detekteringspositionen for dyseklumpning",
+          "purifying_chamber_air": "Rensende kammerluft",
+          "preparing_ams": "Forberedelse af AMS"
         }
       },
       "print_progress": {
@@ -548,6 +571,9 @@
           "color": {
             "name": "Farve"
           },
+          "cols": {
+            "name": "Farver"
+          },
           "empty": {
             "name": "Tom"
           },
@@ -580,17 +606,47 @@
           },
           "tray_weight": {
             "name": "Maksimal vægt af glødetråd"
+          },
+          "bed_temp": {
+            "name": "Sengetemperatur"
+          },
+          "ctype": {
+            "name": "Farvetype"
+          },
+          "dry_temp": {
+            "name": "Tørretemperatur"
+          },
+          "dry_time": {
+            "name": "Tørretid"
           }
         }
       },
-      "tray_1": {
-        "name": "Bakke 1",
+      "tray": {
+        "name": "Bakke {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
           "active": {
             "name": "Aktiv"
           },
+          "bed_temp": {
+            "name": "Sengetemperatur"
+          },
           "color": {
             "name": "Farve"
+          },
+          "cols": {
+            "name": "Farver"
+          },
+          "ctype": {
+            "name": "Farvetype"
+          },
+          "dry_temp": {
+            "name": "Tørretemperatur"
+          },
+          "dry_time": {
+            "name": "Tørretid"
           },
           "empty": {
             "name": "Tom"
@@ -610,52 +666,14 @@
           "remain": {
             "name": "Resterende filament"
           },
-          "tag_uid": {
-            "name": "Spolens serienummer"
-          },
-          "type": {
-            "name": "Type"
-          },
           "remain_enabled": {
             "name": "Resterende filamentestimering aktiveret"
           },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maksimal vægt af glødetråd"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Bakke 2",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farve"
-          },
-          "empty": {
-            "name": "Tom"
-          },
-          "k_value": {
-            "name": "K værdi"
-          },
-          "name": {
-            "name": "Navn"
-          },
-          "nozzle_temp_min": {
-            "name": "Dysens minimumstemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Dysens maksimumstemperatur"
-          },
-          "remain": {
-            "name": "Resterende filament"
-          },
           "tag_uid": {
             "name": "Spolens serienummer"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Type"
@@ -665,97 +683,6 @@
           },
           "tray_weight": {
             "name": "Maksimal vægt af glødetråd"
-          },
-          "remain_enabled": {
-            "name": "Resterende filamentestimering aktiveret"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Bakke 3",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farve"
-          },
-          "empty": {
-            "name": "Tom"
-          },
-          "k_value": {
-            "name": "K værdi"
-          },
-          "name": {
-            "name": "Navn"
-          },
-          "nozzle_temp_min": {
-            "name": "Dysens minimumstemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Dysens maksimumstemperatur"
-          },
-          "remain": {
-            "name": "Resterende filament"
-          },
-          "tag_uid": {
-            "name": "Spolens serienummer"
-          },
-          "type": {
-            "name": "Type"
-          },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maksimal vægt af glødetråd"
-          },
-          "remain_enabled": {
-            "name": "Resterende filamentestimering aktiveret"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Bakke 4",
-        "state_attributes": {
-          "active": {
-            "name": "Aktiv"
-          },
-          "color": {
-            "name": "Farve"
-          },
-          "empty": {
-            "name": "Tom"
-          },
-          "k_value": {
-            "name": "K værdi"
-          },
-          "name": {
-            "name": "Navn"
-          },
-          "nozzle_temp_min": {
-            "name": "Dysens minimumstemperatur"
-          },
-          "nozzle_temp_max": {
-            "name": "Dysens maksimumstemperatur"
-          },
-          "remain": {
-            "name": "Resterende filament"
-          },
-          "tag_uid": {
-            "name": "Spolens serienummer"
-          },
-          "type": {
-            "name": "Type"
-          },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maksimal vægt af glødetråd"
-          },
-          "remain_enabled": {
-            "name": "Resterende filamentestimering aktiveret"
           }
         }
       },
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Serienummer"
+      },
+      "target_chamber_temp": {
+        "name": "Kammerets måltemperatur"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Holderens position",
+        "state": {
+          "unknown": "Ukendt",
+          "a_top": "Position A",
+          "b_top": "Stilling B",
+          "centre": "Centrum"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Indehaverens tilstand",
+        "state": {
+          "unknown": "Ukendt",
+          "idle": "Ledig",
+          "hotend_centre": "Centrerende hotend",
+          "toolhead_centre": "Centrerende værktøjshoved",
+          "calibrate_hotend_rack": "Kalibreringsstativ",
+          "cut_material": "Skære materiale",
+          "unlock_hotend": "Låser hotend op",
+          "lift_hotend_rack": "Løftestativ",
+          "place_hotend": "Placering af hotend",
+          "pick_hotend": "Picking hotend",
+          "lock_hotend": "Låsende hotend"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Monteret",
+          "docked": "Docket",
+          "empty": "Tom"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
+          "nozzle_type": {
+            "name": "Dyse type",
+            "state": {
+              "hardened_steel": "Hærdet stål",
+              "stainless_steel": "Rustfrit stål",
+              "tungsten_carbide": "Wolframcarbid",
+              "high_flow_hardened_steel": "Højflow hærdet stål",
+              "high_flow_stainless_steel": "Højflow i rustfrit stål",
+              "high_flow_tungsten_carbide": "Højflow wolframcarbid",
+              "unknown": "Ukendt"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Dyse diameter"
+          },
+          "serial": {
+            "name": "Serienummer"
+          },
+          "max_temp": {
+            "name": "Max temperatur"
+          },
+          "wear": {
+            "name": "Slid"
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "normal": "Normal",
+              "abnormal": "Abnorm",
+              "unknown": "Ukendt"
+            }
+          },
+          "color": {
+            "name": "Farve"
+          },
+          "filament_id": {
+            "name": "Filament ID"
+          },
+          "filament_name": {
+            "name": "Filament navn"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Airduct-tilstand",
+        "state": {
+          "cooling": "Køling",
+          "heating": "Opvarmning",
+          "laser": "Laser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "ftp": {
         "name": "Indlæsningsmodeldata fra printer"
-      },
-      "airduct_mode": {
-        "name": "Køletilstand eller Opvarmning/Filtertilstand"
       }
     },
     "update": {

@@ -239,9 +239,6 @@
       "drying": {
         "name": "Secagem"
       },
-      "airduct_mode": {
-        "name": "Modo Airduct"
-      },
       "hybrid_mode_blocks_control": {
         "name": "Controle de blocos MQTT híbridos"
       }
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Temperatura alvo do bico"
+      },
+      "target_chamber_temperature": {
+        "name": "Temperatura alvo da câmara"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Padrão",
           "sport": "Desporto",
           "ludicrous": "Loucura"
+        }
+      },
+      "airduct_mode": {
+        "name": "Modo duto de ar",
+        "state": {
+          "cooling": "Resfriamento",
+          "heating": "Aquecimento"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Nivelamento da cama automática - Fase 2",
           "heating_chamber": "Câmara de aquecimento",
           "heated_bedcooling": "Refriamento da cama aquecida",
-          "print_calibration_lines": "Linhas de calibração de impressão"
+          "print_calibration_lines": "Linhas de calibração de impressão",
+          "check_material": "Verificação automática: material",
+          "calibrating_live_view_camera": "Calibração da câmera Live View",
+          "waiting_for_heatbed_temperature": "Aguardando que a cama térmica atinja a temperatura desejada",
+          "check_material_position": "Verificação automática: posição do material",
+          "calibrating_cutter_model_offset": "Calibração de deslocamento do módulo cortador",
+          "measuring_surface": "Superfície de medição",
+          "thermal_preconditioning": "Pré-condicionamento térmico para otimização da primeira camada",
+          "homing_blade_holder": "Suporte de lâmina de retorno",
+          "calibrating_camera_offset": "Calibrando o deslocamento da câmera",
+          "calibrating_blade_holder_position": "Calibrando a posição do suporte da lâmina",
+          "hotend_pick_place_test": "Teste de escolha e colocação de Hotend",
+          "waiting_chamber_temperature_equalize": "Aguardando que a temperatura da câmara se equalize",
+          "preparing_hotend": "Preparando hotend",
+          "calibrating_detection_nozzle_clumping": "Calibrando a posição de detecção de aglomeração de bico",
+          "purifying_chamber_air": "Purificar o ar da câmara",
+          "preparing_ams": "Preparando AMS"
         }
       },
       "print_progress": {
@@ -548,6 +571,9 @@
           "color": {
             "name": "Cor"
           },
+          "cols": {
+            "name": "Cores"
+          },
           "empty": {
             "name": "Vazio"
           },
@@ -580,17 +606,35 @@
           },
           "tray_weight": {
             "name": "Peso máximo de filamento"
+          },
+          "bed_temp": {
+            "name": "Temperatura da cama"
+          },
+          "ctype": {
+            "name": "Tipo de cor"
+          },
+          "dry_temp": {
+            "name": "Temperatura de secagem"
+          },
+          "dry_time": {
+            "name": "Tempo de secagem"
           }
         }
       },
-      "tray_1": {
-        "name": "Bandeja 1",
+      "tray": {
+        "name": "Bandeja {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
           "active": {
             "name": "Ativo"
           },
           "color": {
             "name": "Cor"
+          },
+          "cols": {
+            "name": "Cores"
           },
           "empty": {
             "name": "Vazio"
@@ -610,52 +654,14 @@
           "remain": {
             "name": "Filamento restante"
           },
-          "tag_uid": {
-            "name": "Número de série do carretel"
-          },
-          "type": {
-            "name": "Tipo"
-          },
           "remain_enabled": {
             "name": "Estimativa de filamento restante habilitada"
           },
-          "filament_id": {
-            "name": "ID do filamento"
-          },
-          "tray_weight": {
-            "name": "Peso máximo de filamento"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Bandeja 2",
-        "state_attributes": {
-          "active": {
-            "name": "Ativo"
-          },
-          "color": {
-            "name": "Cor"
-          },
-          "empty": {
-            "name": "Vazio"
-          },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nome"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima do bico"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura máxima do bico"
-          },
-          "remain": {
-            "name": "Filamento restante"
-          },
           "tag_uid": {
             "name": "Número de série do carretel"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Tipo"
@@ -666,96 +672,17 @@
           "tray_weight": {
             "name": "Peso máximo de filamento"
           },
-          "remain_enabled": {
-            "name": "Estimativa de filamento restante habilitada"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Bandeja 3",
-        "state_attributes": {
-          "active": {
-            "name": "Ativo"
+          "bed_temp": {
+            "name": "Temperatura da cama"
           },
-          "color": {
-            "name": "Cor"
+          "ctype": {
+            "name": "Tipo de cor"
           },
-          "empty": {
-            "name": "Vazio"
+          "dry_temp": {
+            "name": "Temperatura de secagem"
           },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nome"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima do bico"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura máxima do bico"
-          },
-          "remain": {
-            "name": "Filamento restante"
-          },
-          "tag_uid": {
-            "name": "Número de série do carretel"
-          },
-          "type": {
-            "name": "Tipo"
-          },
-          "filament_id": {
-            "name": "ID do filamento"
-          },
-          "tray_weight": {
-            "name": "Peso máximo de filamento"
-          },
-          "remain_enabled": {
-            "name": "Estimativa de filamento restante habilitada"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Bandeja 4",
-        "state_attributes": {
-          "active": {
-            "name": "Ativo"
-          },
-          "color": {
-            "name": "Cor"
-          },
-          "empty": {
-            "name": "Vazio"
-          },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nome"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima do bico"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura máxima do bico"
-          },
-          "remain": {
-            "name": "Filamento restante"
-          },
-          "tag_uid": {
-            "name": "Número de série do carretel"
-          },
-          "type": {
-            "name": "Tipo"
-          },
-          "filament_id": {
-            "name": "ID do filamento"
-          },
-          "tray_weight": {
-            "name": "Peso máximo de filamento"
-          },
-          "remain_enabled": {
-            "name": "Estimativa de filamento restante habilitada"
+          "dry_time": {
+            "name": "Tempo de secagem"
           }
         }
       },
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Número de série"
+      },
+      "target_chamber_temp": {
+        "name": "Temperatura alvo da câmara"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Posição do suporte",
+        "state": {
+          "unknown": "Desconhecido",
+          "a_top": "Posição A",
+          "b_top": "Posição B",
+          "centre": "Centro"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Estado do titular",
+        "state": {
+          "unknown": "Desconhecido",
+          "idle": "Parado",
+          "hotend_centre": "Centralização do hotend",
+          "toolhead_centre": "Centralização do cabeçote",
+          "calibrate_hotend_rack": "Rack de calibração",
+          "cut_material": "Material de corte",
+          "unlock_hotend": "Desbloqueando hotend",
+          "lift_hotend_rack": "Rack de elevação",
+          "place_hotend": "Colocando hotend",
+          "pick_hotend": "Escolhendo hotend",
+          "lock_hotend": "Bloqueando hotend"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Montado",
+          "docked": "Ancorado",
+          "empty": "Vazio"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
+          "nozzle_type": {
+            "name": "Tipo de bico",
+            "state": {
+              "hardened_steel": "Aço endurecido",
+              "stainless_steel": "Aço inoxidável",
+              "tungsten_carbide": "Carboneto de tungstênio",
+              "high_flow_hardened_steel": "Aço temperado de alto fluxo",
+              "high_flow_stainless_steel": "Aço inoxidável de alto fluxo",
+              "high_flow_tungsten_carbide": "Carboneto de tungstênio de alto fluxo",
+              "unknown": "Desconhecido"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Diâmetro do bico"
+          },
+          "serial": {
+            "name": "Número de série"
+          },
+          "max_temp": {
+            "name": "Temperatura máxima"
+          },
+          "wear": {
+            "name": "Vestir"
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "normal": "Normal",
+              "abnormal": "Anormal",
+              "unknown": "Desconhecido"
+            }
+          },
+          "color": {
+            "name": "Cor"
+          },
+          "filament_id": {
+            "name": "ID do filamento"
+          },
+          "filament_name": {
+            "name": "Nome do filamento"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Modo duto de ar",
+        "state": {
+          "cooling": "Resfriamento",
+          "heating": "Aquecimento",
+          "laser": "Laser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "ftp": {
         "name": "Carregar dados do modelo de impressora"
-      },
-      "airduct_mode": {
-        "name": "Modo de resfriamento ou modo de aquecimento/filtro"
       }
     },
     "update": {

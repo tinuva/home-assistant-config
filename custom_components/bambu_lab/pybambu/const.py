@@ -50,6 +50,8 @@ class Features(IntEnum):
     AIRDUCT_MODE = 23,
     SUPPORTS_EARLY_FTP_DOWNLOAD = 24,
     SECONDARY_AUX_FAN = 25,
+    HOTEND_RACK = 26,
+    ACTIVE_CHAMBER_HEATER = 27,
 
 
 class FansEnum(IntEnum):
@@ -62,7 +64,8 @@ class FansEnum(IntEnum):
 
 class TempEnum(IntEnum):
     HEATBED = 1,
-    NOZZLE = 2
+    NOZZLE = 2,
+    CHAMBER = 3
 
 
 CURRENT_STAGE_IDS = {
@@ -70,7 +73,7 @@ CURRENT_STAGE_IDS = {
     0: "printing",
     1: "auto_bed_leveling",
     2: "heatbed_preheating",
-    3: "sweeping_xy_mech_mode",
+    3: "sweeping_xy_mech_mode", # Vibration compensation
     4: "changing_filament",
     5: "m400_pause",
     6: "paused_filament_runout",
@@ -119,6 +122,22 @@ CURRENT_STAGE_IDS = {
     49: "heating_chamber",
     50: "heated_bedcooling",
     51: "print_calibration_lines",
+    52: "check_material",
+    53: "calibrating_live_view_camera",
+    54: "waiting_for_heatbed_temperature",
+    55: "check_material_position",
+    56: "calibrating_cutter_model_offset",
+    57: "measuring_surface",
+    58: "thermal_preconditioning",
+    59: "homing_blade_holder",
+    60: "calibrating_camera_offset",
+    61: "calibrating_blade_holder_position",
+    62: "hotend_pick_place_test",
+    63: "waiting_chamber_temperature_equalize",
+    64: "preparing_hotend",
+    65: "calibrating_detection_nozzle_clumping",
+    66: "purifying_chamber_air",
+    77: "preparing_ams",
     # X1 returns -1 for idle
     -1: "idle",  # DUPLICATED
     # P1 returns 255 for idle
@@ -151,6 +170,12 @@ SPEED_PROFILE = {
     2: "standard",
     3: "sport",
     4: "ludicrous"
+}
+
+AIRDUCT_MODES = {
+    0: "cooling",
+    1: "heating",
+    2: "laser",
 }
 
 PRINT_TYPE_OPTIONS = {

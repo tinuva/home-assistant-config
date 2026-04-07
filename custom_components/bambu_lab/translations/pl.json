@@ -239,9 +239,6 @@
       "drying": {
         "name": "Suszenie"
       },
-      "airduct_mode": {
-        "name": "Tryb przewodu powietrznego"
-      },
       "hybrid_mode_blocks_control": {
         "name": "Hybrydowe MQTT blokuje kontrolę"
       }
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Docelowa temperatura dyszy"
+      },
+      "target_chamber_temperature": {
+        "name": "Docelowa temperatura komory"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Standardowy",
           "sport": "Sportowy",
           "ludicrous": "Ekstremalny"
+        }
+      },
+      "airduct_mode": {
+        "name": "Tryb kanałowy",
+        "state": {
+          "cooling": "Chłodzenie",
+          "heating": "Ogrzewanie"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Auto -Bed Leveling - faza 2",
           "heating_chamber": "Komora grzewcza",
           "heated_bedcooling": "Chłodzenie stołu",
-          "print_calibration_lines": "Wydruk kalibracyjny"
+          "print_calibration_lines": "Wydruk kalibracyjny",
+          "check_material": "Automatyczna kontrola: Materiał",
+          "calibrating_live_view_camera": "Kalibracja kamery z podglądem na żywo",
+          "waiting_for_heatbed_temperature": "Oczekiwanie, aż podgrzewany stół osiągnie temperaturę docelową",
+          "check_material_position": "Automatyczna kontrola: pozycja materiału",
+          "calibrating_cutter_model_offset": "Kalibracja przesunięcia modułu tnącego",
+          "measuring_surface": "Powierzchnia pomiarowa",
+          "thermal_preconditioning": "Wstępne kondycjonowanie termiczne w celu optymalizacji pierwszej warstwy",
+          "homing_blade_holder": "Uchwyt ostrza samonaprowadzającego",
+          "calibrating_camera_offset": "Kalibracja przesunięcia kamery",
+          "calibrating_blade_holder_position": "Kalibracja położenia uchwytu ostrza",
+          "hotend_pick_place_test": "Test typu pick and place hotendu",
+          "waiting_chamber_temperature_equalize": "Czekamy aż temperatura w komorze się wyrówna",
+          "preparing_hotend": "Przygotowanie hotendu",
+          "calibrating_detection_nozzle_clumping": "Kalibracja pozycji wykrywania zlepiania się dysz",
+          "purifying_chamber_air": "Oczyszczanie powietrza w komorze",
+          "preparing_ams": "Przygotowanie AMS-u"
         }
       },
       "print_progress": {
@@ -560,6 +583,9 @@
           "color": {
             "name": "Kolor"
           },
+          "cols": {
+            "name": "Kolory"
+          },
           "empty": {
             "name": "Brak"
           },
@@ -592,17 +618,47 @@
           },
           "tray_weight": {
             "name": "Maksymalna waga filamentu"
+          },
+          "bed_temp": {
+            "name": "Temperatura łóżka"
+          },
+          "ctype": {
+            "name": "Rodzaj koloru"
+          },
+          "dry_temp": {
+            "name": "Temperatura suszenia"
+          },
+          "dry_time": {
+            "name": "Czas suszenia"
           }
         }
       },
-      "tray_1": {
-        "name": "Slot 1",
+      "tray": {
+        "name": "Slot {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Szczelina"
+          },
           "active": {
             "name": "Aktywna"
           },
+          "bed_temp": {
+            "name": "Temperatura łóżka"
+          },
           "color": {
             "name": "Kolor"
+          },
+          "cols": {
+            "name": "Kolory"
+          },
+          "ctype": {
+            "name": "Rodzaj koloru"
+          },
+          "dry_temp": {
+            "name": "Temperatura suszenia"
+          },
+          "dry_time": {
+            "name": "Czas suszenia"
           },
           "empty": {
             "name": "Pusty"
@@ -628,137 +684,8 @@
           "tag_uid": {
             "name": "Numer seryjny szpuli"
           },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID filamentu"
-          },
-          "tray_weight": {
-            "name": "Maksymalna waga filamentu"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Slot 2",
-        "state_attributes": {
-          "active": {
-            "name": "Aktywna"
-          },
-          "color": {
-            "name": "Kolor"
-          },
-          "empty": {
-            "name": "Pusty"
-          },
-          "k_value": {
-            "name": "Wartość K"
-          },
-          "name": {
-            "name": "Nazwa"
-          },
-          "nozzle_temp_min": {
-            "name": "Minimalna temperatura dyszy"
-          },
-          "nozzle_temp_max": {
-            "name": "Maksymalna temperatura dyszy"
-          },
-          "remain": {
-            "name": "Pozostały filament"
-          },
-          "remain_enabled": {
-            "name": "Szacowanie pozostałego filamentu włączone"
-          },
-          "tag_uid": {
-            "name": "Numer seryjny szpuli"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID filamentu"
-          },
-          "tray_weight": {
-            "name": "Maksymalna waga filamentu"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Slot 3",
-        "state_attributes": {
-          "active": {
-            "name": "Aktywna"
-          },
-          "color": {
-            "name": "Kolor"
-          },
-          "empty": {
-            "name": "Pusty"
-          },
-          "k_value": {
-            "name": "Wartość K"
-          },
-          "name": {
-            "name": "Nazwa"
-          },
-          "nozzle_temp_min": {
-            "name": "Minimalna temperatura dyszy"
-          },
-          "nozzle_temp_max": {
-            "name": "Maksymalna temperatura dyszy"
-          },
-          "remain": {
-            "name": "Pozostały filament"
-          },
-          "remain_enabled": {
-            "name": "Szacowanie pozostałego filamentu włączone"
-          },
-          "tag_uid": {
-            "name": "Numer seryjny szpuli"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID filamentu"
-          },
-          "tray_weight": {
-            "name": "Maksymalna waga filamentu"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Slot 4",
-        "state_attributes": {
-          "active": {
-            "name": "Aktywna"
-          },
-          "color": {
-            "name": "Kolor"
-          },
-          "empty": {
-            "name": "Pusty"
-          },
-          "k_value": {
-            "name": "Wartość K"
-          },
-          "name": {
-            "name": "Nazwa"
-          },
-          "nozzle_temp_min": {
-            "name": "Minimalna temperatura dyszy"
-          },
-          "nozzle_temp_max": {
-            "name": "Maksymalna temperatura dyszy"
-          },
-          "remain": {
-            "name": "Pozostały filament"
-          },
-          "remain_enabled": {
-            "name": "Szacowanie pozostałego filamentu włączone"
-          },
-          "tag_uid": {
-            "name": "Numer seryjny szpuli"
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Typ"
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Numer seryjny"
+      },
+      "target_chamber_temp": {
+        "name": "Docelowa temperatura komory"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Pozycja uchwytu",
+        "state": {
+          "unknown": "Nieznany",
+          "a_top": "Pozycja A",
+          "b_top": "Pozycja B",
+          "centre": "Centrum"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Stan posiadacza",
+        "state": {
+          "unknown": "Nieznany",
+          "idle": "Bezczynny",
+          "hotend_centre": "Centrowanie hotendu",
+          "toolhead_centre": "Głowica centrująca",
+          "calibrate_hotend_rack": "Stojak kalibracyjny",
+          "cut_material": "Materiał do cięcia",
+          "unlock_hotend": "Odblokowanie hotendu",
+          "lift_hotend_rack": "Podnośnik",
+          "place_hotend": "Umieszczenie hotendu",
+          "pick_hotend": "Wybieranie hotendu",
+          "lock_hotend": "Blokowanie hotendu"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Zmontowany",
+          "docked": "Zadokowany",
+          "empty": "Pusty"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Szczelina"
+          },
+          "nozzle_type": {
+            "name": "Typ dyszy",
+            "state": {
+              "hardened_steel": "Stal hartowana",
+              "stainless_steel": "Stal nierdzewna",
+              "tungsten_carbide": "Węglik wolframu",
+              "high_flow_hardened_steel": "Stal hartowana o wysokiej płynności",
+              "high_flow_stainless_steel": "Stal nierdzewna o wysokim przepływie",
+              "high_flow_tungsten_carbide": "Węglik wolframu o wysokiej płynności",
+              "unknown": "Nieznany"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Średnica dyszy"
+          },
+          "serial": {
+            "name": "Numer seryjny"
+          },
+          "max_temp": {
+            "name": "Maksymalna temperatura"
+          },
+          "wear": {
+            "name": "Nosić"
+          },
+          "status": {
+            "name": "Status",
+            "state": {
+              "normal": "Normalna",
+              "abnormal": "Nieprawidłowy",
+              "unknown": "Nieznany"
+            }
+          },
+          "color": {
+            "name": "Kolor"
+          },
+          "filament_id": {
+            "name": "Identyfikator włókna"
+          },
+          "filament_name": {
+            "name": "Nazwa włókna"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Tryb kanałowy",
+        "state": {
+          "cooling": "Chłodzenie",
+          "heating": "Ogrzewanie",
+          "laser": "Laser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "prompt_sound": {
         "name": "Włącz dźwięk powiadomień"
-      },
-      "airduct_mode": {
-        "name": "Tryb chłodzenia lub tryb ogrzewania/filtrowania"
       }
     },
     "update": {

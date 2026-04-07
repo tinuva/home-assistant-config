@@ -239,9 +239,6 @@
       "drying": {
         "name": "Assecatge"
       },
-      "airduct_mode": {
-        "name": "Mode de conducte d'aire"
-      },
       "hybrid_mode_blocks_control": {
         "name": "Control híbrid de blocs MQTT"
       }
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Temperatura objectiu del broquet"
+      },
+      "target_chamber_temperature": {
+        "name": "Temperatura objectiu de la cambra"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Estàndar",
           "sport": "Sport",
           "ludicrous": "Ludicrous"
+        }
+      },
+      "airduct_mode": {
+        "name": "Mode conducte d'aire",
+        "state": {
+          "cooling": "Refrigeració",
+          "heating": "Calefacció"
         }
       }
     },
@@ -439,7 +446,23 @@
           "bed_level_phase_2": "Anivellament del llit automàtic - Fase 2",
           "heating_chamber": "Cambra de calefacció",
           "heated_bedcooling": "Refrigeració del llit escalfat",
-          "print_calibration_lines": "Línies de calibració d'impressió"
+          "print_calibration_lines": "Línies de calibració d'impressió",
+          "check_material": "Comprovació automàtica: material",
+          "calibrating_live_view_camera": "Calibració de la càmera de visualització en directe",
+          "waiting_for_heatbed_temperature": "Esperant que el llit calent arribi a la temperatura objectiu",
+          "check_material_position": "Comprovació automàtica: posició del material",
+          "calibrating_cutter_model_offset": "Calibració de l'offset del mòdul de tallador",
+          "measuring_surface": "Superfície de mesura",
+          "thermal_preconditioning": "Precondicionament tèrmic per a l'optimització de la primera capa",
+          "homing_blade_holder": "Porta fulles d'homing",
+          "calibrating_camera_offset": "Calibrant el desplaçament de la càmera",
+          "calibrating_blade_holder_position": "Calibració de la posició del suport de la fulla",
+          "hotend_pick_place_test": "Prova de selecció i lloc de hotend",
+          "waiting_chamber_temperature_equalize": "Esperant que la temperatura de la cambra s'iguali",
+          "preparing_hotend": "Preparant hotend",
+          "calibrating_detection_nozzle_clumping": "Calibració de la posició de detecció de l'aglomeració del broquet",
+          "purifying_chamber_air": "Purificant l'aire de la cambra",
+          "preparing_ams": "Preparant AMS"
         }
       },
       "print_progress": {
@@ -548,6 +571,9 @@
           "color": {
             "name": "Color"
           },
+          "cols": {
+            "name": "Colors"
+          },
           "empty": {
             "name": "Buida"
           },
@@ -580,17 +606,47 @@
           },
           "tray_weight": {
             "name": "Pes màxim de filament"
+          },
+          "bed_temp": {
+            "name": "Temperatura del llit"
+          },
+          "ctype": {
+            "name": "Tipus de color"
+          },
+          "dry_temp": {
+            "name": "Temperatura d'assecat"
+          },
+          "dry_time": {
+            "name": "Temps d'assecat"
           }
         }
       },
-      "tray_1": {
-        "name": "Safata 1",
+      "tray": {
+        "name": "Safata {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Ranura"
+          },
           "active": {
             "name": "Activa"
           },
+          "bed_temp": {
+            "name": "Temperatura del llit"
+          },
           "color": {
             "name": "Color"
+          },
+          "cols": {
+            "name": "Colors"
+          },
+          "ctype": {
+            "name": "Tipus de color"
+          },
+          "dry_temp": {
+            "name": "Temperatura d'assecat"
+          },
+          "dry_time": {
+            "name": "Temps d'assecat"
           },
           "empty": {
             "name": "Buida"
@@ -616,46 +672,8 @@
           "tag_uid": {
             "name": "Número de sèrie de la bobina"
           },
-          "type": {
-            "name": "Tipus"
-          },
-          "filament_id": {
-            "name": "ID del filament"
-          },
-          "tray_weight": {
-            "name": "Pes màxim del filament"
-          }
-        }
-      },
-      "tray_2": {
-        "name": "Safata 2",
-        "state_attributes": {
-          "active": {
-            "name": "Activa"
-          },
-          "color": {
-            "name": "Color"
-          },
-          "empty": {
-            "name": "Buida"
-          },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nom"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima del broquet"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura màxima del broquet"
-          },
-          "remain": {
-            "name": "Filament restant"
-          },
-          "tag_uid": {
-            "name": "Número de sèrie de la bobina"
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Tipus"
@@ -665,97 +683,6 @@
           },
           "tray_weight": {
             "name": "Pes màxim del filament"
-          },
-          "remain_enabled": {
-            "name": "L'estimació del filament restant ha activat"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Safata 3",
-        "state_attributes": {
-          "active": {
-            "name": "Activa"
-          },
-          "color": {
-            "name": "Color"
-          },
-          "empty": {
-            "name": "Buida"
-          },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nom"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima del broquet"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura màxima del broquet"
-          },
-          "remain": {
-            "name": "Filament restant"
-          },
-          "tag_uid": {
-            "name": "Número de sèrie de la bobina"
-          },
-          "type": {
-            "name": "Tipus"
-          },
-          "filament_id": {
-            "name": "ID del filament"
-          },
-          "tray_weight": {
-            "name": "Pes màxim del filament"
-          },
-          "remain_enabled": {
-            "name": "L'estimació del filament restant ha activat"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Safata 4",
-        "state_attributes": {
-          "active": {
-            "name": "Activa"
-          },
-          "color": {
-            "name": "Color"
-          },
-          "empty": {
-            "name": "Buida"
-          },
-          "k_value": {
-            "name": "Valor K"
-          },
-          "name": {
-            "name": "Nom"
-          },
-          "nozzle_temp_min": {
-            "name": "Temperatura mínima del broquet"
-          },
-          "nozzle_temp_max": {
-            "name": "Temperatura màxima del broquet"
-          },
-          "remain": {
-            "name": "Filament restant"
-          },
-          "tag_uid": {
-            "name": "Número de sèrie de la bobina"
-          },
-          "type": {
-            "name": "Tipus"
-          },
-          "filament_id": {
-            "name": "ID del filament"
-          },
-          "tray_weight": {
-            "name": "Pes màxim del filament"
-          },
-          "remain_enabled": {
-            "name": "L'estimació del filament restant ha activat"
           }
         }
       },
@@ -834,6 +761,96 @@
       },
       "serial": {
         "name": "Número de sèrie"
+      },
+      "target_chamber_temp": {
+        "name": "Temperatura objectiu de la cambra"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Posició del titular",
+        "state": {
+          "unknown": "Desconegut",
+          "a_top": "Posició A",
+          "b_top": "Posició B",
+          "centre": "Centre"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Estat titular",
+        "state": {
+          "unknown": "Desconegut",
+          "idle": "Inactiu",
+          "hotend_centre": "Hotend centrat",
+          "toolhead_centre": "Cap d'eina de centratge",
+          "calibrate_hotend_rack": "Bastidor de calibratge",
+          "cut_material": "Material de tall",
+          "unlock_hotend": "S'està desbloquejant hotend",
+          "lift_hotend_rack": "Bastidor elevador",
+          "place_hotend": "Col·locació hotend",
+          "pick_hotend": "Escollint hotend",
+          "lock_hotend": "Hotend de bloqueig"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Muntat",
+          "docked": "Acoblat",
+          "empty": "Buit"
+        },
+        "state_attributes": {
+          "slot": {
+            "name": "Ranura"
+          },
+          "nozzle_type": {
+            "name": "Tipus de broquet",
+            "state": {
+              "hardened_steel": "Acer endurit",
+              "stainless_steel": "Acer inoxidable",
+              "tungsten_carbide": "Carbur de tungstè",
+              "high_flow_hardened_steel": "Acer endurit d'alt flux",
+              "high_flow_stainless_steel": "Acer inoxidable d'alt flux",
+              "high_flow_tungsten_carbide": "Carbur de tungstè d'alt flux",
+              "unknown": "Desconegut"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Diàmetre del broquet"
+          },
+          "serial": {
+            "name": "Número de sèrie"
+          },
+          "max_temp": {
+            "name": "Temperatura màxima"
+          },
+          "wear": {
+            "name": "Desgast"
+          },
+          "status": {
+            "name": "Estat",
+            "state": {
+              "normal": "Normal",
+              "abnormal": "Anormal",
+              "unknown": "Desconegut"
+            }
+          },
+          "color": {
+            "name": "Color"
+          },
+          "filament_id": {
+            "name": "ID del filament"
+          },
+          "filament_name": {
+            "name": "Nom del filament"
+          }
+        }
+      },
+      "airduct_mode": {
+        "name": "Mode conducte d'aire",
+        "state": {
+          "cooling": "Refrigeració",
+          "heating": "Calefacció",
+          "laser": "Làser"
+        }
       }
     },
     "camera": {
@@ -853,9 +870,6 @@
       },
       "ftp": {
         "name": "Carregueu les dades del model de la impressora"
-      },
-      "airduct_mode": {
-        "name": "Mode de refrigeració o mode de calefacció/filtre"
       }
     },
     "update": {

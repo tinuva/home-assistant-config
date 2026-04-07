@@ -213,16 +213,13 @@
         "name": "Drying"
       },
       "developer_lan_mode": {
-        "name": "Developer Lan Mode"
+        "name": "Developer LAN mode"
       },
       "door_open": {
-        "name": "Enclosure door"
-      },
-      "airduct_mode": {
-        "name": "Airduct Mode"
+        "name": "Door"
       },
       "timelapse": {
-        "name": "Recording timelapse"
+        "name": "Timelapse"
       },
       "hms_errors": {
         "name": "HMS errors"
@@ -234,30 +231,30 @@
         "name": "Online"
       },
       "mqtt_encryption": {
-        "name": "MQTT encryption firmware"
+        "name": "MQTT encryption"
       },
       "hybrid_mode_blocks_control": {
-        "name": "Hybrid MQTT blocks control"
+        "name": "Hybrid MQTT control blocked"
       },
       "firmware_update": {
-        "name": "Firmware update"
+        "name": "Firmware"
       },
       "extruder_filament_state": {
-        "name": "Extruder filament state"
+        "name": "Extruder filament"
       }
     },
     "button": {
       "pause": {
-        "name": "Pause printing"
+        "name": "Pause"
       },
       "resume": {
-        "name": "Resume printing"
+        "name": "Resume"
       },
       "stop": {
-        "name": "Stop printing"
+        "name": "Stop"
       },
       "refresh": {
-        "name": "Force refresh data"
+        "name": "Force refresh"
       },
       "dev": {
         "name": "Debug"
@@ -291,7 +288,7 @@
         "name": "Camera"
       },
       "cover_image": {
-        "name": "Cover Image"
+        "name": "Cover image"
       },
       "pick_image": {
         "name": "Pick image"
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Nozzle target temperature"
+      },
+      "target_chamber_temperature": {
+        "name": "Chamber target temperature"
       }
     },
     "select": {
@@ -325,9 +325,24 @@
           "sport": "Sport",
           "ludicrous": "Ludicrous"
         }
+      },
+      "airduct_mode": {
+        "name": "Airduct mode",
+        "state": {
+          "cooling": "Cooling",
+          "heating": "Heating"
+        }
       }
     },
     "sensor": {
+      "airduct_mode": {
+        "name": "Airduct mode",
+        "state": {
+          "cooling": "Cooling",
+          "heating": "Heating",
+          "laser": "Laser"
+        }
+      },
       "tool_module": {
         "name": "Tool module",
         "state": {
@@ -348,6 +363,9 @@
       },
       "chamber_temp": {
         "name": "Chamber temperature"
+      },
+      "target_chamber_temp": {
+        "name": "Chamber target temperature"
       },
       "target_nozzle_temp": {
         "name": "Nozzle target temperature"
@@ -409,7 +427,7 @@
           "sweeping_xy_mech_mode": "Sweeping XY mech mode",
           "changing_filament": "Changing filament",
           "m400_pause": "M400 pause",
-          "paused_filament_runout": "Paused due to filament runout",
+          "paused_filament_runout": "Paused: filament runout",
           "heating_hotend": "Heating hotend",
           "calibrating_extrusion": "Calibrating extrusion",
           "scanning_bed_surface": "Scanning bed surface",
@@ -419,41 +437,57 @@
           "homing_toolhead": "Homing toolhead",
           "cleaning_nozzle_tip": "Cleaning nozzle tip",
           "checking_extruder_temperature": "Checking extruder temperature",
-          "paused_user": "Printing was paused by the user",
-          "paused_front_cover_falling": "Pause of front cover falling",
+          "paused_user": "Paused by user",
+          "paused_front_cover_falling": "Paused: front cover",
           "calibrating_extrusion_flow": "Calibrating extrusion flow",
-          "paused_nozzle_temperature_malfunction": "Paused due to nozzle temperature malfunction",
-          "paused_heat_bed_temperature_malfunction": "Paused due to heat bed temperature malfunction",
+          "paused_nozzle_temperature_malfunction": "Paused: nozzle temp malfunction",
+          "paused_heat_bed_temperature_malfunction": "Paused: bed temp malfunction",
           "filament_unloading": "Filament unloading",
-          "paused_skipped_step": "Paused due to skipped steps",
+          "paused_skipped_step": "Paused: skipped steps",
           "filament_loading": "Filament loading",
           "calibrating_motor_noise": "Calibrating motor noise",
-          "paused_ams_lost": "Paused due to AMS lost",
-          "paused_low_fan_speed_heat_break": "Paused due to low heat break fan speed",
-          "paused_chamber_temperature_control_error": "Paused due to chamber temperature control error",
+          "paused_ams_lost": "Paused: AMS lost",
+          "paused_low_fan_speed_heat_break": "Paused: low heatbreak fan",
+          "paused_chamber_temperature_control_error": "Paused: chamber temp error",
           "cooling_chamber": "Cooling chamber",
-          "paused_user_gcode": "Paused by user added gcode pause instruction",
+          "paused_user_gcode": "Paused: G-code instruction",
           "motor_noise_showoff": "Motor noise show off",
-          "paused_nozzle_filament_covered_detected": "Paused due to nozzle filament covered detected",
-          "paused_cutter_error": "Paused due to cutter error",
-          "paused_first_layer_error": "Paused due to first layer error",
-          "paused_nozzle_clog": "Paused due to nozzle clog",
-          "check_absolute_accuracy_before_calibration": "Check printer absolute accuracy before calibration",
+          "paused_nozzle_filament_covered_detected": "Paused: nozzle covered",
+          "paused_cutter_error": "Paused: cutter error",
+          "paused_first_layer_error": "Paused: first layer error",
+          "paused_nozzle_clog": "Paused: nozzle clog",
+          "check_absolute_accuracy_before_calibration": "Check accuracy before calibration",
           "absolute_accuracy_calibration": "Absolute accuracy calibration",
-          "check_absolute_accuracy_after_calibration": "Check printer absolute accuracy after calibration",
+          "check_absolute_accuracy_after_calibration": "Check accuracy after calibration",
           "calibrate_nozzle_offset": "Nozzle offset calibration",
           "bed_level_high_temperature": "High temperature auto bed levelling",
-          "check_quick_release": "Auto Check: Quick Release Lever",
-          "check_door_and_cover": "Auto Check: Door and Upper Cover",
-          "laser_calibration": "Laser Calibration",
-          "check_plaform": "Auto Check: Platform",
-          "check_birdeye_camera_position": "Auto Check: Birdeye Camera Position",
-          "calibrate_birdeye_camera": "Calibrate Birdeye Camera",
+          "check_quick_release": "Auto check: quick release lever",
+          "check_door_and_cover": "Auto check: door and upper cover",
+          "laser_calibration": "Laser calibration",
+          "check_plaform": "Auto check: platform",
+          "check_birdeye_camera_position": "Auto check: birdeye camera",
+          "calibrate_birdeye_camera": "Calibrate birdeye camera",
           "bed_level_phase_1": "Auto bed leveling - phase 1",
           "bed_level_phase_2": "Auto bed leveling - phase 2",
           "heating_chamber": "Heating chamber",
           "heated_bedcooling": "Heated bed cooling",
           "print_calibration_lines": "Printing calibration lines",
+          "check_material": "Auto check: material",
+          "calibrating_live_view_camera": "Live View camera calibration",
+          "waiting_for_heatbed_temperature": "Waiting for bed temperature",
+          "check_material_position": "Auto check: material position",
+          "calibrating_cutter_model_offset": "Cutter module offset calibration",
+          "measuring_surface": "Measuring surface",
+          "thermal_preconditioning": "Thermal preconditioning",
+          "homing_blade_holder": "Homing blade holder",
+          "calibrating_camera_offset": "Calibrating camera offset",
+          "calibrating_blade_holder_position": "Calibrating blade holder position",
+          "hotend_pick_place_test": "Hotend pick and place test",
+          "waiting_chamber_temperature_equalize": "Waiting for chamber temperature to equalize",
+          "preparing_hotend": "Preparing hotend",
+          "calibrating_detection_nozzle_clumping": "Calibrating the detection position of nozzle clumping",
+          "purifying_chamber_air": "Purifying chamber air",
+          "preparing_ams": "Preparing AMS",
           "idle": "Idle"
         }
       },
@@ -473,14 +507,14 @@
         "name": "Print status",
         "state": {
           "failed": "Failed",
-          "finish": "Finish",
+          "finish": "Finished",
           "idle": "Idle",
           "offline": "Offline",
-          "prepare": "Prepare",
+          "prepare": "Preparing",
           "running": "Running",
-          "pause": "Pause",
+          "pause": "Paused",
           "slicing": "Slicing",
-          "init": "Init"
+          "init": "Initializing"
         }
       },
       "printable_objects": {
@@ -621,8 +655,23 @@
           "active": {
             "name": "Active"
           },
+          "bed_temp": {
+            "name": "Bed temperature"
+          },
           "color": {
             "name": "Color"
+          },
+          "cols": {
+            "name": "Colors"
+          },
+          "ctype": {
+            "name": "Color type"
+          },
+          "dry_temp": {
+            "name": "Drying temperature"
+          },
+          "dry_time": {
+            "name": "Drying time"
           },
           "empty": {
             "name": "Empty"
@@ -659,14 +708,32 @@
           }
         }
       },
-      "tray_1": {
-        "name": "Tray 1",
+      "tray": {
+        "name": "Tray {tray_number}",
         "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
           "active": {
             "name": "Active"
           },
+          "bed_temp": {
+            "name": "Bed temperature"
+          },
           "color": {
             "name": "Color"
+          },
+          "cols": {
+            "name": "Colors"
+          },
+          "ctype": {
+            "name": "Color type"
+          },
+          "dry_temp": {
+            "name": "Drying temperature"
+          },
+          "dry_time": {
+            "name": "Drying time"
           },
           "empty": {
             "name": "Empty"
@@ -691,6 +758,9 @@
           },
           "tag_uid": {
             "name": "Spool serial number"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Type"
@@ -703,136 +773,67 @@
           }
         }
       },
-      "tray_2": {
-        "name": "Tray 2",
-        "state_attributes": {
-          "active": {
-            "name": "Active"
-          },
-          "color": {
-            "name": "Color"
-          },
-          "empty": {
-            "name": "Empty"
-          },
-          "k_value": {
-            "name": "K value"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Nozzle min temperature"
-          },
-          "nozzle_temp_max": {
-            "name": "Nozzle max temperature"
-          },
-          "remain": {
-            "name": "Remaining filament"
-          },
-          "remain_enabled": {
-            "name": "Remaining filament estimation enabled"
-          },
-          "tag_uid": {
-            "name": "Spool serial number"
-          },
-          "type": {
-            "name": "Type"
-          },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maximum weight of filament"
-          }
+      "hotend_rack_holder_position": {
+        "name": "Holder position",
+        "state": {
+          "unknown": "Unknown",
+          "a_top": "Position A",
+          "b_top": "Position B",
+          "centre": "Centre"
         }
       },
-      "tray_3": {
-        "name": "Tray 3",
-        "state_attributes": {
-          "active": {
-            "name": "Active"
-          },
-          "color": {
-            "name": "Color"
-          },
-          "empty": {
-            "name": "Empty"
-          },
-          "k_value": {
-            "name": "K value"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Nozzle min temperature"
-          },
-          "nozzle_temp_max": {
-            "name": "Nozzle max temperature"
-          },
-          "remain": {
-            "name": "Remaining filament"
-          },
-          "remain_enabled": {
-            "name": "Remaining filament estimation enabled"
-          },
-          "tag_uid": {
-            "name": "Spool serial number"
-          },
-          "type": {
-            "name": "Type"
-          },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maximum weight of filament"
-          }
+      "hotend_rack_holder_state": {
+        "name": "Holder state",
+        "state": {
+          "unknown": "Unknown",
+          "idle": "Idle",
+          "hotend_centre": "Centering hotend",
+          "toolhead_centre": "Centering toolhead",
+          "calibrate_hotend_rack": "Calibrating rack",
+          "cut_material": "Cutting material",
+          "unlock_hotend": "Unlocking hotend",
+          "lift_hotend_rack": "Lifting rack",
+          "place_hotend": "Placing hotend",
+          "pick_hotend": "Picking hotend",
+          "lock_hotend": "Locking hotend"
         }
       },
-      "tray_4": {
-        "name": "Tray 4",
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Mounted",
+          "docked": "Docked",
+          "empty": "Empty"
+        },
         "state_attributes": {
-          "active": {
-            "name": "Active"
+          "slot": { "name": "Slot" },
+          "nozzle_type": {
+            "name": "Nozzle type",
+            "state": {
+              "hardened_steel": "Hardened steel",
+              "stainless_steel": "Stainless steel",
+              "tungsten_carbide": "Tungsten carbide",
+              "high_flow_hardened_steel": "High flow hardened steel",
+              "high_flow_stainless_steel": "High flow stainless steel",
+              "high_flow_tungsten_carbide": "High flow tungsten carbide",
+              "unknown": "Unknown"
+            }
           },
-          "color": {
-            "name": "Color"
+          "nozzle_diameter": { "name": "Nozzle diameter" },
+          "serial": { "name": "Serial number" },
+          "max_temp": { "name": "Max temperature" },
+          "wear": { "name": "Wear" },
+          "status": {
+            "name": "Status",
+            "state": {
+              "normal": "Normal",
+              "abnormal": "Abnormal",
+              "unknown": "Unknown"
+            }
           },
-          "empty": {
-            "name": "Empty"
-          },
-          "k_value": {
-            "name": "K value"
-          },
-          "name": {
-            "name": "Name"
-          },
-          "nozzle_temp_min": {
-            "name": "Nozzle min temperature"
-          },
-          "nozzle_temp_max": {
-            "name": "Nozzle max temperature"
-          },
-          "remain": {
-            "name": "Remaining filament"
-          },
-          "remain_enabled": {
-            "name": "Remaining filament estimation enabled"
-          },
-          "tag_uid": {
-            "name": "Spool serial number"
-          },
-          "type": {
-            "name": "Type"
-          },
-          "filament_id": {
-            "name": "Filament ID"
-          },
-          "tray_weight": {
-            "name": "Maximum weight of filament"
-          }
+          "color": { "name": "Color" },
+          "filament_id": { "name": "Filament ID" },
+          "filament_name": { "name": "Filament name" }
         }
       }
     },
@@ -843,19 +844,16 @@
     },
     "switch": {
       "camera": {
-        "name": "Enable camera"
+        "name": "Camera"
       },
       "imagecamera": {
-        "name": "Use image sensor camera"
+        "name": "Image sensor camera"
       },
       "ftp": {
-        "name": "Load model data from printer"
+        "name": "Model data loading"
       },
       "prompt_sound": {
-        "name": "Allow Prompt Sound"
-      },
-      "airduct_mode": {
-        "name": "Cooling Mode or Heating/Filter Mode"
+        "name": "Prompt sound"
       }
     },
     "update": {

@@ -218,9 +218,6 @@
       "door_open": {
         "name": "Dvířka krytu"
       },
-      "airduct_mode": {
-        "name": "Režim vzduchového kanálu"
-      },
       "timelapse": {
         "name": "Nahrávání časosběru"
       },
@@ -314,6 +311,9 @@
       },
       "target_nozzle_temperature": {
         "name": "Cílová teplota trysky"
+      },
+      "target_chamber_temperature": {
+        "name": "Cílová teplota komory"
       }
     },
     "select": {
@@ -324,6 +324,13 @@
           "standard": "Standardní",
           "sport": "Sportovní",
           "ludicrous": "Šílená"
+        }
+      },
+      "airduct_mode": {
+        "name": "Režim vzduchovodu",
+        "state": {
+          "cooling": "Chlazení",
+          "heating": "Topení"
         }
       }
     },
@@ -454,7 +461,23 @@
           "heating_chamber": "Zahřívání komory",
           "heated_bedcooling": "Chlazení vyhřívané podložky",
           "print_calibration_lines": "Tisk kalibračních čar",
-          "idle": "Nečinnost"
+          "idle": "Nečinnost",
+          "check_material": "Automatická kontrola: Materiál",
+          "calibrating_live_view_camera": "Kalibrace kamery s živým náhledem",
+          "waiting_for_heatbed_temperature": "Čekání, až vyhřívaná podložka dosáhne cílové teploty",
+          "check_material_position": "Automatická kontrola: Poloha materiálu",
+          "calibrating_cutter_model_offset": "Kalibrace offsetu řezacího modulu",
+          "measuring_surface": "Měřicí plocha",
+          "thermal_preconditioning": "Tepelná předúprava pro optimalizaci první vrstvy",
+          "homing_blade_holder": "Držák naváděcí čepele",
+          "calibrating_camera_offset": "Kalibrace offsetu kamery",
+          "calibrating_blade_holder_position": "Kalibrace polohy držáku čepele",
+          "hotend_pick_place_test": "Test výběru a umístění hotendu",
+          "waiting_chamber_temperature_equalize": "Čekání na vyrovnání teploty komory",
+          "preparing_hotend": "Příprava hotendu",
+          "calibrating_detection_nozzle_clumping": "Kalibrace polohy detekce shlukování trysky",
+          "purifying_chamber_air": "Čistící komorový vzduch",
+          "preparing_ams": "Příprava AMS"
         }
       },
       "sdcard_status": {
@@ -624,6 +647,9 @@
           "color": {
             "name": "Barva"
           },
+          "cols": {
+            "name": "Barvy"
+          },
           "empty": {
             "name": "Prázdná"
           },
@@ -647,6 +673,83 @@
           },
           "tag_uid": {
             "name": "Sériové číslo cívky"
+          },
+          "type": {
+            "name": "Typ"
+          },
+          "filament_id": {
+            "name": "ID Filamentu"
+          },
+          "tray_weight": {
+            "name": "Maximální hmotnost filamentu"
+          },
+          "bed_temp": {
+            "name": "Teplota postele"
+          },
+          "ctype": {
+            "name": "Typ barvy"
+          },
+          "dry_temp": {
+            "name": "Teplota sušení"
+          },
+          "dry_time": {
+            "name": "Doba schnutí"
+          }
+        }
+      },
+      "tray": {
+        "name": "Slot {tray_number}",
+        "state_attributes": {
+          "slot": {
+            "name": "Slot"
+          },
+          "active": {
+            "name": "Aktivní"
+          },
+          "bed_temp": {
+            "name": "Teplota postele"
+          },
+          "color": {
+            "name": "Barva"
+          },
+          "cols": {
+            "name": "Barvy"
+          },
+          "ctype": {
+            "name": "Typ barvy"
+          },
+          "dry_temp": {
+            "name": "Teplota sušení"
+          },
+          "dry_time": {
+            "name": "Doba schnutí"
+          },
+          "empty": {
+            "name": "Prázdná"
+          },
+          "k_value": {
+            "name": "Hodnota K"
+          },
+          "name": {
+            "name": "Název"
+          },
+          "nozzle_temp_min": {
+            "name": "Min. teplota trysky"
+          },
+          "nozzle_temp_max": {
+            "name": "Max. teplota trysky"
+          },
+          "remain": {
+            "name": "Zbývající filament"
+          },
+          "remain_enabled": {
+            "name": "Odhad zbývajícího filamentu povolen"
+          },
+          "tag_uid": {
+            "name": "Sériové číslo cívky"
+          },
+          "tray_uuid": {
+            "name": "Tray UUID"
           },
           "type": {
             "name": "Typ"
@@ -659,180 +762,94 @@
           }
         }
       },
-      "tray_1": {
-        "name": "Slot 1",
+      "target_chamber_temp": {
+        "name": "Cílová teplota komory"
+      },
+      "hotend_rack_holder_position": {
+        "name": "Pozice držáku",
+        "state": {
+          "unknown": "Neznámý",
+          "a_top": "Pozice A",
+          "b_top": "Pozice B",
+          "centre": "Centrum"
+        }
+      },
+      "hotend_rack_holder_state": {
+        "name": "Stav držitele",
+        "state": {
+          "unknown": "Neznámý",
+          "idle": "Líný",
+          "hotend_centre": "Centrovací hotend",
+          "toolhead_centre": "Centrovací hlava nástroje",
+          "calibrate_hotend_rack": "Kalibrační stojan",
+          "cut_material": "Řezný materiál",
+          "unlock_hotend": "Odblokování hotendu",
+          "lift_hotend_rack": "Zvedací stojan",
+          "place_hotend": "Umístění hotendu",
+          "pick_hotend": "Vybíráme hotend",
+          "lock_hotend": "Uzamykání hotendu"
+        }
+      },
+      "hotend_rack_hotend": {
+        "name": "Hotend {hotend_id}",
+        "state": {
+          "mounted": "Jízdní",
+          "docked": "Ukotveno",
+          "empty": "Prázdný"
+        },
         "state_attributes": {
-          "active": {
-            "name": "Aktivní"
+          "slot": {
+            "name": "Slot"
+          },
+          "nozzle_type": {
+            "name": "Typ trysky",
+            "state": {
+              "hardened_steel": "Kalená ocel",
+              "stainless_steel": "Nerez",
+              "tungsten_carbide": "Karbid wolframu",
+              "high_flow_hardened_steel": "Kalená ocel s vysokým průtokem",
+              "high_flow_stainless_steel": "Nerezová ocel s vysokým průtokem",
+              "high_flow_tungsten_carbide": "Vysoce tekutý karbid wolframu",
+              "unknown": "Neznámý"
+            }
+          },
+          "nozzle_diameter": {
+            "name": "Průměr trysky"
+          },
+          "serial": {
+            "name": "Sériové číslo"
+          },
+          "max_temp": {
+            "name": "Maximální teplota"
+          },
+          "wear": {
+            "name": "Nosit"
+          },
+          "status": {
+            "name": "Postavení",
+            "state": {
+              "normal": "Normální",
+              "abnormal": "Abnormální",
+              "unknown": "Neznámý"
+            }
           },
           "color": {
             "name": "Barva"
           },
-          "empty": {
-            "name": "Prázdná"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Název"
-          },
-          "nozzle_temp_min": {
-            "name": "Min. teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max. teplota trysky"
-          },
-          "remain": {
-            "name": "Zbývající filament"
-          },
-          "remain_enabled": {
-            "name": "Odhad zbývajícího filamentu povolen"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cívky"
-          },
-          "type": {
-            "name": "Typ"
-          },
           "filament_id": {
-            "name": "ID Filamentu"
+            "name": "ID vlákna"
           },
-          "tray_weight": {
-            "name": "Maximální hmotnost filamentu"
+          "filament_name": {
+            "name": "Název vlákna"
           }
         }
       },
-      "tray_2": {
-        "name": "Slot 2",
-        "state_attributes": {
-          "active": {
-            "name": "Aktivní"
-          },
-          "color": {
-            "name": "Barva"
-          },
-          "empty": {
-            "name": "Prázdná"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Název"
-          },
-          "nozzle_temp_min": {
-            "name": "Min. teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max. teplota trysky"
-          },
-          "remain": {
-            "name": "Zbývající filament"
-          },
-          "remain_enabled": {
-            "name": "Odhad zbývajícího filamentu povolen"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cívky"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID Filamentu"
-          },
-          "tray_weight": {
-            "name": "Maximální hmotnost filamentu"
-          }
-        }
-      },
-      "tray_3": {
-        "name": "Slot 3",
-        "state_attributes": {
-          "active": {
-            "name": "Aktivní"
-          },
-          "color": {
-            "name": "Barva"
-          },
-          "empty": {
-            "name": "Prázdná"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Název"
-          },
-          "nozzle_temp_min": {
-            "name": "Min. teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max. teplota trysky"
-          },
-          "remain": {
-            "name": "Zbývající filament"
-          },
-          "remain_enabled": {
-            "name": "Odhad zbývajícího filamentu povolen"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cívky"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID Filamentu"
-          },
-          "tray_weight": {
-            "name": "Maximální hmotnost filamentu"
-          }
-        }
-      },
-      "tray_4": {
-        "name": "Slot 4",
-        "state_attributes": {
-          "active": {
-            "name": "Aktivní"
-          },
-          "color": {
-            "name": "Barva"
-          },
-          "empty": {
-            "name": "Prázdná"
-          },
-          "k_value": {
-            "name": "Hodnota K"
-          },
-          "name": {
-            "name": "Název"
-          },
-          "nozzle_temp_min": {
-            "name": "Min. teplota trysky"
-          },
-          "nozzle_temp_max": {
-            "name": "Max. teplota trysky"
-          },
-          "remain": {
-            "name": "Zbývající filament"
-          },
-          "remain_enabled": {
-            "name": "Odhad zbývajícího filamentu povolen"
-          },
-          "tag_uid": {
-            "name": "Sériové číslo cívky"
-          },
-          "type": {
-            "name": "Typ"
-          },
-          "filament_id": {
-            "name": "ID Filamentu"
-          },
-          "tray_weight": {
-            "name": "Maximální hmotnost filamentu"
-          }
+      "airduct_mode": {
+        "name": "Režim vzduchovodu",
+        "state": {
+          "cooling": "Chlazení",
+          "heating": "Topení",
+          "laser": "Laser"
         }
       }
     },
@@ -853,9 +870,6 @@
       },
       "prompt_sound": {
         "name": "Povolit zvukové upozornění"
-      },
-      "airduct_mode": {
-        "name": "Režim chlazení nebo vytápění/filtrace"
       }
     },
     "update": {

@@ -9,6 +9,7 @@ import math
 from random import randint
 from typing import TYPE_CHECKING, Any
 
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import (
     async_track_point_in_utc_time,
     async_track_utc_time_change,
@@ -22,10 +23,13 @@ from .const import (
     ADVANCED_ESTIMATED_ACTUALS_FETCH_DELAY,
     ADVANCED_ESTIMATED_ACTUALS_LOG_APE_PERCENTILES,
     ADVANCED_ESTIMATED_ACTUALS_LOG_MAPE_BREAKDOWN,
+    DOMAIN,
     DT_DATE_FORMAT,
     DT_DATE_ONLY_FORMAT,
     DT_TIME_FORMAT,
     DT_TIME_FORMAT_SHORT,
+    ENTITY_ACCURACY,
+    SENSOR,
     TASK_ACTUALS_FETCH,
     TASK_CHECK_FETCH,
     TASK_FORECASTS_FETCH_IMMEDIATE,
@@ -53,6 +57,7 @@ class Updater:
         self._coordinator = coordinator
         self.divisions: int = 0
         self.interval_just_passed: dt | None = None
+        self.accuracy_data: dict[str, Any] = {}
         self._intervals: list[dt] = []
         self._update_sequence: list[int] = []
         self._sunrise: dt
@@ -381,8 +386,13 @@ class Updater:
             await self._coordinator.solcast.dampening.apply_forward()
             await self._coordinator.solcast.build_forecast_data()
 
-        if _LOGGER.isEnabledFor(logging.DEBUG) and self._coordinator.solcast.options.get_actuals:
-            await self.calculate_accuracy_metrics()
+        if self._coordinator.solcast.options.get_actuals:
+            entity_registry = er.async_get(self._coordinator.hass)
+            entity_id = entity_registry.async_get_entity_id(SENSOR, DOMAIN, ENTITY_ACCURACY)
+            if entity_id is not None:
+                entity = entity_registry.async_get(entity_id)
+                if entity is not None and not entity.disabled_by:
+                    await self.calculate_accuracy_metrics()
 
     async def calculate_accuracy_metrics(self) -> None:
         """Calculate accuracy metrics for generation vs. undampened/dampened actuals."""
@@ -407,6 +417,7 @@ class Updater:
 
         inf_u = False
         inf_d = False
+        inf_d_daily: dict[str, float] = {}
         if self._coordinator.solcast.options.auto_dampen and earliest_dampened_start is not None:
             if self._coordinator.solcast.advanced_options[ADVANCED_ESTIMATED_ACTUALS_LOG_MAPE_BREAKDOWN]:
                 _LOGGER.debug(
@@ -417,7 +428,7 @@ class Updater:
                     .strftime(DT_DATE_ONLY_FORMAT),
                 )
 
-            inf_d, error_dampened, error_dampened_percentiles = await self._coordinator.solcast.dampening.calculate_error(
+            inf_d, error_dampened, error_dampened_percentiles, inf_d_daily = await self._coordinator.solcast.dampening.calculate_error(
                 generation_dampening_day,
                 generation_dampening,
                 await self._coordinator.solcast.query.get_estimate_list(
@@ -439,7 +450,7 @@ class Updater:
                 .astimezone(self._coordinator.solcast.options.tz)
                 .strftime(DT_DATE_ONLY_FORMAT),
             )
-        inf_u, error_undampened, error_undampened_percentiles = await self._coordinator.solcast.dampening.calculate_error(
+        inf_u, error_undampened, error_undampened_percentiles, inf_u_daily = await self._coordinator.solcast.dampening.calculate_error(
             generation_dampening_day,
             generation_dampening,
             await self._coordinator.solcast.query.get_estimate_list(
@@ -462,3 +473,19 @@ class Updater:
                 error_undampened_percentiles[i],
                 f", ({error_dampened_percentiles[i]:.2f}% dampened)" if error_dampened_percentiles[i] != -1.0 else "",
             )
+
+        model_days = self._coordinator.solcast.advanced_options[ADVANCED_AUTOMATED_DAMPENING_MODEL_DAYS]
+        self.accuracy_data = {
+            "dampened_mape": round(error_dampened, 2) if error_dampened not in (-1.0, math.inf) else None,
+            "undampened_mape": round(error_undampened, 2) if error_undampened != math.inf else None,
+            "model_period_days": model_days,
+            "infinity_excluded": inf_u or inf_d,
+            "dampened_daily": inf_d_daily,
+            "undampened_daily": inf_u_daily,
+            "dampened_percentiles": (
+                {p: round(error_dampened_percentiles[i], 2) for i, p in enumerate(percentiles_to_calculate)}
+                if error_dampened != -1.0
+                else {}
+            ),
+            "undampened_percentiles": {p: round(error_undampened_percentiles[i], 2) for i, p in enumerate(percentiles_to_calculate)},
+        }
