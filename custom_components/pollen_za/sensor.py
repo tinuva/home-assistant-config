@@ -96,7 +96,7 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
 
         soup = BeautifulSoup(response.text, "html.parser")
         report_links = soup.find_all(
-            "a", href=re.compile(r"/report/\d{1,2}-\w+-\d{4}/")
+            "a", href=re.compile(r"/report/\d{1,2}-\w+-\d{4}(?:-\d+)?/")
         )
 
         if not report_links:
@@ -107,7 +107,7 @@ class PollenDataUpdateCoordinator(DataUpdateCoordinator):
             latest_report_url = f"https://pollencount.co.za{latest_report_url}"
 
         # Extract report date from URL (format: /report/DD-Month-YYYY/)
-        date_match = re.search(r"/report/(\d{1,2}-\w+-\d{4})/", latest_report_url)
+        date_match = re.search(r"/report/(\d{1,2}-\w+-\d{4})(?:-\d+)?/", latest_report_url)
         report_date = None
         if date_match:
             date_str = date_match.group(1)
