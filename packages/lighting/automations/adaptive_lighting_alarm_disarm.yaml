@@ -9,9 +9,9 @@ automation:
       - platform: state
         entity_id: alarm_control_panel.home_alarm
         to: 'disarmed'
-    condition:
-      - condition: template
-        value_template: "{{ trigger.from_state.state != 'unavailable' }}"
+        not_from:
+          - "unknown"
+          - "unavailable"
     action:
       - service: switch.turn_off
         target:

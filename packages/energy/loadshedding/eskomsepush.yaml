@@ -176,11 +176,10 @@ automation:
         to: "1" #stable after checking power
         for:
           seconds: 30
+        not_from:
+          - "unknown"
+          - "unavailable"
     condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state is not none and
-            trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: state
         entity_id: timer.loadshedding_slot
         state: "active"
@@ -194,18 +193,12 @@ automation:
     trigger:
       - entity_id: sensor.loadshedding_slot_forecast
         platform: state
-    condition:
-      - condition: not
-        conditions:
-          - condition: state
-            entity_id: sensor.loadshedding_slot_forecast
-            state: "unavailable"
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != trigger.to_state.state }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != "unavailable" }}
+        not_from:
+          - "unknown"
+          - "unavailable"
+        not_to:
+          - "unknown"
+          - "unavailable"
     action:
       - alias: "Alert change"
         service: script.alert

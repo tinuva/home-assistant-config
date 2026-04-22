@@ -377,13 +377,6 @@ automation:
         below: "100"
         for:
           seconds: 60
-    condition:
-      - condition: or
-        conditions:
-          - condition: template
-            value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
-          - condition: template
-            value_template: "{{ not trigger.from_state }}"
     action:
       - service: timer.finish
         data_template:

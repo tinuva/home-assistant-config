@@ -16,19 +16,12 @@ automation:
     trigger:
       - entity_id: sensor.phl_5410ecfffe2281d9_lock_state_sensor
         platform: state
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != trigger.to_state.state }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != "unavailable" }}
-      - condition: template
-        value_template: >
-          {{ trigger.to_state.state != "unavailable" }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.last_changed != trigger.to_state.last_changed }}
+        not_from:
+          - "unknown"
+          - "unavailable"
+        not_to:
+          - "unknown"
+          - "unavailable"
     action:
       - service: script.alert
         data:
@@ -43,13 +36,6 @@ automation:
       - platform: numeric_state
         entity_id: sensor.kitchen_pet_door_battery_average
         below: '20'
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != trigger.to_state.state }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != "unavailable" }}
     action:
       - service: script.alert
         data:

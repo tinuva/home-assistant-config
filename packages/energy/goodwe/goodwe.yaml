@@ -352,11 +352,10 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.energy_mode_code
+        not_from:
+          - "unknown"
+          - "unavailable"
     condition:
-      - condition: template
-        value_template: >-
-          {{ trigger.from_state is not none and
-            trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: numeric_state
         entity_id: sensor.energy_mode_code
         above: "-1"
@@ -372,11 +371,10 @@ automation:
     trigger:
       - platform: state
         entity_id: sensor.work_mode_code
+        not_from:
+          - "unknown"
+          - "unavailable"
     condition:
-      - condition: template
-        value_template: >-
-          {{ trigger.from_state is not none and
-            trigger.from_state.state not in ['unknown','unavailable'] }}
       - condition: numeric_state
         entity_id: sensor.work_mode_code
         above: "-1"

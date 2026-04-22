@@ -37,8 +37,6 @@ automation:
       # - condition: numeric_state
       #   entity_id: sensor.average_temperature_outside_last_1_day
       #   above: '19.5'
-      - condition: template
-        value_template: "{{ trigger.from_state and trigger.from_state.state != 'unavailable' }}"
       #- condition: state
       #  entity_id: timer.loadshedding_slot
       #  state: 'idle'

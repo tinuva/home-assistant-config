@@ -239,22 +239,21 @@ automation:
       - entity_id: sensor.home_alarm_keypad
         platform: state
         to: 'zone/sensor fault'
+        not_from:
+          - "unknown"
+          - "unavailable"
       - entity_id: binary_sensor.alarm_trouble
         platform: state
         to: 'on'
+        not_from:
+          - "unknown"
+          - "unavailable"
       - entity_id: binary_sensor.alarm_trouble
         platform: state
         to: 'off'
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != trigger.to_state.state }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != "unavailable" }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state != None }}
+        not_from:
+          - "unknown"
+          - "unavailable"
     action:
       - service: script.log
         data:
@@ -271,16 +270,15 @@ automation:
       - entity_id: binary_sensor.alarm_battery_trouble
         platform: state
         to: 'on'
+        not_from:
+          - "unknown"
+          - "unavailable"
       - entity_id: binary_sensor.alarm_battery_trouble
         platform: state
         to: 'off'
-    condition:
-      - condition: template
-        value_template: >
-          {{ trigger.from_state != None }}
-      - condition: template
-        value_template: >
-          {{ trigger.from_state.state != "unavailable" }}
+        not_from:
+          - "unknown"
+          - "unavailable"
     action:
       - service: script.log
         data:
