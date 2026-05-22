@@ -8,6 +8,12 @@ automation:
       - platform: sun
         event: sunrise
         offset: "+01:20:00"
+    condition:
+      - condition: not
+        conditions:
+          - condition: state
+            entity_id: alarm_control_panel.home_alarm
+            state: "armed_home"
     action:
       - service: light.turn_off
         data_template:
