@@ -3,7 +3,7 @@ import logging
 import re
 import time
 
-from .const import STATE_CHANGE_PARTITION, STATE_CHANGE_ZONE, STATE_CHANGE_ZONE_BYPASS
+from .const import PROTOCOL_DEBUG, STATE_CHANGE_PARTITION, STATE_CHANGE_ZONE, STATE_CHANGE_ZONE_BYPASS
 from .envisalink_base_client import EnvisalinkClient
 from .honeywell_envisalinkdefs import (
     Beep_Flags,
@@ -122,35 +122,65 @@ class HoneywellClient(EnvisalinkClient):
         """Public method to toggle a zone's bypass state."""
         await self.keypresses_to_partition(1, '%s9' % (code))
 
+    def _parse_frames(self, raw_input: str) -> (list, str):
+        frames = []
+        if not self._loggedin:
+            # Not logged in yet so treat the first part of the payload as a login handshake message.
+            frame_end = raw_input.find('\r\n')
+            if frame_end == -1:
+                # Haven't got a full login response yet
+                return ([], raw_input)
+            # Extract the login response and then let normal frame parsing process the rest
+            frames.append(raw_input[:frame_end])
+            raw_input = raw_input[frame_end+2:]
+
+        frames.extend(raw_input.split('$'))
+        unprocessed_data = frames.pop()
+
+        for frame_idx in range(len(frames)):
+            frame = frames[frame_idx]
+
+            # Drop any characters preceding the frame start sentinel (% or ^).
+            for idx in range(len(frame)):
+                if frame[idx] in '%^':
+                    frames[frame_idx] = frame[idx:]
+                    break
+
+        _LOGGER.log(PROTOCOL_DEBUG, "FR < %r / %r", frames, unprocessed_data)
+        return (frames, unprocessed_data)
+
     def parseHandler(self, rawInput):
         """When the envisalink contacts us- parse out which command and data."""
-        cmd = {}
-        _LOGGER.debug(str.format("Data received:{0}", rawInput))
 
-        parse = re.match(r"([%\^].+)\$", rawInput)
-        if parse and parse.group(1):
-            # keep first sentinel char to tell difference between tpi and
-            # Envisalink command responses.  Drop the trailing $ sentinel.
-            inputList = parse.group(1).split(",")
-            code = inputList[0]
-            cmd["code"] = code
-            cmd["data"] = ",".join(inputList[1:])
-            _LOGGER.debug(str.format("Code:{0} Data:{1}", code, cmd["data"]))
-        elif not self._loggedin:
-            # assume it is login info
-            code = rawInput
-            cmd["code"] = code
-            cmd["data"] = ""
-        else:
-            _LOGGER.error("Unrecognized data received from the envisalink. Ignoring.")
-            return None
-        try:
-            cmd["handler"] = "handle_%s" % self._evl_ResponseTypes[code]["handler"]
-            cmd["state_change"] = self._evl_ResponseTypes[code].get("state_change", False)
-        except KeyError:
-            _LOGGER.warning(str.format("No handler defined in config for {0}, skipping...", code))
+        frames, unprocessed_data = self._parse_frames(rawInput)
 
-        return cmd
+        commands = []
+        for frame_idx in range(len(frames)):
+            cmd = {}
+
+            frame = frames[frame_idx]
+            if not self._loggedin and frame_idx == 0:
+                # assume it is login info
+                code = frame
+                cmd["code"] = code
+                cmd["data"] = ""
+            elif len(frame) >= 4 and frame[3] == ',': # Leading frame characters must be %xx, or ^xx,
+                code = frame[:3]
+                cmd["code"] = code
+                cmd["data"] = frame[4:]
+                _LOGGER.debug(str.format("Code:{0} Data:{1}", code, cmd["data"]))
+            else:
+                _LOGGER.warning("Ignoring invalid frame received from the envisalink: '%s'", frame)
+                continue
+
+            try:
+                cmd["handler"] = "handle_%s" % self._evl_ResponseTypes[code]["handler"]
+                cmd["state_change"] = self._evl_ResponseTypes[code].get("state_change", False)
+                commands.append(cmd)
+            except KeyError:
+                _LOGGER.warning(str.format("No handler defined in config for {0}, skipping...", code))
+
+        return (commands, unprocessed_data)
 
     def handle_login(self, code, data):
         """When the envisalink asks us for our password- send it."""

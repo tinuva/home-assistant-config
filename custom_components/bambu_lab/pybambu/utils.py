@@ -185,14 +185,17 @@ def _get_error_text(error_type: str, error_code: str, device_type: Printers | st
 
     return 'unknown'
 
-def _load_error_data(language: str) -> dict:
-    filename = Path(__file__).parent / "hms_error_text" / f"hms_{language}.json.gz"
-    if not filename.exists():
-        LOGGER.debug(f"No HMS error data for {language=}")
+def _load_compressed_json(filename: str) -> dict:
+    file_path = Path(__file__).parent / "hms_error_text" / filename
+    if not file_path.exists():
+        LOGGER.debug(f"No data for {filename=}")
         return {}
 
-    with gzip.open(filename, "rt", encoding="utf-8") as f:
+    with gzip.open(file_path, "rt", encoding="utf-8") as f:
         return json.load(f)
+
+def _load_error_data(language: str) -> dict:
+    return _load_compressed_json(f"hms_{language}.json.gz")
     
 def get_HMS_severity(code: int) -> str:
     uint_code = code >> 16
@@ -265,6 +268,9 @@ def get_printer_type(modules, default):
     #     "sw_ver": "00.00.32.14"
     # }
     # X1E = AP02
+
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab X2D")):
+      return 'X2D'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A1")):
       return 'A1'
@@ -424,3 +430,23 @@ def safe_json_loads(raw_bytes):
         LOGGER.error(f"Failed to decode JSON payload: '{text}'")
         LOGGER.error(f"Exception. Type: {type(e)} Args: {e}")
         raise
+
+@functools.lru_cache(maxsize=8)
+def get_wiki_url_for_hms_error(hms_code: str, device_type: Printers):
+
+    default_url = "https://wiki.bambulab.com/en/hms/home"
+    error_code = hms_code.replace("_", "")
+    wiki_data = _load_compressed_json("wiki_links.json.gz")
+    code_entry = wiki_data.get(error_code)
+    if not code_entry:
+        return default_url
+
+    # Pick message matching device_type or default (empty list)
+    for wiki_path, models in code_entry.items():
+        if str(device_type) in models:
+            return f"https://wiki.bambulab.com{wiki_path}"
+        if not models:
+            default_url = f"https://wiki.bambulab.com{wiki_path}"
+
+    return default_url
+

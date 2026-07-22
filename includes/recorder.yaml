@@ -8,7 +8,7 @@
 #
 #
 #- from github.com/tinuva/home-assistant-config
-purge_keep_days: 14
+purge_keep_days: 7
 exclude:
   domains:
     - automation

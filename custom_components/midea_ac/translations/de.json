@@ -167,7 +167,7 @@
           },
           "preset_mode": {
             "state": {
-              "ieco": "iECO",
+              "ieco": "iECO / ECOMaster",
               "silent": "Leise"
             }
           },
@@ -313,7 +313,7 @@
       "display": {
         "name": "Geräteanzeige"
       },
-      "flash_cool": {
+      "flash": {
         "name": "Schnellkühlen"
       },
       "out_silent": {

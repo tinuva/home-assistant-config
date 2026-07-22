@@ -211,6 +211,7 @@ class TestHms(unittest.TestCase):
     def setUp(self):
         self.client = MagicMock()
         self.hms = HMSList(self.client)
+        self.maxDiff = None  # show entire dict on failure
 
     def test_no_errors(self):
         """When the HMS list is empty, no errors should be reported."""
@@ -275,10 +276,29 @@ class TestHms(unittest.TestCase):
             })
 
     def test_error_unknown_printer(self):
-        """When the printer is unknown, messages from the H2D are used; the user language is honored."""
+        """When the printer is unknown, the most common message and URL are returned."""
         self.client._device.info.device_type = "Z-1000"
         self.client.user_language = "es"
-        data = {"hms": [{"attr": 419307520, "code": 131076}]}
+        data = {"hms": [{"attr": 50332160, "code": 65537}]}
+
+        result = self.hms.print_update(data)
+        self.assertTrue(result)
+        self.client.callback.assert_called_once_with("event_printer_error")
+        self.assertEqual(1, self.hms.error_count)
+
+        self.assertDictEqual(self.hms.errors, {
+            "Count": 1,
+            "1-Code": "HMS_0300_0200_0001_0001",
+            "1-Error": "La medición de la temperatura de la boquilla es anormal. El sensor de temperatura de la boquilla puede estar roto.",
+            "1-Wiki": "https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/0300_0200_0001_0001",
+            "1-Severity": "fatal"
+            })
+
+    def test_error_model_specific_url(self):
+        """When the wiki has a printer-specific troubleshooting URL, this is presented."""
+        self.client._device.info.device_type = Printers.X2D
+        self.client.user_language = "en"
+        data = {"hms": [{"attr": 50331904, "code": 65543}]}
 
         result = self.hms.print_update(data)
         self.assertTrue(result)
@@ -286,12 +306,47 @@ class TestHms(unittest.TestCase):
         self.assertEqual(1, self.hms.error_count)
         self.assertDictEqual(self.hms.errors, {
             "Count": 1,
-            "1-Code": "HMS_18FE_2000_0002_0004",
-            "1-Error": "Retire el filamento externo del extrusor izquierdo.",
-            "1-Wiki": "https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/18FE_2000_0002_0004",
+            "1-Code": "HMS_0300_0100_0001_0007",
+            "1-Error": "The heatbed temperature is abnormal; the sensor may have an open circuit.",
+            "1-Wiki": "https://wiki.bambulab.com/en/x2d/troubleshooting/hmscode/0300_0100_0001_0007",
+            "1-Severity": "fatal"
+            })
+
+    def test_error_synonym_url_1(self):
+        """When the wiki treats an HMS code as a synonym, the correct URL is presented (main entry)."""
+        self.client._device.info.device_type = Printers.H2D
+        self.client.user_language = "en"
+        data = {"hms": [{"attr": 117440768, "code": 131088}]}  
+
+        result = self.hms.print_update(data)
+        self.assertTrue(result)
+        self.client.callback.assert_called_once_with("event_printer_error")
+        self.assertEqual(1, self.hms.error_count)
+        self.assertDictEqual(self.hms.errors, {
+            "Count": 1,
+            "1-Code": "HMS_0700_0100_0002_0010",
+            "1-Error": "AMS A The assist motor resistance is abnormal. The assist motor may be faulty.",
+            "1-Wiki": "https://wiki.bambulab.com/en/h2/troubleshooting/hmscode/0700_0100_0002_0010",
             "1-Severity": "serious"
             })
 
+    def test_error_synonym_url_2(self):
+        """When the wiki treats an HMS code as a synonym, the correct URL is presented (synonym)."""
+        self.client._device.info.device_type = Printers.H2D
+        self.client.user_language = "en"
+        data = {"hms": [{"attr": 117571840, "code": 131088}]}  
+
+        result = self.hms.print_update(data)
+        self.assertTrue(result)
+        self.client.callback.assert_called_once_with("event_printer_error")
+        self.assertEqual(1, self.hms.error_count)
+        self.assertDictEqual(self.hms.errors, {
+            "Count": 1,
+            "1-Code": "HMS_0702_0100_0002_0010",
+            "1-Error": "AMS C The assist motor resistance is abnormal. The assist motor may be faulty.",
+            "1-Wiki": "https://wiki.bambulab.com/en/h2/troubleshooting/hmscode/0700_0100_0002_0010",
+            "1-Severity": "serious"
+            })
 
     def test_error_multiple(self):
         """When there are multiple HMS errors, all are reported in the user language."""
@@ -311,13 +366,13 @@ class TestHms(unittest.TestCase):
             "1-Severity": "fatal",
             "2-Code": "HMS_07FF_7000_0002_0003",
             "2-Error": "Please check if the filament is coming out of the nozzle. If not, gently push the material and try to extrude again.",
-            "2-Wiki": "https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/07FF_7000_0002_0003",
+            "2-Wiki": "https://wiki.bambulab.com/en/h2/troubleshooting/hmscode/07FE_7000_0002_0003",
             "2-Severity": "serious"
             })
 
     def test_error_ignored(self):
         """When an HMS error has empty text, it is ignored."""
-        self.client._device.info.device_type = Printers.A1
+        self.client._device.info.device_type = Printers.P2S
         self.client.user_language = "en"
         data = {"hms": [{"attr": 201326848, "code": 131086}, {"attr": 134180864, "code": 131075}]}
 
@@ -331,7 +386,7 @@ class TestHms(unittest.TestCase):
             "Count": 1,
             "1-Code": "HMS_07FF_7000_0002_0003",
             "1-Error": "Please check if the filament is coming out of the nozzle. If not, gently push the material and try to extrude again.",
-            "1-Wiki": "https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/07FF_7000_0002_0003",
+            "1-Wiki": "https://wiki.bambulab.com/en/p2s/troubleshooting/hmscode/07FF_7000_0002_0003",
             "1-Severity": "serious"
             })
 

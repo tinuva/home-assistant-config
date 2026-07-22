@@ -476,6 +476,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         key="start_time",
         translation_key="start_time",
         icon="mdi:clock",
+        device_class=SensorDeviceClass.TIMESTAMP,
         available_fn=lambda self: self._start_time_avail_fn(),
         value_fn=lambda self: self._start_time_value_fn(),
         is_restoring=True,
@@ -494,8 +495,9 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         key="end_time",
         translation_key="end_time",
         icon="mdi:clock",
+        device_class=SensorDeviceClass.TIMESTAMP,
         available_fn=lambda self: self.coordinator.get_model().print_job.end_time is not None,
-        value_fn=lambda self: dt_util.as_local(self.coordinator.get_model().print_job.end_time).replace(tzinfo=None),
+        value_fn=lambda self: dt_util.as_utc(self.coordinator.get_model().print_job.end_time),
     ),
     BambuLabSensorEntityDescription(
         key="total_usage_hours",
@@ -764,6 +766,37 @@ AMS_SENSORS: tuple[BambuLabAMSSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.DURATION,
         value_fn=lambda self: self.coordinator.get_model().ams.data[self.index].remaining_drying_time,
         exists_fn=lambda coordinator, index: coordinator.get_model().supports_feature(Features.AMS_DRYING) and
+                                             coordinator.get_model().ams.data[index].model in ["AMS 2 Pro", "AMS HT"],
+    ),
+    BambuLabAMSSensorEntityDescription(
+        key="drying_temperature",
+        translation_key="drying_temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        suggested_display_precision=0,
+        icon="mdi:thermometer",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        value_fn=lambda self: self.coordinator.get_model().ams.data[self.index].drying_temperature or None,
+        exists_fn=lambda coordinator, index: coordinator.get_model().supports_feature(Features.AMS_DRYING_SETTINGS) and
+                                             coordinator.get_model().ams.data[index].model in ["AMS 2 Pro", "AMS HT"],
+    ),
+    BambuLabAMSSensorEntityDescription(
+        key="drying_duration",
+        translation_key="drying_duration",
+        native_unit_of_measurement=UnitOfTime.HOURS,
+        suggested_display_precision=0,
+        icon="mdi:timer-outline",
+        device_class=SensorDeviceClass.DURATION,
+        value_fn=lambda self: self.coordinator.get_model().ams.data[self.index].drying_duration or None,
+        exists_fn=lambda coordinator, index: coordinator.get_model().supports_feature(Features.AMS_DRYING_SETTINGS) and
+                                             coordinator.get_model().ams.data[index].model in ["AMS 2 Pro", "AMS HT"],
+    ),
+    BambuLabAMSSensorEntityDescription(
+        key="drying_filament",
+        translation_key="drying_filament",
+        icon="mdi:printer-3d-nozzle",
+        value_fn=lambda self: self.coordinator.get_model().ams.data[self.index].drying_filament or None,
+        exists_fn=lambda coordinator, index: coordinator.get_model().supports_feature(Features.AMS_DRYING_SETTINGS) and
                                              coordinator.get_model().ams.data[index].model in ["AMS 2 Pro", "AMS HT"],
     ),
 )

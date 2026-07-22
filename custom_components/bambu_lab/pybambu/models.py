@@ -39,6 +39,7 @@ from .utils import (
     set_temperature_to_gcode,
     get_upgrade_url,
     upgrade_template,
+    get_wiki_url_for_hms_error,
 )
 from .const import (
     LOGGER,
@@ -158,14 +159,15 @@ class Device:
         p2_printers = {Printers.P2S}
         x1_printer  = {Printers.X1, Printers.X1C}
         x1e_printer = {Printers.X1E} # Firmware versioning is independent of X1/X1C.
-        dual_nozzle_printers = {Printers.H2C, Printers.H2D, Printers.H2DPRO}
+        x2_printers = {Printers.X2D}
+        dual_nozzle_printers = {Printers.H2C, Printers.H2D, Printers.H2DPRO, Printers.X2D}
         model = self.info.device_type
 
         # First check known early feature check scenarios. These are features that can be checked as part of
         # processing the mqtt payload and so may be called before full initialization is complete as it processes
         # the very first payload.
         if feature == Features.CAMERA_RTSP:
-            return model in (h2_printers | p2_printers | x1_printer | x1e_printer)
+            return model in (h2_printers | p2_printers | x1_printer | x1e_printer | x2_printers)
         elif feature == Features.CAMERA_IMAGE:
             return model in (a1_printers | p1_printers)
         elif feature == Features.SUPPORTS_EARLY_FTP_DOWNLOAD:
@@ -185,7 +187,7 @@ class Device:
             # flag would largely be good though but not accessible here.
             return model not in a1_printers
         elif feature == Features.CHAMBER_TEMPERATURE:
-            return model in (h2_printers | p2_printers | x1_printer | x1e_printer)
+            return model in (h2_printers | p2_printers | x1_printer | x1e_printer | x2_printers)
         elif feature == Features.AMS:
             return len(self.ams.data) != 0
         elif feature == Features.K_VALUE:
@@ -198,7 +200,7 @@ class Device:
             return True
         elif feature == Features.AIRDUCT_MODE:
             # Airduct mode (Filter/Heating and Cooling) is present on P2S and H2 series
-            return model in (h2_printers | p2_printers)
+            return model in (h2_printers | p2_printers | x2_printers)
         elif feature == Features.HYBRID_MODE_BLOCKS_CONTROL:
             if model in p1_printers:
                 # Not sure what the first version that did this was. At least this - could be earlier.
@@ -206,7 +208,7 @@ class Device:
             # Only the P1 firmware did this as far as I know. Not the A1.
             return False
         elif feature == Features.DOOR_SENSOR:
-            if model in (h2_printers | p2_printers):
+            if model in (h2_printers | p2_printers | x2_printers):
                 return True
             if model in x1e_printer:
                 return self.supports_sw_version("01.01.02.00")
@@ -231,7 +233,7 @@ class Device:
                 return self.supports_sw_version("01.06.10.33")
             return True
         elif feature == Features.PROMPT_SOUND:
-            if model in (a1_printers | h2_printers | p2_printers):
+            if model in (a1_printers | h2_printers | p2_printers | x2_printers):
                 return not self.print_fun.mqtt_signature_required
             return False
         elif feature == Features.AMS_SWITCH_COMMAND:
@@ -265,12 +267,16 @@ class Device:
             if model in x1_printer:
                 return self.supports_sw_version("01.08.50.18")
             return True
+        elif feature == Features.AMS_DRYING_SETTINGS:
+            if model in p2_printers:
+                return self.supports_sw_version("01.01.50.40")
+            return False
         elif feature == Features.CHAMBER_LIGHT_2:
-            return model in h2_printers
+            return model in (h2_printers | x2_printers)
         elif feature == Features.DUAL_NOZZLES:
             return model in dual_nozzle_printers
         elif feature == Features.EXTRUDER_TOOL:
-            return model in h2_printers
+            return model in (h2_printers | x2_printers)
         elif feature == Features.MQTT_ENCRYPTION_FIRMWARE:
             if model in a1_printers:
                 return self.supports_sw_version("01.05.00.00")
@@ -289,11 +295,11 @@ class Device:
         elif feature == Features.HEATBED_LIGHT:
             return model in h2_printers
         elif feature == Features.SECONDARY_AUX_FAN:
-            return model in p2_printers
+            return model in (p2_printers | x2_printers)
         elif feature == Features.HOTEND_RACK:
             return model == Printers.H2C and len(self.hotend_rack.hotends) > 0
         elif feature == Features.ACTIVE_CHAMBER_HEATER:
-            return model in (x1e_printer | h2_printers)
+            return model in (x1e_printer | h2_printers | x2_printers)
         return False
     
     def supports_sw_version(self, version: str) -> bool:
@@ -729,7 +735,8 @@ class Upgrade:
             Printers.A1MINI: "a1-mini",
             Printers.A1: "a1",
             Printers.X1C: "x1",
-            Printers.X1E: "x1e"
+            Printers.X1E: "x1e",
+            Printers.X2D: "x2",
         }
         self.printer_name = device_mapping.get(self._client._device.info.device_type)
         if self.printer_name is None:
@@ -2551,6 +2558,9 @@ class AMSInstance:
     humidity: int = 0
     temperature: int = 0
     remaining_drying_time: int = 0
+    drying_temperature: int = 0
+    drying_duration: int = 0
+    drying_filament: str = ""
 
     def __init__(self, client, model, index):
         self.model = model
@@ -2802,6 +2812,20 @@ class AMSList:
 
                 if self.data[index].remaining_drying_time != int(ams.get('dry_time', 0)):
                     self.data[index].remaining_drying_time = int(ams.get('dry_time', 0))
+
+                dry_setting = ams.get('dry_setting', {})
+                if dry_setting:
+                    temp = dry_setting.get('dry_temperature', -1)
+                    if self.data[index].drying_temperature != max(temp, 0):
+                        self.data[index].drying_temperature = max(temp, 0)
+
+                    duration = dry_setting.get('dry_duration', -1)
+                    if self.data[index].drying_duration != max(duration, 0):
+                        self.data[index].drying_duration = max(duration, 0)
+
+                    filament = dry_setting.get('dry_filament', "")
+                    if self.data[index].drying_filament != filament:
+                        self.data[index].drying_filament = filament
 
                 tray_list = ams['tray']
                 for tray in tray_list:
@@ -3117,6 +3141,9 @@ class HMSList:
         self._client = client
         self._errors = {}
         self._errors["Count"] = 0
+        self._hms_list = []
+        self._device_type = None
+        self._user_language = None
         
     def print_update(self, data) -> bool:
         # Example payload:
@@ -3130,41 +3157,53 @@ class HMSList:
         # https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/0300_0100_0001_0007
         # 'The heatbed temperature is abnormal; the sensor may have an open circuit.'
 
-        if 'hms' in data.keys():
-            hmsList = data.get('hms', [])
-            errors = {}
+        if 'hms' not in data.keys():
+            return False
+        
+        hms_list = data.get('hms', [])
+        device_type = self._client._device.info.device_type
+        user_language = self._client.user_language
+        if hms_list == self._hms_list and user_language == self._user_language and device_type == self._device_type:
+            # No change
+            return False
 
-            index: int = 0
-            for hms in hmsList:
-                attr = int(hms['attr'])
-                code = int(hms['code'])
-                hms_notif = HMSNotification(
-                    device_type=self._client._device.info.device_type,
-                    user_language=self._client.user_language,
-                    attr=attr,
-                    code=code
-                    )
-                if not hms_notif.hms_error:
-                    LOGGER.debug("Skipping HMS notification with code %s (no text).", hms_notif.hms_code)
-                    continue  # skip invalid entries
+        LOGGER.debug(f"Parsing {hms_list=}")
+        errors = {}
 
-                index = index + 1
-                errors[f"{index}-Code"] = f"HMS_{hms_notif.hms_code}"
-                errors[f"{index}-Error"] = hms_notif.hms_error
-                errors[f"{index}-Wiki"] = hms_notif.wiki_url
-                errors[f"{index}-Severity"] = hms_notif.severity
-                #LOGGER.debug(f"HMS error for '{hms_notif.module}' and severity '{hms_notif.severity}': HMS_{hms_notif.hms_code}")
-                #errors[f"{index}-Module"] = hms_notif.module # commented out to avoid bloat with current structure
+        index: int = 0
+        for hms in hms_list:
+            attr = int(hms['attr'])
+            code = int(hms['code'])
+            hms_notif = HMSNotification(
+                device_type=device_type,
+                user_language=user_language,
+                attr=attr,
+                code=code
+                )
+            if not hms_notif.hms_error:
+                LOGGER.debug("Skipping HMS notification with code %s (no text).", hms_notif.hms_code)
+                continue  # skip invalid entries
 
-            errors["Count"] = index
+            index = index + 1
+            errors[f"{index}-Code"] = f"HMS_{hms_notif.hms_code}"
+            errors[f"{index}-Error"] = hms_notif.hms_error
+            errors[f"{index}-Wiki"] = hms_notif.wiki_url
+            errors[f"{index}-Severity"] = hms_notif.severity
+            #LOGGER.debug(f"HMS error for '{hms_notif.module}' and severity '{hms_notif.severity}': HMS_{hms_notif.hms_code}")
+            #errors[f"{index}-Module"] = hms_notif.module # commented out to avoid bloat with current structure
 
-            if self._errors != errors:
-                LOGGER.debug("Updating HMS error list.")
-                self._errors = errors
-                if self._errors["Count"] != 0:
-                    LOGGER.debug(f"HMS ERRORS: {errors}")
-                self._client.callback("event_printer_error")
-                return True
+        errors["Count"] = index
+        self._hms_list = hms_list
+        self._user_language = user_language
+        self._device_type = device_type
+
+        if self._errors != errors:
+            LOGGER.debug("Updating HMS error list.")
+            self._errors = errors
+            if self._errors["Count"] != 0:
+                LOGGER.debug(f"HMS ERRORS: {errors}")
+            self._client.callback("event_printer_error")
+            return True
         
         return False
     
@@ -3258,8 +3297,7 @@ class HMSNotification:
     @property
     def wiki_url(self):
         if self.attr > 0 and self.code > 0:
-            # Only English wiki content seems to exist
-            return f"https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/{self.hms_code}"
+            return get_wiki_url_for_hms_error(self.hms_code, self._device_type)
         return ""
 
 

@@ -99,23 +99,23 @@ script:
   #     target: 'alerts'                # optional - default 'alerts'
   ######################################################################
   ######################################################################
-  voicealert:
-    sequence:
-      - service: script.alert
-        data:
-          target: >
-            {% if target is defined %}
-              {{ target }}
-            {% else %}
-              alerts
-            {% endif %}
-          message: '{{ message }}'
-      # Vocal message only certain times of the day
-      - condition: time
-        after: '06:00:00'
-        before: '21:30:00'
-      - service: notify.alexa_media_david_s_echo
-        data:
-          message: '{{ message }}'
-          data:
-            type: 'tts'
+#  voicealert:
+#    sequence:
+#      - service: script.alert
+#        data:
+#          target: >
+#            {% if target is defined %}
+#              {{ target }}
+#            {% else %}
+#              alerts
+#            {% endif %}
+#          message: '{{ message }}'
+#      # Vocal message only certain times of the day
+#      - condition: time
+#        after: '06:00:00'
+#        before: '21:30:00'
+#      - service: notify.alexa_media_david_s_echo
+#        data:
+#          message: '{{ message }}'
+#          data:
+#            type: 'tts'

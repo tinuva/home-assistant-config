@@ -4,6 +4,7 @@ Support for getting stock data from avanza.se.
 For more details about this platform, please refer to the documentation at
 https://github.com/custom-components/sensor.avanza_stock/blob/master/README.md
 """
+
 import logging
 from datetime import timedelta
 
@@ -22,7 +23,7 @@ from homeassistant.const import (
     CONF_MONITORED_CONDITIONS,
     CONF_NAME,
 )
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from custom_components.avanza_stock.const import (
     ATTR_TRENDING,
@@ -91,7 +92,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the Avanza Stock sensor."""
-    session = async_create_clientsession(hass)
+    session = async_get_clientsession(hass)
     monitored_conditions = config.get(CONF_MONITORED_CONDITIONS)
     show_trending_icon = config.get(CONF_SHOW_TRENDING_ICON)
     stock = config.get(CONF_STOCK)

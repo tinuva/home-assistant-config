@@ -173,7 +173,7 @@
           },
           "preset_mode": {
             "state": {
-              "ieco": "iECO",
+              "ieco": "iECO / ECOMaster",
               "silent": "Silent"
             }
           },
@@ -202,6 +202,11 @@
     "button": {
       "self_clean": {
         "name": "Start self clean"
+      }
+    },
+    "fan": {
+      "fresh_air": {
+        "name": "Fresh air"
       }
     },
     "number": {
@@ -325,8 +330,8 @@
       "display": {
         "name": "Display"
       },
-      "flash_cool": {
-        "name": "Flash cool"
+      "flash": {
+        "name": "Flash"
       },
       "out_silent": {
         "name": "Outdoor silent mode"

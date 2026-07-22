@@ -5,6 +5,7 @@ import time
 from enum import Enum
 
 from .const import (
+    PROTOCOL_DEBUG,
     STATE_CHANGE_KEYPAD,
     STATE_CHANGE_PARTITION,
     STATE_CHANGE_ZONE,
@@ -114,11 +115,12 @@ class EnvisalinkClient:
 
                 if self._reader and self._writer:
                     # Connected to EVL; start reading data from the connection
+                    unprocessed_data = ""
                     while not self._shutdown and self._reader:
                         _LOGGER.debug("Waiting for data from EVL")
                         try:
                             data = await asyncio.wait_for(
-                                self._reader.readuntil(separator=b"\n"), 5
+                                self._reader.read(n=512), 5
                             )
                         except asyncio.exceptions.TimeoutError:
                             if not self._loggedin and ((time.time() - self._connect_time) > self._alarmPanel.connection_timeout):
@@ -127,6 +129,10 @@ class EnvisalinkClient:
                             continue
                         except asyncio.IncompleteReadError:
                             data = None
+                        except (ConnectionResetError, OSError, BrokenPipeError) as ex:
+                            _LOGGER.warning("Connection error while reading data: %s", ex)
+                            await self.disconnect()
+                            break
 
                         if not data:
                             if self._writer:
@@ -134,11 +140,15 @@ class EnvisalinkClient:
                                 await self.disconnect()
                             break
 
-                        data = data.decode("ascii")
                         _LOGGER.debug("{---------------------------------------")
-                        _LOGGER.debug(str.format("RX < {0}", data))
+                        _LOGGER.log(PROTOCOL_DEBUG, "RX < %r", data)
 
-                        self.process_data(data.strip())
+                        # The Honeywell/Ademco devices can occassionally have bus corruption causing
+                        # invalid characters to be present. We should still get valid frames though so
+                        # just strip out any invalid characters.
+                        data = data.decode("ascii", errors='ignore')
+
+                        unprocessed_data = self.process_data(unprocessed_data + data)
                         _LOGGER.debug("}---------------------------------------")
 
             except Exception as ex:
@@ -147,7 +157,7 @@ class EnvisalinkClient:
 
             # Lost connection so reattempt connection in a bit
             if not self._shutdown:
-                _LOGGER.error("Reconnection attempt in %ds", self._reconnect_time)
+                _LOGGER.warning("Reconnection attempt in %ds", self._reconnect_time)
                 await asyncio.sleep(self._reconnect_time)
 
         await self.disconnect()
@@ -162,7 +172,7 @@ class EnvisalinkClient:
                 await action()
 
             now = time.time()
-            await asyncio.sleep(next_send - now)
+            await asyncio.sleep(max(0, next_send - now))
 
     async def connect(self):
         _LOGGER.info(
@@ -181,13 +191,12 @@ class EnvisalinkClient:
             _LOGGER.info("Connection Successful!")
 
             self._alarmPanel.handle_connection_status(True)
-            self._reconnect_time = _RECONNECT_MIN_TIME
             self._connect_time = time.time()
             return
         except asyncio.exceptions.TimeoutError:
             _LOGGER.error("Timed out connecting to the envisalink at %s", self._alarmPanel.host)
             if not self._shutdown:
-                self._alarmPanel._loginTimeoutCallback(False)
+                self._alarmPanel._loginTimeoutCallback()
             await self.disconnect()
         except ConnectionResetError:
             _LOGGER.error(
@@ -200,6 +209,9 @@ class EnvisalinkClient:
             await self.disconnect()
 
         # Increase time before reconnect attempt
+        self._backoff_reconnect_time()
+
+    def _backoff_reconnect_time(self):
         self._reconnect_time *= 2
         if self._reconnect_time > _RECONNECT_MAX_TIME:
             self._reconnect_time = _RECONNECT_MIN_TIME
@@ -225,22 +237,31 @@ class EnvisalinkClient:
         # Tear down the connection
         try:
             writer.close()
-            await writer.wait_closed()
+            await asyncio.wait_for(writer.wait_closed(), timeout=5)
+        except asyncio.TimeoutError:
+            _LOGGER.warning("Timed out waiting for connection to close.")
+        except (ConnectionResetError, BrokenPipeError, OSError) as ex:
+            # Socket was already closed by the remote end; not an error.
+            if not self._shutdown:
+                _LOGGER.debug("Connection already closed by remote end: %s", ex)
         except Exception as ex:
             if not self._shutdown:
-                _LOGGER.error("Exception while closing connection: %s", ex)
+                _LOGGER.warning("Exception while closing connection: %s", ex)
 
         # Clean out all the failed commands from the queue
         self._commandEvent.set()
 
         self._alarmPanel.handle_connection_status(False)
 
+        # Increase time before reconnect attempt
+        self._backoff_reconnect_time()
+
     async def send_data(self, data, logData=None):
         """Raw data send- just make sure it's encoded properly and logged."""
         # Scrub the password and alarm code if necessary
         if not logData:
             logData = self.scrub_sensitive_data(data)
-        _LOGGER.debug("TX > %s", str(logData))
+        _LOGGER.log(PROTOCOL_DEBUG, "TX > %r", logData)
 
         if not self._writer:
             _LOGGER.debug("Unable to send data; not connected.")
@@ -313,36 +334,48 @@ class EnvisalinkClient:
         """Public method to activate the selected command output"""
         raise NotImplementedError()
 
-    def parseHandler(self, rawInput):
+    def parseHandler(self, rawInput) -> (list, str):
         """When the envisalink contacts us- parse out which command and data."""
         raise NotImplementedError()
 
     def process_data(self, data) -> str:
-        cmd = self.parseHandler(data)
+        commands, unprocessed_data = self.parseHandler(data)
 
-        result = None
-        try:
-            _LOGGER.debug(
-                str.format(
-                    "calling handler: {0} for code: {1} with data: {2}",
+        for cmd in commands:
+            try:
+                handlerFunc = getattr(self, cmd["handler"])
+            except (AttributeError, KeyError) as err:
+                _LOGGER.debug("No handler configured for evl command: %s", cmd.get("code", "?"))
+                continue
+
+            try:
+                _LOGGER.debug(
+                    "calling handler: %s for code: '%s' with data: '%s'",
                     cmd["handler"],
                     cmd["code"],
                     cmd["data"],
                 )
-            )
-            handlerFunc = getattr(self, cmd["handler"])
-            result = handlerFunc(cmd["code"], cmd["data"])
+                exception_path = cmd["handler"]
+                result = handlerFunc(cmd["code"], cmd["data"])
 
-        except (AttributeError, TypeError, KeyError) as err:
-            _LOGGER.debug("No handler configured for evl command.")
+                if result and cmd.get("state_change"):
+                    _LOGGER.debug("Invoking state change callbacks")
+                    exception_path = "state change callback"
+                    self.handle_state_change_callbacks(result)
 
-        try:
-            _LOGGER.debug("Invoking state change callbacks")
-            if result and cmd["state_change"]:
-                self.handle_state_change_callbacks(result)
+            except Exception as err:
+                _LOGGER.warning(
+                    "Error in %s for code '%s' data '%s': %s: %s",
+                    exception_path,
+                    cmd.get("code", "?"),
+                    cmd.get("data", "?"),
+                    type(err).__name__,
+                    err,
+                )
+                continue
 
-        except (AttributeError, TypeError, KeyError) as ex:
-            _LOGGER.debug("No callback configured for evl command. %r", ex)
+        # Return any data for incomplete frames
+        return unprocessed_data
 
     def handle_state_change_callbacks(self, updates):
         for change_type, values in updates.items():
@@ -397,6 +430,7 @@ class EnvisalinkClient:
     def handle_login_success(self, code, data):
         """Handler for when the envisalink accepts our credentials."""
         self._loggedin = True
+        self._reconnect_time = _RECONNECT_MIN_TIME
         _LOGGER.debug("Password accepted, session created")
         self._alarmPanel.handle_login_success()
 

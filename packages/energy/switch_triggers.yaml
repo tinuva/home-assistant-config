@@ -7,10 +7,10 @@ group:
       - switch.office_feed_1_office_feed_1
       - switch.office_feed_2_office_feed_2
 
-  feeds_off_while_sleeping_without_auto_turn_on:
-    name: Feeds off while sleeping
-    entities:
-      - switch.bar_media_feed
+  #feeds_off_while_sleeping_without_auto_turn_on:
+  #  name: Feeds off while sleeping
+  #  entities:
+  #    - switch.bar_media_feed
 
 automation:
   ### Turn off feeds when Alarm is armed
@@ -27,7 +27,7 @@ automation:
       - service: switch.turn_off
         entity_id:
           - group.feeds_off_while_sleeping
-          - group.feeds_off_while_sleeping_without_auto_turn_on
+          #- group.feeds_off_while_sleeping_without_auto_turn_on
 
   ### Turn on feeds when Alarm is disarmed
   - alias: Turn on feeds when Alarm is armed
