@@ -46,8 +46,10 @@ automation:
     action:
       - choose:
           # Runtime based on month of the year (Cape Town seasonal schedule)
-          # Summer (Dec-Feb): 8h | Nov/Mar: 7h | Oct/Apr: 6h
-          # Sep/May: 5h | Winter (Jun-Aug): 4h
+          # Sized for ~25kL pool, manual chlorine dosing (~1-2 turnovers/day)
+          # Summer (Nov-Feb): 5h | Oct/Mar: 4h | Sep/Apr: 3h
+          # Winter (May-Aug): 2h
+          # Pool cover on: reduce by 25% (min 2h) - less debris/UV loss
           - conditions:
               - condition: time
                 after: "9:00:00"
@@ -57,10 +59,13 @@ automation:
                 variables:
                   duration: >
                     {% set monthly_hours = {
-                      1: 8, 2: 8, 3: 7, 4: 6, 5: 5, 6: 4,
-                      7: 4, 8: 4, 9: 5, 10: 6, 11: 7, 12: 8 } %}
-                    {% set duration = monthly_hours[now().month] %}
-                    {{ duration|int * 60 * 60 }}
+                      1: 5, 2: 5, 3: 4, 4: 3, 5: 2, 6: 2,
+                      7: 2, 8: 2, 9: 3, 10: 4, 11: 5, 12: 5 } %}
+                    {% set hours = monthly_hours[now().month] %}
+                    {% if is_state('input_boolean.pool_cover_on', 'on') %}
+                      {% set hours = [ (hours * 0.75) | round(0, 'ceil'), 2 ] | max %}
+                    {% endif %}
+                    {{ (hours | int) * 3600 }}
               - service: timer.start
                 data_template:
                   entity_id: timer.pool_pump
