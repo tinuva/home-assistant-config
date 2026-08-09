@@ -1,4 +1,12 @@
 ---
+template:
+  - binary_sensor:
+      - unique_id: mainbedroom_sleep_mode
+        default_entity_id: binary_sensor.mainbedroom_sleep_mode
+        name: Main bedroom sleep mode
+        state: >-
+          {{ is_state('binary_sensor.pixel_8_phone_charging', 'on') }}
+
 timer:
   # When calling the start service on a timer that is already running, it resets
   # the duration it will need to finish and restart the timer without triggering
@@ -79,7 +87,7 @@ automation:
           entity_id: timer.mainbedroomlight
           duration: >
             {% set time = states('sensor.time') %}
-            {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+            {% if(is_state('binary_sensor.mainbedroom_sleep_mode','on')) %}
               15
             {% elif '20:00' <= time  <= '23:59' %}
               {{10*60|int}}

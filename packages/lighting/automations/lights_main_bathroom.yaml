@@ -82,7 +82,7 @@ automation:
                     #   {{120*60|int}}
                 duration: >
                     {% set time = states('sensor.time') %}
-                    {% if(is_state('alarm_control_panel.home_alarm','armed_home')) %}
+                    {% if(is_state('binary_sensor.mainbedroom_sleep_mode','on')) %}
                       {{4*60|int}}
                     {% elif '20:00' <= time  <= '23:59' %}
                       {{30*60|int}}
