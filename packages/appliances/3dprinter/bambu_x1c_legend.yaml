@@ -1,38 +1,5 @@
 ---
 automation:
-    ## Bento-box control
-    ## Basically, turn on/off based on the cooling fan state
-    - alias: Bento Box Control
-      trigger:
-          - platform: state
-            entity_id: fan.x1c_00m09a363000342_cooling_fan
-          - platform: state
-            entity_id: fan.x1c_00m09a363000342_aux_fan
-          - platform: state
-            entity_id: sensor.x1c_00m09a363000342_bed_temperature
-      action:
-          - choose:
-                - conditions:
-                      - condition: or
-                        conditions:
-                            # - condition: state
-                            #   entity_id: fan.x1c_00m09a363000342_cooling_fan
-                            #   state: 'on'
-                            # - condition: state
-                            #   entity_id: fan.x1c_00m09a363000342_aux_fan
-                            #   state: 'on'
-                            - condition: numeric_state
-                              entity_id: sensor.x1c_00m09a363000342_bed_temperature
-                              above: 39
-                  sequence:
-                      - service: switch.turn_on
-                        data:
-                            entity_id: switch.bento_box_bento_box
-            default:
-                - service: switch.turn_off
-                  data:
-                      entity_id: switch.bento_box_bento_box
-
     ## Notifications
     # - alias: Legend stage change
     #   trigger:
