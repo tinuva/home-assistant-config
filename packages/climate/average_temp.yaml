@@ -1,4 +1,42 @@
 ---
+template:
+  - sensor:
+      # Outside temperature with fallback:
+      # primary: zigbee sensor (buite), fallback: weather integration
+      - unique_id: outside_temperature
+        default_entity_id: sensor.outside_temperature
+        name: 'Outside Temperature'
+        unit_of_measurement: °C
+        device_class: temperature
+        state_class: measurement
+        state: >-
+          {% if has_value('sensor.buite_temperature') %}
+            {{ states('sensor.buite_temperature') | float }}
+          {% else %}
+            {{ state_attr('weather.home', 'temperature') | float }}
+          {% endif %}
+        availability: >-
+          {{ has_value('sensor.buite_temperature')
+             or state_attr('weather.home', 'temperature') is not none }}
+
+      # Outside humidity with fallback:
+      # primary: zigbee sensor (buite), fallback: weather integration
+      - unique_id: outside_humidity
+        default_entity_id: sensor.outside_humidity
+        name: 'Outside Humidity'
+        unit_of_measurement: '%'
+        device_class: humidity
+        state_class: measurement
+        state: >-
+          {% if has_value('sensor.buite_humidity') %}
+            {{ states('sensor.buite_humidity') | float }}
+          {% else %}
+            {{ state_attr('weather.home', 'humidity') | float }}
+          {% endif %}
+        availability: >-
+          {{ has_value('sensor.buite_humidity')
+             or state_attr('weather.home', 'humidity') is not none }}
+
 sensor:
   - platform: statistics
     name: 'Average Temperature Outside last 1 day'
