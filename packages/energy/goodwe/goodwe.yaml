@@ -7,8 +7,8 @@ template:
         icon: mdi:battery-arrow-down
         name: Depth of discharge (on-grid)
         state: >-
-          {% if states('number.depth_of_discharge_on_grid')|int > 0 %}
-            {{ (states('number.depth_of_discharge_on_grid')|int) }}
+          {% if states('number.goodwe_depth_of_discharge_on_grid')|int > 0 %}
+            {{ (states('number.goodwe_depth_of_discharge_on_grid')|int) }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -19,8 +19,8 @@ template:
         icon: mdi:battery-arrow-up
         name: Eco mode target SoC
         state: >-
-          {% if states('number.eco_mode_soc')|int > 0 %}
-            {{ (states('number.eco_mode_soc')|int) }}
+          {% if states('number.goodwe_eco_mode_soc')|int > 0 %}
+            {{ (states('number.goodwe_eco_mode_soc')|int) }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -31,8 +31,8 @@ template:
         icon: mdi:battery-arrow-up
         name: Eco mode power
         state: >-
-          {% if states('number.eco_mode_power')|int > 0 %}
-            {{ (states('number.eco_mode_power')|int) }}
+          {% if states('number.goodwe_eco_mode_power')|int > 0 %}
+            {{ (states('number.goodwe_eco_mode_power')|int) }}
           {% else %}
             {{ 0 }}
           {% endif %}
@@ -41,7 +41,7 @@ template:
         default_entity_id: sensor.goodwe_inverter_operation_mode
         icon: mdi:solar-power
         name: Inverter operation mode
-        state: '{{ (states(''select.inverter_operation_mode'')) }}'
+        state: '{{ (states(''select.goodwe_inverter_operation_mode'')) }}'
 
       - unique_id: energy_buy
         unit_of_measurement: W

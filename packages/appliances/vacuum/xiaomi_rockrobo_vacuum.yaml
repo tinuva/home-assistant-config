@@ -259,5 +259,5 @@ automation:
           target: "logs"
           icon: ":robot_face: "
           object: "Vacuum Robot"
-          camera: "camera.mapper_rockrobo_map"
+          camera: "camera.xiaomi_robot_vacuum_x20_map"
           message: "{{ states.sensor.vacuum_last_clean_stats.state }}"

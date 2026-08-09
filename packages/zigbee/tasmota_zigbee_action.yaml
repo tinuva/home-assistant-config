@@ -48,7 +48,7 @@ automation:
     action:
       - service: light.toggle
         target:
-          entity_id: light.main_bathroom
+          entity_id: light.main_bedroom_ensuite_bathroom_main_bathroom
 
 #  # Lounge button
 #  - alias: 'MQTT Zigbee Button Lounge hold action'

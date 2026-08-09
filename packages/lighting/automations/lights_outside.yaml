@@ -16,15 +16,16 @@ light:
     name: Lights while awake
     entities:
       - light.braai_courtyard
+      - light.swembad_lig_swembad_lig
   - platform: group
     name: Lights while awake with guests
     unique_id: lights_while_awake_with_guests
     entities:
-      - light.dining_l1 # light.lounge_courtyard
+      - light.eetkamer_binnehof_woonkamer
       - light.main_bedroom_courtyard
-      - light.scullery_outside
+      - light.opwaskamer_buite
       - light.main_bedroom_outside
-      # - light.pool_pool
+      - light.swembad_lig_swembad_lig
 
 automation:
   ## Whole night
@@ -138,4 +139,4 @@ automation:
         entity_id:
           - light.lights_while_awake
           - light.lights_while_awake_with_guests
-          # - light.pool_pool
+          - light.swembad_lig_swembad_lig

@@ -133,12 +133,12 @@ automation:
             entity_id: switch.cpt_5cg2332ssh
             state: "off"
           - condition: state
-            entity_id: light.dining_l2
+            entity_id: light.eetkamer_eetkamer
             state: "on"
       action:
           - service: light.turn_off
             target:
-                entity_id: light.dining_l2
+                entity_id: light.eetkamer_eetkamer
 
     # 88e9fe88abfe on when timer finish
     - alias: Turn on 88e9fe88abfe

@@ -7,7 +7,7 @@ light:
     name: "Auto Off Evening Lights"
     unique_id: auto_off_evening_lights_group
     entities:
-      - light.front_door
+      - light.voordeur_voordeur_binne
       - light.front_hallway
 
 automation:
