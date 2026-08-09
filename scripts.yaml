@@ -1,0 +1,94 @@
+fix_entity_names_preview_all_lights_switches:
+  alias: Fix Entity Names - PREVIEW (all lights & switches)
+  sequence:
+  - variables:
+      entities_to_fix: "{{ (states.light | map(attribute='entity_id') | list)\n   +
+        (states.switch | map(attribute='entity_id') | list) }}\n"
+      candidates: "{% set ns = namespace(list=[]) %} {% for e in entities_to_fix %}\n
+        \ {% set current_name = state_attr(e, 'friendly_name') %}\n  {% set dev_id
+        = device_id(e) %}\n  {% set device_name = (device_attr(dev_id, 'name_by_user')
+        or device_attr(dev_id, 'name')) if dev_id else none %}\n  {% if dev_id and
+        device_name and current_name != device_name and current_name and current_name.startswith(device_name
+        ~ ' ') %}\n    {% set new_name = current_name[(device_name | length) + 1:]
+        | trim %}\n    {% if new_name != '' and new_name != current_name %}\n      {%
+        set ns.list = ns.list + [{'entity_id': e, 'current_name': current_name, 'new_name':
+        new_name}] %}\n    {% endif %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      skip_no_device: "{% set ns = namespace(list=[]) %} {% for e in entities_to_fix
+        %}\n  {% set dev_id = device_id(e) %}\n  {% set device_name = (device_attr(dev_id,
+        'name_by_user') or device_attr(dev_id, 'name')) if dev_id else none %}\n  {%
+        if not dev_id or not device_name %}\n    {% set ns.list = ns.list + [e] %}\n
+        \ {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      skip_no_name: "{% set ns = namespace(list=[]) %} {% for e in entities_to_fix
+        %}\n  {% set current_name = state_attr(e, 'friendly_name') %}\n  {% set dev_id
+        = device_id(e) %}\n  {% set device_name = (device_attr(dev_id, 'name_by_user')
+        or device_attr(dev_id, 'name')) if dev_id else none %}\n  {% if dev_id and
+        device_name and current_name == device_name %}\n    {% set ns.list = ns.list
+        + [e] %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      dupe_groups: "{% set ns = namespace(list=[]) %} {% for name, group in candidates
+        | groupby('new_name') %}\n  {% if group | length > 1 %}\n    {% set ns.list
+        = ns.list + [{'name': name, 'entity_ids': group | map(attribute='entity_id')
+        | list}] %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      dupe_names: '{{ dupe_groups | map(attribute=''name'') | list }}'
+      safe_renames: "{% set ns = namespace(list=[]) %} {% for c in candidates %}\n
+        \ {% if c.new_name not in dupe_names %}\n    {% set ns.list = ns.list + [c]
+        %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      report: 'SAFE TO RENAME ({{ safe_renames | length }}): {% for c in safe_renames
+        %} {{ c.entity_id }}:  "{{ c.current_name }}"  ->  "{{ c.new_name }}" {% endfor
+        %}
+
+        SKIPPED - would collide with other entities ({{ dupe_groups | length }} name(s),
+        {{ dupe_groups | map(attribute=''entity_ids'') | map(''length'') | sum }}
+        entities total): {% for grp in dupe_groups %} "{{ grp.name }}" claimed by:
+        {{ grp.entity_ids | join('', '') }} {% endfor %}
+
+        SKIPPED - no device / no device name ({{ skip_no_device | length }}): {{ skip_no_device
+        | join('', '') }}
+
+        SKIPPED - entity has no name of its own ({{ skip_no_name | length }}): {{
+        skip_no_name | join('', '') }}
+
+        '
+  - action: persistent_notification.create
+    data:
+      title: 'Entity rename preview — {{ safe_renames | length }} safe, {{ dupe_groups
+        | map(attribute=''entity_ids'') | map(''length'') | sum }} skipped as duplicates
+
+        '
+      message: '{{ report[:1000] }}{{ ''\n\n[truncated — open this script run in Developer
+        Tools > Scripts trace to see the full "report" variable]'' if report | length
+        > 1000 else '''' }}'
+fix_entity_names_apply_all_lights_switches:
+  alias: Fix Entity Names - APPLY (all lights & switches)
+  sequence:
+  - variables:
+      entities_to_fix: "{{ (states.light | map(attribute='entity_id') | list)\n   +
+        (states.switch | map(attribute='entity_id') | list) }}\n"
+      candidates: "{% set ns = namespace(list=[]) %} {% for e in entities_to_fix %}\n
+        \ {% set current_name = state_attr(e, 'friendly_name') %}\n  {% set dev_id
+        = device_id(e) %}\n  {% set device_name = (device_attr(dev_id, 'name_by_user')
+        or device_attr(dev_id, 'name')) if dev_id else none %}\n  {% if dev_id and
+        device_name and current_name != device_name and current_name and current_name.startswith(device_name
+        ~ ' ') %}\n    {% set new_name = current_name[(device_name | length) + 1:]
+        | trim %}\n    {% if new_name != '' and new_name != current_name %}\n      {%
+        set ns.list = ns.list + [{'entity_id': e, 'current_name': current_name, 'new_name':
+        new_name}] %}\n    {% endif %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      dupe_names: "{% set ns = namespace(list=[]) %} {% for name, group in candidates
+        | groupby('new_name') %}\n  {% if group | length > 1 %}\n    {% set ns.list
+        = ns.list + [name] %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+      safe_renames: "{% set ns = namespace(list=[]) %} {% for c in candidates %}\n
+        \ {% if c.new_name not in dupe_names %}\n    {% set ns.list = ns.list + [c]
+        %}\n  {% endif %}\n{% endfor %} {{ ns.list }}\n"
+  - repeat:
+      for_each: '{{ safe_renames }}'
+      sequence:
+      - action: homeassistant.rename_entity
+        data:
+          entity_id: '{{ repeat.item.entity_id }}'
+          name: '{{ repeat.item.new_name }}'
+  - action: persistent_notification.create
+    data:
+      title: Entity rename complete
+      message: 'Renamed {{ safe_renames | length }} entities. {{ dupe_names | length
+        }} name(s) were skipped due to collisions.
+
+        '
