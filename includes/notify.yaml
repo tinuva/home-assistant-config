@@ -11,8 +11,8 @@
 - platform: group
   name: all_phones
   services:
-    - service: mobile_app_mi_9t
-    - service: mobile_app_nokia_6_1
+    - service: mobile_app_pixel_7a
+    - service: mobile_app_pixel_8
 
 ## use
 # message: test slack
