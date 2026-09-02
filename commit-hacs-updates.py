@@ -3,6 +3,12 @@
 import subprocess
 from pathlib import Path
 
+# Git refuses to operate on /config inside the container because the repo is
+# owned by a different UID ("dubious ownership"). Passing safe.directory on
+# the command line is protected config, so this works without needing a
+# global git config (which gets wiped when the container is recreated).
+GIT = ["git", "-c", "safe.directory=/config"]
+
 
 def get_commit_message(folder: str) -> str:
     """Generate conventional commit message for HACS update."""
@@ -23,8 +29,11 @@ def get_commit_message(folder: str) -> str:
         return f"chore: update {folder} via HACS"
 
 
-cmd = "git status --porcelain".split()
-p = subprocess.run(cmd, capture_output=True).stdout.decode()
+cmd = GIT + ["status", "--porcelain"]
+result = subprocess.run(cmd, capture_output=True)
+if result.returncode != 0:
+    raise SystemExit(f"git status failed:\n{result.stderr.decode()}")
+p = result.stdout.decode()
 
 ha_version = ".HA_VERSION"
 ha_update = False
@@ -61,12 +70,12 @@ for line in p.split("\n"):
 
 for folder in folders_to_add:
     print(folder)
-    subprocess.run(f"git add {folder}".split())
+    subprocess.run(GIT + ["add", folder])
     commit_msg = get_commit_message(folder)
-    subprocess.run(["git", "commit", "-m", commit_msg])
+    subprocess.run(GIT + ["commit", "-m", commit_msg])
 
 if ha_update:
     with open(ha_version) as f:
         version = f.read().strip()
-    subprocess.run(f"git add {ha_version}".split())
-    subprocess.run(["git", "commit", "-m", f"chore(core): update Home Assistant to {version}"])
+    subprocess.run(GIT + ["add", ha_version])
+    subprocess.run(GIT + ["commit", "-m", f"chore(core): update Home Assistant to {version}"])
