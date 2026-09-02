@@ -73,6 +73,11 @@ class CurlUnavailableError(Exception):
         super().__init__("curl library unavailable")
         self.error_code = 400
 
+class CsrfError(Exception):
+    def __init__(self):
+        super().__init__("Blocked by CSRF cookie requirement")
+        self.error_code = 403
+
 @dataclass
 class BambuCloud:
   
@@ -116,6 +121,11 @@ class BambuCloud:
         if response.status_code == 403 and 'cloudflare' in response.text:
             LOGGER.error("BLOCKED BY CLOUDFLARE")
             raise CloudflareError()
+        elif response.status_code == 403 and 'missing_cookie' in response.text:
+            # bambulab.com (the website host) requires a CSRF cookie that the API host
+            # never issues. Callers can recover by falling back to code login.
+            LOGGER.error("BLOCKED BY CSRF COOKIE REQUIREMENT")
+            raise CsrfError()
         elif response.status_code == 429 and 'cloudflare' in response.text:
             LOGGER.error("TEMPORARY 429 BLOCK BY CLOUDFLARE")
             raise CloudflareError(response.status_code, response.text)
@@ -165,16 +175,16 @@ class BambuCloud:
             if not curl_available:
                 LOGGER.debug(f"Curl library is unavailable.")
                 raise CurlUnavailableError()
-            response = curl_requests.post(url, headers=headers, json=json, impersonate=IMPERSONATE_BROWSER)
+            response = curl_requests.post(url, headers=headers, json=json, timeout=10, impersonate=IMPERSONATE_BROWSER)
         elif CONNECTION_MECHANISM == ConnectionMechanismEnum.CLOUDSCRAPER:
             if len(headers) == 0:
                 headers = self._get_headers()
             scraper = cloudscraper.create_scraper()
-            response = scraper.post(url, headers=headers, json=json)
+            response = scraper.post(url, headers=headers, json=json, timeout=10)
         elif CONNECTION_MECHANISM == ConnectionMechanismEnum.REQUESTS:
             if len(headers) == 0:
                 headers = self._get_headers()
-            response = requests.post(url, headers=headers, json=json)
+            response = requests.post(url, headers=headers, json=json, timeout=10)
         else:
             raise NotImplementedError()
 

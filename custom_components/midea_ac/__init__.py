@@ -21,8 +21,9 @@ from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_CAPABILITY_OVERRIDES,
                     CONF_ENERGY_DATA_SCALE, CONF_ENERGY_SENSOR, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME,
                     CONF_MERGE_CAPABILITY_OVERRIDES, CONF_POWER_SENSOR,
-                    CONF_SHOW_ALL_PRESETS, CONF_USE_FAN_ONLY_WORKAROUND,
-                    CONF_WORKAROUNDS, DOMAIN, EnergyFormat)
+                    CONF_SHOW_ALL_PRESETS, CONF_UPDATE_INTERVAL,
+                    CONF_USE_FAN_ONLY_WORKAROUND, CONF_WORKAROUNDS, DOMAIN,
+                    UPDATE_INTERVAL, EnergyFormat)
 from .coordinator import MideaDeviceUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -95,7 +96,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
                 "Failed to apply capability overrides for device ID %s: %s", device.id, e)
 
     # Create device coordinator and fetch data
-    coordinator = MideaDeviceUpdateCoordinator(hass, device)  # type: ignore
+    poll_interval = config_entry.options.get(
+        CONF_UPDATE_INTERVAL, UPDATE_INTERVAL)
+    _LOGGER.info(
+        "Using update interval of %d seconds for device ID %s.", poll_interval, device.id)
+    coordinator = MideaDeviceUpdateCoordinator(
+        hass, device, update_interval=poll_interval)  # type: ignore
     await coordinator.async_config_entry_first_refresh()
 
     # Store coordinator in global data
@@ -205,6 +211,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             hass.config_entries.async_update_entry(
                 config_entry, options=new_options, minor_version=6)
 
+        # 1.6 -> 1.7: Add update interval option
+        if config_entry.minor_version == 6:
+            new_options = {**config_entry.options}
+            new_options.setdefault(CONF_UPDATE_INTERVAL, UPDATE_INTERVAL)
+
+            hass.config_entries.async_update_entry(
+                config_entry, options=new_options, minor_version=7)
+
     _LOGGER.debug("Migration to configuration version %s.%s successful.",
                   config_entry.version, config_entry.minor_version)
 
@@ -213,17 +227,14 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
 async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    # Remove the coordinator from global data
-    try:
-        hass.data[DOMAIN].pop(config_entry.entry_id)
-    except KeyError:
-        _LOGGER.warning("Failed remove device from global data.")
-
     # Forward unload to all platforms
-    for platform in _PLATFORMS:
-        await hass.config_entries.async_forward_entry_unload(config_entry, platform)
+    unload_ok = await hass.config_entries.async_unload_platforms(config_entry, _PLATFORMS)
 
-    return True
+    if unload_ok:
+        # Remove the coordinator from global data
+        hass.data[DOMAIN].pop(config_entry.entry_id)
+
+    return unload_ok
 
 
 async def async_reload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> None:

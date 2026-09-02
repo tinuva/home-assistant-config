@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import ftplib
 import json
 import math
@@ -40,6 +41,7 @@ from .utils import (
     get_upgrade_url,
     upgrade_template,
     get_wiki_url_for_hms_error,
+    ams_tray_spool_loaded,
 )
 from .const import (
     LOGGER,
@@ -53,6 +55,7 @@ from .const import (
     PRINT_TYPE_OPTIONS,
     AIRDUCT_MODES,
     TempEnum, Print_Fun_Values,
+    UNKNOWN_TRAY_LABEL,
 )
 from .commands import (
     CHAMBER_LIGHT_ON,
@@ -128,7 +131,11 @@ class Device:
                 if send_ready_event:
                     self._client.callback("event_printer_ready")
 
-        self._client.callback("event_printer_data_update")
+        # Only notify Home Assistant when something actually changed. The printer pushes
+        # status roughly once a second; without this gate every push forces all entities
+        # to recompute and rewrite their state.
+        if send_event:
+            self._client.callback("event_printer_data_update")
 
     @property
     def has_full_printer_data(self):
@@ -154,6 +161,7 @@ class Device:
 
     def supports_feature(self, feature):
         a1_printers = {Printers.A1, Printers.A1MINI}
+        a2_printers = {Printers.A2L}
         h2_printers = {Printers.H2C, Printers.H2D, Printers.H2DPRO, Printers.H2S}
         p1_printers = {Printers.P1P, Printers.P1S}
         p2_printers = {Printers.P2S}
@@ -169,9 +177,9 @@ class Device:
         if feature == Features.CAMERA_RTSP:
             return model in (h2_printers | p2_printers | x1_printer | x1e_printer | x2_printers)
         elif feature == Features.CAMERA_IMAGE:
-            return model in (a1_printers | p1_printers)
+            return model in (a1_printers | a2_printers | p1_printers)
         elif feature == Features.SUPPORTS_EARLY_FTP_DOWNLOAD:
-            return model in (a1_printers | p1_printers)
+            return model in (a1_printers | a2_printers | p1_printers)
 
         # Now check that we have a version. All tests after this are expected to only be called after the
         # first full set of data from the printer has been received and so version will be available.
@@ -181,17 +189,17 @@ class Device:
 
         # All following features should only be every checked after full initialization data is available.
         if feature == Features.AUX_FAN:
-            return model not in a1_printers
+            return model not in (a1_printers | a2_printers)
         elif feature == Features.CHAMBER_FAN:
             # The P1P may not have a fan but we don't have a perfectly reliable way to detect that. The p1s upgrade
             # flag would largely be good though but not accessible here.
-            return model not in a1_printers
+            return model not in (a1_printers | a2_printers)
         elif feature == Features.CHAMBER_TEMPERATURE:
             return model in (h2_printers | p2_printers | x1_printer | x1e_printer | x2_printers)
         elif feature == Features.AMS:
             return len(self.ams.data) != 0
         elif feature == Features.K_VALUE:
-            return model in (a1_printers | p1_printers)
+            return model in (a1_printers | a2_printers | p1_printers)
         elif feature == Features.AMS_TEMPERATURE:
             if model in a1_printers:
                 return self.supports_sw_version("01.06.10.33")
@@ -233,7 +241,7 @@ class Device:
                 return self.supports_sw_version("01.06.10.33")
             return True
         elif feature == Features.PROMPT_SOUND:
-            if model in (a1_printers | h2_printers | p2_printers | x2_printers):
+            if model in (a1_printers | a2_printers | h2_printers | p2_printers | x2_printers):
                 return not self.print_fun.mqtt_signature_required
             return False
         elif feature == Features.AMS_SWITCH_COMMAND:
@@ -270,6 +278,8 @@ class Device:
         elif feature == Features.AMS_DRYING_SETTINGS:
             if model in p2_printers:
                 return self.supports_sw_version("01.01.50.40")
+            if model == Printers.H2C:
+                return self.supports_sw_version("01.01.50.00")
             return False
         elif feature == Features.CHAMBER_LIGHT_2:
             return model in (h2_printers | x2_printers)
@@ -311,7 +321,8 @@ class Device:
     @property
     def is_core_xy(self) -> bool:
         return (self.info.device_type != Printers.A1 and
-                self.info.device_type != Printers.A1MINI)
+                self.info.device_type != Printers.A1MINI and
+                self.info.device_type != Printers.A2L)
 
 @dataclass
 class Lights:
@@ -447,10 +458,10 @@ class Camera:
         #   "tutk_server": "disable"
         # }
 
-        self.timelapse = data.get("ipcam", {}).get("timelapse", self.timelapse)
-        self.recording = data.get("ipcam", {}).get("ipcam_record", self.recording)
-        self.resolution = data.get("ipcam", {}).get("resolution", self.resolution)
-        self.rtsp_url = data.get("ipcam", {}).get("rtsp_url", self.rtsp_url)
+        self.timelapse = (data.get("ipcam") or {}).get("timelapse", self.timelapse)
+        self.recording = (data.get("ipcam") or {}).get("ipcam_record", self.recording)
+        self.resolution = (data.get("ipcam") or {}).get("resolution", self.resolution)
+        self.rtsp_url = (data.get("ipcam") or {}).get("rtsp_url", self.rtsp_url)
         if self._client._enable_camera:
             if self.rtsp_url == "disable":
                 if not self._fired_camera_disabled_event:
@@ -651,14 +662,20 @@ class Fans:
                 self._cooling_fan_speed_override_time = None
         self._heatbreak_fan_speed = data.get("heatbreak_fan_speed", self._heatbreak_fan_speed)
         self._heatbreak_fan_speed_percentage = fan_percentage(self._heatbreak_fan_speed)
-        if data.get('device') and data["device"].get('airduct') and data["device"]["airduct"].get('parts') and next((item for item in data["device"]["airduct"]["parts"] if item["id"] == 160), None):
-            fan_part = next(item for item in data["device"]["airduct"]["parts"] if item["id"] == 160)
-            self._secondary_aux_fan_speed = fan_part.get("value", self._secondary_aux_fan_speed)
-            self._secondary_aux_fan_speed_percentage = fan_percentage(self._secondary_aux_fan_speed)
+        airduct_parts = data.get("device", {}).get("airduct", {}).get("parts")
+        if airduct_parts:
+            fan_part = next((item for item in airduct_parts if item.get("id") == 160), None)
+            if fan_part is not None:
+                # airduct.parts[].state is already a percentage (0-100); write
+                # it directly into the percentage field. fan_percentage()
+                # expects a raw 0-15 PWM value and would multiply by ~6.67.
+                self._secondary_aux_fan_speed_percentage = fan_part.get(
+                    "state", self._secondary_aux_fan_speed_percentage
+                )
         if self._secondary_aux_fan_speed_override_time is not None:
             delta = datetime.now() - self._secondary_aux_fan_speed_override_time
             if delta.seconds > 5:
-                self._cooling_fan_speed_override_time = None
+                self._secondary_aux_fan_speed_override_time = None
 
         return (old_data != f"{self.__dict__}")
 
@@ -705,8 +722,8 @@ class Fans:
             return self._heatbreak_fan_speed_percentage
         elif fan == FansEnum.SECONDARY_AUXILIARY:
             if self._secondary_aux_fan_speed_override_time is not None:
-                return self._chamber_fan_speed_override
-            return self._chamber_fan_speed_percentage
+                return self._secondary_aux_fan_speed_override
+            return self._secondary_aux_fan_speed_percentage
 
 @dataclass
 class Upgrade:
@@ -734,6 +751,7 @@ class Upgrade:
             Printers.P1S: "p1",
             Printers.A1MINI: "a1-mini",
             Printers.A1: "a1",
+            Printers.A2L: "a2",
             Printers.X1C: "x1",
             Printers.X1E: "x1e",
             Printers.X2D: "x2",
@@ -1017,6 +1035,21 @@ class PrintJob:
         self._subtask_name = data.get("subtask_name", self._subtask_name)
         if old_subtask_name != self._subtask_name:
             LOGGER.debug(f"SUBTASK_NAME: {self._subtask_name}")
+
+        # Printer-initiated prints and reprints can reach RUNNING before the
+        # printer reports a subtask name. In that case model data is initially
+        # loaded using the newest 3mf on the printer as a fallback, which may
+        # belong to an older print. Resolve the model again once the real task
+        # name arrives so the cover image and metadata match the active print.
+        if (
+            old_subtask_name == ""
+            and self._subtask_name != ""
+            and self._loaded_model_data
+            and self.gcode_state not in ("IDLE", "FAILED", "FINISH", "unknown")
+        ):
+            LOGGER.debug("SUBTASK_NAME ARRIVED AFTER MODEL DATA; RELOADING MODEL")
+            self._clear_model_data()
+            self._update_task_data()
         self.file_type_icon = "mdi:file" if self._print_type != "cloud" else "mdi:cloud-outline"
         self.current_layer = data.get("layer_num", self.current_layer)
         self.total_layers = data.get("total_layer_num", self.total_layers)
@@ -1927,7 +1960,7 @@ class PrintJob:
                     if cloud_dt.tzinfo is None:
                         cloud_dt = cloud_dt.replace(tzinfo=tz.UTC)
                     # Convert everything to UTC-aware datetime
-                    self.start_time = cloud_dt.astimezone(tz.UTC)
+                    self.end_time = cloud_dt.astimezone(tz.UTC)
                     LOGGER.debug(f"CLOUD END TIME2: {self.end_time}")
 
     def _identify_objects_in_pick_image(self, image: Image) -> set:
@@ -2191,7 +2224,7 @@ class Info:
         #   },
 
         if not self._force_ip:
-            info = data.get('net', {}).get('info', [])
+            info = (data.get('net') or {}).get('info', [])
             for net in info:
                 ip_int = net.get("ip", 0)
                 if ip_int != 0:
@@ -2253,7 +2286,7 @@ class Info:
         # and new versions provided for each component. While the X1 lists only the new version
         # in separate string properties.
 
-        self.new_version_state = data.get("upgrade_state",{}).get("new_version_state", self.new_version_state)
+        self.new_version_state = (data.get("upgrade_state") or {}).get("new_version_state", self.new_version_state)
 
         # Nozzle data is provided differently for dual-nozzle printers (at least)
         # New (H2D):
@@ -2396,8 +2429,13 @@ class Info:
         if str == "":
             return "unknown"
 
-        # Second character indicates standard vs high flow
-        if nozzle_type_code[1] == "H":
+        # Second character indicates flow type (TPU high flow, high flow, standard)
+        # There is only one TPU High-Flow nozzle offered as of this writing, and
+        # Bambu Lab does not characterize the material.
+        if nozzle_type_code[1] == "U":
+            return "tpu_high_flow"
+
+        if nozzle_type_code[1] in ("H", "E"):
             flow_prefix = "high_flow_"
         else:
             flow_prefix = ""
@@ -2515,7 +2553,7 @@ class HotendRack:
 
         # Initialize rack slots that don't exist yet
         for slot_id in self.RACK_SLOT_IDS:
-            if slot_id not in self.hotends:
+            if slot_id not in self.hotends: 
                 self.hotends[slot_id] = Hotend(slot_id)
 
         # Update hotend data from info array
@@ -2847,6 +2885,7 @@ class AMSList:
 class AMSTray:
     """Return all AMS tray related info"""
     empty: bool
+    state: int
     idx: int
     name: str
     type: str
@@ -2869,6 +2908,7 @@ class AMSTray:
     def __init__(self, client):
         self._client = client
         self.empty = True
+        self.state = 8
         self.idx = ""
         self.name = ""
         self.type = ""
@@ -2889,13 +2929,18 @@ class AMSTray:
         self.bed_temp = 0
 
     @property
+    def unknown(self) -> bool:
+        """True when a spool is loaded but vendor/material/colour are not assigned."""
+        return not self.empty and self.name == UNKNOWN_TRAY_LABEL
+
+    @property
     def remain(self) -> int:
         return self._remain
 
     @property
     def active(self) -> bool:
         return self._active
-    
+
     @active.setter
     def active(self, value: bool):
         self._active = value
@@ -2904,47 +2949,49 @@ class AMSTray:
     def remain_enabled(self) -> bool:
         return self._client._device.supports_feature(Features.AMS_FILAMENT_REMAINING) and self._client._device.home_flag.ams_calibrate_remaining
 
+    def _reset_empty_slot(self) -> None:
+        """Clear tray fields when no spool is loaded."""
+        self.empty = True
+        self.idx = ""
+        self.name = "Empty"
+        self.type = "Empty"
+        self.sub_brands = ""
+        self.color = "00000000"
+        self.nozzle_temp_min = 0
+        self.nozzle_temp_max = 0
+        self._remain = -1
+        self.tag_uid = ""
+        self.tray_uuid = ""
+        self.k = 0
+        self.tray_weight = 0
+        self.cols = []
+        self.ctype = 0
+        self.dry_temp = 0
+        self.dry_time = 0
+        self.bed_temp = 0
+
+    def _resolve_tray_name(self, idx: str, tray_type: str) -> str:
+        """Human-readable tray name; empty tray_type means unknown (?)."""
+        if not tray_type or tray_type in ("", "Empty"):
+            return UNKNOWN_TRAY_LABEL
+        if idx:
+            name = get_filament_name(idx, self._client.slicer_settings.custom_filaments)
+            if name not in ("unknown", "Empty"):
+                return name
+        return tray_type
+
     def print_update(self, data) -> bool:
         old_data = f"{self.__dict__}"
 
-        # Detect empty tray notifications by checking if payload contains ONLY metadata fields.
-        # Empty trays send just {"id": "X"} or {"id": "X", "state": Y} with no filament data.
-        # Any other field beyond id/state indicates filament data (works for both X1 full
-        # payloads and P1 delta payloads, and is future-proof if Bambu adds new fields).
-        METADATA_ONLY_FIELDS = {'id', 'state'}
-        payload_fields = set(data.keys())
-        is_empty_notification = ('id' in data) and payload_fields.issubset(METADATA_ONLY_FIELDS)
+        metadata_only = ('id' in data) and set(data.keys()).issubset({'id', 'state'})
 
-        if is_empty_notification:
-            # Tray is empty - reset all fields to defaults
-            self.empty = True
-            self.idx = ""
-            self.name = "Empty"
-            self.type = "Empty"
-            self.sub_brands = ""
-            self.color = "00000000"
-            self.nozzle_temp_min = 0
-            self.nozzle_temp_max = 0
-            self._remain = -1
-            self.tag_uid = ""
-            self.tray_uuid = ""
-            self.k = 0
-            self.tray_weight = 0
-            self.cols = []
-            self.ctype = 0
-            self.dry_temp = 0
-            self.dry_time = 0
-            self.bed_temp = 0
+        if metadata_only:
+            self.state = int(data['state']) if 'state' in data else 0
         else:
-            # Tray has filament data - update fields normally
-            # Using .get() preserves existing values for delta updates
-            self.empty = False
+            if 'state' in data:
+                self.state = int(data['state'])
             self.idx = data.get('tray_info_idx', self.idx)
-            self.name = get_filament_name(self.idx, self._client.slicer_settings.custom_filaments)
             self.type = data.get('tray_type', self.type)
-            if self.name == "unknown":
-                # Fallback to the type if the name is unknown
-                self.name = self.type
             self.sub_brands = data.get('tray_sub_brands', self.sub_brands)
             self.color = data.get('tray_color', self.color)
             self.nozzle_temp_min = data.get('nozzle_temp_min', self.nozzle_temp_min)
@@ -2959,8 +3006,24 @@ class AMSTray:
             self.dry_temp = data.get('tray_temp', self.dry_temp)
             self.dry_time = data.get('tray_time', self.dry_time)
             self.bed_temp = data.get('bed_temp', self.bed_temp)
-        
+
+        self._resolve_loaded_state(metadata_only)
+
         return (old_data != f"{self.__dict__}")
+
+    def _resolve_loaded_state(self, metadata_only: bool) -> None:
+        """Determine empty/loaded status based on AMS tray state field."""
+        if ams_tray_spool_loaded(self.state):
+            self.empty = False
+            name = self._resolve_tray_name(self.idx, self.type)
+            self.name = name
+            if name == UNKNOWN_TRAY_LABEL:
+                if not self.type or self.type in ("", "Empty"):
+                    self.type = UNKNOWN_TRAY_LABEL
+                if not self.sub_brands:
+                    self.sub_brands = UNKNOWN_TRAY_LABEL
+        else:
+            self._reset_empty_slot()
 
 
 @dataclass
@@ -2969,8 +3032,20 @@ class ExternalSpool(AMSTray):
     _index: int
 
     def __init__(self, client, index: int):
+        self._physically_empty = True
         super().__init__(client)
         self._index = index
+
+    @property
+    def empty(self) -> bool:
+        """True when no spool is mounted, or this external slot is not active."""
+        if self._physically_empty:
+            return True
+        return not self.active
+
+    @empty.setter
+    def empty(self, value: bool) -> None:
+        self._physically_empty = bool(value)
 
     @property
     def active(self) -> bool:
@@ -2990,6 +3065,42 @@ class ExternalSpool(AMSTray):
     @property
     def remain_enabled(self) -> bool:
         return False
+
+    def _reset_empty_slot(self) -> None:
+        """Clear tray fields when no external spool is mounted."""
+        self._physically_empty = True
+        self.idx = ""
+        self.name = "Empty"
+        self.type = "Empty"
+        self.sub_brands = ""
+        self.color = "00000000"
+        self.nozzle_temp_min = 0
+        self.nozzle_temp_max = 0
+        self._remain = -1
+        self.tag_uid = ""
+        self.tray_uuid = ""
+        self.k = 0
+        self.tray_weight = 0
+        self.cols = []
+        self.ctype = 0
+        self.dry_temp = 0
+        self.dry_time = 0
+        self.bed_temp = 0
+
+    def _resolve_loaded_state(self, metadata_only: bool) -> None:
+        """External spool: keep filament data; empty reflects active status."""
+        if metadata_only:
+            self._reset_empty_slot()
+            return
+
+        self._physically_empty = False
+        name = self._resolve_tray_name(self.idx, self.type)
+        self.name = name
+        if name == UNKNOWN_TRAY_LABEL:
+            if not self.type or self.type in ("", "Empty"):
+                self.type = UNKNOWN_TRAY_LABEL
+            if not self.sub_brands:
+                self.sub_brands = UNKNOWN_TRAY_LABEL
 
     def print_update(self, data) -> bool:
 
@@ -3096,7 +3207,7 @@ class Speed:
             if option == speed:
                 self._id = id
                 self.name = speed
-                command = SPEED_PROFILE_TEMPLATE
+                command = copy.deepcopy(SPEED_PROFILE_TEMPLATE)
                 command['print']['param'] = f"{id}"
                 self._client.publish(command)
                 self._client.callback("event_speed_update")
@@ -3122,7 +3233,7 @@ class StageAction:
             self._print_type = "unknown"
 
         # New way it is presented
-        self._id = int(data.get("stage", {}).get("_id", self._id))
+        self._id = int((data.get("stage") or {}).get("_id", self._id))
         # Old way it's presented
         self._id = int(data.get("stg_cur", self._id))
         if (self._print_type == "idle") and (self._id == 0):

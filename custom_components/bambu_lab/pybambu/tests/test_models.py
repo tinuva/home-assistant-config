@@ -9,8 +9,8 @@ import json
 # Add the parent directory to the Python path to find pybambu
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from pybambu.models import PrintJob, Info, AMSList, Extruder, HMSList, PrintError, Temperature
-from pybambu.const import Printers
+from pybambu.models import PrintJob, Info, AMSList, Extruder, Fans, HMSList, PrintError, Temperature, Camera, StageAction
+from pybambu.const import FansEnum, Printers
 
 class TestPrintJob(unittest.TestCase):
     def setUp(self):
@@ -31,6 +31,43 @@ class TestPrintJob(unittest.TestCase):
         self.assertEqual(self.print_job.remaining_time, 759)
         self.assertEqual(self.print_job.current_layer, 1)
         self.assertEqual(self.print_job.total_layers, 70)
+
+    def test_late_subtask_name_reloads_model_data(self):
+        """Model data loaded by fallback is refreshed when the task name arrives."""
+        self.print_job.gcode_state = "RUNNING"
+        self.print_job._loaded_model_data = True
+        self.print_job._clear_model_data = MagicMock()
+        self.print_job._update_task_data = MagicMock()
+
+        self.print_job.print_update({"subtask_name": "Current print"})
+
+        self.print_job._clear_model_data.assert_called_once_with()
+        self.print_job._update_task_data.assert_called_once_with()
+
+    def test_known_subtask_name_does_not_reload_model_data(self):
+        """Repeated task-name updates do not restart model downloads."""
+        self.print_job.gcode_state = "RUNNING"
+        self.print_job._subtask_name = "Current print"
+        self.print_job._loaded_model_data = True
+        self.print_job._clear_model_data = MagicMock()
+        self.print_job._update_task_data = MagicMock()
+
+        self.print_job.print_update({"subtask_name": "Current print"})
+
+        self.print_job._clear_model_data.assert_not_called()
+        self.print_job._update_task_data.assert_not_called()
+
+    def test_late_subtask_name_does_not_reload_finished_print(self):
+        """Late idle-state updates do not fetch model data for an old print."""
+        self.print_job.gcode_state = "FINISH"
+        self.print_job._loaded_model_data = True
+        self.print_job._clear_model_data = MagicMock()
+        self.print_job._update_task_data = MagicMock()
+
+        self.print_job.print_update({"subtask_name": "Finished print"})
+
+        self.print_job._clear_model_data.assert_not_called()
+        self.print_job._update_task_data.assert_not_called()
 
 class TestInfo(unittest.TestCase):
     def setUp(self):
@@ -61,6 +98,58 @@ class TestInfo(unittest.TestCase):
 
         self.assertEqual(self.info.active_nozzle_diameter, 0.4)
         self.assertEqual(self.info.active_nozzle_type, "hardened_steel")
+
+    def test_info_update_upgrade_state_none(self):
+        # Regression test for https://github.com/greghesp/ha-bambulab/issues/2057
+        # The printer can send "upgrade_state": null (rather than omitting the key)
+        # which must not raise AttributeError: 'NoneType' object has no attribute 'get'.
+        data = dict(self.test_data['push_all'])
+        data['upgrade_state'] = None
+
+        # Should not raise.
+        self.info.print_update(data)
+
+        # With upgrade_state explicitly null, new_version_state should be left unchanged
+        # (falls back to its previous value, same as if the key were absent).
+        self.assertEqual(self.info.new_version_state, 0)
+
+    def test_info_update_net_none(self):
+        # Same explicit-null issue can occur for the "net" key used for IP address discovery.
+        # Force the code path that reads "net" (it's skipped when force_ip is enabled).
+        self.info._force_ip = False
+        data = dict(self.test_data['push_all'])
+        data['net'] = None
+
+        # Should not raise.
+        self.info.print_update(data)
+
+class TestCamera(unittest.TestCase):
+    def setUp(self):
+        self.client = MagicMock()
+        self.camera = Camera(self.client)
+        self.client._enable_camera = False
+
+        # Load test data from P1P.json
+        with open(os.path.join(os.path.dirname(__file__), 'P1P.json'), 'r') as f:
+            self.test_data = json.load(f)
+
+    def test_camera_update_ipcam_none(self):
+        # Same explicit-null issue can occur for the "ipcam" key.
+        data = dict(self.test_data['push_all'])
+        data['ipcam'] = None
+
+        # Should not raise.
+        result = self.camera.print_update(data)
+        self.assertFalse(result)
+
+class TestStageAction(unittest.TestCase):
+    def test_stage_update_stage_none(self):
+        # Same explicit-null issue can occur for the "stage" key.
+        stage_action = StageAction()
+        data = {"print_type": "idle", "stage": None}
+
+        # Should not raise.
+        stage_action.print_update(data)
 
 class TestAMSList(unittest.TestCase):
     def setUp(self):
@@ -575,6 +664,69 @@ class TestH2D(unittest.TestCase):
         self.assertEqual(self.temperature.left_nozzle_target_temperature, 0)
 
 
+
+
+class TestFans(unittest.TestCase):
+    """Regression tests for the SECONDARY_AUXILIARY fan path.
+
+    The X2D's right auxiliary fan reports its speed in
+    device.airduct.parts[id=160].state (already a percentage). Live
+    capture used in this test mirrors that payload.
+    """
+
+    AIRDUCT_DATA = {
+        "device": {
+            "airduct": {
+                "parts": [
+                    {"func": 0, "id": 16,  "state": 20, "tar_state": 20},
+                    {"func": 5, "id": 32,  "state": 40, "tar_state": 40},
+                    {"func": 6, "id": 160, "state": 30, "tar_state": 30},
+                    {"func": 2, "id": 48,  "state": 10, "tar_state": 10},
+                ],
+            },
+        },
+    }
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.fans = Fans(self.client)
+
+    def test_secondary_aux_reads_airduct_state(self):
+        # Field is read from .state (not the non-existent .value), and is
+        # written directly into _percentage rather than being run back
+        # through fan_percentage() which expects a 0-15 PWM value.
+        self.fans.print_update(self.AIRDUCT_DATA)
+        self.assertEqual(self.fans._secondary_aux_fan_speed_percentage, 30)
+        self.assertEqual(
+            self.fans.get_fan_speed(FansEnum.SECONDARY_AUXILIARY), 30
+        )
+
+    def test_secondary_aux_override_expiry_clears_correct_field(self):
+        # An expired override on the secondary aux fan must clear its
+        # own override-time. The buggy version cleared
+        # _cooling_fan_speed_override_time instead, so this exercise
+        # specifically asserts the secondary_aux field is the one
+        # nulled out.
+        from datetime import timedelta
+        self.fans._secondary_aux_fan_speed_override = 70
+        self.fans._secondary_aux_fan_speed_override_time = (
+            datetime.now() - timedelta(seconds=6)
+        )
+
+        self.fans.print_update(self.AIRDUCT_DATA)
+
+        self.assertIsNone(self.fans._secondary_aux_fan_speed_override_time)
+
+    def test_get_fan_speed_returns_secondary_override_not_chamber(self):
+        # While an override is fresh, get_fan_speed must return the
+        # secondary aux override value (not the chamber fan's override).
+        self.fans._secondary_aux_fan_speed_override = 70
+        self.fans._chamber_fan_speed_override = 99  # decoy
+        self.fans._secondary_aux_fan_speed_override_time = datetime.now()
+
+        self.assertEqual(
+            self.fans.get_fan_speed(FansEnum.SECONDARY_AUXILIARY), 70
+        )
 
 
 if __name__ == '__main__':

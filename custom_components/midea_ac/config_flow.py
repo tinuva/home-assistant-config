@@ -11,7 +11,7 @@ import yaml
 from homeassistant.config_entries import (ConfigEntry, ConfigFlow,
                                           ConfigFlowResult, OptionsFlow)
 from homeassistant.const import (CONF_COUNTRY_CODE, CONF_HOST, CONF_ID,
-                                 CONF_PORT, CONF_TOKEN, DEGREE)
+                                 CONF_PORT, CONF_TOKEN, DEGREE, UnitOfTime)
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import section
 from homeassistant.helpers import httpx_client
@@ -38,13 +38,14 @@ from .const import (CONF_BEEP, CONF_CAPABILITY_OVERRIDES,
                     CONF_FAN_SPEED_STEP, CONF_KEY,
                     CONF_MAX_CONNECTION_LIFETIME,
                     CONF_MERGE_CAPABILITY_OVERRIDES, CONF_POWER_SENSOR,
-                    CONF_SWING_ANGLE_RTL, CONF_TEMP_STEP,
+                    CONF_SWING_ANGLE_RTL, CONF_TEMP_STEP, CONF_UPDATE_INTERVAL,
                     CONF_USE_FAN_ONLY_WORKAROUND, CONF_WORKAROUNDS, DOMAIN,
                     UPDATE_INTERVAL, EnergyFormat)
 
 _LOGGER = logging.getLogger(__name__)
 
 _DEFAULT_OPTIONS = {
+    CONF_UPDATE_INTERVAL: UPDATE_INTERVAL,
     CONF_TEMP_STEP: 1.0,
     CONF_MAX_CONNECTION_LIFETIME: None,
     CONF_SWING_ANGLE_RTL: False,
@@ -68,17 +69,12 @@ _DEFAULT_AC_OPTIONS = {
     }
 }
 
-_CLOUD_CREDENTIALS = {
-    "DE": ("midea_eu@mailinator.com", "das_ist_passwort1"),
-    "KR": ("midea_sea@mailinator.com", "password_for_sea1")
-}
-
 
 class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
     """Config flow for Midea Smart AC."""
 
     VERSION = 1
-    MINOR_VERSION = 6
+    MINOR_VERSION = 7
 
     async def async_step_user(self, user_input=None) -> ConfigFlowResult:
         """Handle a config flow initialized by the user."""
@@ -100,17 +96,12 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             if not (host := user_input.get(CONF_HOST)):
                 return await self.async_step_pick_device(country_code=country_code)
 
-            # Get credentials for region
-            account, password = _CLOUD_CREDENTIALS.get(
-                country_code, (None, None))
-
             # Attempt to find specified device
             device = await Discover.discover_single(
                 host,
                 auto_connect=False,
                 timeout=2,
-                account=account,
-                password=password,
+                region=country_code,
                 get_async_client=self._get_async_client
             )
 
@@ -119,21 +110,8 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
             elif device.type not in [DeviceType.AIR_CONDITIONER, DeviceType.COMMERCIAL_AC]:
                 errors["base"] = "unsupported_device"
             else:
-                # Check if device has already been configured
-                await self.async_set_unique_id(str(device.id))
-                self._abort_if_unique_id_configured()
-
-                # Finish connection
-                try:
-                    if await Discover.connect(device):
-                        assert isinstance(device, (AC, CC))
-                        return await self.async_step_show_token_key(device=device)
-                    else:
-                        # Indicate a connection could not be made
-                        return self.async_abort(reason="cannot_connect")
-                except CloudError:
-                    # Catch cloud errors and report to user
-                    return self.async_abort(reason="cloud_connection_failed")
+                # Attempt connection
+                return await self._attempt_auto_connection(device)
 
         data_schema = self.add_suggested_values_to_schema(
             vol.Schema({
@@ -161,41 +139,26 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             # Find selected device
-            device = next(dev
-                          for dev in self._discovered_devices
-                          if dev.id == user_input[CONF_ID])
+            device = next(
+                dev
+                for dev in self._discovered_devices
+                if dev.id == user_input[CONF_ID]
+            )
 
             if device:
-                # Check if device has already been configured
-                await self.async_set_unique_id(str(device.id))
-                self._abort_if_unique_id_configured()
-
-                # Finish connection
-                try:
-                    if await Discover.connect(device):
-                        assert isinstance(device, (AC, CC))
-                        return await self.async_step_show_token_key(device=device)
-                    else:
-                        # Indicate a connection could not be made
-                        return self.async_abort(reason="cannot_connect")
-                except CloudError:
-                    # Catch cloud errors and report to user
-                    return self.async_abort(reason="cloud_connection_failed")
+                # Attempt connection
+                return await self._attempt_auto_connection(device)
 
         # Create a set of already configured devices by ID
         configured_devices = {
             entry.unique_id for entry in self._async_current_entries()
         }
 
-        # Get credentials for region
-        account, password = _CLOUD_CREDENTIALS.get(country_code, (None, None))
-
         # Discover all devices
         self._discovered_devices = await Discover.discover(
             auto_connect=False,
             timeout=2,
-            account=account,
-            password=password,
+            region=country_code,
             get_async_client=self._get_async_client
         )
 
@@ -430,6 +393,26 @@ class MideaConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return device
 
+    async def _attempt_auto_connection(self, device: Device) -> ConfigFlowResult:
+        # Check if device has already been configured
+        await self.async_set_unique_id(str(device.id))
+        self._abort_if_unique_id_configured()
+
+        # Attempt connection
+        try:
+            success = await Discover.connect(device)
+        except CloudError:
+            # Catch cloud errors and report to user
+            return self.async_abort(reason="cloud_connection_failed")
+
+        if not success:
+            # Indicate a connection could not be made
+            return self.async_abort(reason="cannot_connect")
+
+        # On successful connection, display the token & key
+        assert isinstance(device, (AC, CC))
+        return await self.async_step_show_token_key(device=device)
+
     async def _create_entry_from_device(self, device) -> ConfigFlowResult:
         # Save the device into global data
         self.hass.data.setdefault(DOMAIN, {})
@@ -465,6 +448,15 @@ class MideaOptionsFlow(OptionsFlow):
 
     _BASE_SCHEMA = vol.Schema(
         {
+            vol.Optional(CONF_UPDATE_INTERVAL): NumberSelector(
+                NumberSelectorConfig(
+                    min=1,
+                    max=30,
+                    step=1,
+                    unit_of_measurement=UnitOfTime.SECONDS,
+                    mode=NumberSelectorMode.SLIDER,
+                )
+            ),
             vol.Optional(CONF_SWING_ANGLE_RTL): cv.boolean,
             vol.Optional(CONF_TEMP_STEP): NumberSelector(
                 NumberSelectorConfig(

@@ -1,3 +1,4 @@
+import copy
 import functools
 import gzip
 import json
@@ -22,7 +23,9 @@ from .const import (
     BAMBU_URL,
     FansEnum,
     Printers,
-    TempEnum
+    TempEnum,
+    AMSTrayStateFlags,
+    AMS_TRAY_STATE_LEGACY_MAX,
 )
 from .commands import SEND_GCODE_TEMPLATE, UPGRADE_CONFIRM_TEMPLATE
 
@@ -37,11 +40,20 @@ def search(lst, predicate, default={}):
 
 
 def fan_percentage(speed):
-    """Converts a fan speed to percentage"""
+    """Converts a fan speed to percentage.
+
+    Bambu fans report a raw 0-15 PWM-step value. The user-facing
+    setting moves in 10% increments, but the printer's reported
+    instantaneous value naturally oscillates between adjacent raw
+    integers when delivering an effective duty cycle (e.g. raw 2 and
+    raw 3 both serve a target around 20%). math.ceil keeps the
+    reported value pinned to the upper bucket so HA fan entities
+    don't flip 10% <-> 20% on every push.
+    """
     if not speed:
         return 0
     percentage = (int(speed) / 15) * 100
-    return round(percentage / 10) * 10
+    return math.ceil(percentage / 10) * 10
 
 
 def fan_percentage_to_gcode(fan: FansEnum, percentage: int):
@@ -57,7 +69,8 @@ def fan_percentage_to_gcode(fan: FansEnum, percentage: int):
 
     percentage = round(percentage / 10) * 10
     speed = math.ceil(255 * percentage / 100)
-    command = SEND_GCODE_TEMPLATE
+    # Deep copy the template - mutating the shared global corrupts concurrent callers.
+    command = copy.deepcopy(SEND_GCODE_TEMPLATE)
     command['print']['param'] = f"M106 {fanString} S{speed}\n"
     return command
 
@@ -69,7 +82,7 @@ def set_temperature_to_gcode(temp: TempEnum, temperature: int, device_type: Prin
     elif temp == TempEnum.HEATBED:
         tempCommand = "M140"
     elif temp == TempEnum.CHAMBER:
-        command = SEND_GCODE_TEMPLATE
+        command = copy.deepcopy(SEND_GCODE_TEMPLATE)
         if device_type == Printers.X1E:
             # X1E has no airduct; M141 alone controls the chamber heater.
             command['print']['param'] = f"M141 S{temperature}\n"
@@ -79,7 +92,7 @@ def set_temperature_to_gcode(temp: TempEnum, temperature: int, device_type: Prin
             command['print']['param'] = f"M141 S{temperature}\nM145 P0\n"
         return command
 
-    command = SEND_GCODE_TEMPLATE
+    command = copy.deepcopy(SEND_GCODE_TEMPLATE)
     command['print']['param'] = f"{tempCommand} S{temperature}\n"
     return command
 
@@ -269,23 +282,23 @@ def get_printer_type(modules, default):
     # }
     # X1E = AP02
 
-    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab X2D")):
-      return 'X2D'
-
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A1")):
       return 'A1'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A1 mini")):
       return 'A1MINI'
 
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab A2L")):
+      return 'A2L'
+
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P1P")):
+      return 'P1P'
+
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P1S")):
       return 'P1S'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P2S")):
       return 'P2S'
-
-    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab P1P")):
-      return 'P1P'
 
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2C")):
       return 'H2C'
@@ -299,6 +312,10 @@ def get_printer_type(modules, default):
     if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab H2S")):
       return 'H2S'
 
+    if len(search(modules, lambda x: x.get('product_name', "") == "Bambu Lab X2D")):
+      return 'X2D'
+
+    # Legacy identification logic that became unreliable as they started to re-use hw_ver for different models.
     apNode = search(modules, lambda x: x.get('hw_ver', "").find("AP0") == 0)
     if len(apNode.keys()) > 1:
         hw_ver = apNode['hw_ver']
@@ -402,13 +419,15 @@ def upgrade_template(url: str) -> dict:
         r"offline\/([\w-]+)\/([\d\.]+)\/([\w]+)\/"
         r"offline-([\w\-\.]+)\.zip"
     )
-    info = re.search(pattern, url).groups()
-    if not info:
+    match = re.search(pattern, url)
+    if match is None:
         LOGGER.warning(f"Could not parse firmware url: {url}")
         return None
-    
-    model, version, hash, stamp = info
-    template = UPGRADE_CONFIRM_TEMPLATE.copy()
+
+    model, version, hash, stamp = match.groups()
+    # Deep copy the template - a shallow copy shares the nested 'upgrade' dict, so the
+    # first call would bake its URL into the global and later calls would resend it.
+    template = copy.deepcopy(UPGRADE_CONFIRM_TEMPLATE)
     template["upgrade"]["url"] = template["upgrade"]["url"].format(
         model=model, version=version, hash=hash, stamp=stamp
     )
@@ -450,3 +469,11 @@ def get_wiki_url_for_hms_error(hms_code: str, device_type: Printers):
 
     return default_url
 
+
+def ams_tray_spool_loaded(state):
+    """Return True when a spool is in the slot and the tray is not loading / scanning."""
+    if not (state & AMSTrayStateFlags.SPOOL):
+        return False
+    if state <= AMS_TRAY_STATE_LEGACY_MAX:
+        return state == AMS_TRAY_STATE_LEGACY_MAX
+    return bool(state & AMSTrayStateFlags.STEADY)

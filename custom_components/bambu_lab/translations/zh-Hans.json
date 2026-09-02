@@ -753,10 +753,10 @@
         }
       },
       "right_nozzle_diameter": {
-        "name": "正确的喷嘴大小"
+        "name": "右喷嘴大小"
       },
       "right_nozzle_type": {
-        "name": "正确的喷嘴类型",
+        "name": "右喷嘴类型",
         "state": {
           "hardened_steel": "硬化钢",
           "stainless_steel": "不锈钢",
@@ -861,6 +861,18 @@
           "heating": "加热",
           "laser": "激光"
         }
+      },
+      "secondary_aux_fan_speed": {
+        "name": "辅助风扇转速"
+      },
+      "drying_temperature": {
+        "name": "干燥温度"
+      },
+      "drying_duration": {
+        "name": "干燥时间"
+      },
+      "drying_filament": {
+        "name": "干燥丝"
       }
     },
     "camera": {

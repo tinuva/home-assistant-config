@@ -396,6 +396,15 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         value_fn=lambda self: self.coordinator.get_model().fans.get_fan_speed(FansEnum.HEATBREAK)
     ),
     BambuLabSensorEntityDescription(
+        key="secondary_aux_fan_speed",
+        translation_key="secondary_aux_fan_speed",
+        native_unit_of_measurement=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:fan",
+        value_fn=lambda self: self.coordinator.get_model().fans.get_fan_speed(FansEnum.SECONDARY_AUXILIARY),
+        exists_fn=lambda coordinator: coordinator.get_model().supports_feature(Features.SECONDARY_AUX_FAN),
+    ),
+    BambuLabSensorEntityDescription(
         key="model_download_percentage",
         translation_key="model_download_percentage",
         native_unit_of_measurement=PERCENTAGE,
@@ -477,7 +486,7 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="start_time",
         icon="mdi:clock",
         device_class=SensorDeviceClass.TIMESTAMP,
-        available_fn=lambda self: self._start_time_avail_fn(),
+        available_fn=lambda self: True,
         value_fn=lambda self: self._start_time_value_fn(),
         is_restoring=True,
     ),
@@ -496,8 +505,8 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
         translation_key="end_time",
         icon="mdi:clock",
         device_class=SensorDeviceClass.TIMESTAMP,
-        available_fn=lambda self: self.coordinator.get_model().print_job.end_time is not None,
-        value_fn=lambda self: dt_util.as_utc(self.coordinator.get_model().print_job.end_time),
+        available_fn=lambda self: True,
+        value_fn=lambda self: dt_util.as_utc(self.coordinator.get_model().print_job.end_time) if self.coordinator.get_model().print_job.end_time is not None else None,
     ),
     BambuLabSensorEntityDescription(
         key="total_usage_hours",
@@ -528,15 +537,15 @@ PRINTER_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
     BambuLabSensorEntityDescription(
         key="gcode_file",
         translation_key="gcode_file",
-        available_fn=lambda self: self.coordinator.get_model().print_job.gcode_file != "",
-        value_fn=lambda self: self.coordinator.get_model().print_job.gcode_file,
+        available_fn=lambda self: True,
+        value_fn=lambda self: self.coordinator.get_model().print_job.gcode_file if self.coordinator.get_model().print_job.gcode_file != "" else None,
         icon_fn=lambda self: self.coordinator.get_model().print_job.file_type_icon
     ),
     BambuLabSensorEntityDescription(
         key="gcode_file_downloaded",
         translation_key="gcode_file_downloaded",
-        available_fn=lambda self: self.coordinator.get_model().print_job.gcode_file_downloaded != "",
-        value_fn=lambda self: self.coordinator.get_model().print_job.gcode_file_downloaded,
+        available_fn=lambda self: True,
+        value_fn=lambda self: self.coordinator.get_model().print_job.gcode_file_downloaded if self.coordinator.get_model().print_job.gcode_file_downloaded != "" else None,
         icon_fn=lambda self: self.coordinator.get_model().print_job.file_type_icon
     ),
     BambuLabSensorEntityDescription(
@@ -712,6 +721,8 @@ VIRTUAL_TRAY_SENSORS: tuple[BambuLabSensorEntityDescription, ...] = (
             "dry_temp": self.coordinator.get_model().external_spool[self.index].dry_temp,
             "dry_time": self.coordinator.get_model().external_spool[self.index].dry_time,
             "empty": self.coordinator.get_model().external_spool[self.index].empty,
+            "unknown": self.coordinator.get_model().external_spool[self.index].unknown,
+            "state": self.coordinator.get_model().external_spool[self.index].state,
             "filament_id": self.coordinator.get_model().external_spool[self.index].idx,
             **({"k_value": self.coordinator.get_model().external_spool[self.index].k} if self.coordinator.get_model().supports_feature(Features.K_VALUE) else {}),
             "tray_weight": self.coordinator.get_model().external_spool[self.index].tray_weight,
@@ -820,6 +831,8 @@ def _tray_sensor(tray_index: int, display_number: int) -> BambuLabAMSSensorEntit
             "dry_temp": self.coordinator.get_model().ams.data[self.index].tray[idx].dry_temp,
             "dry_time": self.coordinator.get_model().ams.data[self.index].tray[idx].dry_time,
             "empty": self.coordinator.get_model().ams.data[self.index].tray[idx].empty,
+            "unknown": self.coordinator.get_model().ams.data[self.index].tray[idx].unknown,
+            "state": self.coordinator.get_model().ams.data[self.index].tray[idx].state,
             "filament_id": self.coordinator.get_model().ams.data[self.index].tray[idx].idx,
             **({"k_value": self.coordinator.get_model().ams.data[self.index].tray[idx].k} if self.coordinator.get_model().supports_feature(Features.K_VALUE) else {}),
             "tray_weight": self.coordinator.get_model().ams.data[self.index].tray[idx].tray_weight,
