@@ -22,7 +22,7 @@ automation:
             {%- set domains = ['light'] -%}
             {%- for domain in domains -%}
               {%- for item in states[domain]  -%}
-                {%- if item.entity_id not in ['light.main_bedroom_ensuite_bathroom_main_bathroom'] and state_attr(item.entity_id, 'icon') == none %}
+                {%- if item.entity_id not in ['light.main_bedroom_ensuite_bathroom_main_bathroom','light.x1c_00m09a363000342_chamber_light'] and state_attr(item.entity_id, 'icon') == none %}
                   {%- if states('timer.morning_routine') == 'active' and item.entity_id in ['light.main_bedroom_ensuite_bathroom_main_bathroom','light.kitchen_kitchen','light.amy_bedroom_amy_bedroom'] -%}
                   {%- set data.lights_todo = data.lights_todo %}
                   {%- else -%}
