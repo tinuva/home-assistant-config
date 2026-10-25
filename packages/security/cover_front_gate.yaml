@@ -2,10 +2,14 @@
 
 mqtt:
   cover:
-    # Front property gate
+    # Front property gate.
+    # State: GateState key from Tasmota SENSOR telemetry (GPIO14 Switch2, SwitchMode 15 + SetOption114).
+    #        OFF = closed, ON = open. Re-published every TelePeriod (300 s) and on change.
+    # Command: pulse relay 1 (PulseTime1 10 = 1 s auto-off) to trigger the gate motor.
     - device_class: gate
-      state_topic: "stat/front-gate/POWER2"              #SwitchTopic Enabled
-      command_topic: "cmnd/front-gate/POWER1"
+      state_topic: "tele/front-gate/SENSOR"
+      value_template: "{{ value_json.GateState }}"
+      command_topic: "cmnd/front-gate/POWER"
       availability_topic: "tele/front-gate/LWT"
       unique_id: front_gate
       name: "Front Gate"
@@ -13,7 +17,6 @@ mqtt:
       retain: false
       payload_open: "ON"
       payload_close: "ON"
-      payload_stop:
       state_open: "ON"
       state_closed: "OFF"
       payload_available: "Online"
