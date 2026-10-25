@@ -13,6 +13,26 @@
                     "ssl": "Použiť SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Užívateľ",
+                    "password": "Heslo"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Hostiteľ",
+                    "port": "Port",
+                    "username": "Užívateľ",
+                    "password": "Heslo",
+                    "ssl": "Použiť SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Zlyhanie nadviazania spojenia SSL.",
             "connection_timeout": "Časový limit pripojenia vypršal.",
             "wrong_login": "Nesprávne užívateľské meno alebo heslo.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Nesprávne užívateľské meno alebo heslo.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Zobraziť klientske MAC a IP na rozhraniach",
                     "unit_of_measurement": "Merná jednotka",
                     "track_network_hosts_timeout": "Časový limit sledovania sieťových zariadení (sekundy)",
-                    "zone": "Zóna pre sledované zariadenia"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Možnosti Mikrotik Router (1\/2)",
                 "description": "Nakonfigurovať integráciu"
@@ -57,6 +84,20 @@
                 "title": "Možnosti Mikrotik Router (2\/2)",
                 "description": "Povoliť senzory a spínače"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

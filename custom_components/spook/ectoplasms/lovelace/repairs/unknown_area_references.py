@@ -36,7 +36,7 @@ class SpookRepair(AbstractSpookRepair):
     inspect_on_reload = True
     automatically_clean_up_issues = True
 
-    _dashboards: dict[str, LovelaceStorage | LovelaceYAML]
+    _dashboards: dict[str | None, LovelaceStorage | LovelaceYAML]
 
     async def async_activate(self) -> None:
         """Handle the activating a repair."""
@@ -72,6 +72,7 @@ class SpookRepair(AbstractSpookRepair):
                     title = dashboard.config.get("title", url_path)
                 self.async_create_issue(
                     issue_id=url_path,
+                    references=unknown_areas,
                     translation_placeholders={
                         "areas": "\n".join(
                             f"- `{area_id}`" for area_id in sorted(unknown_areas)
@@ -92,4 +93,14 @@ class SpookRepair(AbstractSpookRepair):
                 view_path: int | str = view.get("path") or view_index
                 for area_id in extract_areas_from_dashboard_node(view):
                     areas.setdefault(area_id, view_path)
+
+        # A dashboard run by a strategy, like the areas dashboard, has no views
+        # stored at all: only the strategy and its options. The views it makes
+        # are opened from the first one.
+        if isinstance(config, dict) and isinstance(
+            strategy := config.get("strategy"), dict
+        ):
+            for area_id in extract_areas_from_dashboard_node(strategy):
+                areas.setdefault(area_id, 0)
+
         return areas

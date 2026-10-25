@@ -13,6 +13,26 @@
                     "ssl": "SSL 사용",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "사용자 이름",
+                    "password": "비밀번호"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "호스트",
+                    "port": "포트",
+                    "username": "사용자 이름",
+                    "password": "비밀번호",
+                    "ssl": "SSL 사용",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "SSL 핸드셰이크 실패",
             "connection_timeout": "Mikrotik 연결 시간이 초과되었습니다.",
             "wrong_login": "사용자 이름 또는 비밀번호가 유효하지 않습니다.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "사용자 이름 또는 비밀번호가 유효하지 않습니다.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "인터페이스에 클라이언트 MAC 및 IP 표시",
                     "unit_of_measurement": "측정 단위",
                     "track_network_hosts_timeout": "네트워크 기기 시간 초과 추적(초)",
-                    "zone": "기기 추적기용 지역"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router 옵션(1\/2)",
                 "description": "통합 환경설정"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router 옵션(2\/2)",
                 "description": "센서 및 스위치 활성화"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

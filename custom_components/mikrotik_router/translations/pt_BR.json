@@ -11,7 +11,27 @@
                     "username": "Nome de usuário",
                     "password": "Senha",
                     "ssl": "Usar SSL",
-                    "verify_ssl": "Verify SSL"
+                    "verify_ssl": "Verificar SSL"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Nome de usuário",
+                    "password": "Senha"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Host",
+                    "port": "Porta",
+                    "username": "Nome de usuário",
+                    "password": "Senha",
+                    "ssl": "Usar SSL",
+                    "verify_ssl": "Verificar SSL"
                 }
             }
         },
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Falha no handshake SSL",
             "connection_timeout": "Tempo limite de conexão do Mikrotik.",
             "wrong_login": "Nome de usuário ou senha inválidos.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Verificação do certificado falhou",
+            "invalid_auth": "Nome de usuário ou senha inválidos.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Mostrar MAC e IP do cliente nas interfaces",
                     "unit_of_measurement": "Unidade de medida",
                     "track_network_hosts_timeout": "Rastrear o tempo limite dos dispositivos de rede (segundos)",
-                    "zone": "Zona para rastreador de dispositivos"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Opções de roteador Mikrotik (1\/2)",
                 "description": "Inicialize a integração"
@@ -49,14 +76,28 @@
                     "sensor_environment": "Sensores de variáveis de ambiente",
                     "sensor_kidcontrol": "Controle infantil",
                     "sensor_mangle": "Interruptores Mangle",
-                    "sensor_ppp": "Usuários de PPP",
+                    "sensor_ppp": "Usuários PPP",
                     "sensor_filter": "Interruptores de filtro",
-                    "sensor_client_captive": "sensores de cliente cativo",
-                    "sensor_netwatch_tracker": "Netwatch tracker sensors"
+                    "sensor_client_captive": "Sensores de cliente cativo",
+                    "sensor_netwatch_tracker": "Sensores de rastreamento netwatch"
                 },
                 "title": "Opções de roteador Mikrotik (2\/2)",
                 "description": "Ativar sensores e interruptores"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

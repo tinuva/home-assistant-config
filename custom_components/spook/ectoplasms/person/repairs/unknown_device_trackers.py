@@ -89,7 +89,10 @@ class SpookRepair(AbstractSpookRepair):
             return  # Person is not set up; nothing to do.
 
         entity_registry = er.async_get(self.hass)
-        for person_entity in component.entities:
+        # Taken as a snapshot: describing what is missing can hand the event
+        # loop a turn, and a change to the live collection during it ends the
+        # inspection in a `RuntimeError`. #1558.
+        for person_entity in list(component.entities):
             self.possible_issue_ids.add(person_entity.entity_id)
 
             unknown = [
@@ -103,11 +106,12 @@ class SpookRepair(AbstractSpookRepair):
 
             self.async_create_issue(
                 issue_id=person_entity.entity_id,
+                references=unknown,
                 is_fixable=True,
                 data={
                     "person_entity_id": person_entity.entity_id,
                     "person": person_entity.name,
-                    "device_trackers": async_describe_unknown_entities(
+                    "device_trackers": await async_describe_unknown_entities(
                         self.hass, sorted(unknown)
                     ),
                     "unknown_trackers": ",".join(sorted(unknown)),

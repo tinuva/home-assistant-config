@@ -1,4 +1,3 @@
-
 {
   "config": {
     "abort": {
@@ -14,21 +13,25 @@
       "wrong_captcha": "Λάθος captcha.",
       "credentials_incomplete": "Τα στοιχεία είναι ελλιπή. Συμπληρώστε όνομα χρήστη, κωδικό και χώρα.",
       "login_error": "Αδυναμία σύνδεσης. Ελέγξτε τα στοιχεία σύνδεσης.",
-      "no_devices": "Δεν βρέθηκαν υποστηριζόμενες συσκευές σε αυτόν τον λογαριασμό στη συγκεκριμένη χώρα.{devices}"
+      "no_devices": "Δεν βρέθηκαν υποστηριζόμενες συσκευές σε αυτόν τον λογαριασμό στη συγκεκριμένη χώρα.{devices}",
+      "2fa_send_failed": "Αποτυχία αποστολής κωδικού επαλήθευσης. Παρακαλώ δοκιμάστε ξανά.",
+      "2fa_limit_reached": "Έχετε φτάσει το ημερήσιο όριο αποστολής κωδικών επαλήθευσης. Παρακαλώ δοκιμάστε ξανά αύριο.",
+      "2fa_cooldown_active": "Πολλά διαδοχικά αιτήματα. Παρακαλώ περιμένετε λίγα λεπτά πριν δοκιμάσετε ξανά.",
+      "invalid_key": "Μη έγκυρο κλειδί."
     },
     "step": {
       "user": {
         "data": {
           "configuration_type": "Τύπος ρύθμισης"
         },
-        "description": "Η λειτουργία χάρτη απαιτεί σύνδεση στο cloud και προσφέρει αυτόματη ρύθμιση. Αν δεν θέλετε να χρησιμοποιήσετε τη λειτουργία χάρτη, μπορείτε να επιλέξετε χειροκίνητη ρύθμιση."
+        "description": "Επιλέξτε τον τύπο λογαριασμού που αντιστοιχεί στην εφαρμογή που χρησιμοποιείτε για τη διαχείριση της συσκευής σας."
       },
       "local": {
         "data": {
           "host": "Διεύθυνση (Host)",
           "token": "Token"
         },
-        "description": "Θα χρειαστείτε το 32-ψήφιο API Token. Δείτε οδηγίες στο https://www.home-assistant.io/integrations/xiaomi_miio#retrieving-the-access-token."
+        "description": "Η τοπική σύνδεση είναι διαθέσιμη μόνο για συσκευές που μπορούν να προστεθούν στην εφαρμογή Xiaomi Home. Το απαιτούμενο 32-ψήφιο API Token μπορεί να ληφθεί μόνο μέσω του cloud Xiaomi Miio."
       },
       "mi": {
         "data": {
@@ -37,13 +40,13 @@
           "country": "Χώρα server",
           "prefer_cloud": "Προτίμηση σύνδεσης μέσω cloud"
         },
-        "description": "Συνδεθείτε στο cloud Xiaomi Miio. Δείτε τη λίστα διαθέσιμων servers στο https://www.openhab.org/addons/bindings/miio/#country-servers."
-      },    
+        "description": "Εισαγάγετε τα διαπιστευτήρια που χρησιμοποιείτε για να συνδεθείτε στην εφαρμογή Xiaomi Home."
+      },
       "2fa": {
         "data": {
           "verification_code": "Κωδικός επαλήθευσης δύο παραγόντων"
         },
-        "description": "## Αυτή η σύνδεση απαιτεί επαλήθευση ασφαλείας\nΑνοίξτε τη σελίδα επαλήθευσης για να σταλεί ο κωδικός στο κινητό/email. Αφού τον λάβετε, μην τον επαληθεύσετε στη σελίδα, αλλά επιστρέψτε στο Home Assistant και εισάγετέ τον παρακάτω.\n### [Αποστολή Κωδικού]({url})"
+        "description": "## Απαιτείται επαλήθευση ασφαλείας\nΈνας κωδικός επαλήθευσης έχει σταλεί στο {dest}. Παρακαλώ εισάγετε τον κωδικό παρακάτω."
       },
       "captcha": {
         "data": {
@@ -57,7 +60,7 @@
           "password": "Κωδικός",
           "country": "Χώρα server"
         },
-        "description": "Συνδεθείτε στο Dreamehome cloud."
+        "description": "Εισαγάγετε τα διαπιστευτήρια που χρησιμοποιείτε για να συνδεθείτε στην εφαρμογή Dreamehome."
       },
       "mova": {
         "data": {
@@ -65,7 +68,15 @@
           "password": "Κωδικός",
           "country": "Χώρα server"
         },
-        "description": "Συνδεθείτε στο Movahome cloud."
+        "description": "Εισαγάγετε τα διαπιστευτήρια που χρησιμοποιείτε για να συνδεθείτε στην εφαρμογή MOVAhome."
+      },
+      "trouver": {
+        "data": {
+          "username": "Όνομα χρήστη",
+          "password": "Κωδικός πρόσβασης",
+          "country": "Διακομιστής cloud"
+        },
+        "description": "Εισαγάγετε τα διαπιστευτήρια που χρησιμοποιείτε για να συνδεθείτε στην εφαρμογή TROUVER."
       },
       "devices": {
         "data": {
@@ -73,11 +84,11 @@
         },
         "description": "Επιλέξτε τη συσκευή Dreame Vacuum που θέλετε να ρυθμίσετε."
       },
-      "donation": {
+      "dvc": {
         "data": {
-          "donated": "Υποστήριξα οικονομικά"
+          "dvc_key": "Κλειδί Dreame Vacuum Card"
         },
-        "description": "## Μην ξεχάσετε να υποστηρίξετε το έργο.{text}"
+        "description": "## Dreame Vacuum Card\r\n #### Διεπαφή Dreame Vacuum{text}\r\n\r\nΕισαγάγετε το κλειδί άδειας χρήσης για να ενεργοποιήσετε την Dreame Vacuum Card. Αν δεν έχετε, μπορείτε να το αποκτήσετε **[εδώ]({url})**.\r\n\r\n*Σημείωση: κάθε κλειδί ισχύει μόνο για μία συσκευή.*"
       },
       "options": {
         "data": {
@@ -108,86 +119,426 @@
           "square": "Τετράγωνος χάρτης",
           "configuration_type": "Τύπος ρύθμισης",
           "prefer_cloud": "Προτίμηση σύνδεσης μέσω cloud",
-          "donated": "Υποστήριξα οικονομικά"
+          "dvc_key": "Κλειδί Dreame Vacuum Card"
         }
       }
     },
     "error": {
-      "cloud_credentials_incomplete": "Ελλιπή στοιχεία cloud. Συμπληρώστε όνομα χρήστη, κωδικό και χώρα."
+      "cloud_credentials_incomplete": "Ελλιπή στοιχεία cloud. Συμπληρώστε όνομα χρήστη, κωδικό και χώρα.",
+      "invalid_key": "Μη έγκυρο κλειδί."
+    }
+  },
+  "selector": {
+    "map_objects": {
+      "options": {
+        "color": "Χρώματα δωματίων",
+        "icon": "Εικονίδια δωματίων",
+        "name": "Ονόματα δωματίων",
+        "name_background": "Φόντο ονόματος δωματίου",
+        "order": "Σειρά δωματίων",
+        "suction_level": "Ισχύς αναρρόφησης δωματίου",
+        "water_volume": "Ποσότητα νερού δωματίου",
+        "cleaning_times": "Επαναλήψεις καθαρισμού δωματίου",
+        "cleaning_mode": "Λειτουργία καθαρισμού δωματίου",
+        "mopping_mode": "Λειτουργία σφουγγαρίσματος δωματίου",
+        "path": "Διαδρομή",
+        "no_go": "Απαγορευμένες ζώνες",
+        "no_mop": "Ζώνες χωρίς σφουγγάρισμα",
+        "virtual_wall": "Εικονικοί τοίχοι",
+        "pathway": "Εικονικά κατώφλια",
+        "active_area": "Ενεργές περιοχές",
+        "active_point": "Ενεργά σημεία",
+        "charger": "Εικονίδιο βάσης φόρτισης",
+        "robot": "Εικονίδιο ρομπότ",
+        "cleaning_direction": "Κατεύθυνση καθαρισμού",
+        "obstacle": "Εμπόδιο AI",
+        "pet": "Κατοικίδιο",
+        "carpet": "Περιοχή χαλιού",
+        "material": "Υλικό δαπέδου",
+        "low_lying_area": "Χαμηλές περιοχές",
+        "furniture": "Έπιπλα",
+        "ramp": "Ράμπα",
+        "curtain": "Κουρτίνα",
+        "cruise_point": "Σημεία περιήγησης"
+      }
+    },
+    "notifications": {
+      "options": {
+        "cleanup_completed": "Ο καθαρισμός ολοκληρώθηκε",
+        "consumable": "Αναλώσιμο",
+        "information": "Πληροφορίες",
+        "warning": "Προειδοποίηση",
+        "error": "Σφάλμα"
+      }
+    },
+    "color_scheme": {
+      "options": {
+        "dreame_dark": "Dreame σκούρο",
+        "dreame_light": "Dreame ανοιχτό",
+        "grayscale": "Αποχρώσεις γκρι",
+        "mijia_dark": "Mijia σκούρο",
+        "mijia_light": "Mijia ανοιχτό"
+      }
+    },
+    "icon_set": {
+      "options": {
+        "dreame": "Dreame",
+        "dreame_old": "Dreame παλιό",
+        "material": "Material Design",
+        "mijia": "Mijia"
+      }
+    },
+    "configuration_type": {
+      "options": {
+        "dreame": "Dreamehome",
+        "mi": "Xiaomi Home",
+        "mova": "MOVAhome",
+        "trouver": "TROUVER",
+        "local": "Τοπική σύνδεση"
+      }
+    },
+    "country": {
+      "options": {
+        "eu": "Ευρώπη",
+        "cn": "Κίνα",
+        "us": "ΗΠΑ",
+        "ru": "Ρωσία",
+        "tw": "Ταϊβάν",
+        "sg": "Σιγκαπούρη",
+        "in": "Ινδία",
+        "kr": "Νότια Κορέα",
+        "de": "Γερμανία",
+        "i2": "Διεθνής",
+        "by": "Λευκορωσία"
+      }
     }
   },
   "entity": {
+    "vacuum": {
+      "dreame_vacuum": {
+        "state": {
+          "cleaning": "Καθαρίζει",
+          "docked": "Στη βάση",
+          "error": "Σφάλμα",
+          "idle": "Σε αδράνεια",
+          "paused": "Σε παύση",
+          "returning": "Επιστροφή στη βάση"
+        },
+        "state_attributes": {
+          "fan_speed": {
+            "name": "Ισχύς αναρρόφησης",
+            "state": {
+              "standard": "Κανονικό",
+              "strong": "Ισχυρό",
+              "turbo": "Turbo",
+              "silent": "Αθόρυβο",
+              "unknown": "Άγνωστο"
+            }
+          },
+          "status": {
+            "state": {
+              "unknown": "Άγνωστο",
+              "idle": "Αδρανές",
+              "paused": "Παύση",
+              "cleaning": "Καθαρισμός",
+              "returning": "Επιστροφή στη βάση",
+              "spot_cleaning": "Τοπικός καθαρισμός",
+              "follow_wall_cleaning": "Καθαρισμός κατά μήκος τοίχου",
+              "charging": "Φόρτιση",
+              "ota": "OTA",
+              "fct": "FCT",
+              "wifi_set": "Ρύθμιση WiFi",
+              "power_off": "Απενεργοποιημένο",
+              "factory": "Εργοστασιακή λειτουργία",
+              "error": "Σφάλμα",
+              "remote_control": "Απομακρυσμένος έλεγχος",
+              "sleeping": "Αναμονή",
+              "self_repair": "Αυτοέλεγχος",
+              "factory_test": "Εργοστασιακό τεστ",
+              "standby": "Εφεδρεία",
+              "room_cleaning": "Καθαρισμός δωματίου",
+              "zone_cleaning": "Καθαρισμός ζώνης",
+              "fast_mapping": "Γρήγορη χαρτογράφηση",
+              "cruising_path": "Περιήγηση στη διαδρομή",
+              "cruising_point": "Περιήγηση στο σημείο",
+              "summon_clean": "Κλήση για καθαρισμό",
+              "shortcut": "Συντόμευση",
+              "person_follow": "Ακολούθηση ατόμου",
+              "water_check": "Έλεγχος νερού",
+              "pet_guarding": "Φύλαξη κατοικιδίων",
+              "auto_arrangement": "Αυτόματη τακτοποίηση",
+              "smart_arrangement": "Έξυπνη τακτοποίηση",
+              "zoned_arrangement": "Τακτοποίηση ζώνης"
+            }
+          }
+        }
+      }
+    },
     "select": {
-      "suction_level": {
+      "auto_empty_frequency": {
+        "name": "Συχνότητα αυτόματης εκκένωσης",
         "state": {
-          "quiet": "Αθόρυβο",
+          "1x": "Μετά από κάθε εργασία",
+          "2x": "Μετά από δύο καθαρισμούς",
+          "3x": "Μετά από τρεις καθαρισμούς"
+        }
+      },
+      "auto_empty_mode": {
+        "name": "Λειτουργία αυτόματου αδειάσματος",
+        "state": {
+          "off": "Ανενεργό",
           "standard": "Κανονικό",
-          "strong": "Ισχυρό",
-          "turbo": "Turbo"
+          "high_frequency": "Συχνό",
+          "low_frequency": "Αραιό",
+          "custom_frequency": "Προσαρμοσμένη συχνότητα",
+          "intelligent": "Έξυπνη"
         }
       },
-      "water_volume": {
+      "auto_lds_coverage": {
+        "name": "Αυτόματη κάλυψη LDS",
         "state": {
-          "low": "Χαμηλό",
-          "medium": "Μεσαίο",
-          "high": "Υψηλό"
+          "off": "Ανενεργό",
+          "security": "Ασφάλεια",
+          "extreme": "Ακραία"
         }
       },
-      "mop_pad_humidity": {
+      "auto_recleaning": {
+        "name": "Αυτόματος επανακαθαρισμός",
         "state": {
-          "slightly_dry": "Ελαφρώς στεγνό",
-          "moist": "Υγρό",
-          "wet": "Πολύ υγρό"
+          "off": "Ανενεργό",
+          "in_deep_mode": "Στο βαθύ καθάρισμα",
+          "in_all_modes": "Σε όλα"
         }
       },
-      "cleaning_mode": {
+      "auto_rewashing": {
+        "name": "Αυτόματη επαναπλύση",
         "state": {
-          "sweeping": "Σκούπισμα",
-          "mopping": "Σφουγγάρισμα",
-          "sweeping_and_mopping": "Σκούπισμα & Σφουγγάρισμα",
-          "mopping_after_sweeping": "Σφουγγάρισμα μετά το σκούπισμα"
+          "off": "Ανενεργό",
+          "in_deep_mode": "Στο βαθύ καθάρισμα",
+          "in_all_modes": "Σε όλα"
+        }
+      },
+      "battery_charge_level": {
+        "name": "Επίπεδο φόρτισης μπαταρίας"
+      },
+      "carpet_cleaning": {
+        "name": "Καθαρισμός χαλιών",
+        "state": {
+          "avoidance": "Αποφυγή",
+          "adaptation": "Προσαρμογή",
+          "remove_mop": "Αφαίρεση σφουγγαρίστρας",
+          "adaptation_without_route": "Προσαρμογή χωρίς Διαδρομή",
+          "vacuum_and_mop": "Σκούπισμα και Σφουγγάρισμα",
+          "ignore": "Αγνόηση",
+          "cross": "Διάβαση"
         }
       },
       "carpet_sensitivity": {
+        "name": "Ευαισθησία χαλιού",
         "state": {
           "low": "Χαμηλή",
           "medium": "Μεσαία",
           "high": "Υψηλή"
         }
       },
-      "carpet_cleaning": {
+      "carpet_shape": {
+        "name": "Σχήμα",
         "state": {
-          "avoidance": "Αποφυγή",
-          "adaptation": "Προσαρμογή",
-          "remove_mop": "Αφαίρεση σφουγγαρίστρας",
-          "adaptation_without_route": "Προσαρμογή χωρίς διαδρομή",
-          "vacuum_and_mop": "Σκούπισμα και σφουγγάρισμα",
-          "ignore": "Αγνόηση",
-          "cross": "Διάβαση"
+          "square": "Τετράγωνο",
+          "round": "Στρογγυλό"
         }
       },
-      "mop_wash_level": {
+      "carpet_type": {
+        "name": "Τύπος χαλιού",
         "state": {
-          "water_saving": "Εξοικονόμηση νερού",
-          "daily": "Καθημερινό",
-          "deep": "Βαθύ"
+          "medium_pile": "Υψηλό έως Μεσαίο-Πέλος",
+          "low_pile": "Χαμηλό-Πέλος",
+          "floor_mat": "Πατάκι δαπέδου",
+          "other": "Άλλο"
         }
       },
-      "mopping_type": {
-        "state": {
-          "accurate": "Ακριβές",
-          "daily": "Καθημερινό",
-          "deep": "Βαθύ"
-        }
-      },
-      "wider_corner_coverage": {
+      "cleangenius": {
+        "name": "CleanGenius",
         "state": {
           "off": "Ανενεργό",
-          "high_frequency": "Υψηλή συχνότητα",
-          "low_frequency": "Χαμηλή συχνότητα"
+          "routine_cleaning": "Κανονικό",
+          "deep_cleaning": "Βαθύς καθαρισμός"
+        }
+      },
+      "cleangenius_mode": {
+        "name": "Λειτουργία CleanGenius",
+        "state": {
+          "vacuum_and_mop": "Καθάρισμα και Σφουγγάρισμα",
+          "mop_after_vacuum": "Σφουγγάρισμα μετά το Καθάρισμα"
+        }
+      },
+      "cleaning_mode": {
+        "name": "Λειτουργία καθαρισμού",
+        "state": {
+          "sweeping": "Σκούπισμα",
+          "mopping": "Σφουγγάρισμα",
+          "sweeping_and_mopping": "Σκούπισμα & Σφουγγάρισμα",
+          "mopping_after_sweeping": "Σφουγγάρισμα μετά το Σκούπισμα"
+        }
+      },
+      "cleaning_route": {
+        "name": "Διαδρομή",
+        "state": {
+          "quick": "Γρήγορη",
+          "standard": "Κανονική",
+          "intensive": "Ενδελεχής",
+          "deep": "Βαθύς"
+        }
+      },
+      "cleaning_times": {
+        "name": "Φορές καθαρισμού",
+        "state": {
+          "1x": "Μία φορά",
+          "2x": "Δύο φορές",
+          "3x": "Τρεις φορές"
+        }
+      },
+      "custom_mopping_route": {
+        "name": "Προσαρμοσμένη διαδρομή σφουγγαρίσματος",
+        "state": {
+          "off": "Ανενεργό",
+          "standard": "Κανονικό",
+          "intensive": "Ενδελεχής",
+          "deep": "Βαθύ"
+        }
+      },
+      "drying_time": {
+        "name": "Χρόνος στεγνώματος",
+        "state": {
+          "silent": "Αθόρυβο",
+          "1h": "Μία ώρα",
+          "2h": "Δύο ώρες",
+          "3h": "Τρεις ώρες",
+          "4h": "Τέσσερις ώρες",
+          "5h": "Πέντε ώρες",
+          "6h": "Έξι ώρες",
+          "7h": "Επτά ώρες",
+          "8h": "Οκτώ ώρες"
+        }
+      },
+      "edit_type": {
+        "name": "Τύπος επεξεργασίας",
+        "state": {
+          "door": "Επεξεργασία πορτών",
+          "split": "Διαχωρισμός δωματίων",
+          "merge": "Συγχώνευση δωματίων",
+          "visibility": "Ορατότητα δωματίου",
+          "material": "Υλικό δαπέδου",
+          "type": "Όνομα δωματίου",
+          "wall": "Επεξεργασία τοίχων"
+        }
+      },
+      "floor_material": {
+        "name": "Υλικό δαπέδου",
+        "state": {
+          "none": "Κανένα",
+          "tile": "Πλακάκι",
+          "wood": "Ξύλινο πάτωμα",
+          "low_pile_carpet": "Χαλί με Κοντό-Πέλος",
+          "medium_pile_carpet": "Χαλί με Μεσαίο έως Μακρύ-Πέλος",
+          "carpet": "Χαλί"
+        }
+      },
+      "floor_material_direction": {
+        "name": "Κατεύθυνση υλικού δαπέδου",
+        "state": {
+          "vertical": "Κάθετα",
+          "horizontal": "Παράλληλα"
+        }
+      },
+      "furniture_type": {
+        "name": "Τύπος επίπλου",
+        "state": {
+          "single_bed": "Μονό κρεβάτι",
+          "double_bed": "Διπλό κρεβάτι",
+          "arm_chair": "Πολυθρόνα",
+          "two_seat_sofa": "Διθέσιος-καναπές",
+          "three_seat_sofa": "Τριθέσιος-καναπές",
+          "dining_table": "Τραπέζι φαγητού",
+          "nightstant": "Κομοδίνο",
+          "coffee_table": "Τραπεζάκι σαλονιού",
+          "toilet": "Τουαλέτα",
+          "litter_box": "Αμμολεκάνη",
+          "pet_bed": "Κρεβάτι κατοικίδιου",
+          "food_bowl": "Μπολ φαγητού",
+          "pet_toilet": "Τουαλέτα κατοικίδιου",
+          "refrigerator": "Ψυγείο",
+          "washing_machine": "Πλυντήριο",
+          "enclosed_litter_box": "Κλειστή αμμολεκάνη",
+          "air_conditioner": "Κλιματιστικό",
+          "tv_cabinet": "Έπιπλο τηλεόρασης",
+          "bookshelf": "Βιβλιοθήκη",
+          "shoe_cabinet": "Παπουτσοθήκη",
+          "wardrobe": "Ντουλάπα",
+          "greenery": "Φυτά",
+          "floor_mirror": "Καθρέφτης δαπέδου",
+          "l_shaped_sofa": "Καναπές Σχήματος-L",
+          "round_coffee_table": "Στρογγυλό τραπεζάκι",
+          "table": "Τραπέζι",
+          "arm_chair_narrow": "Στενή πολυθρόνα",
+          "three_seat_sofa_narrow": "Στενός τριθέσιος-καναπές",
+          "l_shaped_sofa_right": "Δεξιός καναπές Σχήματος-L"
+        }
+      },
+      "low_lying_area_frequency": {
+        "name": "Συχνότητα χαμηλών περιοχών",
+        "state": {
+          "weekly": "Εβδομαδιαία",
+          "daily": "Καθημερινά"
+        }
+      },
+      "map_rotation": {
+        "name": "Περιστροφή χάρτη"
+      },
+      "map_type": {
+        "name": "Τύπος χάρτη",
+        "state": {
+          "cleaning": "Χάρτης καθαρισμού",
+          "history": "Λεπτομέρειες καθαρισμού",
+          "wifi": "Χάρτης Wi-Fi"
+        }
+      },
+      "mop_clean_frequency": {
+        "name": "Συχνότητα καθαρισμού σφουγγαρίστρας",
+        "state": {
+          "by_room": "Ανά δωμάτιο",
+          "5sqm": "Πέντε τετραγωνικά μέτρα",
+          "8sqm": "Οκτώ τετραγωνικά μέτρα",
+          "10sqm": "Δέκα τετραγωνικά μέτρα",
+          "15sqm": "Δεκαπέντε τετραγωνικά μέτρα",
+          "20sqm": "Είκοσι τετραγωνικά μέτρα",
+          "25sqm": "Είκοσι πέντε τετραγωνικά μέτρα",
+          "86sqf": "Ογδόντα έξι τετραγωνικά πόδια",
+          "108sqf": "Εκατόν οκτώ τετραγωνικά πόδια",
+          "54sqf": "Πενήντα τέσσερα τετραγωνικά πόδια",
+          "162sqf": "Εκατόν εξήντα δύο τετραγωνικά πόδια",
+          "216sqf": "Διακόσια δεκαέξι τετραγωνικά πόδια",
+          "270sqf": "Διακόσια εβδομήντα τετραγωνικά πόδια"
+        }
+      },
+      "mop_extend_frequency": {
+        "name": "Συχνότητα έκτασης σφουγγαρίστρας",
+        "state": {
+          "standard": "Κανονικό",
+          "intelligent": "Έξυπνο",
+          "high": "Συχνό"
+        }
+      },
+      "mop_pad_humidity": {
+        "name": "Υγρασία σφουγγαρίστρας",
+        "state": {
+          "slightly_dry": "Ελαφρώς στεγνό",
+          "moist": "Υγρό",
+          "wet": "Πολύ υγρό"
         }
       },
       "mop_pad_swing": {
+        "name": "Ταλάντωση σφουγγαρίστρας",
         "state": {
           "off": "Ανενεργό",
           "auto": "Αυτόματο",
@@ -195,24 +546,171 @@
           "weekly": "Εβδομαδιαίο"
         }
       },
-      "mop_extend_frequency": {
+      "mop_pressure": {
+        "name": "Πίεση σφουγγαρίστρας",
         "state": {
-          "standard": "Κανονικό",
-          "intelligent": "Έξυπνο",
-          "high": "Συχνό"
+          "light": "Ελαφριά",
+          "normal": "Κανονική"
         }
       },
-      "floor_material": {
+      "mop_temperature": {
+        "name": "Θερμοκρασία σφουγγαρίστρας",
         "state": {
-          "none": "Κανένα",
-          "tile": "Πλακάκι",
-          "wood": "Ξύλινο πάτωμα",
-          "low_pile_carpet": "Χαλί με χαμηλό πέλος",
-          "medium_pile_carpet": "Χαλί με μεσαίο πέλος",
-          "carpet": "Χαλί"
+          "normal": "Κανονική",
+          "warm": "Ζεστή"
+        }
+      },
+      "mop_type": {
+        "name": "Τύπος σφουγγαρίστρας",
+        "state": {
+          "a": "Σφουγγαρίστρα Α",
+          "b": "Σφουγγαρίστρα Β",
+          "c": "Σφουγγαρίστρα Γ"
+        }
+      },
+      "mop_wash_level": {
+        "name": "Επίπεδο πλύσης σφουγγαρίστρας",
+        "state": {
+          "water_saving": "Εξοικονόμηση νερού",
+          "daily": "Καθημερινό",
+          "deep": "Βαθύ",
+          "ultra_clean_mode": "Εξαιρετικά καθαρό"
+        }
+      },
+      "mopping_pattern": {
+        "name": "Μοτίβο σφουγγαρίσματος",
+        "state": {
+          "daily": "Καθημερινό σφουγγάρισμα",
+          "deep": "Βαθύ σφουγγάρισμα"
+        }
+      },
+      "mopping_type": {
+        "name": "Τύπος σφουγγαρίσματος",
+        "state": {
+          "accurate": "Ακριβές",
+          "daily": "Καθημερινό",
+          "deep": "Βαθύ"
+        }
+      },
+      "name": {
+        "name": "Όνομα δωματίου {index}",
+        "state_attributes": {
+          "room_id": {
+            "name": "ID δωματίου"
+          },
+          "index": {
+            "name": "Ευρετήριο"
+          },
+          "type": {
+            "name": "Τύπος δωματίου"
+          }
+        }
+      },
+      "object_type": {
+        "name": "Τύπος αντικειμένου",
+        "state": {
+          "predefined_point": "Προκαθορισμένο σημείο",
+          "low_lying_area": "Χαμηλή-Περιοχή",
+          "curtain": "Κουρτίνα",
+          "threshold": "Κατώφλι",
+          "furniture": "Έπιπλα",
+          "carpet": "Χαλί",
+          "restricted": "Περιορισμένη ζώνη"
+        }
+      },
+      "order": {
+        "name": "Σειρά",
+        "state": {
+          "not_set": "Μη ορισμένο"
+        }
+      },
+      "scraper_frequency": {
+        "name": "Συχνότητα ξύστρας",
+        "state": {
+          "off": "Ανενεργό",
+          "weekly": "Εβδομαδιαία",
+          "daily": "Καθημερινά"
+        }
+      },
+      "segment_name": {
+        "name": "Όνομα δωματίου",
+        "state": {
+          "room": "Δωμάτιο",
+          "living_room": "Σαλόνι",
+          "primary_bedroom": "Κύρια κρεβατοκάμαρα",
+          "study": "Γραφείο",
+          "kitchen": "Κουζίνα",
+          "dining_hall": "Τραπεζαρία",
+          "bathroom": "Μπάνιο",
+          "balcony": "Μπαλκόνι",
+          "corridor": "Διάδρομος",
+          "utility_room": "Βοηθητικό δωμάτιο",
+          "closet": "Ντουλάπα",
+          "meeting_room": "Αίθουσα συσκέψεων",
+          "office": "Γραφείο",
+          "fitness_area": "Χώρος γυμναστικής",
+          "recreation_area": "Χώρος αναψυχής",
+          "secondary_bedroom": "Δεύτερη κρεβατοκάμαρα"
+        }
+      },
+      "selected_map": {
+        "name": "Επιλεγμένος χάρτης",
+        "state_attributes": {
+          "map_id": {
+            "name": "Αναγνωριστικό χάρτη"
+          },
+          "map_index": {
+            "name": "Ευρετήριο χάρτη"
+          }
+        }
+      },
+      "self_clean_frequency": {
+        "name": "Συχνότητα αυτοκαθαρισμού",
+        "state": {
+          "by_area": "Ανά περιοχή",
+          "by_time": "Ανά χρόνο",
+          "by_room": "Ανά δωμάτιο",
+          "intelligent": "Έξυπνη"
+        }
+      },
+      "suction_level": {
+        "name": "Ισχύς αναρρόφησης",
+        "state": {
+          "quiet": "Αθόρυβο",
+          "standard": "Κανονικό",
+          "strong": "Ισχυρό",
+          "turbo": "Turbo",
+          "full_power": "Πλήρης ισχύς"
+        }
+      },
+      "task_repeats": {
+        "name": "Επαναλήψεις εργασίας",
+        "state": {
+          "once": "Μία φορά",
+          "daily": "Καθημερινά",
+          "workdays": "Εργάσιμες ημέρες",
+          "weekends": "Σαββατοκύριακα"
+        }
+      },
+      "task_type": {
+        "name": "Τύπος εργασίας",
+        "state": {
+          "go_to": "Μετάβαση σε Σημείο",
+          "segment": "Καθαρισμός δωματίου",
+          "all": "Γενικός καθαρισμός",
+          "zone": "Καθαρισμός ζώνης",
+          "spot": "Τοπικός καθαρισμός"
+        }
+      },
+      "visibility": {
+        "name": "Ορατότητα",
+        "state": {
+          "visible": "Ορατό",
+          "hidden": "Κρυφό"
         }
       },
       "voice_assistant_language": {
+        "name": "Γλώσσα φωνητικού βοηθού",
         "state": {
           "default": "Προεπιλογή",
           "english": "Αγγλικά",
@@ -224,93 +722,10 @@
           "korean": "Κορεάτικα"
         }
       },
-      "mop_pressure": {
-        "state": {
-          "light": "Ελαφριά",
-          "normal": "Κανονική"
-        }
-      },
-      "mop_temperature": {
-        "state": {
-          "normal": "Κανονική",
-          "warm": "Ζεστή"
-        }
-      },
-      "low_lying_area_frequency": {
-        "state": {
-          "weekly": "Εβδομαδιαία",
-          "daily": "Καθημερινά"
-        }
-      },
-      "scraper_frequency": {
-        "state": {
-          "off": "Ανενεργό",
-          "weekly": "Εβδομαδιαία",
-          "daily": "Καθημερινά"
-        }
-      },
-      "auto_lds_coverage": {
-        "state": {
-          "off": "Ανενεργό",
-          "security": "Ασφάλεια",
-          "extreme": "Ακραία"
-        }
-      },
-      "order": {
-        "state": {
-          "not_set": "Μη ορισμένο"
-        }
-      },
-      "self_clean_frequency": {
-        "state": {
-          "by_area": "Ανά περιοχή",
-          "by_time": "Ανά χρόνο",
-          "by_room": "Ανά δωμάτιο",
-          "intelligent": "Έξυπνη"
-        }
-      },
-      "mop_clean_frequency": {
-        "state": {
-          "by_room": "Ανά δωμάτιο"
-        }
-      },
-      "auto_empty_mode": {
-        "state": {
-          "off": "Ανενεργό",
-          "standard": "Κανονικό",
-          "high_frequency": "Συχνό",
-          "low_frequency": "Αραιό",
-          "custom_frequency": "Προσαρμοσμένη συχνότητα",
-          "intelligent": "Έξυπνη"
-        }
-      },
-      "floor_material_direction": {
-        "state": {
-          "vertical": "Κάθετα",
-          "horizontal": "Παράλληλα"
-        }
-      },
-      "visibility": {
-        "state": {
-          "visible": "Ορατό",
-          "hidden": "Κρυφό"
-        }
-      },
-      "cleangenius": {
-        "state": {
-          "off": "Ανενεργό",
-          "routine_cleaning": "Κανονικό",
-          "deep_cleaning": "Βαθύς καθαρισμός"
-        }
-      },
-      "cleangenius_mode": {
-        "state": {
-          "vacuum_and_mop": "Καθάρισμα και σφουγγάρισμα",
-          "mop_after_vacuum": "Σφουγγάρισμα μετά το καθάρισμα"
-        }
-      },
       "washing_mode": {
+        "name": "Λειτουργία πλύσης",
         "state": {
+          "smart": "Έξυπνο",
           "light": "Ελαφρύ",
           "standard": "Κανονικό",
           "deep": "Βαθύ",
@@ -318,6 +733,7 @@
         }
       },
       "water_temperature": {
+        "name": "Θερμοκρασία νερού",
         "state": {
           "normal": "Κανονική",
           "mild": "Μέτρια",
@@ -326,179 +742,190 @@
           "max": "Μέγιστη"
         }
       },
-      "auto_recleaning": {
+      "water_volume": {
+        "name": "Ποσότητα νερού",
         "state": {
-          "off": "Ανενεργό",
-          "in_deep_mode": "Στο βαθύ καθάρισμα",
-          "in_all_modes": "Σε όλα"
+          "low": "Χαμηλό",
+          "medium": "Μεσαίο",
+          "high": "Υψηλό"
         }
       },
-      "auto_rewashing": {
+      "wetness_level": {
+        "name": "Υγρασία",
         "state": {
-          "off": "Ανενεργό",
-          "in_deep_mode": "Στο βαθύ καθάρισμα",
-          "in_all_modes": "Σε όλα"
+          "slightly_dry": "Ελαφρώς στεγνό",
+          "moist": "Νωπό",
+          "wet": "Υγρό"
         }
       },
-      "cleaning_route": {
-        "state": {
-          "quick": "Γρήγορη",
-          "standard": "Κανονική",
-          "intensive": "Ενδελεχής",
-          "deep": "Βαθύς"
-        }
-      },
-      "custom_mopping_route": {
+      "wider_corner_coverage": {
+        "name": "Ευρύτερη κάλυψη γωνιών",
         "state": {
           "off": "Ανενεργό",
-          "standard": "Κανονικό",
-          "intensive": "Ενδελεχής",
-          "deep": "Βαθύ"
+          "high_frequency": "Υψηλή συχνότητα",
+          "low_frequency": "Χαμηλή συχνότητα"
         }
       }
     },
     "sensor": {
-      "state": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "sweeping": "Σκούπισμα",
-          "charging": "Φόρτιση",
-          "error": "Σφάλμα",
-          "idle": "Αδρανές",
-          "paused": "Παύση",
-          "returning": "Επιστροφή στη βάση",
-          "mopping": "Σφουγγάρισμα",
-          "drying": "Στέγνωμα",
-          "washing": "Πλύση",
-          "returning_to_wash": "Επιστροφή για πλύση",
-          "building": "Δημιουργία χάρτη",
-          "sweeping_and_mopping": "Σκούπισμα & Σφουγγάρισμα",
-          "charging_completed": "Η φόρτιση ολοκληρώθηκε",
-          "upgrading": "Αναβάθμιση",
-          "clean_summon": "Κλήση για καθαρισμό",
-          "station_reset": "Επαναφορά σταθμού",
-          "returning_install_mop": "Επιστροφή για τοποθέτηση σφουγγαρίστρας",
-          "returning_remove_mop": "Επιστροφή για αφαίρεση σφουγγαρίστρας",
-          "water_check": "Έλεγχος νερού",
-          "clean_add_water": "Καθαρισμός & προσθήκη νερού",
-          "washing_paused": "Πλύση σε παύση",
-          "auto_emptying": "Αυτόματο άδειασμα",
-          "remote_control": "Απομακρυσμένος έλεγχος",
-          "smart_charging": "Έξυπνη φόρτιση",
-          "second_cleaning": "Δεύτερος καθαρισμός",
-          "human_following": "Ακολούθηση ανθρώπου",
-          "spot_cleaning": "Τοπικός καθαρισμός",
-          "returning_auto_empty": "Επιστροφή για άδειασμα",
-          "waiting_for_task": "Αναμονή για εργασία",
-          "station_cleaning": "Καθαρισμός σταθμού",
-          "returning_to_drain": "Επιστροφή για άδειασμα",
-          "draining": "Άδειασμα",
-          "auto_water_draining": "Αυτόματο άδειασμα νερού",
-          "emptying": "Άδειασμα",
-          "dust_bag_drying": "Στέγνωμα σακούλας σκόνης",
-          "dust_bag_drying_paused": "Το στέγνωμα της σακούλας σκόνης έχει τεθεί σε παύση",
-          "heading_to_extra_cleaning": "Μετάβαση σε επιπλέον καθαρισμό",
-          "extra_cleaning": "Επιπλέον καθαρισμός",
-          "finding_pet_paused": "Εύρεση κατοικιδίου σε παύση",
-          "finding_pet": "Εύρεση κατοικιδίου",
-          "shortcut": "Συντόμευση",
-          "monitoring": "Παρακολούθηση",
-          "monitoring_paused": "Παρακολούθηση σε παύση",
-          "initial_deep_cleaning": "Αρχικός βαθύς καθαρισμός",
-          "initial_deep_cleaning_paused": "Ο αρχικός βαθύς καθαρισμός έχει τεθεί σε παύση",
-          "sanitizing": "Απολύμανση",
-          "sanitizing_with_dry": "Απολύμανση με στέγνωμα",
-          "changing_mop": "Αλλαγή πανιού",
-          "changing_mop_paused": "Παύση αλλαγής πανιού",
-          "floor_maintaining": "Συντήρηση δαπέδου",
-          "floor_maintaining_paused": "Παύση συντήρησης δαπέδου"
-        }
-      },
-      "status": {
+      "auto_empty_status": {
+        "name": "Κατάσταση αυτόματου αδειάσματος",
         "state": {
           "unknown": "Άγνωστο",
           "idle": "Αδρανές",
-          "paused": "Παύση",
-          "cleaning": "Καθαρισμός",
-          "returning": "Επιστροφή στη βάση",
-          "spot_cleaning": "Τοπικός καθαρισμός",
-          "follow_wall_cleaning": "Καθαρισμός κατά μήκος τοίχου",
-          "charging": "Φόρτιση",
-          "ota": "OTA",
-          "fct": "FCT",
-          "wifi_set": "Ρύθμιση WiFi",
-          "power_off": "Απενεργοποιημένο",
-          "factory": "Εργοστασιακή λειτουργία",
-          "error": "Σφάλμα",
-          "remote_control": "Απομακρυσμένος έλεγχος",
-          "sleeping": "Αναμονή",
-          "self_test": "Αυτοέλεγχος",
-          "factory_test": "Εργοστασιακό τεστ",
-          "standby": "Εφεδρεία",
-          "room_cleaning": "Καθαρισμός δωματίου",
-          "zone_cleaning": "Καθαρισμός ζώνης",
-          "fast_mapping": "Γρήγορη χαρτογράφηση",
-          "cruising_path": "Περιήγηση στη διαδρομή",
-          "cruising_point": "Περιήγηση στο σημείο",
-          "summon_clean": "Κλήση για καθαρισμό",
-          "shortcut": "Συντόμευση",
-          "person_follow": "Ακολούθηση ατόμου",
-          "water_check": "Έλεγχος νερού"
+          "active": "Ενεργό",
+          "not_performed": "Δεν εκτελέστηκε"
         }
       },
-      "task_status": {
+      "battery_level": {
+        "name": "Επίπεδο μπαταρίας"
+      },
+      "bssid": {
+        "name": "BSSID"
+      },
+      "charging_status": {
+        "name": "Κατάσταση φόρτισης",
         "state": {
           "unknown": "Άγνωστο",
+          "charging": "Φόρτιση",
+          "not_charging": "Δεν φορτίζει",
+          "return_to_charge": "Επιστροφή για φόρτιση",
+          "charging_completed": "Η φόρτιση ολοκληρώθηκε"
+        }
+      },
+      "clean_water_tank_status": {
+        "name": "Κατάσταση δεξαμενής καθαρού νερού",
+        "state": {
+          "unknown": "Άγνωστο",
+          "not_available": "Μη διαθέσιμο",
+          "not_installed": "Δεν είναι εγκατεστημένη",
+          "low_water": "Χαμηλή στάθμη νερού",
+          "installed": "Εγκατεστημένη"
+        }
+      },
+      "cleaned_area": {
+        "name": "Καθαρισμένη περιοχή"
+      },
+      "cleaning_count": {
+        "name": "Αριθμός καθαρισμών"
+      },
+      "cleaning_history": {
+        "name": "Ιστορικό καθαρισμού"
+      },
+      "cleaning_progress": {
+        "name": "Πρόοδος καθαρισμού"
+      },
+      "cleaning_status": {
+        "name": "Καθαρισμός",
+        "state": {
+          "interrupted": "Διακόπηκε",
           "completed": "Ολοκληρώθηκε",
-          "cleaning": "Καθαρισμός",
-          "zone_cleaning": "Καθαρισμός ζώνης",
-          "room_cleaning": "Καθαρισμός δωματίου",
-          "spot_cleaning": "Τοπικός καθαρισμός",
-          "fast_mapping": "Γρήγορη χαρτογράφηση",
-          "cleaning_paused": "Καθαρισμός σε παύση",
-          "room_cleaning_paused": "Καθαρισμός δωματίου σε παύση",
-          "zone_cleaning_paused": "Καθαρισμός ζώνης σε παύση",
-          "spot_cleaning_paused": "Τοπικός καθαρισμός σε παύση",
-          "map_cleaning_paused": "Καθαρισμός χάρτη σε παύση",
-          "docking_paused": "Επαναφορά σε παύση",
-          "mopping_paused": "Σφουγγάρισμα σε παύση",
-          "zone_mopping_paused": "Σφουγγάρισμα ζώνης σε παύση",
-          "room_mopping_paused": "Σφουγγάρισμα δωματίου σε παύση",
-          "zone_docking_paused": "Επιστροφή ζώνης σε παύση",
-          "room_docking_paused": "Επιστροφή δωματίου σε παύση",
-          "cruising_path": "Περιήγηση στη διαδρομή",
-          "cruising_path_paused": "Περιήγηση σε παύση",
-          "cruising_point": "Περιήγηση στο σημείο",
-          "cruising_point_paused": "Περιήγηση στο σημείο σε παύση",
-          "summon_clean_paused": "Κλήση για καθαρισμό σε παύση",
-          "returning_to_install_mop": "Επιστροφή για τοποθέτηση σφουγγαρίστρας",
-          "returning_to_remove_mop": "Επιστροφή για αφαίρεση σφουγγαρίστρας",
-          "station_cleaning": "Καθαρισμός σταθμού",
-          "pet_finding": "Έυρεση κατοικίδιου",
-          "auto_cleaning_washing_paused": "Παύση αυτόματου καθαρισμού",
-          "area_cleaning_washing_paused": "Παύση καθαρισμού περιοχής",
-          "custom_cleaning_washing_paused": "Παύση καθαρισμού από χρήστη"
+          "manually_ended": "Τερματίστηκε χειροκίνητα",
+          "failed": "Απέτυχε",
+          "unknown": "Άγνωστο"
         }
       },
-      "water_tank": {
+      "cleaning_time": {
+        "name": "Χρόνος καθαρισμού"
+      },
+      "cleanup_method": {
+        "name": "Μέθοδος καθαρισμού",
         "state": {
-          "unknown": "Άγνωστο",
-          "installed": "Τοποθετημένο",
-          "not_installed": "Μη τοποθετημένο",
-          "mop_installed": "Σφουγγαρίστρα τοποθετημένη",
-          "in_station": "Στον σταθμό"
+          "other": "Άλλο",
+          "default": "Προεπιλογή",
+          "customized": "Προσαρμοσμένο",
+          "cleangenius": "CleanGenius",
+          "water_stain": "Λεκές νερού",
+          "unknown": "Άγνωστο"
         }
       },
-      "mop_pad": {
+      "cruising_history": {
+        "name": "Ιστορικό περιπολίας"
+      },
+      "current_room": {
+        "name": "Τρέχον δωμάτιο",
+        "state_attributes": {
+          "room_id": {
+            "name": "ID δωματίου"
+          },
+          "room_icon": {
+            "name": "Εικονίδιο δωματίου"
+          },
+          "room_name": {
+            "name": "Όνομα δωματίου"
+          }
+        }
+      },
+      "deodorizer_left": {
+        "name": "Αποσμητικό"
+      },
+      "deodorizer_time_left": {
+        "name": "Χρόνος που απομένει αποσμητικού"
+      },
+      "detergent_left": {
+        "name": "Απορρυπαντικό"
+      },
+      "detergent_status": {
+        "name": "Κατάσταση απορρυπαντικού",
         "state": {
           "unknown": "Άγνωστο",
-          "installed": "Τοποθετημένο",
-          "not_installed": "Μη τοποθετημένο",
-          "mop_installed": "Σφουγγαρίστρα τοποθετημένη",
-          "in_station": "Στον σταθμό"
+          "installed": "Εγκατεστημένο",
+          "disabled": "Απενεργοποιημένο",
+          "low_detergent": "Χαμηλή στάθμη απορρυπαντικού"
+        }
+      },
+      "detergent_time_left": {
+        "name": "Χρόνος που απομένει απορρυπαντικού"
+      },
+      "dirty_water_channel_left": {
+        "name": "Κανάλι ακάθαρτου νερού"
+      },
+      "dirty_water_tank_status": {
+        "name": "Κατάσταση δεξαμενής ακάθαρτου νερού",
+        "state": {
+          "unknown": "Άγνωστο",
+          "installed": "Εγκατεστημένη",
+          "not_installed_or_full": "Δεν είναι εγκατεστημένη ή είναι γεμάτη"
+        }
+      },
+      "drainage_status": {
+        "name": "Κατάσταση αποστράγγισης",
+        "state": {
+          "unknown": "Άγνωστο",
+          "idle": "Αδρανές",
+          "draining": "Άδειασμα",
+          "draining_successful": "Το άδειασμα ολοκληρώθηκε",
+          "draining_failed": "Αποτυχία αδειάσματος"
+        }
+      },
+      "drying_left": {
+        "name": "Χρόνος που απομένει στεγνώματος"
+      },
+      "drying_progress": {
+        "name": "Πρόοδος στεγνώματος"
+      },
+      "dust_bag_drying_left": {
+        "name": "Χρόνος που απομένει στεγνώματος σακούλας"
+      },
+      "dust_bag_drying_status": {
+        "name": "Κατάσταση στεγνώματος σακούλας σκόνης",
+        "state": {
+          "idle": "Σε αδράνεια",
+          "drying": "Στέγνωμα",
+          "paused": "Σε παύση"
+        }
+      },
+      "dust_bag_status": {
+        "name": "Κατάσταση σακούλας σκόνης",
+        "state": {
+          "unknown": "Άγνωστο",
+          "installed": "Εγκατεστημένος",
+          "not_installed": "Δεν είναι εγκατεστημένος",
+          "check": "Έλεγχος"
         }
       },
       "dust_collection": {
+        "name": "Συλλογή σκόνης",
         "state": {
           "unknown": "Άγνωστο",
           "not_available": "Μη διαθέσιμο",
@@ -507,15 +934,8 @@
           "never": "Ποτέ"
         }
       },
-      "auto_empty_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "idle": "Αδρανές",
-          "active": "Ενεργό",
-          "not_performed": "Δεν εκτελέστηκε"
-        }
-      },
       "error": {
+        "name": "Σφάλμα",
         "state": {
           "unknown": "Άγνωστος κωδικός σφάλματος",
           "no_error": "Χωρίς σφάλμα",
@@ -604,7 +1024,6 @@
           "return_to_charge_failed": "Αποτυχία επιστροφής στη βάση φόρτισης.",
           "lds_failed_to_lift": "Αποτυχία ανύψωσης μονάδας LDS.",
           "robot_stuck": "Το LDS δεν μπορεί να ανυψωθεί εδώ για εντοπισμό θέσης.",
-          "robot_stuck_repeat": "Μετακινήστε το ρομπότ σε ανοιχτό χώρο και συνεχίστε την εργασία.",
           "slippery_floor": "Ολισθηρό δάπεδο. Παρακαλώ δοκιμάστε ξανά αργότερα.",
           "check_mop_install": "Ελέγξτε αν το πανί είναι σωστά τοποθετημένο.",
           "dirty_water_tank_full": "Ασυνήθιστη στάθμη νερού στον κάδο ακάθαρτου νερού.",
@@ -634,19 +1053,293 @@
           "onboard_dirty_water_tank_full": "Ο κάδος ακάθαρτου νερού του ρομπότ είναι γεμάτος.",
           "mop_not_installed": "Το πανί δεν έχει εγκατασταθεί.",
           "fluffing_roller_error": "Σφάλμα ρολού χνουδιού.",
-          "blocked_by_obstacle": "Το ρομπότ μπλοκαρίστηκε από εμπόδιο."
+          "blocked_by_obstacle": "Το ρομπότ μπλοκαρίστηκε από εμπόδιο.",
+          "robotic_arm_stopped": "Ο ρομποτικός βραχίονας σταμάτησε.",
+          "drainage_outlet_filter": "Το φίλτρο εξόδου λυμάτων του ρομπότ είναι φραγμένο.",
+          "main_wheels_error": "Σφάλμα κύριων τροχών."
+        },
+        "state_attributes": {
+          "description": {
+            "name": "Περιγραφή",
+            "state": {
+              "no_error": "Χωρίς σφάλμα",
+              "drop": "Οι τροχοί είναι στον αέρα\nΕπανατοποθετήστε το ρομπότ και επανεκκινήστε.",
+              "cliff": "Σφάλμα αισθητήρα γκρεμού\nΣκουπίστε τον αισθητήρα γκρεμού και ξεκινήστε τον καθαρισμό μακριά από τις σκάλες.",
+              "bumper": "Ο αισθητήρας σύγκρουσης έχει κολλήσει\nΚαθαρίστε και χτυπήστε απαλά τον αισθητήρα σύγκρουσης.",
+              "gesture": "Το ρομπότ έχει γείρει\nΜετακινήστε το ρομπότ σε επίπεδη επιφάνεια και ξεκινήστε ξανά.",
+              "bumper_repeat": "Ο αισθητήρας σύγκρουσης έχει κολλήσει\nΚαθαρίστε και χτυπήστε απαλά τον αισθητήρα σύγκρουσης.",
+              "drop_repeat": "Οι τροχοί είναι στον αέρα\nΕπανατοποθετήστε το ρομπότ και επανεκκινήστε.",
+              "optical_flow": "Σφάλμα αισθητήρα οπτικής ροής\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "no_box": "Ο κάδος σκόνης δεν είναι τοποθετημένος\nΕγκαταστήστε τον κάδο σκόνης και το φίλτρο.",
+              "no_tank_box": "Η δεξαμενή νερού δεν είναι τοποθετημένη\nΕγκαταστήστε τη δεξαμενή νερού.",
+              "water_box_empty": "Η δεξαμενή νερού είναι άδεια\nΠαρακαλούμε γεμίστε το δοχείο νερού.",
+              "box_full": "Το φίλτρο δεν είναι στεγνό ή είναι φραγμένο\nΕλέγξτε εάν το φίλτρο έχει στεγνώσει ή πρέπει να καθαριστεί.",
+              "brush": "Η κύρια βούρτσα έχει μπλεχτεί\nΑφαιρέστε την κύρια βούρτσα και καθαρίστε τις τρίχες και τα ρουλεμάν της.",
+              "side_brush": "Η πλαϊνή βούρτσα έχει μπλεχτεί\nΑφαιρέστε και καθαρίστε την πλαϊνή βούρτσα.",
+              "fan": "Το φίλτρο δεν είναι στεγνό ή είναι φραγμένο\nΕλέγξτε εάν το φίλτρο έχει στεγνώσει ή πρέπει να καθαριστεί.",
+              "left_wheel_motor": "Το ρομπότ έχει κολλήσει ή ο αριστερός τροχός έχει μπλοκαριστεί από αντικείμενα\nΕλέγξτε αν υπάρχει κάποιο αντικείμενο κολλημένο στους κύριους τροχούς και ξεκινήστε το ρομπότ σε νέα θέση.",
+              "right_wheel_motor": "Το ρομπότ έχει κολλήσει ή ο δεξιός τροχός έχει μπλοκαριστεί από αντικείμενα\nΕλέγξτε αν υπάρχει κάποιο αντικείμενο κολλημένο στους κύριους τροχούς και ξεκινήστε το ρομπότ σε νέα θέση.",
+              "turn_suffocate": "Το ρομπότ έχει κολλήσει ή δεν μπορεί να στρίψει\nΤο ρομπότ μπορεί να είναι μπλοκαρισμένο ή κολλημένο.",
+              "forward_suffocate": "Το ρομπότ έχει κολλήσει ή δεν μπορεί να προχωρήσει\nΤο ρομπότ μπορεί να είναι μπλοκαρισμένο ή κολλημένο.",
+              "charger_get": "Δεν μπορεί να βρει τη βάση\nΕλέγξτε εάν το καλώδιο τροφοδοσίας είναι σωστά συνδεδεμένο.",
+              "battery_low": "Χαμηλή μπαταρία\nΤο επίπεδο της μπαταρίας είναι πολύ χαμηλό. Παρακαλώ χρεώστε.",
+              "charge_fault": "Σφάλμα φόρτισης\nΧρησιμοποιήστε ένα στεγνό πανί για να σκουπίσετε τις επαφές φόρτισης του ρομπότ και να αδειάσετε αυτόματα τη βάση.",
+              "battery_percentage": "Σφάλμα ένδειξης μπαταρίας",
+              "heart": "Εσωτερικό σφάλμα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "camera_occlusion": "Σφάλμα αισθητήρα οπτικής τοποθέτησης\nΚαθαρίστε τον οπτικό αισθητήρα θέσης.",
+              "move": "Σφάλμα αισθητήρα κίνησης\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "flow_shielding": "Σφάλμα αισθητήρα οπτικής ροής\nΣκουπίστε τον οπτικό αισθητήρα και επανεκκινήστε.",
+              "infrared_shielding": "Σφάλμα αισθητήρα υπερύθρων\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "charge_no_electric": "Η βάση φόρτισης δεν έχει ρεύμα\nΟ σταθμός φόρτισης δεν είναι ενεργοποιημένος. Ελέγξτε εάν το καλώδιο τροφοδοσίας είναι σωστά συνδεδεμένο.",
+              "battery_fault": "Σφάλμα μπαταρίας\nΠεριμένετε έως ότου η θερμοκρασία της μπαταρίας επανέλθει στο κανονικό.",
+              "fan_speed_error": "Σφάλμα αισθητήρα ταχύτητας ανεμιστήρα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "left_wheell_speed": "Ο αριστερός τροχός μπορεί να έχει μπλοκαριστεί από αντικείμενα\nΕλέγξτε αν υπάρχει κάποιο αντικείμενο κολλημένο στους κύριους τροχούς και ξεκινήστε το ρομπότ σε νέα θέση.",
+              "right_wheell_speed": "Ο δεξιός τροχός μπορεί να έχει μπλοκαριστεί από αντικείμενα\nΕλέγξτε αν υπάρχει κάποιο αντικείμενο κολλημένο στους κύριους τροχούς και ξεκινήστε το ρομπότ σε νέα θέση.",
+              "bmi055_acce": "Σφάλμα επιταχυνσιόμετρου\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "bmi055_gyro": "Σφάλμα γυροσκοπίου\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "xv7001": "Σφάλμα γυροσκοπίου\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "left_magnet": "Σφάλμα αριστερού μαγνητικού αισθητήρα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "right_magnet": "Σφάλμα δεξιού μαγνητικού αισθητήρα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "flow_error": "Σφάλμα αισθητήρα ροής\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "infrared_fault": "Σφάλμα υπερύθρων\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "camera_fault": "Σφάλμα κάμερας\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "strong_magnet": "Εντοπίστηκε ισχυρό μαγνητικό πεδίο\nΕντοπίστηκε ισχυρό μαγνητικό πεδίο. Ξεκινήστε μακριά από τον εικονικό τοίχο.",
+              "water_pump": "Σφάλμα αντλίας νερού\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "rtc": "Σφάλμα RTC\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "auto_key_trig": "Εσωτερικό σφάλμα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "p3v3": "Εσωτερικό σφάλμα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "camera_idle": "Εσωτερικό σφάλμα\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "blocked": "Η διαδρομή καθαρισμού είναι μπλοκαρισμένη, επιστροφή στη βάση.\nΤο ρομπότ μπορεί να είναι μπλοκαρισμένο ή κολλημένο.",
+              "lds_error": "Σφάλμα αισθητήρα απόστασης λέιζερ\nΕλέγξτε εάν ο αισθητήρας απόστασης λέιζερ έχει μπλοκαρισμένα στοιχεία",
+              "lds_bumper": "Σφάλμα bumper αισθητήρα λέιζερ\nΕλέγξτε εάν ο προφυλακτήρας του αισθητήρα απόστασης λέιζερ είναι μπλοκαρισμένος",
+              "filter_blocked": "Το φίλτρο δεν είναι στεγνό ή είναι φραγμένο\nΕλέγξτε εάν το φίλτρο έχει στεγνώσει ή πρέπει να καθαριστεί",
+              "edge": "Σφάλμα αισθητήρα άκρης\nΣφάλμα αισθητήρα άκρων. Ελέγξτε και καθαρίστε το.",
+              "carpet": "Ξεκινήστε το ρομπότ σε περιοχή χωρίς χαλί.\nΕντοπίζεται χαλί κάτω από το ρομπότ όταν σφουγγαρίζει. Μετακινήστε το ρομπότ σε άλλο μέρος και επανεκκινήστε το.",
+              "laser": "Ο αισθητήρας αποφυγής εμποδίων 3D δυσλειτουργεί.\nΔοκιμάστε να καθαρίσετε τον τρισδιάστατο αισθητήρα αποφυγής εμποδίων.",
+              "ultrasonic": "Ο αισθητήρας υπερήχων δυσλειτουργεί.\nΚάντε επανεκκίνηση του ρομπότ και δοκιμάστε το ξανά.",
+              "no_go_zone": "Εντοπίστηκε απαγορευμένη ζώνη ή εικονικός τοίχος.\nΑπομακρύνετε το ρομπότ από την περιοχή και επανεκκινήστε.",
+              "route": "Η διαδρομή καθαρισμού είναι μπλοκαρισμένη.\nΒεβαιωθείτε ότι όλες οι πόρτες στο σπίτι είναι ανοιχτές και καθαρίστε τυχόν εμπόδια κατά μήκος της διαδρομής ή προσπαθήστε να διαγράψετε την απαγορευμένη περιοχή στο μονοπάτι.",
+              "restricted": "Εντοπίστηκε ότι το ρομπότ βρίσκεται σε περιορισμένη περιοχή.\nΜετακινήστε το ρομπότ από αυτήν την περιοχή.",
+              "remove_mop": "Το σφουγγάρισμα ολοκληρώθηκε. Αφαιρέστε και καθαρίστε τη σφουγγαρίστρα.",
+              "mop_removed": "Η σφουγγαρίστρα αφαιρέθηκε κατά τη διάρκεια του καθαρισμού.\nΤα μαξιλαράκια σφουγγαρίστρας αποκολλώνται, τοποθετήστε τα πριν συνεχίσετε να δουλεύετε.",
+              "mop_pad_stop_rotate": "Η σφουγγαρίστρα σταμάτησε να περιστρέφεται.\nΕλέγξτε τη σφουγγαρίστρα.",
+              "bin_full": "Η σακούλα σκόνης είναι γεμάτη ή ο αγωγός αέρα είναι φραγμένος.\nΤο σύστημα ανιχνεύει ότι η σακούλα συλλογής σκόνης είναι γεμάτη ή ότι ο αεραγωγός είναι φραγμένος.",
+              "bin_open": "Το καπάκι της βάσης δεν είναι κλειστό ή η σακούλα σκόνης δεν είναι τοποθετημένη.\nΤο σύστημα ανιχνεύει ότι το επάνω κάλυμμα της βάσης αυτόματης άδειας δεν είναι κλειστό ή ότι δεν έχει τοποθετηθεί η σακούλα συλλογής σκόνης.",
+              "water_tank": "Η δεξαμενή καθαρού νερού δεν είναι τοποθετημένη.\nΗ δεξαμενή καθαρού νερού δεν έχει εγκατασταθεί, εγκαταστήστε την.",
+              "dirty_water_tank": "Η δεξαμενή βρώμικου νερού είναι γεμάτη ή δεν είναι τοποθετημένη.\nΕλέγξτε εάν η δεξαμενή βρώμικου νερού είναι γεμάτη και αν η δεξαμενή βρώμικου νερού είναι τοποθετημένη.",
+              "water_tank_dry": "Χαμηλή στάθμη καθαρού νερού, παρακαλώ γεμίστε εγκαίρως.\nΔιαφορετικά, το ρομπότ δεν θα επιστρέψει στη βάση για να καθαριστεί η σφουγγαρίστρα κατά τη διάρκεια της εργασίας καθαρισμού.",
+              "dirty_water_tank_blocked": "Η δεξαμενή βρώμικου νερού είναι φραγμένη.\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "dirty_water_tank_pump": "Σφάλμα αντλίας δεξαμενής βρώμικου νερού.\nΔοκιμάστε να επανεκκινήσετε το ρομπότ.",
+              "mop_pad": "Η επιφάνεια πλύσης δεν είναι σωστά τοποθετημένη.\nΗ πλακέτα πλύσης δεν έχει τοποθετηθεί και το ρομπότ δεν μπορεί να επιστρέψει στη βάση αυτοπλυσίματος. Βεβαιωθείτε ότι η πλακέτα είναι τοποθετημένη και ότι τα κουμπώματα και στις δύο πλευρές είναι καλά στερεωμένα.",
+              "wet_mop_pad": "Ανώμαλη στάθμη νερού στην επιφάνεια πλύσης, καθαρίστε την εγκαίρως.\nΗ στάθμη του νερού της πλακέτας είναι μη φυσιολογική. Καθαρίστε το εγκαίρως για να αποφύγετε το μπλοκάρισμα. Εάν το πρόβλημα εξακολουθεί να μην μπορεί να λυθεί, επικοινωνήστε με την εξυπηρέτηση πελατών.",
+              "clean_mop_pad": "Ο καθαρισμός ολοκληρώθηκε, καθαρίστε την επιφάνεια πλύσης.\nΚαθαρίστε έγκαιρα τη σανίδα πλύσης της σφουγγαρίστρας για να αποφύγετε λεκέδες ή μυρωδιές.",
+              "clean_tank_level": "Ελέγξτε και γεμίστε τη δεξαμενή καθαρού νερού.\nΤο νερό στη δεξαμενή καθαρού νερού πρόκειται να εξαντληθεί.",
+              "station_disconnected": "Η βάση δεν έχει ρεύμα\nΕλέγξτε εάν η τροφοδοσία είναι απενεργοποιημένη ή ο διακόπτης τροφοδοσίας είναι ενεργοποιημένος στο σπίτι σας και συνδέστε ξανά και τα δύο άκρα του τροφοδοτικού του σταθμού βάσης.",
+              "dirty_tank_level": "Η στάθμη στη δεξαμενή βρώμικου νερού είναι πολύ υψηλή.\nΕλέγξτε εάν το δοχείο χρησιμοποιημένου νερού είναι γεμάτο.",
+              "washboard_level": "Η στάθμη νερού στην επιφάνεια πλύσης είναι πολύ υψηλή.\nΚαθαρίστε εγκαίρως το χρησιμοποιημένο δοχείο νερού και το πλυντήριο.",
+              "no_mop_in_station": "Η σφουγγαρίστρα δεν βρίσκεται στον σταθμό.\nΤοποθετήστε το στο σταθμό βάσης ή εγκαταστήστε το στο ρομπότ χειροκίνητα.",
+              "dust_bag_full": "Η σακούλα σκόνης είναι γεμάτη ή οι αεραγωγοί είναι φραγμένοι.\nΕάν η σακούλα είναι γεμάτη, αντικαταστήστε την. Καθαρίζετε τακτικά τις οπές εξαερισμού του κάδου σκόνης και του σταθμού βάσης που αδειάζουν αυτόματα.",
+              "self_test_failed": "Ασυνήθιστη εκροή νερού από τη δεξαμενή καθαρού νερού των επάνω και κάτω μονάδων νερού.\nΟ αυτοέλεγχος απέτυχε — δεν υπάρχει νερό στη δεξαμενή καθαρού νερού των άνω και κάτω μονάδων νερού.",
+              "mop_install_failed": "Αποτυχία εγκατάστασης του πανιού σφουγγαρίσματος.\nΑποτυχία εγκατάστασης σφουγγαρίστρας. Εγκαταστήστε χειροκίνητα.",
+              "low_battery_turn_off": "Χαμηλή μπαταρία. Το ρομπότ θα απενεργοποιηθεί σύντομα.",
+              "dirty_tank_not_installed": "Η δεξαμενή χρησιμοποιημένου νερού του ρομπότ δεν είναι εγκατεστημένη.\nΒεβαιωθείτε ότι η δεξαμενή χρησιμοποιημένου νερού του ρομπότ έχει εγκατασταθεί σωστά και, στη συνέχεια, ξεκινήστε την εργασία.",
+              "robot_in_hidden_room": "Κρυφή περιοχή. Μετακινήστε το ρομπότ στην κατάλληλη περιοχή και δοκιμάστε ξανά.\nΗ περιοχή έχει κρυφτεί. Για να το χρησιμοποιήσετε ξανά, μεταβείτε στον συγκεκριμένο χάρτη και κάντε κλικ στην γκρίζα περιοχή για να ανακτήσετε μη αυτόματα την κρυφή περιοχή.",
+              "washboard_not_working": "Η επιφάνεια καθαρισμού δεν λειτουργεί.\nΑκολουθήστε τα βήματα αντιμετώπισης προβλημάτων όπως παρακάτω:\n1. Ελέγξτε εάν η πλακέτα είναι μπλεγμένη. Καθαρίστε πριν τη χρήση.\n2. Ελέγξτε εάν η πλακέτα έχει τοποθετηθεί σωστά.\n3. Εάν το πρόβλημα παραμένει, επικοινωνήστε με την εξυπηρέτηση πελατών.",
+              "return_to_charge_failed": "Αποτυχία επιστροφής στη βάση φόρτισης.\nΕλέγξτε τον σταθμό βάσης.\n1. Ελέγξτε εάν η πλάκα επέκτασης ράμπας έχει τοποθετηθεί μέχρι το σταθμό βάσης.\n2. Ελέγξτε εάν ο σταθμός βάσης είναι ενεργοποιημένος.\n3. Βεβαιωθείτε ότι δεν υπάρχει εμπόδιο μπροστά από το σταθμό βάσης.",
+              "lds_failed_to_lift": "Αποτυχία ανύψωσης μονάδας LDS.\nΚαθαρίστε τυχόν υπολείμματα γύρω από το LDS και μετακινήστε το ρομπότ σε μια ανοιχτή περιοχή για να συνεχίσετε την εργασία.",
+              "robot_stuck": "Το LDS δεν μπορεί να ανυψωθεί εδώ για εντοπισμό θέσης.\nΜετακινήστε το ρομπότ σε μια ανοιχτή περιοχή και συνεχίστε την εργασία.",
+              "slippery_floor": "Ολισθηρό δάπεδο. Παρακαλώ δοκιμάστε ξανά αργότερα.\nΟλισθηρό πάτωμα. Το ρομπότ δεν κατάφερε να περάσει εμπόδια. Μπορείτε να περιμένετε να προσπαθήσει ξανά το ρομπότ ή να καθαρίσετε το νερό γύρω του και να συνεχίσετε την εργασία.",
+              "check_mop_install": "Ελέγξτε αν το πανί είναι σωστά τοποθετημένο.\nΈλεγχος σφουγγαρίστρας Οδηγίες τοποθέτησης",
+              "dirty_water_tank_full": "Ασυνήθιστη στάθμη νερού στον κάδο ακάθαρτου νερού.\nΗ δεξαμενή χρησιμοποιημένου νερού του ρομπότ είναι πολύ βρώμικη. Αφαιρέστε και καθαρίστε το εγκαίρως.",
+              "retractable_leg_stuck": "Ελέγξτε αν τα ανασυρόμενα πόδια έχουν μπλέξει.\nΤα αναδιπλούμενα πόδια μπορεί να μπερδευτούν.",
+              "internal_error": "Δυσλειτουργία λόγω εσωτερικού σφάλματος. Δοκιμάστε επανεκκίνηση.\nΕσωτερικό σφάλμα",
+              "robot_stuck_on_tables": "Το ρομπότ κόλλησε ανάμεσα σε τραπέζια και καρέκλες\n1. Μετακινήστε το ρομπότ σε μια ανοιχτή περιοχή και επανεκκινήστε την εργασία.\n2. Συνιστάται να τακτοποιείτε τα τραπέζια και τις καρέκλες τακτοποιημένα για να μην κολλήσει το ρομπότ.\nΤο ρομπότ έχει κολλήσει",
+              "robot_stuck_on_passage": "Το ρομπότ κόλλησε σε στενό πέρασμα\n1. Μετακινήστε το ρομπότ σε μια ανοιχτή περιοχή και επανεκκινήστε την εργασία.\n2. Συνιστάται να ρυθμίσετε το στενό πέρασμα ως απαγορευμένη ζώνη για να αποτρέψετε το κολλημένο ρομπότ.\nΤο ρομπότ έχει κολλήσει",
+              "robot_stuck_on_threshold": "Το ρομπότ κόλλησε σε σκαλοπάτι/κατώφλι\n1. Μετακινήστε το ρομπότ σε μια ανοιχτή περιοχή και επανεκκινήστε την εργασία.\n2. Συνιστάται να ορίσετε το βήμα/κατώφλι ως αδιάβατο κατώφλι για να αποτρέψετε το κολλημένο ρομπότ.\nΤο ρομπότ έχει κολλήσει",
+              "robot_stuck_on_low_lying_area": "Το ρομπότ κόλλησε σε περιοχή με χαμηλό ύψος\n1. Μετακινήστε το ρομπότ σε μια ανοιχτή περιοχή και επανεκκινήστε την εργασία.\n2. Συνιστάται να ορίσετε τη χαμηλή περιοχή ως απαγορευμένη ζώνη για να μην κολλήσει το ρομπότ.\nΤο ρομπότ έχει κολλήσει",
+              "robot_stuck_on_ramp": "Το ρομπότ εντόπισε επικίνδυνες ράμπες.\nΣυνιστάται να ορίσετε βατά κατώφλια εάν δεν υπάρχουν ράμπες Easy-to-Fall στο μονοπάτι.",
+              "robot_stuck_on_obstacle": "Το ρομπότ εντόπισε εμπόδια στη διαδρομή.\nΑφαιρέστε τα εμπόδια από τη διαδρομή και επανεκκινήστε την εργασία.",
+              "robot_stuck_on_pet": "Το ρομπότ εντόπισε ανθρώπους ή κατοικίδια στη διαδρομή.\nΒεβαιωθείτε ότι δεν υπάρχουν άτομα ή κατοικίδια στο μονοπάτι κατά την επανεκκίνηση της εργασίας.",
+              "robot_stuck_on_slippery_surface": "Το ρομπότ κόλλησε λόγω ολίσθησης.\nΤο ρομπότ έχει κολλήσει λόγω ολίσθησης. Καθαρίστε τους κύριους τροχούς.",
+              "robot_stuck_on_carpet": "Το ρομπότ γλιστράει στο χαλί\n1. Απομακρύνετε το ρομπότ από το χαλί και επανεκκινήστε την εργασία\n2. Συνιστάται να ορίσετε το χαλί ως απαγορευμένη ζώνη για να αποτρέψετε το ρομπότ να κολλήσει.\nΤο ρομπότ έχει κολλήσει",
+              "drainage_failed": "Ασυνήθιστη αποστράγγιση από τον κάδο ακάθαρτου νερού\nΣφάλμα αντλίας λυμάτων. Επικοινωνήστε με την εξυπηρέτηση πελατών.",
+              "mop_not_detected": "Δεν εντοπίστηκε πανί.\nΗ σφουγγαρίστρα δεν εντοπίστηκε. Εγκαταστήστε και συνεχίστε την εργασία.",
+              "mop_holder_error": "Σφάλμα ποσότητας/τοποθέτησης βάσης πανιού. Εγκαταστήστε τη θήκη σφουγγαρίστρας ή προσαρμόστε την τοποθέτησή της για να εξασφαλίσετε τον σωστό καθαρισμό.\nΣφάλμα συγκράτησης σφουγγαρίστρας στο σταθμό.",
+              "dock_error": "Σφάλμα βάσης.\nΕλέγξτε τον σταθμό και δοκιμάστε τα ακόλουθα βήματα:\n1. Βεβαιωθείτε ότι η καταπακτή είναι πλήρως κλειστή.\n2. Βεβαιωθείτε ότι οι τρεις ομάδες σφουγγαρίστρων έχουν τοποθετηθεί στην καταπακτή με σειρά κόκκινο-κίτρινο-μπλε. Εάν οι σφουγγαρίστρες βρίσκονται επί του παρόντος στο φορέα μεταφοράς ή στο πλυντήριο, τοποθετήστε τις ξανά στην καταπακτή με αυτή τη σειρά και δοκιμάστε ξανά.\n3. Ελέγξτε για τυχόν υπολείμματα μέσα στο σταθμό. Μην τοποθετείτε το χέρι, το ρομπότ ή άλλα αντικείμενα στο πλυντήριο όταν αλλάζετε σφουγγαρίστρες.",
+              "wash_failed": "Αποτυχία πλύσης βρώμικου πανιού.\nΕλέγξτε τον σταθμό και δοκιμάστε τα ακόλουθα βήματα:\n1. Προσαρτήστε χειροκίνητα τη σφουγγαρίστρα που χρειάζεται πλύσιμο στο ρομπότ.\n2. Εγκαταστήστε άλλες βρώμικες σφουγγαρίστρες στην καταπακτή.\n3. Στην εφαρμογή, μεταβείτε στις λειτουργίες σταθμού και, στη συνέχεια, πλύνετε, για να επανεκκινήσετε την εργασία πλύσης σφουγγαρίστρας.",
+              "robot_stuck_on_curtain": "Το ρομπότ γλιστράει στην περιοχή της κουρτίνας\n1. Απομακρύνετε το ρομπότ από την περιοχή της κουρτίνας και επανεκκινήστε την εργασία.\n2. Το ρομπότ δεν μπορεί να καθαρίσει αυτήν την περιοχή κουρτίνας. Συνιστάται η αφαίρεσή του.\nΤο ρομπότ έχει κολλήσει",
+              "edge_mop_stop_rotate": "Το πλευρικό πανί σταμάτησε να περιστρέφεται.\nΗ σφουγγαρίστρα άκρων σταμάτησε να περιστρέφεται. Ακολουθήστε αυτά τα βήματα:\n1. Ελέγξτε εάν το ρομπότ βρίσκεται σε χαλί. Η τριβή μεταξύ της σφουγγαρίστρας και του χαλιού μπορεί να εμποδίσει την περιστροφή της. Μετακινήστε το ρομπότ σε μια περιοχή χωρίς χαλί και συνεχίστε τον καθαρισμό.\n2. Ελέγξτε αν η σφουγγαρίστρα των άκρων είναι μπλεγμένη. Εάν ναι, αφαιρέστε τα και συνεχίστε τον καθαρισμό.",
+              "edge_mop_detached": "Το πλευρικό πανί αποκολλήθηκε.\nΔεν εντοπίστηκε σφουγγαρίστρα άκρων. Εγκαταστήστε το πριν συνεχίσετε τον καθαρισμό.",
+              "chassis_lift_malfunction": "Δυσλειτουργία ανύψωσης σασί.\nΔυσλειτουργία ανύψωσης πλαισίου. Επανεκκινήστε την εργασία. Εάν το πρόβλημα παραμένει, επικοινωνήστε με την εξυπηρέτηση πελατών.",
+              "mop_cover_error": "Ελέγξτε για υπολείμματα κοντά στο ρολό πανιού και το κάλυμμα. Καθαρίστε τη σφουγγαρίστρα με ρολό για να μην κολλήσει το κάλυμμα. Μετά από αυτό, τοποθετήστε το ρομπότ επίπεδη και συνεχίστε την εργασία. Εάν το πρόβλημα παραμένει, επικοινωνήστε με την εξυπηρέτηση πελατών.\nΣφάλμα καλύμματος σφουγγαρίστρας.",
+              "roller_mop_error": "Ελέγξτε για υπολείμματα κοντά στο ρολό πανιού και το κάλυμμα. Καθαρίστε τη σφουγγαρίστρα με ρολό για να μην κολλήσει. Μετά από αυτό, τοποθετήστε το ρομπότ επίπεδη και συνεχίστε την εργασία. Εάν το πρόβλημα παραμένει, επικοινωνήστε με την εξυπηρέτηση πελατών.\nΣφάλμα σφουγγαρίστρας με ρολό.",
+              "onboard_water_tank_empty": "Χαμηλή στάθμη νερού στον κάδο καθαρού νερού του ρομπότ.\nΧαμηλή στάθμη νερού στο κουτί καθαρού νερού του ρομπότ. Παρακαλούμε ξαναγεμίστε αμέσως.",
+              "onboard_dirty_water_tank_full": "Ο κάδος ακάθαρτου νερού του ρομπότ είναι γεμάτος. Παρακαλώ αδειάστε το αμέσως.\nΒγάλτε το κουτί και αδειάστε το. Εναλλακτικά, μπορείτε να μετακινήσετε το ρομπότ στο σταθμό για πλύσιμο με σφουγγαρίστρα (αυτό θα αποστραγγίσει επίσης το χρησιμοποιημένο νερό).",
+              "mop_not_installed": "Το πανί δεν έχει εγκατασταθεί.\nΕπιβεβαιώστε ότι η σφουγγαρίστρα κυλίνδρου έχει εγκατασταθεί σωστά πριν ξεκινήσετε ή συνεχίσετε την εργασία.",
+              "fluffing_roller_error": "Σφάλμα ρολού χνουδιού.\n1. Αναποδογυρίστε το ρομπότ με το κάτω μέρος στραμμένο προς τα πάνω. Πατήστε το κουμπί απελευθέρωσης στη μία πλευρά της σφουγγαρίστρας με ρολό για να τη βγάλετε και, στη συνέχεια, καθαρίστε τυχόν υπολείμματα γύρω της.\n2. Πιέστε το πορτοκαλί κλιπ και βγάλτε τον κύλινδρο που αφήνει. Καθαρίστε τυχόν τρίχες ή υπολείμματα πάνω του.\n3. Μετά τον καθαρισμό, τοποθετήστε τον κύλινδρο αφρού και πιέστε σταθερά το κλιπ. Στη συνέχεια, τοποθετήστε τη σφουγγαρίστρα με ρολό, τοποθετήστε το ρομπότ επίπεδη και συνεχίστε την εργασία.\nΕάν το πρόβλημα παραμένει, ελέγξτε περισσότερες λεπτομέρειες ή επικοινωνήστε με την εξυπηρέτηση πελατών.",
+              "blocked_by_obstacle": "Το ρομπότ μπλοκαρίστηκε από εμπόδιο.\nΕλέγξτε για τυχόν εμπόδια μπροστά από το ρομπότ και αφαιρέστε τα.",
+              "robotic_arm_stopped": "Ο ρομποτικός βραχίονας σταμάτησε.\nΠατήστε και κρατήστε πατημένο το κουμπί Station και το κουμπί On/Off Robotic Arm για επαναφορά πριν το χρησιμοποιήσετε ξανά.",
+              "drainage_outlet_filter": "Το φίλτρο εξόδου λυμάτων του ρομπότ είναι φραγμένο.\nΚαθαρίστε το φίλτρο εξόδου λυμάτων του ρομπότ αμέσως για να διασφαλίσετε την ομαλή ροή του νερού.",
+              "main_wheels_error": "Σφάλμα κύριων τροχών.\nΕντοπίστηκε ανωμαλία τροχού. Η εργασία καθαρισμού έχει τεθεί σε παύση. Μπορείτε να προσπαθήσετε να συνεχίσετε τον καθαρισμό χρησιμοποιώντας το κουμπί στο ρομπότ ή μέσω της εφαρμογής. Εάν το πρόβλημα παραμένει, επικοινωνήστε μαζί μας για βοήθεια.",
+              "unknown": "Άγνωστο σφάλμα"
+            }
+          }
         }
       },
-      "charging_status": {
+      "filter_left": {
+        "name": "Φίλτρο"
+      },
+      "filter_time_left": {
+        "name": "Χρόνος που απομένει φίλτρου"
+      },
+      "firmware_version": {
+        "name": "Έκδοση firmware"
+      },
+      "first_cleaning_date": {
+        "name": "Ημερομηνία πρώτου καθαρισμού"
+      },
+      "fluffing_roller_dirty_left": {
+        "name": "Καθαρισμός κυλίνδρου χνουδιών"
+      },
+      "fluffing_roller_dirty_time_left": {
+        "name": "Χρόνος που απομένει χνουδωτού κυλίνδρου"
+      },
+      "hot_water_status": {
+        "name": "Κατάσταση ζεστού νερού",
         "state": {
           "unknown": "Άγνωστο",
-          "charging": "Φόρτιση",
-          "not_charging": "Δεν φορτίζει",
-          "return_to_charge": "Επιστροφή για φόρτιση",
-          "charging_completed": "Η φόρτιση ολοκληρώθηκε"
+          "disabled": "Απενεργοποιημένο",
+          "enabled": "Ενεργοποιημένο"
+        }
+      },
+      "ip_address": {
+        "name": "Διεύθυνση IP"
+      },
+      "low_water_warning": {
+        "name": "Προειδοποίηση χαμηλής στάθμης νερού",
+        "state": {
+          "unknown": "Άγνωστο",
+          "no_warning": "Χωρίς ειδοποίηση",
+          "no_water_left": "Το νερό στη δεξαμενή καθαρού νερού τελειώνει. Ελέγξτε και γεμίστε εγκαίρως.",
+          "no_water_left_after_clean": "Η σφουγγαρίστρα καθαρίστηκε. Εντοπίστηκε ανεπαρκές νερό στη δεξαμενή καθαρού νερού, γεμίστε τη και αδειάστε τη δεξαμενή βρώμικου νερού.",
+          "no_water_for_clean": "Χαμηλή στάθμη καθαρού νερού. Το ρομπότ πέρασε σε λειτουργία σκούπισμα.",
+          "low_water": "Το νερό τελειώνει. Παρακαλώ γεμίστε τη δεξαμενή καθαρού νερού.",
+          "tank_not_installed": "Η δεξαμενή καθαρού νερού δεν είναι τοποθετημένη."
+        }
+      },
+      "mac_address": {
+        "name": "Διεύθυνση MAC"
+      },
+      "main_brush_left": {
+        "name": "Κύρια βούρτσα"
+      },
+      "main_brush_time_left": {
+        "name": "Χρόνος που απομένει κύριας βούρτσας"
+      },
+      "mapping_time": {
+        "name": "Χρόνος χαρτογράφησης"
+      },
+      "model": {
+        "name": "Μοντέλο"
+      },
+      "mop_pad": {
+        "name": "Σφουγγαρίστρα",
+        "state": {
+          "unknown": "Άγνωστο",
+          "installed": "Τοποθετημένο",
+          "not_installed": "Μη τοποθετημένο",
+          "mop_installed": "Σφουγγαρίστρα τοποθετημένη",
+          "in_station": "Στον σταθμό"
+        }
+      },
+      "mop_pad_left": {
+        "name": "Πανί σφουγγαρίσματος"
+      },
+      "mop_pad_time_left": {
+        "name": "Χρόνος που απομένει σφουγγαρίστρας"
+      },
+      "multiple_cleaning_time": {
+        "name": "Πολλαπλός καθαρισμός"
+      },
+      "nation_matched": {
+        "name": "Κλείδωμα περιοχής",
+        "state": {
+          "unknown": "Απενεργοποιημένο",
+          "matched": "Ξεκλείδωτο",
+          "unmatched": "Κλειδωμένο",
+          "na": "Μη διαθέσιμο"
+        }
+      },
+      "obstacle_reason": {
+        "name": "Αιτία εμποδίου",
+        "state": {
+          "blocked_by_virtual_wall": "Μπλοκάρισμα από εικονικό τοίχο",
+          "blocked_by_door": "Μπλοκάρισμα από πόρτα",
+          "blocked_by_threshold": "Μπλοκάρισμα από κατώφλι",
+          "blocked_by_obstacle": "Μπλοκάρισμα από εμπόδιο",
+          "blocked_by_carpet": "Μπλοκάρισμα από χαλί",
+          "blocked_by_detected_carpet": "Μπλοκάρισμα από ανιχνευμένο χαλί",
+          "blocked_by_hidden_obstacle": "Μπλοκάρισμα από κρυφό εμπόδιο",
+          "blocked_by_dynamic_obstacle": "Μπλοκάρισμα από δυναμικό εμπόδιο",
+          "passage_too_low": "Πολύ χαμηλό πέρασμα",
+          "step_too_low": "Πολύ χαμηλό σκαλί",
+          "failed_to_cross_threshold": "Αποτυχία διέλευσης κατωφλιού"
+        }
+      },
+      "obstacle_type": {
+        "name": "Τύπος εμποδίου",
+        "state": {
+          "unknown": "Άγνωστο",
+          "base": "Βάση",
+          "scale": "Ζυγαριά",
+          "thread": "Κλωστή",
+          "wire": "Καλώδιο",
+          "toy": "Παιχνίδι",
+          "shoes": "Παπούτσια",
+          "sock": "Κάλτσα",
+          "fece": "Ακαθαρσίες",
+          "trash_can": "Κάδος απορριμμάτων",
+          "fabric": "Ύφασμα",
+          "power_strip": "Πολύπριζο",
+          "liquid_stain": "Υγρός λεκές",
+          "obstacle": "Εμπόδιο",
+          "pet": "Κατοικίδιο",
+          "cleaning_tools": "Εργαλεία καθαρισμού",
+          "detected_stain": "Ανιχνευμένος λεκές",
+          "blocked_room": "Παραμελημένο δωμάτιο",
+          "easy_to_stuck_furniture": "Έπιπλο που κολλάει εύκολα",
+          "uncleanable_stain": "Μη καθαρίσιμος λεκές",
+          "leg": "Πόδι",
+          "large_particles": "Μεγάλα σωματίδια",
+          "dried_stain": "Ξεραμένος λεκές",
+          "food_bowl": "Μπολ φαγητού",
+          "pet_bed": "Κρεβάτι κατοικίδιου",
+          "cleaned_stain": "Καθαρισμένος λεκές",
+          "skipped_uncleanable_stain": "Παράλειψη μη καθαρίσιμου λεκέ",
+          "cleaned_dried_stain": "Καθαρισμένος ξεραμένος λεκές",
+          "cleaned_large_particles": "Καθαρισμένα μεγάλα σωματίδια",
+          "hair": "Τρίχες",
+          "paper": "Χαρτί",
+          "cleaned_hair": "Καθαρισμένες τρίχες",
+          "sundry": "Διάφορα"
+        }
+      },
+      "onboard_dirty_water_tank_left": {
+        "name": "Ενσωματωμένη δεξαμενή ακάθαρτου νερού"
+      },
+      "onboard_dirty_water_tank_time_left": {
+        "name": "Χρόνος που απομένει ενσωματωμένου δοχείου ακάθαρτου νερού"
+      },
+      "recovery_map_type": {
+        "name": "Τύπος χάρτη",
+        "state": {
+          "original": "Αρχικός χάρτης",
+          "edited": "Επεξεργασμένος χάρτης",
+          "backup": "Εφεδρικός χάρτης"
         }
       },
       "relocation_status": {
+        "name": "Κατάσταση επανατοποθέτησης",
         "state": {
           "unknown": "Άγνωστο",
           "located": "Εντοπίστηκε",
@@ -655,7 +1348,26 @@
           "success": "Επιτυχία"
         }
       },
+      "remaining_battery": {
+        "name": "Υπόλοιπο μπαταρίας"
+      },
+      "roller_mop_filter_dirty_left": {
+        "name": "Καθαρισμός φίλτρου κυλίνδρου"
+      },
+      "roller_mop_filter_dirty_time_left": {
+        "name": "Χρόνος που απομένει φίλτρου κυλίνδρου σφουγγαρίστρας"
+      },
+      "rssi": {
+        "name": "RSSI"
+      },
+      "scale_inhibitor_left": {
+        "name": "Αποσκληρυντικό"
+      },
+      "scale_inhibitor_time_left": {
+        "name": "Χρόνος που απομένει αναστολέα αλάτων"
+      },
       "self_wash_base_status": {
+        "name": "Κατάσταση βάσης αυτοκαθαρισμού",
         "state": {
           "unknown": "Άγνωστο",
           "idle": "Αδρανές",
@@ -667,84 +1379,272 @@
           "adding_water": "Προσθήκη νερού"
         }
       },
-      "low_water_warning": {
+      "sensor_dirty_left": {
+        "name": "Καθαρισμός αισθητήρων"
+      },
+      "sensor_dirty_time_left": {
+        "name": "Χρόνος που απομένει καθαρισμού αισθητήρων"
+      },
+      "serial_number": {
+        "name": "Σειριακός αριθμός"
+      },
+      "side_brush_left": {
+        "name": "Πλευρική βούρτσα"
+      },
+      "side_brush_time_left": {
+        "name": "Χρόνος που απομένει πλευρικής βούρτσας"
+      },
+      "silver_ion_left": {
+        "name": "Ιόντα αργύρου"
+      },
+      "silver_ion_time_left": {
+        "name": "Χρόνος που απομένει ιόντων αργύρου"
+      },
+      "squeegee_left": {
+        "name": "Μάκτρο"
+      },
+      "squeegee_time_left": {
+        "name": "Χρόνος που απομένει υαλοκαθαριστήρα"
+      },
+      "ssid": {
+        "name": "SSID"
+      },
+      "startup_method": {
+        "name": "Ξεκίνησε από",
         "state": {
-          "no_warning": "Χωρίς ειδοποίηση",
-          "no_water_left_dismiss": "Ελέγξτε τη δεξαμενή καθαρού νερού.",
-          "no_water_left": "Το νερό στη δεξαμενή καθαρού νερού τελειώνει. Ελέγξτε και γεμίστε εγκαίρως.",
-          "no_water_left_after_clean": "Η σφουγγαρίστρα καθαρίστηκε. Εντοπίστηκε ανεπαρκές νερό στη δεξαμενή καθαρού νερού, γεμίστε τη και αδειάστε τη δεξαμενή βρώμικου νερού.",
-          "no_water_for_clean": "Χαμηλή στάθμη καθαρού νερού. Το ρομπότ πέρασε σε λειτουργία σκούπισμα.",
-          "low_water": "Το νερό τελειώνει. Παρακαλώ γεμίστε τη δεξαμενή καθαρού νερού.",
-          "tank_not_installed": "Η δεξαμενή καθαρού νερού δεν είναι τοποθετημένη."
+          "button": "Κουμπί",
+          "app": "Εφαρμογή",
+          "scheduled": "Προγραμματισμένο",
+          "voice": "Φωνή",
+          "second_cleaning": "Δεύτερος καθαρισμός",
+          "unknown": "Άγνωστο"
         }
       },
-      "stream_status": {
+      "state": {
+        "name": "Κατάσταση",
         "state": {
           "unknown": "Άγνωστο",
-          "idle": "Idle",
-          "video": "Αδρανές",
-          "audio": "Ήχος",
-          "recording": "Εγγραφή"
-        }
-      },
-      "drainage_status": {
-        "state": {
-          "unknown": "Άγνωστο",
+          "sweeping": "Σκούπισμα",
+          "charging": "Φόρτιση",
+          "error": "Σφάλμα",
           "idle": "Αδρανές",
+          "paused": "Παύση",
+          "returning": "Επιστροφή στη βάση",
+          "mopping": "Σφουγγάρισμα",
+          "drying": "Στέγνωμα",
+          "washing": "Πλύση",
+          "returning_to_wash": "Επιστροφή για πλύση",
+          "building": "Δημιουργία χάρτη",
+          "sweeping_and_mopping": "Σκούπισμα & Σφουγγάρισμα",
+          "charging_completed": "Η φόρτιση ολοκληρώθηκε",
+          "upgrading": "Αναβάθμιση",
+          "clean_summon": "Κλήση για καθαρισμό",
+          "station_reset": "Επαναφορά σταθμού",
+          "returning_install_mop": "Επιστροφή για τοποθέτηση σφουγγαρίστρας",
+          "returning_remove_mop": "Επιστροφή για αφαίρεση σφουγγαρίστρας",
+          "water_check": "Έλεγχος νερού",
+          "clean_add_water": "Καθαρισμός & προσθήκη νερού",
+          "washing_paused": "Πλύση σε παύση",
+          "auto_emptying": "Αυτόματο άδειασμα",
+          "remote_control": "Απομακρυσμένος έλεγχος",
+          "smart_charging": "Έξυπνη φόρτιση",
+          "second_cleaning": "Δεύτερος καθαρισμός",
+          "human_following": "Ακολούθηση ανθρώπου",
+          "spot_cleaning": "Τοπικός καθαρισμός",
+          "returning_auto_empty": "Επιστροφή για άδειασμα",
+          "waiting_for_task": "Αναμονή για εργασία",
+          "station_cleaning": "Καθαρισμός σταθμού",
+          "returning_to_drain": "Επιστροφή για άδειασμα",
           "draining": "Άδειασμα",
-          "draining_successful": "Το άδειασμα ολοκληρώθηκε",
-          "draining_failed": "Αποτυχία αδειάσματος"
-        }
-      },
-      "clean_water_tank_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "not_available": "Μη διαθέσιμο",
-          "not_installed": "Δεν είναι εγκατεστημένη",
-          "low_water": "Χαμηλή στάθμη νερού",
-          "installed": "Εγκατεστημένη"
-        }
-      },
-      "dirty_water_tank_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "installed": "Εγκατεστημένη",
-          "not_installed_or_full": "Δεν είναι εγκατεστημένη ή είναι γεμάτη"
-        }
-      },
-      "dust_bag_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "installed": "Εγκατεστημένος",
-          "not_installed": "Δεν είναι εγκατεστημένος",
-          "check": "Έλεγχος"
-        }
-      },
-      "detergent_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "installed": "Εγκατεστημένο",
-          "disabled": "Απενεργοποιημένο",
-          "low_detergent": "Χαμηλή στάθμη απορρυπαντικού"
-        }
-      },
-      "hot_water_status": {
-        "state": {
-          "unknown": "Άγνωστο",
-          "disabled": "Απενεργοποιημένο",
-          "enabled": "Ενεργοποιημένο"
+          "auto_water_draining": "Αυτόματο άδειασμα νερού",
+          "emptying": "Άδειασμα",
+          "dust_bag_drying": "Στέγνωμα σακούλας σκόνης",
+          "dust_bag_drying_paused": "Το στέγνωμα της σακούλας σκόνης έχει τεθεί σε παύση",
+          "heading_to_extra_cleaning": "Μετάβαση σε επιπλέον καθαρισμό",
+          "extra_cleaning": "Επιπλέον καθαρισμός",
+          "finding_pet_paused": "Εύρεση κατοικιδίου σε παύση",
+          "finding_pet": "Εύρεση κατοικιδίου",
+          "shortcut": "Συντόμευση",
+          "monitoring": "Παρακολούθηση",
+          "monitoring_paused": "Παρακολούθηση σε παύση",
+          "initial_deep_cleaning": "Αρχικός βαθύς καθαρισμός",
+          "initial_deep_cleaning_paused": "Ο αρχικός βαθύς καθαρισμός έχει τεθεί σε παύση",
+          "sanitizing": "Απολύμανση",
+          "sanitizing_with_dry": "Απολύμανση με στέγνωμα",
+          "changing_mop": "Αλλαγή πανιού",
+          "changing_mop_paused": "Παύση αλλαγής πανιού",
+          "floor_maintaining": "Συντήρηση δαπέδου",
+          "floor_maintaining_paused": "Παύση συντήρησης δαπέδου",
+          "remote_pickup": "Απομακρυσμένη παραλαβή",
+          "arranging_items": "Τακτοποίηση αντικειμένων",
+          "pet_guarding": "Φύλαξη κατοικιδίων",
+          "pet_guarding_paused": "Παύση φύλαξης κατοικιδίων",
+          "installing_mop": "Τοποθέτηση σφουγγαρίστρας",
+          "uninstalling_mop": "Αφαίρεση σφουγγαρίστρας",
+          "intelligent_recharging": "Έξυπνη επαναφόρτιση",
+          "assisted_cleaning": "Υποβοηθούμενος καθαρισμός",
+          "entering_dock": "Είσοδος στη βάση",
+          "leaving_dock": "Έξοδος από τη βάση",
+          "navigating_to_climber": "Πλοήγηση προς τον αναρριχητή",
+          "docking_to_climber": "Σύνδεση με τον αναρριχητή",
+          "climber_docked": "Ο αναρριχητής συνδέθηκε",
+          "climber_navigating": "Πλοήγηση αναρριχητή",
+          "climbing_stairs": "Αναρρίχηση σε σκάλες",
+          "climbing_stairs_completed": "Η αναρρίχηση σε σκάλες ολοκληρώθηκε",
+          "climber_at_dock": "Ο αναρριχητής είναι στη βάση",
+          "climber_leaving_dock": "Ο αναρριχητής βγαίνει από τη βάση"
         }
       },
       "station_drainage_status": {
+        "name": "Κατάσταση αποστράγγισης σταθμού",
         "state": {
           "unknown": "Άγνωστο",
           "idle": "Αδρανές",
           "draining": "Αποστράγγιση σε εξέλιξη"
         }
       },
+      "status": {
+        "name": "Κατάσταση",
+        "state": {
+          "unknown": "Άγνωστο",
+          "idle": "Αδρανές",
+          "paused": "Παύση",
+          "cleaning": "Καθαρισμός",
+          "returning": "Επιστροφή στη βάση",
+          "spot_cleaning": "Τοπικός καθαρισμός",
+          "follow_wall_cleaning": "Καθαρισμός κατά μήκος τοίχου",
+          "charging": "Φόρτιση",
+          "ota": "OTA",
+          "fct": "FCT",
+          "wifi_set": "Ρύθμιση WiFi",
+          "power_off": "Απενεργοποιημένο",
+          "factory": "Εργοστασιακή λειτουργία",
+          "error": "Σφάλμα",
+          "remote_control": "Απομακρυσμένος έλεγχος",
+          "sleeping": "Αναμονή",
+          "self_repair": "Αυτοέλεγχος",
+          "factory_test": "Εργοστασιακό τεστ",
+          "standby": "Εφεδρεία",
+          "room_cleaning": "Καθαρισμός δωματίου",
+          "zone_cleaning": "Καθαρισμός ζώνης",
+          "fast_mapping": "Γρήγορη χαρτογράφηση",
+          "cruising_path": "Περιήγηση στη διαδρομή",
+          "cruising_point": "Περιήγηση στο σημείο",
+          "summon_clean": "Κλήση για καθαρισμό",
+          "shortcut": "Συντόμευση",
+          "person_follow": "Ακολούθηση ατόμου",
+          "water_check": "Έλεγχος νερού",
+          "pet_guarding": "Φύλαξη κατοικιδίων",
+          "auto_arrangement": "Αυτόματη τακτοποίηση",
+          "smart_arrangement": "Έξυπνη τακτοποίηση",
+          "zoned_arrangement": "Τακτοποίηση ζώνης"
+        }
+      },
+      "stream_status": {
+        "name": "Κατάσταση ροής",
+        "state": {
+          "unknown": "Άγνωστο",
+          "idle": "Αδρανής",
+          "video": "Αδρανές",
+          "audio": "Ήχος",
+          "recording": "Εγγραφή"
+        }
+      },
+      "tank_filter_left": {
+        "name": "Φίλτρο δεξαμενής"
+      },
+      "tank_filter_time_left": {
+        "name": "Χρόνος που απομένει φίλτρου δοχείου"
+      },
+      "task_end_type": {
+        "name": "Ολοκληρώθηκε από",
+        "state": {
+          "other": "Άλλο",
+          "manual_docking": "Χειροκίνητη σύνδεση",
+          "docking": "Σύνδεση",
+          "failed_docking": "Αποτυχία σύνδεσης",
+          "stop": "Διακοπή",
+          "unknown": "Άγνωστο"
+        }
+      },
+      "task_interrupt_reason": {
+        "name": "Αιτία διακοπής",
+        "state": {
+          "abnormal_docking": "Μη φυσιολογική σύνδεση",
+          "base_station_powered_off": "Βάση εκτός λειτουργίας",
+          "brush_entangled_by_carpet": "Βούρτσα μπλέχτηκε σε χαλί",
+          "brush_entangled_by_object": "Βούρτσα μπλέχτηκε σε αντικείμενο",
+          "brush_entangled_by_obstacle": "Βούρτσα μπλέχτηκε σε εμπόδιο",
+          "cannot_find_base_station": "Δεν βρέθηκε η βάση",
+          "cliff_sensor_error": "Σφάλμα αισθητήρα πτώσης",
+          "laser_distance_sensor_error": "Σφάλμα αισθητήρα λέιζερ",
+          "mop_pad_abnormally_removed": "Πανί σφουγγαρίσματος αφαιρέθηκε μη φυσιολογικά",
+          "mop_pad_fallen_off": "Πανί σφουγγαρίσματος έπεσε",
+          "mop_pad_fallen_off_by_obstacle": "Πανί σφουγγαρίσματος έπεσε σε εμπόδιο",
+          "mop_pad_fallen_off_by_table": "Πανί σφουγγαρίσματος έπεσε σε τραπέζι",
+          "mop_pad_fallen_off_crossing_obstacle": "Πανί σφουγγαρίσματος έπεσε περνώντας εμπόδιο",
+          "mop_pad_removed": "Πανί σφουγγαρίσματος αφαιρέθηκε",
+          "mop_pad_stuck": "Πανί σφουγγαρίσματος κόλλησε",
+          "robot_fallen": "Το ρομπότ έπεσε",
+          "robot_is_stuck_on_obstacle": "Το ρομπότ κόλλησε σε εμπόδιο",
+          "robot_is_stuck_on_step": "Το ρομπότ κόλλησε σε σκαλί",
+          "robot_lifted": "Το ρομπότ σηκώθηκε",
+          "task_completed": "Η εργασία ολοκληρώθηκε",
+          "unknown": "Άγνωστο"
+        }
+      },
+      "task_status": {
+        "name": "Κατάσταση εργασίας",
+        "state": {
+          "unknown": "Άγνωστο",
+          "completed": "Ολοκληρώθηκε",
+          "cleaning": "Καθαρισμός",
+          "zone_cleaning": "Καθαρισμός ζώνης",
+          "room_cleaning": "Καθαρισμός δωματίου",
+          "spot_cleaning": "Τοπικός καθαρισμός",
+          "fast_mapping": "Γρήγορη χαρτογράφηση",
+          "cleaning_paused": "Καθαρισμός σε παύση",
+          "room_cleaning_paused": "Καθαρισμός δωματίου σε παύση",
+          "zone_cleaning_paused": "Καθαρισμός ζώνης σε παύση",
+          "spot_cleaning_paused": "Τοπικός καθαρισμός σε παύση",
+          "map_cleaning_paused": "Καθαρισμός χάρτη σε παύση",
+          "docking_paused": "Επαναφορά σε παύση",
+          "mopping_paused": "Σφουγγάρισμα σε παύση",
+          "zone_mopping_paused": "Σφουγγάρισμα ζώνης σε παύση",
+          "room_mopping_paused": "Σφουγγάρισμα δωματίου σε παύση",
+          "zone_docking_paused": "Επιστροφή ζώνης σε παύση",
+          "room_docking_paused": "Επιστροφή δωματίου σε παύση",
+          "cruising_path": "Περιήγηση στη διαδρομή",
+          "cruising_path_paused": "Περιήγηση σε παύση",
+          "cruising_point": "Περιήγηση στο σημείο",
+          "cruising_point_paused": "Περιήγηση στο σημείο σε παύση",
+          "summon_clean_paused": "Κλήση για καθαρισμό σε παύση",
+          "returning_to_install_mop": "Επιστροφή για τοποθέτηση σφουγγαρίστρας",
+          "returning_to_remove_mop": "Επιστροφή για αφαίρεση σφουγγαρίστρας",
+          "station_cleaning": "Καθαρισμός σταθμού",
+          "pet_finding": "Έυρεση κατοικίδιου",
+          "auto_cleaning_washing_paused": "Παύση αυτόματου καθαρισμού",
+          "area_cleaning_washing_paused": "Παύση καθαρισμού περιοχής",
+          "custom_cleaning_washing_paused": "Παύση καθαρισμού από χρήστη",
+          "picking_up_item": "Παραλαβή αντικειμένου",
+          "picking_up_item_paused": "Παραλαβή αντικειμένου σε παύση",
+          "picking_up_item_success": "Επιτυχής παραλαβή αντικειμένου",
+          "remote_pickup_initializing": "Προετοιμασία απομακρυσμένης παραλαβής",
+          "remote_pickup_identifing": "Αναγνώριση απομακρυσμένης παραλαβής",
+          "manual_remote_pickup": "Χειροκίνητη απομακρυσμένη παραλαβή",
+          "automatic_remote_pickup": "Αυτόματη απομακρυσμένη παραλαβή",
+          "remote_pickup_in_progress": "Απομακρυσμένη παραλαβή σε εξέλιξη",
+          "remote_pickup_paused": "Απομακρυσμένη παραλαβή σε παύση",
+          "placing_item": "Τοποθέτηση αντικειμένου",
+          "placing_item_paused": "Τοποθέτηση αντικειμένου σε παύση"
+        }
+      },
       "task_type": {
+        "name": "Τύπος εργασίας",
         "state": {
           "standard": "Κανονικός καθαρισμός",
+          "unknown": "Άγνωστο",
+          "idle": "Αδρανές",
           "standard_paused": "Κανονικός καθαρισμός σε παύση",
           "custom": "Προσαρμοσμένος καθαρισμός",
           "custom_paused": "Προσαρμοσμένος καθαρισμός σε παύση",
@@ -774,15 +1674,972 @@
           "changing_mop_paused": "Παύση αλλαγής πανιού",
           "floor_maintaining": "Συντήρηση δαπέδου",
           "floor_maintaining_paused": "Παύση συντήρησης δαπέδου",
-          "wood_floor_maintaining": "Συντήρηση ξύλινου δαπέδου"
+          "arranging_items": "Τακτοποίηση αντικειμένων",
+          "arranging_items_paused": "Τακτοποίηση αντικειμένων σε παύση",
+          "intensive_hair_cleaning": "Εντατικός καθαρισμός τριχών",
+          "accessory_handling": "Χειρισμός αξεσουάρ",
+          "increased_drum_speed_cleaning": "Καθαρισμός με αυξημένη ταχύτητα τυμπάνου",
+          "pressurized_cleaning": "Καθαρισμός υπό πίεση",
+          "steam_cleaning": "Καθαρισμός με ατμό",
+          "steam_cleaning_paused": "Καθαρισμός με ατμό σε παύση"
         }
       },
-      "dust_bag_drying_status": {
+      "timezone": {
+        "name": "Ζώνη ώρας"
+      },
+      "total_cleaned_area": {
+        "name": "Συνολική καθαρισμένη περιοχή"
+      },
+      "total_cleaning_time": {
+        "name": "Συνολικός χρόνος καθαρισμού"
+      },
+      "voice_packet_id": {
+        "name": "Πακέτο φωνής"
+      },
+      "water_outlet_filter_dirty_left": {
+        "name": "Καθαρισμός φίλτρου εξόδου νερού"
+      },
+      "water_outlet_filter_dirty_time_left": {
+        "name": "Χρόνος που απομένει φίλτρου εξόδου νερού"
+      },
+      "water_tank": {
+        "name": "Δεξαμενή νερού",
         "state": {
-          "idle": "Σε αδράνεια",
-          "drying": "Στέγνωμα",
-          "paused": "Σε παύση"
+          "unknown": "Άγνωστο",
+          "installed": "Τοποθετημένο",
+          "not_installed": "Μη τοποθετημένο",
+          "mop_installed": "Σφουγγαρίστρα τοποθετημένη",
+          "in_station": "Στον σταθμό"
         }
+      },
+      "wheel_dirty_left": {
+        "name": "Καθαρισμός τροχών"
+      },
+      "wheel_dirty_time_left": {
+        "name": "Χρόνος που απομένει τροχών"
+      }
+    },
+    "switch": {
+      "active_suspension_crossing": {
+        "name": "Διέλευση με ενεργή ανάρτηση"
+      },
+      "ai_fluid_detection": {
+        "name": "Ανίχνευση υγρών AI"
+      },
+      "ai_furniture_detection": {
+        "name": "Ανίχνευση επίπλων AI"
+      },
+      "ai_human_detection": {
+        "name": "Ανίχνευση ανθρώπων AI"
+      },
+      "ai_obstacle_detection": {
+        "name": "Ανίχνευση εμποδίων AI"
+      },
+      "ai_obstacle_image_upload": {
+        "name": "Μεταφόρτωση εικόνων εμποδίων AI"
+      },
+      "ai_obstacle_picture": {
+        "name": "Φωτογραφίες εμποδίων"
+      },
+      "ai_pet_avoidance": {
+        "name": "Αποφυγή κατοικίδιων AI"
+      },
+      "ai_pet_detection": {
+        "name": "Ανίχνευση κατοικίδιων"
+      },
+      "auto_add_detergent": {
+        "name": "Αυτόματη προσθήκη απορρυπαντικού"
+      },
+      "auto_change_mop": {
+        "name": "Αυτόματη αλλαγή πανιού"
+      },
+      "auto_charging": {
+        "name": "Αυτόματη φόρτιση"
+      },
+      "auto_drying": {
+        "name": "Αυτόματο στέγνωμα"
+      },
+      "auto_dust_collecting": {
+        "name": "Αυτόματο άδειασμα"
+      },
+      "auto_mount_mop": {
+        "name": "Αυτόματη τοποθέτηση πανιού"
+      },
+      "auto_water_refilling": {
+        "name": "Αυτόματη αναπλήρωση νερού"
+      },
+      "camera_light_brightness_auto": {
+        "name": "Αυτόματη φωτεινότητα φωτισμού κάμερας"
+      },
+      "carpet_avoidance": {
+        "name": "Αποφυγή χαλιών"
+      },
+      "carpet_boost": {
+        "name": "Ενίσχυση σε χαλιά"
+      },
+      "carpet_preferences": {
+        "name": "Προσαρμοσμένες προτιμήσεις"
+      },
+      "carpet_recognition": {
+        "name": "Αναγνώριση χαλιών"
+      },
+      "child_lock": {
+        "name": "Κλείδωμα για παιδιά"
+      },
+      "clean_carpets_first": {
+        "name": "Καθαρισμός χαλιών πρώτα"
+      },
+      "cleangenius_cleaning": {
+        "name": "CleanGenius"
+      },
+      "cleaning_sequence": {
+        "name": "Σειρά καθαρισμού"
+      },
+      "close_roller_cover_on_carpet": {
+        "name": "Κλείσιμο καλύμματος κυλίνδρου στο χαλί"
+      },
+      "collision_avoidance": {
+        "name": "Αποφυγή σύγκρουσης"
+      },
+      "customized_carpet_cleaning": {
+        "name": "Προσαρμοσμένος καθαρισμός"
+      },
+      "customized_cleaning": {
+        "name": "Προσαρμοσμένος καθαρισμός"
+      },
+      "deep_cleaning": {
+        "name": "Βαθύς καθαρισμός"
+      },
+      "deep_mop_washing": {
+        "name": "Βαθύ πλύσιμο πανιού"
+      },
+      "dnd": {
+        "name": "DnD"
+      },
+      "dnd_disable_auto_empty": {
+        "name": "Απενεργοποίηση αυτόματου αδειάσματος"
+      },
+      "dnd_disable_resume_cleaning": {
+        "name": "Απενεργοποίηση συνέχισης καθαρισμού"
+      },
+      "dnd_reduce_volume": {
+        "name": "Μείωση έντασης"
+      },
+      "dust_bag_drying": {
+        "name": "Στέγνωμα σακούλας σκόνης"
+      },
+      "dynamic_obstacle_cleaning": {
+        "name": "Δυναμικός καθαρισμός εμποδίων"
+      },
+      "fill_light": {
+        "name": "Φως κάμερας"
+      },
+      "floor_direction_cleaning": {
+        "name": "Καθαρισμός κατά τη φορά του δαπέδου"
+      },
+      "fuzzy_obstacle_detection": {
+        "name": "Ασαφής ανίχνευση εμποδίων"
+      },
+      "gap_cleaning_extension": {
+        "name": "Επέκταση καθαρισμού κενών"
+      },
+      "hair_compression": {
+        "name": "Συμπίεση τριχών"
+      },
+      "hot_washing": {
+        "name": "Πλύσιμο με ζεστό νερό"
+      },
+      "human_follow": {
+        "name": "Παρακολούθηση ανθρώπου"
+      },
+      "intelligent_recognition": {
+        "name": "Έξυπνη αναγνώριση"
+      },
+      "intensive_carpet_cleaning": {
+        "name": "Εντατικός καθαρισμός χαλιών"
+      },
+      "large_particles_boost": {
+        "name": "Ενίσχυση για μεγάλα σωματίδια"
+      },
+      "lds_state": {
+        "name": "Κατάσταση LDS"
+      },
+      "lift_chassis_on_carpet": {
+        "name": "Ανύψωση πλαισίου στο χαλί"
+      },
+      "map_saving": {
+        "name": "Αποθήκευση χάρτη"
+      },
+      "max_suction_power": {
+        "name": "Μέγιστη ισχύς αναρρόφησης"
+      },
+      "mop_extend": {
+        "name": "Επέκταση σφουγγαρίστρας"
+      },
+      "mop_washing_with_detergent": {
+        "name": "Πλύσιμο πανιού με απορρυπαντικό"
+      },
+      "mopping_under_furnitures": {
+        "name": "Σφουγγάρισμα κάτω από έπιπλα"
+      },
+      "mopping_with_detergent": {
+        "name": "Σφουγγάρισμα με απορρυπαντικό"
+      },
+      "multi_floor_map": {
+        "name": "Χάρτης πολλαπλών ορόφων"
+      },
+      "obstacle_avoidance": {
+        "name": "Αποφυγή εμποδίων"
+      },
+      "obstacle_crossing": {
+        "name": "Συγχρονισμένη διέλευση εμποδίων"
+      },
+      "off_peak_charging": {
+        "name": "Φόρτιση εκτός ωρών αιχμής"
+      },
+      "pet_focused_cleaning": {
+        "name": "Καθαρισμός εστιασμένος σε κατοικίδια"
+      },
+      "pet_focused_detection": {
+        "name": "Ανίχνευση εστιασμένη σε κατοικίδια"
+      },
+      "pet_picture": {
+        "name": "Φωτογραφία κατοικίδιου"
+      },
+      "pressurized_cleaning": {
+        "name": "Καθαρισμός υπό πίεση"
+      },
+      "resume_cleaning": {
+        "name": "Συνέχιση καθαρισμού"
+      },
+      "ring_light_always_on": {
+        "name": "Φωτεινός δακτύλιος πάντα αναμμένος"
+      },
+      "self_clean": {
+        "name": "Αυτοκαθαρισμός"
+      },
+      "self_clean_by_zone": {
+        "name": "Αυτοκαθαρισμός ανά ζώνη"
+      },
+      "side_brush_carpet_rotate": {
+        "name": "Περιστροφή πλευρικής βούρτσας στο χαλί"
+      },
+      "side_reach": {
+        "name": "Πλευρική εμβέλεια"
+      },
+      "silent_drying": {
+        "name": "Αθόρυβο στέγνωμα"
+      },
+      "smart_drying": {
+        "name": "Έξυπνο στέγνωμα"
+      },
+      "smart_mop_washing": {
+        "name": "Έξυπνο πλύσιμο πανιού"
+      },
+      "stain_avoidance": {
+        "name": "Αποφυγή λεκέδων"
+      },
+      "streaming_voice_prompt": {
+        "name": "Φωνητική ειδοποίηση ροής"
+      },
+      "tight_mopping": {
+        "name": "Πυκνό σφουγγάρισμα"
+      },
+      "ultra_clean_mode": {
+        "name": "Λειτουργία εξαιρετικά καθαρού"
+      },
+      "uv_sterilization": {
+        "name": "Αποστείρωση UV"
+      },
+      "voice_assistant": {
+        "name": "Φωνητικός βοηθός"
+      },
+      "water_electrolysis": {
+        "name": "Ηλεκτρόλυση νερού"
+      },
+      "wider_corner_coverage": {
+        "name": "Μεγαλύτερη κάλυψη γωνιών"
+      }
+    },
+    "button": {
+      "backup_saved_map": {
+        "name": "Δημιουργία αντιγράφου ασφαλείας αποθηκευμένου χάρτη"
+      },
+      "base_station_cleaning": {
+        "name": "Καθαρισμός σταθμού βάσης"
+      },
+      "base_station_self_repair": {
+        "name": "Αυτοεπισκευή σταθμού βάσης"
+      },
+      "clear_warning": {
+        "name": "Εκκαθάριση προειδοποίησης"
+      },
+      "empty_water_tank": {
+        "name": "Άδειασμα δοχείου νερού"
+      },
+      "manual_drying": {
+        "name": "Χειροκίνητο στέγνωμα"
+      },
+      "manual_dust_bag_drying": {
+        "name": "Χειροκίνητο στέγνωμα σακούλας σκόνης"
+      },
+      "reload_shortcuts": {
+        "name": "Επαναφόρτωση συντομεύσεων"
+      },
+      "reset_deodorizer": {
+        "name": "Επαναφορά αποσμητικού"
+      },
+      "reset_detergent": {
+        "name": "Επαναφορά απορρυπαντικού"
+      },
+      "reset_dirty_water_channel": {
+        "name": "Επαναφορά καναλιού ακάθαρτου νερού"
+      },
+      "reset_filter": {
+        "name": "Επαναφορά φίλτρου"
+      },
+      "reset_fluffing_roller": {
+        "name": "Επαναφορά χνουδωτού κυλίνδρου"
+      },
+      "reset_main_brush": {
+        "name": "Επαναφορά κύριας βούρτσας"
+      },
+      "reset_mop_pad": {
+        "name": "Επαναφορά σφουγγαρίστρας"
+      },
+      "reset_onboard_dirty_water_tank": {
+        "name": "Επαναφορά ενσωματωμένου δοχείου ακάθαρτου νερού"
+      },
+      "reset_roller_mop_filter": {
+        "name": "Επαναφορά φίλτρου κυλίνδρου σφουγγαρίστρας"
+      },
+      "reset_scale_inhibitor": {
+        "name": "Επαναφορά αναστολέα αλάτων"
+      },
+      "reset_sensor": {
+        "name": "Επαναφορά αισθητήρων"
+      },
+      "reset_side_brush": {
+        "name": "Επαναφορά πλευρικής βούρτσας"
+      },
+      "reset_silver_ion": {
+        "name": "Επαναφορά ιόντων αργύρου"
+      },
+      "reset_squeegee": {
+        "name": "Επαναφορά υαλοκαθαριστήρα"
+      },
+      "reset_tank_filter": {
+        "name": "Επαναφορά φίλτρου δοχείου"
+      },
+      "reset_water_outlet_filter": {
+        "name": "Επαναφορά φίλτρου εξόδου νερού"
+      },
+      "reset_wheel": {
+        "name": "Επαναφορά τροχών"
+      },
+      "self_clean": {
+        "name": "Αυτοκαθαρισμός"
+      },
+      "shortcut": {
+        "name": "Συντόμευση {name}"
+      },
+      "start_auto_empty": {
+        "name": "Έναρξη αυτόματου αδειάσματος"
+      },
+      "start_fast_mapping": {
+        "name": "Έναρξη γρήγορης χαρτογράφησης"
+      },
+      "start_mapping": {
+        "name": "Έναρξη χαρτογράφησης"
+      },
+      "start_recleaning": {
+        "name": "Έναρξη επανακαθαρισμού"
+      },
+      "water_tank_draining": {
+        "name": "Αποστράγγιση δοχείου νερού"
+      }
+    },
+    "camera": {
+      "map": {
+        "name": "Τρέχων χάρτης"
+      },
+      "map_data": {
+        "name": "Δεδομένα τρέχοντος χάρτη"
+      },
+      "saved_map": {
+        "name": "Αποθηκευμένος χάρτης {name}"
+      },
+      "wifi_map": {
+        "name": "Αποθηκευμένος χάρτης Wi-Fi {name}"
+      }
+    },
+    "binary_sensor": {
+      "charging_state": {
+        "name": "Κατάσταση φόρτισης",
+        "state": {
+          "on": "Φόρτιση",
+          "off": "Δεν φορτίζει"
+        }
+      },
+      "lds_status": {
+        "name": "Κατάσταση LDS"
+      },
+      "roller_cover_status": {
+        "name": "Κατάσταση καλύμματος κυλίνδρου"
+      },
+      "problem": {
+        "name": "Πρόβλημα",
+        "state_attributes": {
+          "type": {
+            "name": "Τύπος",
+            "state": {
+              "error": "Σφάλμα",
+              "warning": "Προειδοποίηση",
+              "low_water": "Χαμηλή στάθμη νερού",
+              "dock": "Σταθμός"
+            }
+          },
+          "code": {
+            "name": "Κωδικός"
+          }
+        }
+      },
+      "maintenance": {
+        "name": "Συντήρηση",
+        "state_attributes": {
+          "items": {
+            "name": "Στοιχεία"
+          }
+        }
+      }
+    },
+    "number": {
+      "auto_empty_area": {
+        "name": "Περιοχή αυτόματου αδειάσματος"
+      },
+      "camera_light_brightness": {
+        "name": "Φωτεινότητα φωτισμού κάμερας"
+      },
+      "drying_time": {
+        "name": "Χρόνος στεγνώματος"
+      },
+      "mop_cleaning_remainder": {
+        "name": "Υπενθύμιση καθαρισμού σφουγγαρίστρας"
+      },
+      "self_clean_area": {
+        "name": "Περιοχή αυτοκαθαρισμού"
+      },
+      "self_clean_time": {
+        "name": "Χρόνος αυτοκαθαρισμού"
+      },
+      "volume": {
+        "name": "Ένταση"
+      },
+      "wetness_level": {
+        "name": "Υγρασία"
+      }
+    },
+    "time": {
+      "dnd_end": {
+        "name": "Ώρα λήξης DnD"
+      },
+      "dnd_start": {
+        "name": "Ώρα έναρξης DnD"
+      },
+      "off_peak_charging_end": {
+        "name": "Ώρα λήξης εκτός αιχμής"
+      },
+      "off_peak_charging_start": {
+        "name": "Ώρα έναρξης εκτός αιχμής"
+      },
+      "schedule_time": {
+        "name": "Ώρα έναρξης"
+      }
+    },
+    "input": {
+      "dnd_repeats": {
+        "name": "Επαναλήψεις"
+      },
+      "map_custom_name": {
+        "name": "Όνομα χάρτη"
+      },
+      "schedule_repeats": {
+        "name": "Επαναλήψεις"
+      },
+      "segment_custom_name": {
+        "name": "Όνομα δωματίου"
+      },
+      "shortcut_name": {
+        "name": "Όνομα συντόμευσης"
+      }
+    }
+  },
+  "entity_component": {
+    "frontend_action": {
+      "state": {
+        "add": "Προσθήκη",
+        "add_map": "Δημιουργία χάρτη",
+        "auto_empty_unavailable": "Αυτόμ. άδειασμα μη διαθέσιμο",
+        "auto_emptying": "Αυτόματο άδειασμα",
+        "backup": "Αντίγραφο",
+        "bag_drying_unavailable": "Στέγνωμα σάκου μη διαθέσιμο",
+        "cancel": "Ακύρωση",
+        "cancel_ignore": "Ακύρωση παράβλεψης",
+        "carpet": "Χαλί",
+        "change": "Αλλαγή",
+        "charge": "Φόρτιση",
+        "clean": "Καθαρισμός",
+        "clean_again": "Επανακαθαρισμός",
+        "cleaning_settings": "Ρυθμίσεις καθαρισμού",
+        "cleanings": "Καθαρισμοί",
+        "close": "Κλείσιμο",
+        "confirm": "Επιβεβαίωση",
+        "delete": "Διαγραφή",
+        "delete_carpet": "Διαγραφή χαλιού",
+        "deleted_carpet": "Διαγραμμένο χαλί",
+        "disable": "Απενεργοποίηση",
+        "discard": "Απόρριψη",
+        "dismiss": "Παράβλεψη",
+        "dock": "Βάση",
+        "dock_settings": "Ρυθμίσεις βάσης",
+        "download": "Λήψη",
+        "dry": "Στέγνωμα",
+        "dry_bag": "Στέγνωμα σάκου",
+        "drying_unavailable": "Στέγνωμα μη διαθέσιμο",
+        "dynamically_ignored": "Προσωρινή παράβλεψη",
+        "edit_carpet": "Επεξεργασία χαλιού",
+        "empty": "Άδειασμα",
+        "enable": "Ενεργοποίηση",
+        "enter_dvc_key": "Εισαγωγή υπάρχοντος κλειδιού",
+        "fast_mapping": "Γρήγορη χαρτογράφηση",
+        "get_dvc_key": "Λήψη κλειδιού DVC",
+        "ignore": "Παράβλεψη",
+        "ignore_obstacle": "Παράβλεψη εμποδίου",
+        "impassable_threshold": "Αδιάβατο κατώφλι",
+        "job_details": "Λεπτομέρειες εργασίας",
+        "keep_disabled": "Διατήρηση απενεργ.",
+        "map_display": "Εμφάνιση χάρτη",
+        "map_management": "Διαχείριση χαρτών",
+        "new_dnd": "Νέα εργασία DnD",
+        "new_schedule": "Νέος προγραμματισμός",
+        "new_shortcut": "Νέα εργασία συντόμευσης",
+        "next_job": "Επόμενη εργασία",
+        "no_go": "Απαγορευμένη ζώνη",
+        "no_mop": "Χωρίς σφουγγάρισμα",
+        "objects": "Αντικείμενα",
+        "override": "Παράκαμψη",
+        "passable_threshold": "Διαβατό κατώφλι",
+        "pause": "Παύση",
+        "pause_washing": "Παύση πλύσης",
+        "previous_job": "Προηγούμενη εργασία",
+        "ramp": "Ράμπα",
+        "reload": "Επαναφόρτωση",
+        "rename": "Μετονομασία",
+        "repeats": "Επαναλήψεις",
+        "replace": "Αντικατάσταση",
+        "reset": "Επαναφορά",
+        "restore": "Ανάκτηση",
+        "restore_map": "Επαναφορά χάρτη",
+        "resume": "Συνέχιση",
+        "resume_washing": "Συνέχιση πλύσης",
+        "rooms": "Δωμάτια",
+        "rotate_left": "Περιστροφή αριστερά",
+        "rotate_right": "Περιστροφή δεξιά",
+        "round_carpet": "Στρογγυλό χαλί",
+        "save": "Αποθήκευση",
+        "select_map": "Επιλογή χάρτη",
+        "shortcuts": "Συντομεύσεις",
+        "square_carpet": "Τετράγωνο χαλί",
+        "start": "Έναρξη",
+        "start_auto_empty": "Έναρξη αδειάσματος",
+        "start_bag_drying": "Στέγνωμα σάκου",
+        "start_drying": "Έναρξη στεγνώματος",
+        "start_task": "Έναρξη εργασίας",
+        "start_washing": "Έναρξη πλύσης",
+        "stop": "Διακοπή",
+        "stop_bag_drying": "Διακοπή στεγν. σάκου",
+        "stop_drying": "Διακοπή στεγνώματος",
+        "understood": "Κατανόησα",
+        "virtual_threshold": "Εικονικό κατώφλι",
+        "virtual_wall": "Τοίχος",
+        "wash": "Πλύσιμο",
+        "washing_unavailable": "Πλύσιμο μη διαθέσιμο",
+        "wifi_map": "Χάρτης WiFi"
+      }
+    },
+    "frontend_config": {
+      "state": {
+        "background_image": "Εικόνα φόντου",
+        "card_object_action_buttons": "Κουμπιά δράσης",
+        "card_object_animations": "Εφέ κίνησης",
+        "card_object_cleanup_notification": "Ειδοπ. καθαρισμού",
+        "card_object_controls": "Χειριστήρια",
+        "card_object_cruising_history": "Ιστορικό διαδρομής",
+        "card_object_fault_notification": "Ειδοπ. σφαλμάτων",
+        "card_object_information_notification": "Ειδοπ. πληροφόρησης",
+        "card_object_low_water_notification": "Ειδοπ. στάθμης νερού",
+        "card_object_map_change_confirmation": "Επιβεβαίωση αλλαγής χάρτη",
+        "card_object_menu": "Μενού",
+        "card_object_progress_bar": "Γραμμή προόδου",
+        "card_object_saved_notification": "Ειδοπ. αποθήκευσης",
+        "card_object_shortcuts": "Συντομεύσεις",
+        "card_object_state": "Κατάσταση",
+        "card_object_status": "Κατάσταση",
+        "card_object_task_type": "Τύπος εργασίας",
+        "card_object_title": "Τίτλος",
+        "card_object_warning_notification": "Ειδοπ. προειδοπ.",
+        "color_scheme": "Θέμα χρωμάτων",
+        "color_scheme_dreame_auto": "Dreame αυτόματο",
+        "color_scheme_dreame_dark": "Dreame σκούρο",
+        "color_scheme_dreame_light": "Dreame ανοιχτό",
+        "color_scheme_grayscale": "Αποχρώσεις γκρι",
+        "color_scheme_mijia_auto": "Mijia αυτόματο",
+        "color_scheme_mijia_dark": "Mijia σκούρο",
+        "color_scheme_mijia_light": "Mijia ανοιχτό",
+        "copied": "Αντιγράφηκε",
+        "copy": "Αντιγραφή",
+        "copy_all": "Αντιγραφή όλων",
+        "disable_haptic": "Απενεργ. δόνησης",
+        "dvc_key": "Κλειδί DVC",
+        "dvc_key_title": "Εισαγάγετε το κλειδί DVC",
+        "editable_objects": "Επεξεργάσιμα αντικ/να",
+        "font_size": "Μέγεθος γραμματοσειράς",
+        "full_height": "Πλήρες ύψος",
+        "grid_size": "Μέγεθος πλέγματος",
+        "height": "Ύψος",
+        "hidden_card_objects": "Κρυφά αντικείμενα κάρτας",
+        "hidden_objects": "Κρυφά αντικείμενα",
+        "hide_map_info": "Απόκρυψη πληρ. χάρτη",
+        "icon_set": "Σετ εικονιδίων",
+        "icon_set_dreame": "Dreame",
+        "icon_set_dreame_old": "Dreame παλιό",
+        "icon_set_material": "Material Design",
+        "icon_set_mijia": "Mijia",
+        "left": "Αριστερά",
+        "left_handed": "Λειτουργία αριστερόχειρα",
+        "limit_height": "Προσαρμογή ύψους",
+        "locked": "Κλειδωμένο",
+        "locked_always": "Πάντα",
+        "locked_auto": "Αυτόματα",
+        "locked_never": "Ποτέ",
+        "locked_only_touch": "Μόνο άγγιγμα",
+        "map": "Χάρτης %name%",
+        "map_1": "1ος χάρτης",
+        "map_2": "2ος χάρτης",
+        "map_3": "3ος χάρτης",
+        "map_4": "4ος χάρτης",
+        "map_5": "5ος χάρτης",
+        "map_color_active_area": "Ενεργή περιοχή",
+        "map_color_active_area_outline": "Περίγραμμα ενεργής περ.",
+        "map_color_active_point": "Ενεργό σημείο",
+        "map_color_active_point_outline": "Περίγραμμα ενεργού σημείου",
+        "map_color_auto_low_lying_area": "Αυτόματο κενό",
+        "map_color_carpet_color": "Χρώμα χαλιού",
+        "map_color_curtain": "Κουρτίνα",
+        "map_color_detected_carpet_color": "Χρώμα ανιχ. χαλιού",
+        "map_color_floor": "Δάπεδο",
+        "map_color_floor_material": "Υλικό δαπέδου",
+        "map_color_icon_background": "Φόντο εικονιδίου",
+        "map_color_impassable_threshold": "Αδιάβατο κατώφλι",
+        "map_color_manual_low_lying_area": "Χειροκίνητο κενό",
+        "map_color_mop_path": "Διαδρομή σφουγγ/τος",
+        "map_color_new_segment": "Νέο δωμάτιο",
+        "map_color_no_go": "Απαγορευμένη ζώνη",
+        "map_color_no_go_outline": "Περίγραμμα απ. ζώνης",
+        "map_color_no_mop": "Ζώνη χωρίς σφουγγ.",
+        "map_color_no_mop_outline": "Περίγραμμα χωρίς σφουγγ.",
+        "map_color_obstacle_background": "Φόντο εμποδίου",
+        "map_color_order": "Σειρά",
+        "map_color_outside": "Έξω",
+        "map_color_passable_threshold": "Διαβατό κατώφλι",
+        "map_color_passive_segment": "Παθητικό δωμάτιο",
+        "map_color_path": "Διαδρομή",
+        "map_color_ramp": "Ράμπα",
+        "map_color_segment": "Δωμάτιο",
+        "map_color_settings_background": "Φόντο ρυθμίσεων",
+        "map_color_text": "Κείμενο",
+        "map_color_text_stroke": "Περίγραμμα κειμένου",
+        "map_color_virtual_threshold": "Εικονικό κατώφλι",
+        "map_color_virtual_wall": "Εικονικός τοίχος",
+        "map_color_wall": "Τοίχος",
+        "map_config": "Ρυθμίσεις χάρτη",
+        "map_display": "Εμφάνιση χάρτη",
+        "map_display_floor_plan": "Κάτοψη",
+        "map_display_floor_plan_only": "Μόνο κάτοψη",
+        "map_display_floor_plan_without_texture": "Κάτοψη χωρίς υφή",
+        "map_display_standard": "Τυπικό",
+        "map_object_active_area": "Ενεργή περιοχή",
+        "map_object_active_cruise_point": "Ενεργό σημείο περιπολίας",
+        "map_object_active_point": "Ενεργό σημείο",
+        "map_object_animations": "Εφέ κίνησης",
+        "map_object_blocked_segment": "Μπλοκαρισμένα δωμάτια",
+        "map_object_blocked_segments": "Μπλοκαρισμένα δωμάτια",
+        "map_object_carpet": "Χαλί",
+        "map_object_charger": "Φορτιστής",
+        "map_object_cleaning_sequence": "Σειρά καθαρισμού",
+        "map_object_cruise_point": "Σημείο περιπολίας",
+        "map_object_curtain": "Κουρτίνα",
+        "map_object_customized_cleaning": "Προσαρμοσμένος καθαρισμός",
+        "map_object_deleted_carpet": "Διαγραμμένο χαλί",
+        "map_object_detected_carpet": "Ανιχνευμένο χαλί",
+        "map_object_door": "Πόρτα",
+        "map_object_floor": "Δάπεδο",
+        "map_object_floor_material": "Υλικό δαπέδου",
+        "map_object_furniture": "Έπιπλο",
+        "map_object_furniture_image": "Εικόνες επίπλων",
+        "map_object_hidden_segments": "Κρυφά δωμάτια",
+        "map_object_icon": "Εικονίδιο",
+        "map_object_ignored_obstacles": "Εμπόδια σε παράβλεψη",
+        "map_object_impassable_threshold": "Αδιάβατα κατώφλια",
+        "map_object_lock_indicator": "Ένδειξη κλειδώματος",
+        "map_object_low_lying_area": "Χαμηλές περιοχές",
+        "map_object_material": "Υλικό δαπέδου",
+        "map_object_mop_path": "Διαδρομή σφουγγ/τος",
+        "map_object_mop_type": "Τύπος σφουγγαρίστρας",
+        "map_object_name": "Όνομα",
+        "map_object_name_background": "Φόντο ονόματος",
+        "map_object_no_go": "Απαγορευμένη ζώνη",
+        "map_object_no_mop": "Χωρίς σφουγγάρισμα",
+        "map_object_object_option": "Επιλογή αντικειμένου",
+        "map_object_obstacle": "Εμπόδιο",
+        "map_object_obstacle_background": "Φόντο εμποδίου",
+        "map_object_obstacle_color": "Χρώμα εμποδίου",
+        "map_object_order": "Σειρά",
+        "map_object_passable_threshold": "Διαβατά κατώφλια",
+        "map_object_path": "Διαδρομή",
+        "map_object_pet": "Κατοικίδιο",
+        "map_object_predefined_point": "Προκαθορισμένα σημεία",
+        "map_object_ramp": "Ράμπα",
+        "map_object_router": "Router",
+        "map_object_segment": "Δωμάτιο",
+        "map_object_segment_type": "Τύπος δωματίου",
+        "map_object_selected_segments": "Επιλεγμένα δωμάτια",
+        "map_object_split_line": "Γραμμή διαχωρισμού",
+        "map_object_stain": "Λεκές",
+        "map_object_station_status": "Κατάσταση βάσης",
+        "map_object_vacuum": "Σκούπα",
+        "map_object_vacuum_status": "Κατάσταση σκούπας",
+        "map_object_virtual_threshold": "Εικονικά κατώφλια",
+        "map_object_virtual_wall": "Εικονικοί τοίχοι",
+        "map_object_walls": "Τοίχοι",
+        "map_object_zoom_point": "Σημείο εστίασης",
+        "object_opacity": "Διαφάνεια αντικειμένων",
+        "object_scale": "Κλίμακα αντικειμένων",
+        "opacity": "Διαφάνεια",
+        "override_colors": "Παράκαμψη χρωμάτων",
+        "overlay_image": "Εικόνα επικάλυψης",
+        "rotation": "Περιστροφή",
+        "scale": "Κλίμακα",
+        "scripts": "Σενάρια",
+        "selectable_objects": "Επιλέξιμα αντικείμενα",
+        "selected_map_config": "Ρυθμίσεις %name%",
+        "show_map_info": "Εμφάνιση πληρ. χάρτη",
+        "top": "Πάνω",
+        "url": "Url",
+        "viewport": "Προβολή",
+        "width": "Πλάτος",
+        "zoom": "Εστίαση"
+      }
+    },
+    "frontend_message": {
+      "state": {
+        "active_task": "Η σκούπα είναι απασχολημένη!",
+        "apply_changes_or_reload": "Ο χάρτης άλλαξε κατά την επεξεργασία.\nΠαράκαμψη ή φόρτωση νέων αλλαγών;",
+        "auto_mount_mop_will_enabled": "Η αυτόματη τοποθέτηση θα ενεργοποιηθεί!",
+        "backup_map": "Αντίγραφο ασφαλείας χάρτη;",
+        "backup_map_will_overwritten": "Το τρέχον αντίγραφο θα αντικατασταθεί!",
+        "bag_drying_will_stopped": "Το στέγνωμα του σάκου θα διακοπεί!",
+        "carpet_recognition_will_enabled": "Η αναγνώριση χαλιών πρέπει να είναι ενεργή για προσαρμοσμένο καθαρισμό",
+        "carpet_will_deleted": "Το χαλί θα διαγραφεί!",
+        "cleangenius_will_disabled": "Το CleanGenius θα απενεργοποιηθεί!",
+        "cleaning_failure": "Αίτια αποτυχίας καθαρισμού",
+        "create_map": "Δημιουργία νέου χάρτη;",
+        "custom_carpet_settings_will_enabled": "Ο προσαρμοσμένος καθαρισμός χαλιών θα ενεργοποιηθεί!",
+        "custom_carpet_settings_will_enabled_detail": "Οι ρυθμίσεις θα προσαρμοστούν στον επιλεγμένο τύπο χαλιού",
+        "customized_cleaning_disabled": "Ο προσαρμοσμένος καθαρισμός απενεργοποιήθηκε!",
+        "delete_carpet": "Διαγραφή χαλιού;",
+        "delete_dnd": "Διαγραφή εργασίας Do Not Disturb;",
+        "delete_map": "Διαγραφή χάρτη;",
+        "delete_schedule": "Διαγραφή προγραμματισμένης εργασίας;",
+        "delete_shortcut": "Διαγραφή συντόμευσης;",
+        "deleted": "Διαγράφηκε επιτυχώς",
+        "device_unavailable": "Συσκευή μη διαθέσιμη",
+        "disable_cleangenius": "Απενεργοποίηση CleanGenius;",
+        "dnd_confliction": "Σύγκρουση Do Not Disturb!",
+        "dnd_confliction_detail": "Η εργασία συμπίπτει με την περίοδο Do Not Disturb.",
+        "dnd_will_deleted": "Η εργασία DnD για %start% έως %end% θα διαγραφεί!",
+        "dock_in_restricted_area": "Η βάση είναι σε απαγορευμένη ζώνη!",
+        "dock_in_restricted_area_detail": "Προσοχή, η βάση είναι σε απαγορευμένη ζώνη. Το ρομπότ μπορεί να μην φορτίσει.",
+        "drying_will_stopped": "Το στέγνωμα θα διακοπεί!",
+        "dust_collection_not_performed": "Η εργασία συλλογής σκόνης (Αυτόματο άδειασμα) δεν εκτελέστηκε\nΤο ρομπότ δεν θα εκτελεί αυτόματα αδειάσματα κατά την περίοδο Do Not Disturb.",
+        "dvc_key_description": "Ένα κλειδί ισχύει για μία μόνο συσκευή. Αν είναι η πρώτη φορά που χρησιμοποιείτε αυτό το κλειδί, θα ενεργοποιηθεί τώρα για αυτή τη συσκευή.",
+        "enable_auto_mount_mop": "Ενεργοποίηση αυτόματης τοποθέτησης;",
+        "enable_carpet_recognition": "Η αναγνώριση χαλιών θα ενεργοποιηθεί!",
+        "enable_customized_cleaning": "Ενεργοποίηση προσαρμοσμένου καθαρισμού;",
+        "enable_mop_change": "Ενεργοποίηση αυτόματης αλλαγής;",
+        "enable_task": "Ενεργοποίηση εργασίας;",
+        "entity_is_required": "Απαιτείται οντότητα",
+        "entity_not_available": "Οντότητα μη διαθέσιμη",
+        "failed_to_load_card": "Αποτυχία φόρτωσης κάρτας",
+        "ignore_obstacle": "Παράβλεψη εμποδίου;",
+        "invalid_entity": "Μη έγκυρη οντότητα",
+        "invalid_key": "Μη έγκυρο κλειδί.",
+        "map_backup": "Δημιουργία αντιγράφου ασφαλείας χάρτη σε εξέλιξη",
+        "map_backup_failed": "Η δημιουργία αντιγράφου ασφαλείας χάρτη απέτυχε!",
+        "map_backup_success": "Η δημιουργία αντιγράφου ασφαλείας χάρτη ολοκληρώθηκε",
+        "map_recovery": "Ανάκτηση χάρτη σε εξέλιξη",
+        "map_recovery_failed": "Η ανάκτηση χάρτη απέτυχε!",
+        "map_recovery_success": "Η ανάκτηση χάρτη ολοκληρώθηκε",
+        "map_will_deleted": "Το %name% θα διαγραφεί!",
+        "map_will_replaced": "Ο τρέχων χάρτης θα αντικατασταθεί με τον νέο!",
+        "map_will_restored": "Ο χάρτης θα επανέλθει στην κατάσταση της %date%",
+        "mapping_started": "Η χαρτογράφηση ξεκίνησε...",
+        "mop_change_disabled": "Η αυτόματη αλλαγή απενεργοποιήθηκε!",
+        "mop_wash_frequency_low": "Η συχνότητα πλύσης είναι πολύ χαμηλή!",
+        "mop_wash_frequency_will_increased": "Θα αυξηθεί αυτόματα για επαρκή υγρασία",
+        "not_available": "Δεν είναι διαθέσιμο αυτή τη στιγμή...",
+        "not_fully_supported": "Δεν υποστηρίζεται πλήρως ακόμα!",
+        "not_supported": "Δεν υποστηρίζεται ακόμα!",
+        "obstacle_will_ignored": "Το εμπόδιο θα αγνοηθεί!",
+        "override_changes": "Παράκαμψη αλλαγών;",
+        "preview": "Αυτή είναι η προεπισκόπηση της κάρτας Dreame Vacuum",
+        "recommended_areas": "Προτεινόμενες περιοχές",
+        "relocating": "Αυτο-τοποθέτηση. Παρακαλώ περιμένετε.",
+        "relocating_completed": "Η αυτο-τοποθέτηση πέτυχε. Το ρομπότ συνεχίζει την εργασία.",
+        "relocating_failed": "Η αυτο-τοποθέτηση απέτυχε!",
+        "replace_map": "Αντικατάσταση χάρτη;",
+        "reset_usage": "Επαναφορά στατιστικών;",
+        "reset_walls": "Επαναφορά τοίχων;",
+        "restore_map": "Επαναφορά %name%;",
+        "resume_cleaning": "Το ρομπότ θα συνεχίσει αυτόματα τις ημιτελείς εργασίες καθαρισμού αφού φορτίσει την μπαταρία του στο 80%.",
+        "resume_cleaning_not_performed": "Το ρομπότ θα συνεχίσει τον καθαρισμό μετά τη λήξη της περιόδου Do Not Disturb.",
+        "resume_cleaning_time": "Ο καθαρισμός θα ξεκινήσει %time%",
+        "save_changes": "Αποθήκευση αλλαγών;",
+        "saved": "Αποθηκεύτηκε επιτυχώς",
+        "schedule_will_deleted": "Το πρόγραμμα για τις %time% θα διαγραφεί!",
+        "select_map": "Επιλογή %name%;",
+        "select_mapping_type": "Τύπος χαρτογράφησης",
+        "select_room": "Επιλέξτε δωμάτιο για τη σειρά καθαρισμού",
+        "selected_map_will_changed": "Ο χάρτης άλλαξε σε %name%!",
+        "service_call_failed": "Η κλήση υπηρεσίας απέτυχε",
+        "settings_will_applied": "Οι ρυθμίσεις θα εφαρμοστούν στην επόμενη εργασία.",
+        "shortcut_will_deleted": "Το %name% θα διαγραφεί!",
+        "stop_bag_drying": "Διακοπή στεγνώματος σάκου;",
+        "stop_drying": "Διακοπή στεγνώματος;",
+        "stop_task": "Διακοπή τρέχουσας εργασίας;",
+        "task_disabled": "Εργασία απενεργοποιήθηκε!",
+        "task_will_stopped": "Η τρέχουσα εργασία θα διακοπεί!",
+        "unsaved_changes_present": "Υπάρχουν μη αποθηκευμένες αλλαγές!",
+        "unsupported_browser": "Μη υποστηριζόμενος περιηγητής!",
+        "usage_will_reset": "Τα στατιστικά του %name% θα μηδενιστούν.",
+        "walls_will_be_reset": "Οι τοίχοι θα επαναφερθούν στην αρχικά χαρτογραφημένη τοποθεσία τους!"
+      }
+    },
+    "frontend_title": {
+      "state": {
+        "accessory_usage": "Χρήση αξεσουάρ",
+        "add_furniture": "Προσθήκη επίπλου",
+        "audio_settings": "Ρυθμίσεις ήχου",
+        "battery_management": "Διαχείριση μπαταρίας",
+        "carpet_settings": "Ρυθμίσεις χαλιών",
+        "clean_water_tank": "Δεξαμενή καθαρού νερού",
+        "cleaning_details": "Λεπτομέρειες καθαρισμού",
+        "cleaning_history": "Ιστορικό καθαρισμού",
+        "cleaning_sequence": "Σειρά καθαρισμού",
+        "created_carpet": "Χειροκίνητο χαλί",
+        "cruising": "Περιπολία",
+        "cruising_details": "Λεπτομέρειες περιπολίας",
+        "cruising_history": "Ιστορικό περιπολίας",
+        "customized_cleaning": "Προσαρμοσμένος καθαρισμός",
+        "description": "Frontend για %name%",
+        "detected_carpet": "Ανιχνευμένο χαλί",
+        "detergent": "Απορρυπαντικό",
+        "device_information": "Πληροφορίες συσκευής",
+        "device_settings": "Ρυθμίσεις συσκευής",
+        "dnd": "Do Not Disturb",
+        "dnd_task": "Εργασία Do Not Disturb",
+        "dust_bag": "Σάκος σκόνης",
+        "global_carpet_settings": "Γενικές ρυθμίσεις χαλιών",
+        "invalid": "άκυρο",
+        "locate": "Εντοπισμός",
+        "map": "Χάρτης",
+        "map_edit": "Επεξεργασία χάρτη",
+        "map_management": "Διαχείριση χαρτών",
+        "map_name_placeholder": "Χάρτης %index%",
+        "mop_type": "Τύπος σφουγγαρίστρας",
+        "mopping_settings": "Ρυθμίσεις σφουγγαρίσματος",
+        "more_functions": "Περισσότερες λειτουργίες",
+        "name": "Κάρτα %name%",
+        "new_map": "Νέος χάρτης",
+        "obstacle": "Εμπόδιο",
+        "obstacle_settings": "Κάμερα & Εμπόδια",
+        "recovery_map_list": "Ανάκτηση χάρτη",
+        "remote_control": "Τηλεχειριστήριο",
+        "saved_map": "Αποθηκευμένος χάρτης",
+        "schedule_list": "Προγράμματα",
+        "scheduled_room": "Προγρ. δωματίων",
+        "scheduled_spot": "Προγρ. σημείου",
+        "scheduled_task": "Προγρ. εργασία",
+        "scheduled_zone": "Προγρ. ζώνης",
+        "segment_name_placeholder": "Δωμάτιο %index%",
+        "segment_unavailable": "Το δωμάτιο %index% δεν είναι διαθέσιμο",
+        "shortcut": "Συντόμευση",
+        "shortcut_list": "Συντομεύσεις",
+        "shortcut_map": "Χάρτης συντομεύσεων",
+        "shortcut_name_placeholder": "Συντόμευση %index%",
+        "shortcut_task": "Εργασία συντόμευσης",
+        "task": "Εργασία %index%",
+        "task_placeholder": "Εργασία %index%",
+        "time_left": "%time% απομένουν",
+        "unavailable": "Μη διαθέσιμο",
+        "used_water_tank": "Δεξαμενή ακάθαρτου νερού",
+        "wall": "Τοίχοι",
+        "wifi_map": "Χάρτης WiFi"
+      }
+    },
+    "notification": {
+      "state": {
+        "cleanup_completed": "Ο καθαρισμός ολοκληρώθηκε",
+        "dust_collection_not_performed": "Η εργασία συλλογής σκόνης (Αυτόματο άδειασμα) δεν εκτελέστηκε\nΤο ρομπότ δεν θα εκτελεί αυτόματα αδειάσματα κατά την περίοδο Do Not Disturb.",
+        "resume_cleaning": "Λειτουργία συνέχισης καθαρισμού\nΤο ρομπότ θα συνεχίσει αυτόματα τις ημιτελείς εργασίες καθαρισμού αφού φορτίσει την μπαταρία του στο 80%.",
+        "resume_cleaning_not_performed": "Το ρομπότ βρίσκεται σε περίοδο «Μην ενοχλείτε»\nΤο ρομπότ θα συνεχίσει τον καθαρισμό μετά το τέλος της περιόδου «Μην ενοχλείτε».",
+        "resume_cleaning_not_performed_with_time": "Το ρομπότ βρίσκεται σε περίοδο «Μην ενοχλείτε»\nΤο ρομπότ θα συνεχίσει τον καθαρισμό μετά το τέλος της περιόδου «Μην ενοχλείτε».\n## Ο καθαρισμός θα ξεκινήσει σε %hour% ώρα/ες και %minute% λεπτά",
+        "replace_map": "Δημιουργήθηκε νέος χάρτης\nΠρέπει να αποθηκεύσετε ή να απορρίψετε τον χάρτη πριν τον χρησιμοποιήσετε.",
+        "replace_multi_map": "Δημιουργήθηκε νέος χάρτης\nΟι χάρτες πολλαπλών ορόφων που μπορούν να αποθηκευτούν έφτασαν στο ανώτατο όριο. Πρέπει να αντικαταστήσετε ή να απορρίψετε έναν χάρτη πριν τον χρησιμοποιήσετε.",
+        "drainage_completed": "Η αποστράγγιση ολοκληρώθηκε",
+        "drainage_failed": "Η αποστράγγιση απέτυχε",
+        "main_brush_left": "Η κύρια βούρτσα πρέπει να αντικατασταθεί\nΗ κύρια βούρτσα έχει φθαρεί. Παρακαλούμε αντικαταστήστε την εγκαίρως και μηδενίστε τον μετρητή.",
+        "main_brush_left_low": "Η κύρια βούρτσα πρέπει να αντικατασταθεί σύντομα\nΗ κύρια βούρτσα έχει σχεδόν φθαρεί. Παρακαλούμε αντικαταστήστε την εγκαίρως.",
+        "side_brush_left": "Η πλευρική βούρτσα πρέπει να αντικατασταθεί\nΗ πλευρική βούρτσα έχει φθαρεί. Παρακαλούμε αντικαταστήστε την και μηδενίστε τον μετρητή.",
+        "side_brush_left_low": "Η πλευρική βούρτσα πρέπει να αντικατασταθεί σύντομα\nΗ πλευρική βούρτσα έχει σχεδόν φθαρεί. Παρακαλούμε αντικαταστήστε την το συντομότερο δυνατό.",
+        "filter_left": "Το φίλτρο πρέπει να αντικατασταθεί\nΤο φίλτρο έχει φθαρεί. Παρακαλούμε αντικαταστήστε το εγκαίρως και μηδενίστε τον μετρητή.",
+        "filter_left_low": "Το φίλτρο πρέπει να αντικατασταθεί σύντομα\nΤο φίλτρο έχει σχεδόν φθαρεί. Παρακαλούμε αντικαταστήστε το εγκαίρως.",
+        "sensor_dirty_left": "Οι αισθητήρες πρέπει να καθαριστούν\nΠαρακαλούμε καθαρίστε τους αισθητήρες και μηδενίστε τον μετρητή",
+        "tank_filter_left": "Το φίλτρο δεξαμενής πρέπει να αντικατασταθεί\nΤο φίλτρο δεξαμενής έχει φθαρεί. Παρακαλούμε αντικαταστήστε το εγκαίρως και μηδενίστε τον μετρητή.",
+        "tank_filter_left_low": "Το φίλτρο δεξαμενής πρέπει να αντικατασταθεί σύντομα\nΤο φίλτρο δεξαμενής έχει σχεδόν φθαρεί. Παρακαλούμε αντικαταστήστε το εγκαίρως.",
+        "mop_pad_left": "Η σφουγγαρίστρα έχει φθαρεί\nΠαρακαλούμε αντικαταστήστε τη σφουγγαρίστρα και μηδενίστε τον μετρητή.",
+        "mop_pad_left_low": "Η σφουγγαρίστρα έχει σχεδόν φθαρεί\nΠαρακαλούμε αντικαταστήστε τη σφουγγαρίστρα εγκαίρως.",
+        "silver_ion_left": "Ο αποστειρωτής ιόντων αργύρου έχει αλλοιωθεί\nΠαρακαλούμε αντικαταστήστε τον αποστειρωτή ιόντων αργύρου και μηδενίστε τον μετρητή.",
+        "silver_ion_left_low": "Ο αποστειρωτής ιόντων αργύρου κοντεύει να αλλοιωθεί\nΠαρακαλούμε αντικαταστήστε τον αποστειρωτή ιόντων αργύρου εγκαίρως.",
+        "detergent_left": "Το απορρυπαντικό έχει εξαντληθεί\nΠαρακαλούμε αντικαταστήστε το φυσίγγιο απορρυπαντικού και μηδενίστε τον μετρητή.",
+        "detergent_left_low": "Το απορρυπαντικό κοντεύει να εξαντληθεί\nΤο απορρυπαντικό κοντεύει να εξαντληθεί, παρακαλούμε αντικαταστήστε το εγκαίρως.",
+        "squeegee_left": "Ο μάκτρος έχει φθαρεί\nΠαρακαλούμε αντικαταστήστε τον μάκτρο και μηδενίστε τον μετρητή.",
+        "squeegee_left_low": "Ο μάκτρος έχει σχεδόν φθαρεί\nΠαρακαλούμε αντικαταστήστε τον μάκτρο εγκαίρως.",
+        "onboard_dirty_water_tank_left": "Η ενσωματωμένη δεξαμενή ακάθαρτου νερού χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε την ενσωματωμένη δεξαμενή ακάθαρτου νερού και μηδενίστε τον μετρητή.",
+        "dirty_water_channel_dirty_left": "Το κανάλι ακάθαρτου νερού χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε το κανάλι ακάθαρτου νερού και μηδενίστε τον μετρητή.",
+        "deodorizer_left": "Το αποσμητικό της δεξαμενής χρησιμοποιημένου νερού έχει εξαντληθεί.\nΤο αποσμητικό της δεξαμενής χρησιμοποιημένου νερού έχει εξαντληθεί. Παρακαλούμε αντικαταστήστε το.",
+        "deodorizer_left_low": "Το αποσμητικό της δεξαμενής χρησιμοποιημένου νερού κοντεύει να τελειώσει.\nΤο αποσμητικό της δεξαμενής χρησιμοποιημένου νερού κοντεύει να τελειώσει. Παρακαλούμε αντικαταστήστε το.",
+        "wheel_dirty_left": "Ο πανκατευθυντικός τροχός χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε τον πανκατευθυντικό τροχό και μηδενίστε τον μετρητή.",
+        "scale_inhibitor_left": "Ο αναστολέας αλάτων έχει εξαντληθεί\nΠαρακαλούμε αντικαταστήστε τον αναστολέα αλάτων και μηδενίστε τον μετρητή.",
+        "scale_inhibitor_left_low": "Ο αναστολέας αλάτων κοντεύει να τελειώσει\nΠαρακαλούμε αντικαταστήστε τον αναστολέα αλάτων εγκαίρως.",
+        "fluffing_roller_dirty_left": "Ο κύλινδρος χνουδιού χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε τον κύλινδρο χνουδιού και μηδενίστε τον μετρητή.",
+        "roller_mop_filter_dirty_left": "Το φίλτρο κυλινδρικής σφουγγαρίστρας χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε το φίλτρο κυλινδρικής σφουγγαρίστρας και μηδενίστε τον μετρητή.",
+        "water_outlet_filter_dirty_left": "Το φίλτρο εξόδου νερού χρειάζεται καθάρισμα\nΠαρακαλούμε καθαρίστε το φίλτρο εξόδου νερού και μηδενίστε τον μετρητή.",
+        "no_water_left": "Παρακαλούμε γεμίστε τη δεξαμενή καθαρού νερού.\nΤο νερό στη δεξαμενή καθαρού νερού κοντεύει να εξαντληθεί. Ελέγξτε και γεμίστε τη δεξαμενή καθαρού νερού αμέσως.",
+        "no_water_left_after_clean": "Παρακαλούμε γεμίστε τη δεξαμενή καθαρού νερού.\nΗ σφουγγαρίστρα έχει καθαριστεί. Εντοπίστηκε ότι το νερό στη δεξαμενή καθαρού νερού είναι ανεπαρκές, παρακαλούμε γεμίστε τη δεξαμενή καθαρού νερού και αδειάστε τη δεξαμενή χρησιμοποιημένου νερού.",
+        "no_water_for_clean": "Χαμηλή στάθμη νερού στη δεξαμενή καθαρού νερού.\nΤο ρομπότ έχει μεταβεί σε λειτουργία σκουπίσματος.",
+        "low_water": "Κοντεύει να ξεμείνει από νερό\nΠαρακαλούμε γεμίστε τη δεξαμενή καθαρού νερού.",
+        "tank_not_installed": "Η δεξαμενή καθαρού νερού δεν είναι εγκατεστημένη.\nΠαρακαλούμε ελέγξτε τη δεξαμενή καθαρού νερού"
       }
     }
   },
@@ -1017,38 +2874,6 @@
         }
       }
     },
-    "vacuum_merge_segments": {
-      "name": "Συγχώνευση τμημάτων",
-      "description": "Συγχώνευση δωματίων.",
-      "fields": {
-        "map_id": {
-          "name": "ID χάρτη",
-          "description": "Το ID του χάρτη."
-        },
-        "segments": {
-          "name": "Τμήματα",
-          "description": "ID δωματίων."
-        }
-      }
-    },
-    "vacuum_split_segments": {
-      "name": "Διαχωρισμός τμημάτων",
-      "description": "Διαχωρισμός δωματίων.",
-      "fields": {
-        "map_id": {
-          "name": "ID χάρτη",
-          "description": "Το ID του χάρτη."
-        },
-        "segment": {
-          "name": "Τμήμα",
-          "description": "ID δωματίου."
-        },
-        "line": {
-          "name": "Γραμμή",
-          "description": "Συντεταγμένες γραμμής διαχωρισμού."
-        }
-      }
-    },
     "vacuum_rename_segment": {
       "name": "Μετονομασία τμήματος",
       "description": "Μετονομασία τμήματος.",
@@ -1085,13 +2910,13 @@
           "name": "Ισχύς αναρρόφησης",
           "description": "Επίπεδο αναρρόφησης για κάθε δωμάτιο."
         },
-        "wetness_level": {
-          "name": "Επίπεδο υγρασίας",
-          "description": "Επίπεδο υγρασίας για κάθε δωμάτιο (σε υποστηριζόμενες συσκευές)."
-        },
         "water_volume": {
           "name": "Ποσότητα νερού",
           "description": "Ποσότητα νερού για κάθε δωμάτιο."
+        },
+        "wetness_level": {
+          "name": "Επίπεδο υγρασίας",
+          "description": "Επίπεδο υγρασίας για κάθε δωμάτιο (σε υποστηριζόμενες συσκευές)."
         },
         "cleaning_mode": {
           "name": "Λειτουργία καθαρισμού",
@@ -1100,46 +2925,14 @@
         "repeats": {
           "name": "Επαναλήψεις",
           "description": "Αριθμός καθαρισμών για κάθε δωμάτιο."
-        }
-      }
-    },
-    "vacuum_set_custom_carpet_cleaning": {
-      "name": "Ορισμός περιορισμένης ζώνης",
-      "description": "Ορισμός εικονικών τοίχων, περιορισμένων ζωνών και/ή ζωνών χωρίς σφουγγάρισμα.",
-      "fields": {
-        "walls": {
-          "name": "Τοίχοι",
-          "description": "Εικονικοί τοίχοι."
         },
-        "type": {
-          "name": "Τύπος αντικειμένου",
-          "description": "Τύπος του αντικειμένου με το αναγνωριστικό (ID). (0 = Αυτόματα ανιχνευμένο χαλί, 1 = Χειροκίνητα δημιουργημένο χαλί, 2 = Χαλί δωματίου (αν υποστηρίζεται))"
+        "mop_temperature": {
+          "name": "Θερμοκρασία σφουγγαρίστρας",
+          "description": "Θερμοκρασία σφουγγαρίστρας για κάθε δωμάτιο (σε υποστηριζόμενες συσκευές)."
         },
-        "carpet_cleaning": {
-          "name": "Καθαρισμός χαλιού",
-          "description": "Προσαρμοσμένη ρύθμιση καθαρισμού για κάθε χαλί."
-        },
-        "carpet_preferences": {
-          "name": "Ρυθμίσεις χαλιού",
-          "description": "Προσαρμοσμένες ρυθμίσεις για κάθε χαλί με πίνακα ενεργοποιημένων επιλογών."
-        }
-      }
-    },
-    "vacuum_set_restricted_zone": {
-      "name": "Ορισμός περιοχής περιορισμού",
-      "description": "Καθορισμός εικονικών τοίχων, περιορισμένων περιοχών και/ή περιοχών χωρίς σφουγγάρισμα.",
-      "fields": {
-        "walls": {
-          "name": "Τείχη",
-          "description": "Εικονικοί τοίχοι."
-        },
-        "zones": {
-          "name": "Ζώνες",
-          "description": "Περιοχές απαγόρευσης διέλευσης."
-        },
-        "no_mops": {
-          "name": "Χωρίς σφουγγάρισμα",
-          "description": "Περιοχές χωρίς σφουγγάρισμα."
+        "mop_pressure": {
+          "name": "Πίεση σφουγγαρίστρας",
+          "description": "Πίεση σφουγγαρίστρας για κάθε δωμάτιο (σε υποστηριζόμενες συσκευές)."
         }
       }
     },
@@ -1177,40 +2970,6 @@
         }
       }
     },
-    "vacuum_set_carpet_area": {
-      "name": "Ορισμός περιοχής χαλιού",
-      "description": "Ορισμός χαλιών και αγνοημένων χαλιών. (Μόνο σε υποστηριζόμενες συσκευές)",
-      "fields": {
-        "carpets": {
-          "name": "Χαλιά",
-          "description": "Περιοχές χαλιών."
-        },
-        "deleted_carpets": {
-          "name": "Αγνοημένα χαλιά",
-          "description": "Περιοχές χαλιών που αγνοούνται για διαγραφή των αυτόματα εντοπισμένων χαλιών."
-        }
-      }
-    },
-    "vacuum_set_virtual_threshold": {
-      "name": "Ορισμός περιοχής",
-      "description": "Ορισμός ορίων.",
-      "fields": {
-        "pathways": {
-          "name": "Διαδρομές",
-          "description": "Συντεταγμένες ορίων διαδρομής."
-        }
-      }
-    },
-    "vacuum_set_predefined_points": {
-      "name": "Ορισμός προκαθορισμένων σημείων",
-      "description": "Ορισμός προκαθορισμένων συντεταγμένων στον τρέχοντα χάρτη. (Μόνο σε συσκευές με κάμερα)",
-      "fields": {
-        "points": {
-          "name": "Σημεία",
-          "description": "Λίστα συντεταγμένων προς αποθήκευση."
-        }
-      }
-    },
     "vacuum_set_obstacle_ignore": {
       "name": "Ορισμός αγνόησης εμποδίου",
       "description": "Ορισμός κατάστασης αγνόησης ενός εμποδίου. (Μόνο σε συσκευές με δυνατότητα ανίχνευσης εμποδίων AI)",
@@ -1228,48 +2987,140 @@
           "description": "Αν το εμπόδιο αγνοείται ή όχι."
         }
       }
+    }
+  },
+  "exceptions": {
+    "action_call_failed": {
+      "message": "Αδυναμία κλήσης της ενέργειας: {action}"
     },
-    "vacuum_set_router_position": {
-      "name": "Ορισμός θέσης router",
-      "description": "Ορισμός θέσης router στον τρέχοντα χάρτη. (Μόνο σε συσκευές με δυνατότητα WiFi map)",
-      "fields": {
-        "x": {
-          "name": "X",
-          "description": "Συντεταγμένη X του router."
-        },
-        "y": {
-          "name": "Y",
-          "description": "Συντεταγμένη Y του router."
-        }
-      }
+    "already_at_coordinate": {
+      "message": "Το ρομπότ βρίσκεται ήδη στην επιλεγμένη συντεταγμένη"
     },
-    "select_select_previous": {
-      "name": "Επιλογή προηγούμενου",
-      "description": "Επιλογή των προηγούμενων επιλογών μιας οντότητας select.",
-      "fields": {
-        "cycle": {
-          "name": "Κυκλική εναλλαγή",
-          "description": "Αν η επιλογή θα εναλλάσσεται κυκλικά από την πρώτη στην τελευταία."
-        }
-      }
+    "authentication_failed": {
+      "message": "Η ταυτοποίηση απέτυχε, παρακαλώ ταυτοποιηθείτε ξανά"
     },
-    "select_select_first": {
-      "name": "Επιλογή πρώτου",
-      "description": "Επιλογή της πρώτης επιλογής μιας οντότητας select."
+    "cloud_login_failed": {
+      "message": "Αδυναμία σύνδεσης στη συσκευή μέσω cloud"
     },
-    "select_select_last": {
-      "name": "Επιλογή τελευταίου",
-      "description": "Επιλογή της τελευταίας επιλογής μιας οντότητας select."
+    "cloud_required": {
+      "message": "Το {feature} απαιτεί σύνδεση cloud"
     },
-    "select_select_next": {
-      "name": "Επιλογή επόμενου",
-      "description": "Επιλογή των επόμενων επιλογών μιας οντότητας select.",
-      "fields": {
-        "cycle": {
-          "name": "Κυκλική εναλλαγή",
-          "description": "Αν η επιλογή θα εναλλάσσεται κυκλικά από την πρώτη στην τελευταία."
-        }
-      }
+    "cloud_unreachable": {
+      "message": "Αδυναμία εντοπισμού της συσκευής μέσω cloud"
+    },
+    "command_failed": {
+      "message": "Η εντολή απέτυχε ή δεν μπόρεσε να σταλεί στη συσκευή"
+    },
+    "coordinate_outside_map": {
+      "message": "Η συντεταγμένη ({x}, {y}) δεν βρίσκεται μέσα στον χάρτη"
+    },
+    "coordinate_required": {
+      "message": "Απαιτείται τουλάχιστον μία έγκυρη ή αποθηκευμένη συντεταγμένη"
+    },
+    "device_disconnected": {
+      "message": "Η συσκευή είναι αποσυνδεδεμένη"
+    },
+    "device_unavailable": {
+      "message": "Η συσκευή δεν είναι διαθέσιμη ή δεν είναι προσβάσιμη"
+    },
+    "entity_unavailable": {
+      "message": "Η οντότητα δεν είναι διαθέσιμη"
+    },
+    "fast_mapping_mop_installed": {
+      "message": "Βεβαιωθείτε ότι το πανί σφουγγαρίσματος δεν είναι τοποθετημένο πριν από τη γρήγορη χαρτογράφηση"
+    },
+    "follow_path_requires_camera": {
+      "message": "Η ακολούθηση διαδρομής λειτουργεί μόνο με ζωντανή μετάδοση κάμερας"
+    },
+    "invalid_action": {
+      "message": "Μη έγκυρη ενέργεια ή εντολή: {action}"
+    },
+    "invalid_coordinates": {
+      "message": "Μη έγκυρες συντεταγμένες: {coordinates}"
+    },
+    "invalid_option": {
+      "message": "Μη έγκυρη επιλογή για {parameter}: {value}. Έγκυρες επιλογές: {options}"
+    },
+    "invalid_recovery_map": {
+      "message": "Μη έγκυρος χάρτης ανάκτησης {parameter}: {value}"
+    },
+    "invalid_value": {
+      "message": "Μη έγκυρη τιμή για {parameter}: {value}"
+    },
+    "low_battery": {
+      "message": "Η μπαταρία είναι πολύ χαμηλή, φορτίστε πρώτα την ηλεκτρική σκούπα"
+    },
+    "map_backup_in_progress": {
+      "message": "Ένα αντίγραφο ασφαλείας χάρτη βρίσκεται ήδη σε εξέλιξη"
+    },
+    "map_recovery_failed": {
+      "message": "Η ανάκτηση χάρτη απέτυχε: {error}"
+    },
+    "map_recovery_in_progress": {
+      "message": "Μια ανάκτηση χάρτη βρίσκεται ήδη σε εξέλιξη"
+    },
+    "map_select_failed": {
+      "message": "Αποτυχία επιλογής του χάρτη"
+    },
+    "max_rooms_reached": {
+      "message": "Έχει συμπληρωθεί ο μέγιστος αριθμός δωματίων"
+    },
+    "missing_parameter": {
+      "message": "Λείπει μια απαιτούμενη παράμετρος: {parameter}"
+    },
+    "not_found": {
+      "message": "Δεν βρέθηκε το {item}: {id}"
+    },
+    "not_supported": {
+      "message": "Το {feature} δεν υποστηρίζεται σε αυτήν τη συσκευή"
+    },
+    "property_not_updated": {
+      "message": "Η ιδιότητα {parameter} δεν ενημερώθηκε: {value}"
+    },
+    "start_failed": {
+      "message": "Αποτυχία εκκίνησης του {operation}"
+    },
+    "unavailable": {
+      "message": "Το {action} δεν είναι διαθέσιμο"
+    },
+    "unavailable_on_current_map": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη στον τρέχοντα χάρτη"
+    },
+    "unavailable_while_cruising": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη κατά την περιπολία"
+    },
+    "unavailable_while_draining": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη κατά την αποστράγγιση ή την αυτοεπισκευή/δοκιμή"
+    },
+    "unavailable_while_fast_mapping": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη κατά τη γρήγορη χαρτογράφηση"
+    },
+    "unavailable_while_running": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη ενώ η σκούπα λειτουργεί"
+    },
+    "unavailable_while_self_wash": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη ενώ λειτουργεί η βάση αυτοπλύσης"
+    },
+    "unavailable_with_customized_cleaning": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη ενώ είναι ενεργός ο προσαρμοσμένος καθαρισμός"
+    },
+    "unavailable_with_scheduled_task": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη κατά τη διάρκεια προγραμματισμένου καθαρισμού ή εργασίας συντόμευσης"
+    },
+    "unavailable_with_temporary_map": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη ενώ υπάρχει προσωρινός χάρτης"
+    },
+    "unavailable_without_map": {
+      "message": "Αυτή η ενέργεια δεν είναι διαθέσιμη χωρίς υποστήριξη χάρτη"
+    },
+    "unknown_action": {
+      "message": "Άγνωστη ενέργεια: {action}"
+    },
+    "update_failed": {
+      "message": "Αποτυχία ενημέρωσης της συσκευής: {error}"
+    },
+    "zone_too_small": {
+      "message": "Η ζώνη {zone} είναι μικρότερη από το ελάχιστο μέγεθος ζώνης ({width}, {height})"
     }
   }
 }

@@ -2,21 +2,16 @@
 
 from __future__ import annotations
 
-from logging import getLogger
-
 from homeassistant.components.button import ButtonEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .entity import MikrotikEntity, async_add_entities
+from .coordinator import MikrotikConfigEntry
 from .button_types import (
     SENSOR_TYPES,
     SENSOR_SERVICES,
 )
-from .exceptions import ApiEntryNotFound
-
-_LOGGER = getLogger(__name__)
 
 
 # ---------------------------
@@ -24,15 +19,22 @@ _LOGGER = getLogger(__name__)
 # ---------------------------
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    _async_add_entities: AddEntitiesCallback,
+    config_entry: MikrotikConfigEntry,
+    add_entities_callback: AddEntitiesCallback,
 ) -> None:
     """Set up entry for component"""
     dispatcher = {
         "MikrotikButton": MikrotikButton,
         "MikrotikScriptButton": MikrotikScriptButton,
     }
-    await async_add_entities(hass, config_entry, dispatcher)
+    await async_add_entities(
+        hass,
+        config_entry,
+        add_entities_callback,
+        dispatcher,
+        SENSOR_TYPES,
+        SENSOR_SERVICES,
+    )
 
 
 # ---------------------------
@@ -56,7 +58,6 @@ class MikrotikScriptButton(MikrotikButton):
 
     async def async_press(self) -> None:
         """Run script using Mikrotik API"""
-        try:
-            self.coordinator.api.run_script(self._data["name"])
-        except ApiEntryNotFound as error:
-            _LOGGER.error("Failed to run script: %s", error)
+        await self.async_run_routeros(
+            self.coordinator.api.run_script, self._data["name"]
+        )

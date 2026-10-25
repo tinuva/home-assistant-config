@@ -39,6 +39,11 @@ if TYPE_CHECKING:
     from homeassistant.core import CALLBACK_TYPE, Context, Event, HomeAssistant
     from homeassistant.helpers.event import EventStateChangedData
 
+# The field of `automation.turn_off` that keeps running actions running.
+# Spelled out rather than imported: it is part of the action, and Home
+# Assistant moves the constant between its own modules. #1875.
+CONF_STOP_ACTIONS = "stop_actions"
+
 DATA_TIMED_STATES: HassKey[TimedStates] = HassKey("spook_timed_states")
 
 STORAGE_KEY = f"{DOMAIN}.timed_states"
@@ -157,10 +162,15 @@ class TimedStates:  # pylint: disable=too-many-instance-attributes
         every snooze made before the upgrade is silently dropped: automations
         left off with nothing to turn them back on.
         """
+        legacy: Store[dict[str, str]] = Store(self._hass, 1, LEGACY_STORAGE_KEY)
+
         if (stored := await self._store.async_load()) is not None:
+            # The records are here, and they are the ones that count. An old
+            # file still lying about is one a take-over could not confirm,
+            # since written over by a later save, and it goes now.
+            await legacy.async_remove()
             return stored
 
-        legacy: Store[dict[str, str]] = Store(self._hass, 1, LEGACY_STORAGE_KEY)
         if (snoozes := await legacy.async_load()) is None:
             return {}
 
@@ -172,6 +182,18 @@ class TimedStates:  # pylint: disable=too-many-instance-attributes
             for entity_id, until in snoozes.items()
         }
         await self._store.async_save(taken_over)
+
+        # Home Assistant logs a failed write rather than raising it, so what
+        # landed is read back rather than assumed. Removing the old file on the
+        # strength of having asked would, on a full disk say, leave no copy at
+        # all, and every snoozed automation off for good after the next
+        # restart. Kept, the old file is simply taken over again next time.
+        written = await Store[dict[str, dict[str, str]]](
+            self._hass, STORAGE_VERSION, STORAGE_KEY
+        ).async_load()
+        if written != taken_over:
+            return taken_over
+
         await legacy.async_remove()
 
         return taken_over
@@ -233,8 +255,13 @@ class TimedStates:  # pylint: disable=too-many-instance-attributes
             # number of days lands past the end of the calendar. Worked out
             # here rather than at the door, because the answer depends on what
             # time it is by the time the call actually happens.
-            msg = f"Cannot hold {entity_id} until a time that does not exist"
-            raise ServiceValidationError(msg) from err
+            raise ServiceValidationError(
+                translation_domain=DOMAIN,
+                translation_key="hold_until_nonexistent_time",
+                translation_placeholders={
+                    "entity_id": entity_id,
+                },
+            ) from err
 
         holding = _Held(until=deadline, state=state)
         self._held[entity_id] = holding
@@ -293,12 +320,29 @@ class TimedStates:  # pylint: disable=too-many-instance-attributes
         the entity alone would be too much: a person turning it the other way
         during the call is exactly the thing that has to keep counting, and
         that is the one an entity-wide mark would swallow.
+
+        Turning one off leaves whatever it is doing to finish. Snoozing is
+        about an automation not starting again for a while, not about
+        stopping the run that asked, and `automation.turn_off` would
+        otherwise stop it: its default is to kill the running actions.
+
+        An automation snoozing itself is the plain way to write "not again
+        for an hour", and it is the case that breaks. The snooze arrives from
+        inside the run, Home Assistant cancels that run to turn the
+        automation off, and the cancellation lands in here, halfway through
+        writing the snooze down. What was left was an automation switched off
+        with nothing anywhere to switch it back on. #1632.
         """
+        turning_off = state != STATE_ON
+        data: dict[str, Any] = {ATTR_ENTITY_ID: entity_id}
+        if turning_off:
+            data[CONF_STOP_ACTIONS] = False
+
         with self._moving_to(entity_id, state):
             await self._hass.services.async_call(
                 AUTOMATION_DOMAIN,
-                SERVICE_TURN_ON if state == STATE_ON else SERVICE_TURN_OFF,
-                {ATTR_ENTITY_ID: entity_id},
+                SERVICE_TURN_OFF if turning_off else SERVICE_TURN_ON,
+                data,
                 blocking=True,
                 context=context,
             )

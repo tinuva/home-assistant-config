@@ -7,7 +7,6 @@ from collections.abc import Mapping
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -27,6 +26,7 @@ from .const import (
     CONF_SENSOR_NETWATCH_TRACKER,
     DEFAULT_SENSOR_NETWATCH_TRACKER,
 )
+from .coordinator import MikrotikConfigEntry
 from .entity import MikrotikEntity, async_add_entities
 from .helper import format_attribute
 
@@ -38,8 +38,8 @@ _LOGGER = getLogger(__name__)
 # ---------------------------
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    _async_add_entities: AddEntitiesCallback,
+    config_entry: MikrotikConfigEntry,
+    add_entities_callback: AddEntitiesCallback,
 ) -> None:
     """Set up entry for component"""
     dispatcher = {
@@ -47,7 +47,14 @@ async def async_setup_entry(
         "MikrotikPPPSecretBinarySensor": MikrotikPPPSecretBinarySensor,
         "MikrotikPortBinarySensor": MikrotikPortBinarySensor,
     }
-    await async_add_entities(hass, config_entry, dispatcher)
+    await async_add_entities(
+        hass,
+        config_entry,
+        add_entities_callback,
+        dispatcher,
+        SENSOR_TYPES,
+        SENSOR_SERVICES,
+    )
 
 
 # ---------------------------
@@ -91,11 +98,6 @@ class MikrotikPPPSecretBinarySensor(MikrotikBinarySensor):
             else False
         )
 
-    # @property
-    # def available(self) -> bool:
-    #     """Return if controller is available."""
-    #     return self._ctrl.connected() if self.option_sensor_ppp else False
-
 
 # ---------------------------
 #   MikrotikPortBinarySensor
@@ -109,11 +111,6 @@ class MikrotikPortBinarySensor(MikrotikBinarySensor):
         return self._config_entry.options.get(
             CONF_SENSOR_PORT_TRACKER, DEFAULT_SENSOR_PORT_TRACKER
         )
-
-    # @property
-    # def available(self) -> bool:
-    #     """Return if controller is available."""
-    #     return self._ctrl.connected() if self.option_sensor_port_tracker else False
 
     @property
     def icon(self) -> str:

@@ -13,6 +13,26 @@
                     "ssl": "SSL kullan",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Kullanıcı adı",
+                    "password": "Şifre"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Sunucu",
+                    "port": "Port",
+                    "username": "Kullanıcı adı",
+                    "password": "Şifre",
+                    "ssl": "SSL kullan",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "SSL uyuşma hatası",
             "connection_timeout": "Mikrotik bağlantısı zaman aşımı.",
             "wrong_login": "Geçersiz kullanıcı adı veya şifresi.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Geçersiz kullanıcı adı veya şifresi.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Müşteri MAC'ini ve IP'sini arayüzlerde göster",
                     "unit_of_measurement": "Ölçü birimi",
                     "track_network_hosts_timeout": "Ağ cihazı izleme zaman aşımı (saniyeler)",
-                    "zone": "Cihaz izleyici için alan"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router seçenekleri (1\/2)",
                 "description": "Entegrasyonu yapılandır"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router seçenekleri (2\/2)",
                 "description": "Sensör ve anahtarları etkinleştir"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

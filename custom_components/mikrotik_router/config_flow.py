@@ -16,10 +16,10 @@ from homeassistant.const import (
     CONF_PASSWORD,
     CONF_SSL,
     CONF_VERIFY_SSL,
-    CONF_ZONE,
-    STATE_HOME,
+    UnitOfTime,
 )
 from homeassistant.core import callback
+from homeassistant.helpers import selector
 
 from .const import (
     DOMAIN,
@@ -27,6 +27,8 @@ from .const import (
     DEFAULT_TRACK_IFACE_CLIENTS,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
+    CONF_DEVICE_TRACKER_SCAN_INTERVAL,
+    DEFAULT_DEVICE_TRACKER_SCAN_INTERVAL,
     CONF_TRACK_HOSTS,
     DEFAULT_TRACK_HOSTS,
     CONF_SENSOR_PORT_TRACKER,
@@ -64,9 +66,79 @@ from .const import (
     DEFAULT_SENSOR_NETWATCH_TRACKER,
     CONF_SENSOR_NETWATCH_TRACKER,
 )
+from .helper import router_unique_id
 from .mikrotikapi import MikrotikAPI
 
 _LOGGER = logging.getLogger(__name__)
+
+
+# ---------------------------
+#   validate_input
+# ---------------------------
+def validate_input(user_input):
+    """Validate connection settings and identify the router."""
+    api = MikrotikAPI(
+        host=user_input[CONF_HOST],
+        username=user_input[CONF_USERNAME],
+        password=user_input[CONF_PASSWORD],
+        port=user_input[CONF_PORT],
+        use_ssl=user_input[CONF_SSL],
+        ssl_verify=user_input[CONF_VERIFY_SSL],
+    )
+    if not api.connect():
+        return None, "invalid_auth" if api.error == "wrong_login" else api.error
+
+    resource = api.query("/system/resource")
+    if not api.connected():
+        return None, api.error or "cannot_connect"
+
+    board_name = ""
+    if resource:
+        board_name = str(resource[0].get("board-name", "")).strip().casefold()
+
+    serial_number = None
+    software_id = None
+    system_id = None
+    if board_name.startswith("chr"):
+        license_data = api.query(
+            "/system/license",
+            command="print",
+            args={".proplist": "system-id"},
+            ignore_trap=True,
+        )
+        if not api.connected():
+            return None, api.error or "cannot_connect"
+        if license_data:
+            system_id = license_data[0].get("system-id")
+    elif board_name.startswith("x86"):
+        license_data = api.query(
+            "/system/license",
+            command="print",
+            args={".proplist": "software-id"},
+            ignore_trap=True,
+        )
+        if not api.connected():
+            return None, api.error or "cannot_connect"
+        if license_data:
+            software_id = license_data[0].get("software-id")
+    else:
+        routerboard = api.query("/system/routerboard")
+        if not api.connected():
+            return None, api.error or "cannot_connect"
+        if routerboard:
+            serial_number = routerboard[0].get("serial-number")
+
+    return (
+        router_unique_id(
+            user_input[CONF_HOST],
+            user_input[CONF_PORT],
+            user_input[CONF_SSL],
+            serial_number=serial_number,
+            software_id=software_id,
+            system_id=system_id,
+        ),
+        None,
+    )
 
 
 # ---------------------------
@@ -86,7 +158,8 @@ def configured_instances(hass):
 class MikrotikControllerConfigFlow(ConfigFlow, domain=DOMAIN):
     """MikrotikControllerConfigFlow class"""
 
-    VERSION = 2
+    VERSION = 3
+    MINOR_VERSION = 3
     CONNECTION_CLASS = CONN_CLASS_LOCAL_POLL
 
     def __init__(self):
@@ -96,7 +169,7 @@ class MikrotikControllerConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get the options flow for this handler."""
-        return MikrotikControllerOptionsFlowHandler(config_entry)
+        return MikrotikControllerOptionsFlowHandler()
 
     async def async_step_import(self, user_input=None):
         """Occurs when a previously entry setup fails and is re-initiated."""
@@ -109,18 +182,15 @@ class MikrotikControllerConfigFlow(ConfigFlow, domain=DOMAIN):
             # Check if instance with this name already exists
             if user_input[CONF_NAME] in configured_instances(self.hass):
                 errors["base"] = "name_exists"
-
-            # Test connection
-            api = MikrotikAPI(
-                host=user_input[CONF_HOST],
-                username=user_input[CONF_USERNAME],
-                password=user_input[CONF_PASSWORD],
-                port=user_input[CONF_PORT],
-                use_ssl=user_input[CONF_SSL],
-                ssl_verify=user_input[CONF_VERIFY_SSL],
-            )
-            if not api.connect():
-                errors[CONF_HOST] = api.error
+            else:
+                unique_id, error = await self.hass.async_add_executor_job(
+                    validate_input, user_input
+                )
+                if error:
+                    errors["base"] = error
+                else:
+                    await self.async_set_unique_id(unique_id)
+                    self._abort_if_unique_id_configured()
 
             # Save instance
             if not errors:
@@ -141,6 +211,103 @@ class MikrotikControllerConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_VERIFY_SSL: DEFAULT_VERIFY_SSL,
             },
             errors=errors,
+        )
+
+    async def async_step_reauth(self, entry_data):
+        """Start reauthentication for an existing entry."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        """Validate and save replacement credentials."""
+        config_entry = self._get_reauth_entry()
+        errors = {}
+
+        if user_input is not None:
+            updated_data = {**config_entry.data, **user_input}
+            unique_id, error = await self.hass.async_add_executor_job(
+                validate_input, updated_data
+            )
+            if error:
+                errors["base"] = error
+            else:
+                identity_error = await self._async_validate_entry_identity(
+                    config_entry, unique_id
+                )
+                if identity_error:
+                    errors["base"] = identity_error
+                else:
+                    return self._update_entry_and_abort(
+                        config_entry, user_input, unique_id
+                    )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_USERNAME,
+                        default=config_entry.data[CONF_USERNAME],
+                    ): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+            description_placeholders={"name": config_entry.title},
+        )
+
+    async def async_step_reconfigure(self, user_input=None):
+        """Update connection settings for an existing entry."""
+        config_entry = self._get_reconfigure_entry()
+        errors = {}
+
+        if user_input is not None:
+            data_updates = dict(user_input)
+            if not data_updates.get(CONF_PASSWORD):
+                data_updates.pop(CONF_PASSWORD, None)
+            updated_data = {**config_entry.data, **data_updates}
+            unique_id, error = await self.hass.async_add_executor_job(
+                validate_input, updated_data
+            )
+            if error:
+                errors["base"] = error
+            else:
+                identity_error = await self._async_validate_entry_identity(
+                    config_entry, unique_id
+                )
+                if identity_error:
+                    errors["base"] = identity_error
+                else:
+                    return self._update_entry_and_abort(
+                        config_entry, data_updates, unique_id
+                    )
+
+        return self._show_reconfigure_form(config_entry, errors)
+
+    async def _async_validate_entry_identity(self, config_entry, unique_id):
+        """Ensure recovery settings do not select a different known router."""
+        await self.async_set_unique_id(unique_id)
+        if config_entry.unique_id and not config_entry.unique_id.startswith(
+            "endpoint:"
+        ):
+            if unique_id.startswith("endpoint:"):
+                return "cannot_identify"
+            self._abort_if_unique_id_mismatch(reason="wrong_router")
+        elif config_entry.unique_id != unique_id:
+            self._abort_if_unique_id_configured()
+        return None
+
+    def _update_entry_and_abort(self, config_entry, data_updates, unique_id):
+        """Update an entry and ensure the changed configuration is loaded."""
+        if config_entry.update_listeners:
+            return self.async_update_and_abort(
+                config_entry,
+                data_updates=data_updates,
+                unique_id=unique_id,
+            )
+        return self.async_update_reload_and_abort(
+            config_entry,
+            data_updates=data_updates,
+            unique_id=unique_id,
         )
 
     # ---------------------------
@@ -166,20 +333,45 @@ class MikrotikControllerConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
+    # ---------------------------
+    #   _show_reconfigure_form
+    # ---------------------------
+    def _show_reconfigure_form(self, config_entry, errors=None):
+        """Show the form used to edit connection settings."""
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_HOST, default=config_entry.data[CONF_HOST]): str,
+                    vol.Required(
+                        CONF_USERNAME, default=config_entry.data[CONF_USERNAME]
+                    ): str,
+                    vol.Optional(CONF_PASSWORD): str,
+                    vol.Optional(CONF_PORT, default=config_entry.data[CONF_PORT]): int,
+                    vol.Optional(CONF_SSL, default=config_entry.data[CONF_SSL]): bool,
+                    vol.Optional(
+                        CONF_VERIFY_SSL,
+                        default=config_entry.data[CONF_VERIFY_SSL],
+                    ): bool,
+                }
+            ),
+            errors=errors,
+        )
+
 
 # ---------------------------
 #   MikrotikControllerOptionsFlowHandler
 # ---------------------------
 class MikrotikControllerOptionsFlowHandler(OptionsFlow):
-    """Handle options."""
+    """Handle options.
 
-    def __init__(self, config_entry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
-        self.options = dict(config_entry.options)
+    Do not override ``__init__`` or assign ``config_entry``; Home Assistant sets
+    ``config_entry`` on the flow instance.
+    """
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
+        self.options = dict(self.config_entry.options)
         return await self.async_step_basic_options(user_input)
 
     async def async_step_basic_options(self, user_input=None):
@@ -198,7 +390,30 @@ class MikrotikControllerOptionsFlowHandler(OptionsFlow):
                         default=self.config_entry.options.get(
                             CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
                         ),
-                    ): int,
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            min=10,
+                            max=600,
+                            step=1,
+                            mode=selector.NumberSelectorMode.BOX,
+                            unit_of_measurement=UnitOfTime.SECONDS,
+                        ),
+                    ),
+                    vol.Optional(
+                        CONF_DEVICE_TRACKER_SCAN_INTERVAL,
+                        default=self.config_entry.options.get(
+                            CONF_DEVICE_TRACKER_SCAN_INTERVAL,
+                            DEFAULT_DEVICE_TRACKER_SCAN_INTERVAL,
+                        ),
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            min=10,
+                            max=600,
+                            step=1,
+                            mode=selector.NumberSelectorMode.BOX,
+                            unit_of_measurement=UnitOfTime.SECONDS,
+                        ),
+                    ),
                     vol.Optional(
                         CONF_TRACK_IFACE_CLIENTS,
                         default=self.config_entry.options.get(
@@ -211,10 +426,6 @@ class MikrotikControllerOptionsFlowHandler(OptionsFlow):
                             CONF_TRACK_HOSTS_TIMEOUT, DEFAULT_TRACK_HOST_TIMEOUT
                         ),
                     ): int,
-                    vol.Optional(
-                        CONF_ZONE,
-                        default=self.config_entry.options.get(CONF_ZONE, STATE_HOME),
-                    ): str,
                 }
             ),
         )

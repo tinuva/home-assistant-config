@@ -27,6 +27,8 @@ DEFAULT_VERIFY_SSL = False
 
 CONF_SCAN_INTERVAL = "scan_interval"
 DEFAULT_SCAN_INTERVAL = 30
+CONF_DEVICE_TRACKER_SCAN_INTERVAL = "device_tracker_scan_interval"
+DEFAULT_DEVICE_TRACKER_SCAN_INTERVAL = 10
 CONF_TRACK_IFACE_CLIENTS = "track_iface_clients"
 DEFAULT_TRACK_IFACE_CLIENTS = True
 CONF_TRACK_HOSTS = "track_network_hosts"
@@ -73,6 +75,7 @@ TO_REDACT = {
     "client-mac-address",
     "client-id",
     "active-client-id",
+    "host-name",
     "eeprom",
     "sfp-vendor-serial",
     "gateway",
@@ -91,4 +94,6 @@ TO_REDACT = {
     "caller-id",
     "target",
     "ssid",
+    "latitude",
+    "longitude",
 }

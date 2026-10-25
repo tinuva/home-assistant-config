@@ -13,6 +13,26 @@
                     "ssl": "Bruk SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Brukernavn",
+                    "password": "Passord"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Adresse",
+                    "port": "Port",
+                    "username": "Brukernavn",
+                    "password": "Passord",
+                    "ssl": "Bruk SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "SSH håndtrykkfeil",
             "connection_timeout": "Mikrotik tilkoblingen fikk tidsavbrudd",
             "wrong_login": "Feil brukernavn og\/eller passord",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Feil brukernavn og\/eller passord",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Vis klient MAC og IP på grensesnittet",
                     "unit_of_measurement": "Måleenhet",
                     "track_network_hosts_timeout": "Spor nettverks enhet tidsavbrudd (sekunder)",
-                    "zone": "Sone for enhetssporer"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router alternativer",
                 "description": "Konfigurer integrasjon"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router options (2\/2)",
                 "description": "Skru på sensorer og brytere"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

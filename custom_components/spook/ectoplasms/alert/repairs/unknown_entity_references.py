@@ -109,10 +109,13 @@ class SpookRepair(AbstractSpookRepair):
 
             self.async_create_issue(
                 issue_id=alert.entity_id,
+                references=[watched],
                 translation_placeholders={
                     "alert": alert.name,
                     "entity_id": alert.entity_id,
-                    "entities": async_describe_unknown_entities(self.hass, [watched]),
+                    "entities": await async_describe_unknown_entities(
+                        self.hass, [watched]
+                    ),
                 },
             )
             LOGGER.debug(

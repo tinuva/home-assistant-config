@@ -13,13 +13,17 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.config_entries import ConfigEntry
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
 
 from .coordinator import DreameVacuumDataUpdateCoordinator
 from .entity import DreameVacuumEntity, DreameVacuumEntityDescription, remove_entities
-from .dreame import DreameVacuumProperty
+from .dreame import ATTR_TYPE, ATTR_CODE, ATTR_ITEMS, DreameVacuumProperty
+
+
+PROBLEM_DEVICE_CLASS = getattr(BinarySensorDeviceClass, "PROBLEM", None)
 
 
 @dataclass
@@ -37,13 +41,13 @@ BINARY_SENSORS: tuple[BinarySensorEntityDescription, ...] = (
             if device.status.charging
             else "mdi:power-plug-off" if not device.status.docked else "mdi:power-plug"
         ),
-        value_fn=lambda value, device: device.status.charging,
+        value_fn=lambda value, entity: entity.device.status.charging,
     ),
     DreameVacuumBinarySensorEntityDescription(
         property_key=DreameVacuumProperty.ROLLER_COVER_STATUS,
         icon_fn=lambda value, device: "mdi:circle-off-outline" if bool(value) else "mdi:circle-outline",
         device_class=BinarySensorDeviceClass.DOOR,
-        value_fn=lambda value, device: not bool(value),
+        value_fn=lambda value, entity: not bool(value),
         exists_fn=lambda description, device: bool(device.capability.roller_cover),
     ),
     DreameVacuumBinarySensorEntityDescription(
@@ -52,8 +56,27 @@ BINARY_SENSORS: tuple[BinarySensorEntityDescription, ...] = (
         property_key=DreameVacuumProperty.LDS_STATE,
         icon_fn=lambda value, device: "mdi:upload-circle" if bool(value) else "mdi:download-circle",
         device_class=BinarySensorDeviceClass.OPENING,
-        value_fn=lambda value, device: bool(value),
+        value_fn=lambda value, entity: bool(value),
         exists_fn=lambda description, device: bool(device.capability.auto_lds_lifting),
+    ),
+    DreameVacuumBinarySensorEntityDescription(
+        key="problem",
+        icon_fn=lambda value, device: "mdi:alert-circle-outline" if value else "mdi:check-circle-outline",
+        device_class=PROBLEM_DEVICE_CLASS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda value, entity: entity.device.status.problem,
+        attrs_fn=lambda entity: {
+            ATTR_TYPE: entity.device.status.problem_type,
+            ATTR_CODE: entity.device.status.problem_code,
+        },
+    ),
+    DreameVacuumBinarySensorEntityDescription(
+        key="maintenance",
+        icon_fn=lambda value, device: "mdi:wrench-clock" if value else "mdi:wrench-check",
+        device_class=PROBLEM_DEVICE_CLASS,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda value, entity: bool(entity.coordinator.maintenance_items),
+        attrs_fn=lambda entity: {ATTR_ITEMS: entity.coordinator.maintenance_items},
     ),
 )
 
@@ -65,7 +88,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dreame Vacuum Binary Sensor based on a config entry."""
     coordinator: DreameVacuumDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
-    
+
     remove_entities(hass, entry, coordinator, "binary_sensor", BINARY_SENSORS)
     async_add_entities(
         DreameVacuumBinarySensorEntity(coordinator, description)
@@ -93,5 +116,5 @@ class DreameVacuumBinarySensorEntity(DreameVacuumEntity, BinarySensorEntity):
         if self.entity_description.property_key is not None:
             value = self.device.get_property(self.entity_description.property_key)
         if self.entity_description.value_fn is not None:
-            return bool(self.entity_description.value_fn(value, self.device))
+            return bool(self.entity_description.value_fn(value, self))
         return bool(value)

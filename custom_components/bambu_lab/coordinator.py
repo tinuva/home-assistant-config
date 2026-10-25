@@ -40,6 +40,7 @@ from .const import (
 )
 
 from .pybambu import BambuClient
+from .pybambu.bambu_cloud import BambuCloud
 from .pybambu.const import (
     AMS_MODELS,
     AMS_DRYING_MODELS,
@@ -82,6 +83,9 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             
         self._updatedDevice = False
         self._shutdown = False
+        # Guards the access denied recovery so one failure episode triggers at most one
+        # cloud lookup. Reset once the printer connects successfully again.
+        self._access_denied_handled = False
         self.data = self.get_model()
         self._eventloop = asyncio.get_running_loop()
         # Pass LOGGERFORHA logger into HA as otherwise it generates a debug output line every single time we tell it we have an update
@@ -116,7 +120,10 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         
         if event == "event_printer_bambu_authentication_failed":
             self._report_authentication_issue()
-        
+
+        elif event == "event_printer_access_denied":
+            self._hass.async_create_task(self._async_handle_access_denied())
+
         elif event == "event_printer_no_external_storage":
             self._report_no_external_storage_issue()
 
@@ -127,6 +134,8 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             self._report_encryption_enabled_issue()
 
         elif event == "event_printer_ready":
+            # A successful connection ends any access denied episode.
+            self._access_denied_handled = False
             self._printer_ready()
 
         elif event == "event_light_update":
@@ -203,7 +212,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
     def _is_service_call_for_me(self, data: dict):
         dev_reg = device_registry.async_get(self._hass)
-        hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+        hadevice = self.get_ha_printer_device()
 
         device_id = data.get('device_id')
         entity_id = data.get('entity_id')
@@ -451,8 +460,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         ams_parent_device_id = ams_device.via_device_id
 
         # Get my device id
-        dr = device_registry.async_get(self._hass)
-        hadevice = dr.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+        hadevice = self.get_ha_printer_device()
 
         if ams_parent_device_id != hadevice.id:
             return None
@@ -745,8 +753,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             LOGGER.error(f"Exception data: {e}")
 
     def _update_printer_error(self):
-        dev_reg = device_registry.async_get(self._hass)
-        hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+        hadevice = self.get_ha_printer_device()
         if hadevice is None:
             # Device not in the registry yet (HMS error can arrive during the initial
             # connect, before the device entry exists). Skip this cycle to avoid
@@ -775,8 +782,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             self._hass.bus.async_fire(f"{DOMAIN}_event", event_data)
 
     def _update_print_error(self):
-        dev_reg = device_registry.async_get(self._hass)
-        hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+        hadevice = self.get_ha_printer_device()
         if hadevice is None:
             LOGGER.debug("_update_print_error: device not registered yet, skipping")
             return
@@ -808,7 +814,7 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             LOGGER.debug(f"'{new_sw_ver}' '{new_hw_ver}'")
             if (new_sw_ver != "unknown"):
                 dev_reg = device_registry.async_get(self._hass)
-                hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+                hadevice = self.get_ha_printer_device()
                 dev_reg.async_update_device(hadevice.id, sw_version=new_sw_ver, hw_version=new_hw_ver, serial_number=self.config_entry.data["serial"])
                 self._updatedDevice = True
 
@@ -863,15 +869,22 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         config_entry_id=self.config_entry.entry_id
         dev_reg = device_registry.async_get(self._hass)
         ams_devices_to_remove = []
-        for device in dev_reg.devices.values():
-            if config_entry_id in device.config_entries:
-                # This device is associated with this printer.
-                if device.model == 'AMS' or device.model == 'AMS Lite' or device.model == 'AMS 2 Pro' or device.model == 'AMS HT':
-                    # And it's an AMS device
-                    ams_serial = list(device.identifiers)[0][1]
-                    if ams_serial not in existing_ams_devices:
-                        LOGGER.debug(f"Found stale attached AMS with serial {ams_serial}")
-                        ams_devices_to_remove.append(device.id)
+        for device in device_registry.async_entries_for_config_entry(dev_reg, config_entry_id):
+            # This device is associated with this printer.
+            is_known_ams = device.model in ('AMS', 'AMS Lite', 'AMS 2 Pro', 'AMS HT')
+            is_placeholder_ams = (
+                device.model == 'Unknown'
+                and (DOMAIN, "") in device.identifiers
+                and (device.name or "").startswith(f"{self.config_entry.data['device_type']}_{self.config_entry.data['serial']}_AMS_")
+            )
+            if is_known_ams or is_placeholder_ams:
+                # push_status can create an AMS placeholder before version metadata is
+                # available. Older versions registered that placeholder with an empty
+                # identifier; always discard it so the real serial can own the device.
+                ams_serial = list(device.identifiers)[0][1]
+                if is_placeholder_ams or ams_serial not in existing_ams_devices:
+                    LOGGER.debug(f"Found stale attached AMS with serial {ams_serial}")
+                    ams_devices_to_remove.append(device.id)
 
         for device in ams_devices_to_remove:
             LOGGER.debug("Removing stale AMS.")
@@ -879,18 +892,16 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
         # Clean up orphaned Hotend Rack device if printer no longer has one.
         if not self.get_model().supports_feature(Features.HOTEND_RACK):
-            for device in dev_reg.devices.values():
-                if config_entry_id in device.config_entries:
-                    if device.model == 'Hotend Rack':
-                        LOGGER.debug("Removing stale Hotend Rack device.")
-                        dev_reg.async_remove_device(device.id)
+            for device in device_registry.async_entries_for_config_entry(dev_reg, config_entry_id):
+                if device.model == 'Hotend Rack':
+                    LOGGER.debug("Removing stale Hotend Rack device.")
+                    dev_reg.async_remove_device(device.id)
 
         # And now we can reinitialize the sensors, which will trigger device creation as necessary.
         self.hass.async_create_task(self._reinitialize_sensors())
 
     def PublishDeviceTriggerEvent(self, event: str):
-        dev_reg = device_registry.async_get(self._hass)
-        hadevice = dev_reg.async_get_device(identifiers={(DOMAIN, self.get_model().info.serial)})
+        hadevice = self.get_ha_printer_device()
         if hadevice is None:
             # Events can arrive during initial connect, before the device entry exists.
             LOGGER.debug(f"PublishDeviceTriggerEvent: device not registered yet, skipping {event}")
@@ -910,6 +921,31 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
 
     def get_model(self):
         return self.client.get_device()
+
+    def get_ha_printer_device(self):
+        """Find the printer's device registry entry.
+
+        async_get_device lookups by identifier are deprecated as of HA 2026.9
+        because identifiers are no longer unique across config entries, so scan
+        just this config entry's devices instead."""
+        dev_reg = device_registry.async_get(self._hass)
+        printer_identifier = (DOMAIN, self.get_model().info.serial)
+        for device in device_registry.async_entries_for_config_entry(dev_reg, self.config_entry.entry_id):
+            if printer_identifier in device.identifiers:
+                return device
+        return None
+
+    def _set_via_device(self, device_info: DeviceInfo):
+        """Link a device to its parent printer.
+
+        HA 2026.8 deprecated the via_device identifier tuple in favor of
+        via_device_id; older versions don't accept via_device_id at all."""
+        if "via_device_id" in DeviceInfo.__optional_keys__:
+            printer_device = self.get_ha_printer_device()
+            if printer_device is not None:
+                device_info["via_device_id"] = printer_device.id
+        else:
+            device_info["via_device"] = (DOMAIN, self.config_entry.data["serial"])
 
     def get_printer_device(self):
         printer_serial = self.config_entry.data["serial"]
@@ -935,45 +971,48 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         ams_serial = self.get_model().ams.data[index].serial
         model = self.get_model().ams.data[index].model
 
-        return DeviceInfo(
+        device_info = DeviceInfo(
             identifiers={(DOMAIN, ams_serial)},
-            via_device=(DOMAIN, printer_serial),
             name=device_name,
             model=model,
             manufacturer=BRAND,
             hw_version=self.get_model().ams.data[index].hw_version,
             sw_version=self.get_model().ams.data[index].sw_version
         )
+        self._set_via_device(device_info)
+        return device_info
 
     def get_virtual_tray_device(self, suffix: str):
         printer_serial = self.config_entry.data["serial"]
         device_type = self.config_entry.data["device_type"]
         device_name=f"{device_type}_{printer_serial}_ExternalSpool{suffix}"
 
-        return DeviceInfo(
+        device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{printer_serial}_ExternalSpool{suffix}")},
-            via_device=(DOMAIN, printer_serial),
             name=device_name,
             model="External Spool",
             manufacturer=BRAND,
             hw_version="",
             sw_version=""
         )
+        self._set_via_device(device_info)
+        return device_info
 
     def get_hotend_rack_device(self):
         printer_serial = self.config_entry.data["serial"]
         device_type = self.config_entry.data["device_type"]
         device_name = f"{device_type}_{printer_serial}_HotendRack"
 
-        return DeviceInfo(
+        device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{printer_serial}_HotendRack")},
-            via_device=(DOMAIN, printer_serial),
             name=device_name,
             model="Hotend Rack",
             manufacturer=BRAND,
             hw_version="",
             sw_version=""
         )
+        self._set_via_device(device_info)
+        return device_info
 
     def get_option_enabled(self, option: Options):
         options = dict(self.config_entry.options)
@@ -1065,6 +1104,53 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
             translation_key=issue,
             translation_placeholders = {"device": f"'{self.config_entry.options.get('name', '')}'"},
         )
+
+    async def _async_handle_access_denied(self):
+        # The printer refused the MQTT connection with CONNACK code 5. The usual cause is a
+        # rotated LAN access code - a factory reset regenerates it - and retrying can never
+        # recover from that, so the client has already stopped. For cloud-linked printers
+        # Bambu Cloud already knows the new code (it's how Bambu Studio and Handy reconnect
+        # after a reset), so try to refresh it silently before asking the user for anything.
+        #
+        # Note code 5 is also seen when the printer is powered off (#1863), so the stored
+        # code is only replaced when the cloud reports a genuinely different one.
+        if self._access_denied_handled:
+            return
+        self._access_denied_handled = True
+
+        options = self.config_entry.options
+        auth_token = options.get('auth_token', '')
+        serial = self.config_entry.data['serial']
+        if auth_token != '':
+            bambu_cloud = BambuCloud(
+                options.get('region', ''),
+                options.get('email', ''),
+                options.get('username', ''),
+                auth_token)
+            devices = await self._hass.async_add_executor_job(bambu_cloud.get_device_list)
+            device = next((device for device in devices or [] if device.get('dev_id') == serial), None)
+            new_access_code = '' if device is None else device.get('dev_access_code', '')
+            if new_access_code != '' and new_access_code != options.get('access_code', ''):
+                LOGGER.info("Printer rejected the access code but Bambu Cloud reports a new one. Updating the config entry and reloading.")
+                new_options = dict(options)
+                new_options['access_code'] = new_access_code
+                self._hass.config_entries.async_update_entry(
+                    entry=self.config_entry,
+                    data=self.config_entry.data,
+                    options=new_options)
+                await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                return
+            if new_access_code != '' and new_access_code == options.get('access_code', ''):
+                # The stored code still matches the cloud - the rejection has another cause,
+                # such as the printer being powered off or mid-boot. Nothing to repair here.
+                LOGGER.debug("Printer rejected the access code but it matches Bambu Cloud. Not an access code problem.")
+                return
+        # LAN-only setup, or the cloud lookup failed - the user has to read the new code off
+        # the printer's screen, so tell them with a visible repair issue instead of a log line.
+        self._report_access_code_rejected_issue()
+
+    def _report_access_code_rejected_issue(self):
+        self._report_generic_issue("access_code_rejected", True)
 
     def _report_authentication_issue(self):
         # issue_id's are permanent - once ignored they will never show again so we need a unique id 
@@ -1192,6 +1278,27 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         files.sort(key=lambda x: x['modified'], reverse=True)
         
         return files
+
+    @staticmethod
+    def _cache_sidecar_extensions(file_type: str) -> List[str]:
+        if file_type == 'prints':
+            return ['.jpg', '.jpeg', '.png', '.slice_info.config', '.gcode']
+        if file_type in ['gcode', 'timelapse']:
+            return ['.jpg', '.jpeg', '.png']
+        return []
+
+    @staticmethod
+    def _cache_part_patterns(file_type: str) -> List[str]:
+        type_patterns = {
+            'prints': ['*.3mf.part'],
+            'gcode': ['*.gcode.part'],
+            'timelapse': ['*.mp4.part', '*.avi.part', '*.mov.part'],
+        }
+        return type_patterns.get(file_type, [])
+
+    @staticmethod
+    def _cache_sidecar_paths(file_path: Path, file_type: str) -> List[Path]:
+        return [file_path.with_suffix(extension) for extension in BambuDataUpdateCoordinator._cache_sidecar_extensions(file_type)]
     
     async def clear_file_cache(self, file_type: str = 'all') -> Dict[str, Any]:
         """Clear the file cache."""
@@ -1202,13 +1309,21 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             cache_path = Path(cache_dir)
             deleted_count = 0
+            deleted_paths = set()
+
+            def delete_path(file_path: Path) -> int:
+                if file_path in deleted_paths:
+                    return 0
+                if not file_path.is_file():
+                    return 0
+                file_path.unlink()
+                deleted_paths.add(file_path)
+                return 1
             
             if file_type == 'all':
                 # Delete all files in cache directory
                 for file_path in cache_path.rglob('*'):
-                    if file_path.is_file():
-                        file_path.unlink()
-                        deleted_count += 1
+                    deleted_count += delete_path(file_path)
             else:
                 # Delete only specific file type
                 type_patterns = {
@@ -1220,9 +1335,14 @@ class BambuDataUpdateCoordinator(DataUpdateCoordinator):
                 patterns = type_patterns.get(file_type, [])
                 for pattern in patterns:
                     for file_path in cache_path.rglob(pattern):
-                        if file_path.is_file():
-                            file_path.unlink()
-                            deleted_count += 1
+                        deleted_count += delete_path(file_path)
+                        for sidecar_path in self._cache_sidecar_paths(file_path, file_type):
+                            deleted_count += delete_path(sidecar_path)
+                        deleted_count += delete_path(Path(f"{file_path}.part"))
+
+                for pattern in self._cache_part_patterns(file_type):
+                    for file_path in cache_path.rglob(pattern):
+                        deleted_count += delete_path(file_path)
             
             return {
                 "success": True,

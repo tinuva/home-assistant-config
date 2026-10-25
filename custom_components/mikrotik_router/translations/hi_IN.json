@@ -13,6 +13,26 @@
                     "ssl": "SSL का उपयोग करें",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "उपयोगकर्ता नाम",
+                    "password": "पासवर्ड"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "होस्ट",
+                    "port": "पोर्ट",
+                    "username": "उपयोगकर्ता नाम",
+                    "password": "पासवर्ड",
+                    "ssl": "SSL का उपयोग करें",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "SSL हैन्डशेक विफ़ल हो गया",
             "connection_timeout": "Mikrotik कनेक्शन टाइम आउट हो गया।",
             "wrong_login": "अमान्य उपयोगकर्ता नाम या पासवर्ड।",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "अमान्य उपयोगकर्ता नाम या पासवर्ड।",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "ग्राहक का MAC और IP इन्टरफ़ेस पर दिखाएं",
                     "unit_of_measurement": "माप का युनीट",
                     "track_network_hosts_timeout": "नेटवर्क डिवाइस ट्रैक टाइम आउट (सेकन्ड)",
-                    "zone": "डिवाइस ट्रैकर के लिए ज़ोन"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router के विकल्प (1\/2)",
                 "description": "इंटीग्रेशन को कॉन्फ़िगर करें"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router के विकल्प (2\/2)",
                 "description": "सेंसर और स्विच को एनेबल करें"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

@@ -861,6 +861,9 @@
           "filament_id": { "name": "Filament ID" },
           "filament_name": { "name": "Filament name" }
         }
+      },
+      "hotend_rack_hotend_used_time": {
+        "name": "Hotend {hotend_id} used time"
       }
     },
     "camera": {
@@ -900,6 +903,10 @@
     "authentication_failed": {
       "title": "Authentication Failed",
       "description": "Attempting to connect to Bambu Lab failed for {device}. Please reconfigure the integration and provide fresh credentials."
+    },
+    "access_code_rejected": {
+      "title": "Access Code Rejected",
+      "description": "The printer rejected the configured access code for {device}. This usually means the code was regenerated, for example by a factory reset. Read the new access code from the printer's network settings screen and reconfigure the integration with it."
     },
     "no_external_storage": {
       "title": "No USB or SD Card Detected",

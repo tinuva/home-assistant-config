@@ -9,12 +9,11 @@ from decimal import Decimal
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import MikrotikCoordinator
+from .coordinator import MikrotikConfigEntry, MikrotikCoordinator
 from .entity import MikrotikEntity, async_add_entities
 from .helper import format_attribute
 from .sensor_types import (
@@ -33,8 +32,8 @@ _LOGGER = getLogger(__name__)
 # ---------------------------
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
-    _async_add_entities: AddEntitiesCallback,
+    config_entry: MikrotikConfigEntry,
+    add_entities_callback: AddEntitiesCallback,
 ) -> None:
     """Set up entry for component"""
     dispatcher = {
@@ -42,7 +41,14 @@ async def async_setup_entry(
         "MikrotikInterfaceTrafficSensor": MikrotikInterfaceTrafficSensor,
         "MikrotikClientTrafficSensor": MikrotikClientTrafficSensor,
     }
-    await async_add_entities(hass, config_entry, dispatcher)
+    await async_add_entities(
+        hass,
+        config_entry,
+        add_entities_callback,
+        dispatcher,
+        SENSOR_TYPES,
+        SENSOR_SERVICES,
+    )
 
 
 # ---------------------------
@@ -120,17 +126,3 @@ class MikrotikClientTrafficSensor(MikrotikSensor):
     def custom_name(self) -> str:
         """Return the name for this entity"""
         return f"{self.entity_description.name}"
-
-    # @property
-    # def available(self) -> bool:
-    #     """Return if controller and accounting feature in Mikrotik is available.
-    #     Additional check for lan-tx/rx sensors
-    #     """
-    #     if self.entity_description.data_attribute in ["lan-tx", "lan-rx"]:
-    #         return (
-    #             self.coordinator.connected()
-    #             and self._data["available"]
-    #             and self._data["local_accounting"]
-    #         )
-    #     else:
-    #         return self.coordinator.connected() and self._data["available"]

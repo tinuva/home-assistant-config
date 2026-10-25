@@ -13,6 +13,26 @@
                     "ssl": "SSLを使用します",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "ユーザ名",
+                    "password": "パスワード"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "ホスト",
+                    "port": "ポート",
+                    "username": "ユーザ名",
+                    "password": "パスワード",
+                    "ssl": "SSLを使用します",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "SSLハンドシェイクに失敗しました",
             "connection_timeout": "Mikrotik接続がタイムアウトしました。",
             "wrong_login": "ユーザ名またはパスワードが無効です。",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "ユーザ名またはパスワードが無効です。",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "クライアントのMACとインターフェイスのIPを表示します",
                     "unit_of_measurement": "測定単位",
                     "track_network_hosts_timeout": "ネットワーク デバイスのタイムアウト（秒）をトラッキングします",
-                    "zone": "デバイス追跡装置用ゾーン"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router オプション (1\/2)",
                 "description": "インテグレーションを設定する"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router オプション (2\/2)",
                 "description": "センサーとスイッチを有効にする"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

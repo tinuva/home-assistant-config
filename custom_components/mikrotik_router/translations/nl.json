@@ -11,17 +11,44 @@
                     "username": "Gebruikersnaam",
                     "password": "Wachtwoord",
                     "ssl": "Gebruik SSL",
-                    "verify_ssl": "Verify SSL"
+                    "verify_ssl": "SSL verifiëren"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Gebruikersnaam",
+                    "password": "Wachtwoord"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Host",
+                    "port": "Poort",
+                    "username": "Gebruikersnaam",
+                    "password": "Wachtwoord",
+                    "ssl": "Gebruik SSL",
+                    "verify_ssl": "SSL verifiëren"
                 }
             }
         },
         "error": {
             "name_exists": "Naam al in gebruik",
             "cannot_connect": "Kan geen verbinding maken met Mikrotik.",
-            "ssl_handshake_failure": "SSL overeenkomings-storing",
+            "ssl_handshake_failure": "SSL-handshake mislukt",
             "connection_timeout": "Mikrotik verbinding time-out.",
             "wrong_login": "Ongeldige gebruikersnaam of wachtwoord.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificaatverificatie mislukt",
+            "invalid_auth": "Ongeldige gebruikersnaam of wachtwoord.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -29,12 +56,12 @@
             "basic_options": {
                 "data": {
                     "scan_interval": "Scaninterval (vereist opnieuw opstarten van HA)",
-                    "track_iface_clients": "Mac en IP van client weergeven op interfaces",
-                    "unit_of_measurement": "Meet eenheid",
+                    "track_iface_clients": "MAC en IP van client weergeven op interfaces",
+                    "unit_of_measurement": "Meeteenheid",
                     "track_network_hosts_timeout": "Volg de time-out van netwerkapparaten (seconden)",
-                    "zone": "Zone voor apparaattracker"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
-                "title": "Opties Mikrotik Router (1\/2)",
+                "title": "Mikrotik router opties (1\/2)",
                 "description": "Integratie configureren"
             },
             "sensor_select": {
@@ -52,11 +79,25 @@
                     "sensor_ppp": "PPP-gebruikers",
                     "sensor_filter": "Filterschakelaars",
                     "sensor_client_captive": "Captive portal data",
-                    "sensor_netwatch_tracker": "Netwatch tracker sensors"
+                    "sensor_netwatch_tracker": "Netwatch tracker sensoren"
                 },
                 "title": "Opties Mikrotik Router (2\/2)",
                 "description": "Sensoren en schakelaars inschakelen"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

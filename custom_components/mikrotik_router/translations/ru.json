@@ -11,7 +11,27 @@
                     "username": "Имя пользователя",
                     "password": "Пароль",
                     "ssl": "Использовать SSL",
-                    "verify_ssl": "Verify SSL"
+                    "verify_ssl": "Проверять SSL"
+                }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Имя пользователя",
+                    "password": "Пароль"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Адрес хоста",
+                    "port": "Порт",
+                    "username": "Имя пользователя",
+                    "password": "Пароль",
+                    "ssl": "Использовать SSL",
+                    "verify_ssl": "Проверять SSL"
                 }
             }
         },
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Ошибка SSL-соединения.",
             "connection_timeout": "Истекло время подключения к Mikrotik.",
             "wrong_login": "Неверное имя пользователя или пароль.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Ошибка проверки сертификата",
+            "invalid_auth": "Неверное имя пользователя или пароль.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Показывать в интерфейсе MAC и IP клиентов",
                     "unit_of_measurement": "Единицы измерения",
                     "track_network_hosts_timeout": "Таймаут отслеживания сетевых устройств (в секундах)",
-                    "zone": "Зона для отслеживания устройств"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Параметры Mikrotik Router (1\/2)",
                 "description": "Настроить интеграцию"
@@ -52,11 +79,25 @@
                     "sensor_ppp": "PPP-пользователи",
                     "sensor_filter": "Переключатели фильтров",
                     "sensor_client_captive": "Данные портала авторизации",
-                    "sensor_netwatch_tracker": "Netwatch tracker sensors"
+                    "sensor_netwatch_tracker": "Сенсоры отслеживания Netwatch"
                 },
                 "title": "Параметры Mikrotik Router (2\/2)",
                 "description": "Включить датчики и переключатели"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

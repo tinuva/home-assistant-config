@@ -13,6 +13,26 @@
                     "ssl": "Χρήση SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Όνομα χρήστη",
+                    "password": "Κωδικός πρόσβασης"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Εξυπηρετητής",
+                    "port": "Θύρα",
+                    "username": "Όνομα χρήστη",
+                    "password": "Κωδικός πρόσβασης",
+                    "ssl": "Χρήση SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Αποτυχίας χειραψίας SSL",
             "connection_timeout": "Διακοπή σύνδεσης με Mikrotik.",
             "wrong_login": "Το όνομα χρήστη και ο κωδικός πρόσβασης δεν είναι έγκυρα.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Το όνομα χρήστη και ο κωδικός πρόσβασης δεν είναι έγκυρα.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Προβολή IP και MAC πελάτη στη διεπαφή",
                     "unit_of_measurement": "Μονάδα μέτρησης",
                     "track_network_hosts_timeout": "Εξωχρονισμός ανίχνευσης συσκευών διαδικτύου (δευτερόλεπτα)",
-                    "zone": "Ζώνη για παρακολούθηση συσκευής"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Επιλογές Mikrotik Router (1\/2)",
                 "description": "Διαμόρφωση ολοκλήρωσης"
@@ -57,6 +84,20 @@
                 "title": "Επιλογές Mikrotik Router (2\/2)",
                 "description": "Ενεργοποίηση αισθητήρων και διακοπτών"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

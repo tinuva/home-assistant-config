@@ -13,6 +13,26 @@
                     "ssl": "Utilizar SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Nombre de usuario",
+                    "password": "Contraseña"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Proveedor",
+                    "port": "Puerto",
+                    "username": "Nombre de usuario",
+                    "password": "Contraseña",
+                    "ssl": "Utilizar SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Fallo del \"handshake\" SSL",
             "connection_timeout": "Tiempo de espera de la conexión a Mikrotik.",
             "wrong_login": "Nombre de usuario o contraseña no válida",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Nombre de usuario o contraseña no válida",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Mostrar MAC e IP de cliente en las interfaces",
                     "unit_of_measurement": "Unidad de medida",
                     "track_network_hosts_timeout": "Rastrear el tiempo de espera de los dispositivos de red (segundos)",
-                    "zone": "Zona para rastreador de dispositivos"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Opciones del Mikrotik Router (1\/2)",
                 "description": "Configurar la integración"
@@ -57,6 +84,20 @@
                 "title": "Opciones del Mikrotik Router (2\/2)",
                 "description": "Activar sensores e interruptores"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

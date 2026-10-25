@@ -13,6 +13,26 @@
                     "ssl": "Nota SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Notandanafn",
+                    "password": "Lykilorð"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Hýsill",
+                    "port": "Port",
+                    "username": "Notandanafn",
+                    "password": "Lykilorð",
+                    "ssl": "Nota SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Villa við að koma á SSL samskiptum",
             "connection_timeout": "Tengin við Mikrotik rann út á tíma.",
             "wrong_login": "Ógilt notendanafn eða lykilorð.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Ógilt notendanafn eða lykilorð.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Sýna MAC og IP vistfang fyrir biðlara á netkortum",
                     "unit_of_measurement": "Mælieining",
                     "track_network_hosts_timeout": "Tímamörk við rakningu á netbúnaði ( sekúndur )",
-                    "zone": "Svæði fyrir tækjarakningu"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Mikrotik Router valkostir (1\/2)",
                 "description": "Stilla samþættingu"
@@ -57,6 +84,20 @@
                 "title": "Mikrotik Router valkostir (2\/2)",
                 "description": "Virkja skynjara og rofa"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

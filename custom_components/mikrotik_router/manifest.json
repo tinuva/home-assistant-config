@@ -1,17 +1,18 @@
 {
     "domain": "mikrotik_router",
     "name": "Mikrotik Router",
+    "codeowners": [
+        "@tomaae"
+    ],
     "config_flow": true,
-    "iot_class": "local_polling",
-    "documentation": "https://github.com/tomaae/homeassistant-mikrotik_router",
-    "issue_tracker": "https://github.com/tomaae/homeassistant-mikrotik_router/issues",
     "dependencies": [],
+    "documentation": "https://github.com/tomaae/homeassistant-mikrotik_router",
+    "integration_type": "hub",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/tomaae/homeassistant-mikrotik_router/issues",
     "requirements": [
         "librouteros>=3.4.1",
         "mac-vendor-lookup>=0.1.12"
     ],
-    "codeowners": [
-        "@tomaae"
-    ],
-    "version": "0.0.0"
+    "version": "2.3"
 }

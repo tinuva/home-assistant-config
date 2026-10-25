@@ -13,6 +13,26 @@
                     "ssl": "استعمل طبقة الوصلات الآمنة (SSL)",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "اسم المستخدم",
+                    "password": "كلمة المرور"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "المُضيف",
+                    "port": "منفذ",
+                    "username": "اسم المستخدم",
+                    "password": "كلمة المرور",
+                    "ssl": "استعمل طبقة الوصلات الآمنة (SSL)",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "فشل تأكيد الاتصال (SSL)",
             "connection_timeout": "مهلة اتصال (Mikrotik).",
             "wrong_login": "خطأ في اسم المستخدم أو كلمة مرور.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "خطأ في اسم المستخدم أو كلمة مرور.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "إظهار  عنوان التحكّم في الوسائط (MAC)  و بروتوكول الإنترنت (IP) للعميل على الواجهات",
                     "unit_of_measurement": "وحدة قياس",
                     "track_network_hosts_timeout": "مهلة تتبّع أجهزة الشبكة (بالثواني)",
-                    "zone": "منطقة لتعقُّب الجهاز"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "خيارات جهاز Mikrotik Router (1\/2)",
                 "description": "تهيئة التكامل"
@@ -57,6 +84,20 @@
                 "title": "خيارات جهاز Mikrotik Router (2\/2)",
                 "description": "تمكين أجهزة الاستشعار والمفاتيح"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }

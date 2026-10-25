@@ -16,13 +16,12 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.exceptions import HomeAssistantError
-
 from .const import DOMAIN
 
 from .coordinator import DreameVacuumDataUpdateCoordinator
 from .entity import DreameVacuumEntity, DreameVacuumEntityDescription, remove_entities
 from .dreame import (
+    EntityUnavailableException,
     DreameVacuumProperty,
     DreameVacuumAutoSwitchProperty,
     DreameVacuumStrAIProperty,
@@ -40,7 +39,7 @@ class DreameVacuumSwitchEntityDescription(DreameVacuumEntityDescription, SwitchE
 SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumProperty.RESUME_CLEANING,
-        value_fn=lambda value, device: bool(value),
+        value_fn=lambda value, entity: bool(value),
         icon="mdi:play-pause",
         entity_category=EntityCategory.CONFIG,
     ),
@@ -146,7 +145,7 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
         property_key=DreameVacuumProperty.INTELLIGENT_RECOGNITION,
         icon_fn=lambda value, device: "mdi:wifi-remove" if value == 0 else "mdi:wifi-marker",
         entity_category=EntityCategory.CONFIG,
-        exists_fn=lambda description, device: device.capability.wifi_map
+        exists_fn=lambda description, device: device.capability.intelligent_recognition
         and DreameVacuumEntityDescription().exists_fn(description, device),
     ),
     DreameVacuumSwitchEntityDescription(
@@ -225,10 +224,10 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         key="cleaning_sequence",
         icon="mdi:order-numeric-ascending",
-        value_fn=lambda value, device: device.status.custom_order,
+        value_fn=lambda value, entity: entity.device.status.custom_order,
         exists_fn=lambda description, device: device.capability.customized_cleaning
         and device.capability.map
-        and not device.capability.cleaning_sequence_v2,
+        and not device.status.cleaning_sequence_v2,
         set_fn=lambda device, value: device.set_cleaning_sequence(
             []
             if not value
@@ -244,7 +243,7 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         key="self_clean_by_zone",
         icon_fn=lambda value, device: "mdi:texture-box" if not value else "mdi:home-switch",
-        value_fn=lambda value, device: bool(not device.status.self_clean_value),
+        value_fn=lambda value, entity: bool(not entity.device.status.self_clean_value),
         exists_fn=lambda description, device: device.capability.self_wash_base
         and not device.capability.self_clean_frequency
         and device.status.self_clean_value is not None
@@ -288,7 +287,8 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumAIProperty.AI_FLUID_DETECTION,
         icon_fn=lambda value, device: "mdi:water-off-outline" if not value else "mdi:water-outline",
-        exists_fn=lambda description, device: device.capability.fluid_detection,
+        exists_fn=lambda description, device: device.capability.fluid_detection
+        and DreameVacuumEntityDescription().exists_fn(description, device),
         entity_category=EntityCategory.CONFIG,
     ),
     DreameVacuumSwitchEntityDescription(
@@ -299,7 +299,8 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumAIProperty.AI_PET_AVOIDANCE,
         icon="mdi:dog-service",
-        exists_fn=lambda description, device: device.capability.pet_detective,
+        exists_fn=lambda description, device: device.capability.pet_detective
+        and DreameVacuumEntityDescription().exists_fn(description, device),
         entity_category=EntityCategory.CONFIG,
     ),
     DreameVacuumSwitchEntityDescription(
@@ -310,13 +311,15 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumAIProperty.PET_FOCUSED_DETECTION,
         icon="mdi:dog",
-        exists_fn=lambda description, device: device.capability.pet_furniture,
+        exists_fn=lambda description, device: device.capability.pet_furniture
+        and DreameVacuumEntityDescription().exists_fn(description, device),
         entity_category=EntityCategory.CONFIG,
     ),
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumAIProperty.LARGE_PARTICLES_BOOST,
         icon="mdi:weather-dust",
-        exists_fn=lambda description, device: device.capability.large_particles_boost,
+        exists_fn=lambda description, device: device.capability.large_particles_boost
+        and DreameVacuumEntityDescription().exists_fn(description, device),
         entity_category=EntityCategory.CONFIG,
     ),
     DreameVacuumSwitchEntityDescription(
@@ -405,7 +408,7 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     ),
     DreameVacuumSwitchEntityDescription(
         property_key=DreameVacuumAutoSwitchProperty.MAX_SUCTION_POWER,
-        icon="mdi:speedometer",
+        icon="mdi:weather-windy",
         exists_fn=lambda description, device: device.capability.max_suction_power
         and DreameVacuumEntityDescription().exists_fn(description, device),
         entity_category=None,
@@ -534,7 +537,7 @@ SWITCHES: tuple[DreameVacuumSwitchEntityDescription, ...] = (
     DreameVacuumSwitchEntityDescription(
         key="camera_light_brightness_auto",
         icon_fn=lambda value, device: "mdi:brightness-percent" if not value else "mdi:brightness-auto",
-        value_fn=lambda value, device: bool(device.status.camera_light_brightness == 101),
+        value_fn=lambda value, entity: bool(entity.device.status.camera_light_brightness == 101),
         exists_fn=lambda description, device: device.capability.camera_streaming
         and device.capability.fill_light,  # and DreameVacuumEntityDescription().exists_fn(description, device),
         format_fn=lambda value, device: 101 if value else 40,
@@ -598,7 +601,7 @@ class DreameVacuumSwitchEntity(DreameVacuumEntity, SwitchEntity):
     async def async_set_state(self, state) -> None:
         """Turn on or off the Dreame Vacuum sync receive switch."""
         if not self.available:
-            raise HomeAssistantError("Entity unavailable")
+            self._raise_error(EntityUnavailableException())
 
         value = int(state)
         if self.entity_description.format_fn is not None:

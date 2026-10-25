@@ -13,6 +13,26 @@
                     "ssl": "Sử dụng SSL",
                     "verify_ssl": "Verify SSL"
                 }
+            },
+            "reauth_confirm": {
+                "title": "Reauthenticate Mikrotik Router",
+                "description": "Enter valid credentials for {name}.",
+                "data": {
+                    "username": "Tên người dùng",
+                    "password": "Mật khẩu"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Mikrotik Router",
+                "description": "Update the connection settings. Leave the password blank to keep the current password.",
+                "data": {
+                    "host": "Máy chủ",
+                    "port": "Cổng",
+                    "username": "Tên người dùng",
+                    "password": "Mật khẩu",
+                    "ssl": "Sử dụng SSL",
+                    "verify_ssl": "Verify SSL"
+                }
             }
         },
         "error": {
@@ -21,7 +41,14 @@
             "ssl_handshake_failure": "Lỗi kết nối SSL",
             "connection_timeout": "Hết thời gian chờ kết nối Mikrotik.",
             "wrong_login": "Tên người dùng hoặc mật khẩu không hợp lệ.",
-            "ssl_verify_failure": "Certificate verify failed"
+            "ssl_verify_failure": "Certificate verify failed",
+            "invalid_auth": "Tên người dùng hoặc mật khẩu không hợp lệ.",
+            "cannot_identify": "The router identity could not be verified. Ensure the RouterOS user can read System > License.",
+            "librouteros_api_mismatch": "Incompatible librouteros API; update this integration."
+        },
+        "abort": {
+            "already_configured": "This router is already configured.",
+            "wrong_router": "The connection settings belong to a different router."
         }
     },
     "options": {
@@ -32,7 +59,7 @@
                     "track_iface_clients": "Hiển thị MAC và IP của máy khách trên giao diện",
                     "unit_of_measurement": "Đơn vị đo",
                     "track_network_hosts_timeout": "Theo dõi thời gian chờ thiết bị mạng (giây)",
-                    "zone": "Khu vực cho trình theo dõi thiết bị"
+                    "device_tracker_scan_interval": "Device tracker scan interval"
                 },
                 "title": "Cài đặt Mikrotik Router (1\/2)",
                 "description": "Đặt cấu hình tích hợp"
@@ -57,6 +84,20 @@
                 "title": "Cài đặt Mikrotik Router (2\/2)",
                 "description": "Bật cảm biến và công tắc"
             }
+        }
+    },
+    "exceptions": {
+        "entry_not_found": {
+            "message": "The RouterOS entry {entry} could not be found. Refresh the integration and try again."
+        },
+        "managed_by_capsman": {
+            "message": "{entity} is managed by CAPsMAN and cannot be controlled directly."
+        },
+        "missing_permissions": {
+            "message": "The RouterOS user is missing the required permissions: {permissions}."
+        },
+        "routeros_command_failed": {
+            "message": "The router did not complete the requested action. Check the connection and RouterOS permissions."
         }
     }
 }
